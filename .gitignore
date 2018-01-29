@@ -1,0 +1,11 @@
+upload/*
+bitrix/php_interface/*
+!/bitrix/php_interface/init.php
+bitrix/.settings.php
+.idea/*
+bitrix/managed_cache/*
+bitrix/cache/*
+bitrix/stack_cache/*
+access/*
+bitrix/html_pages/*
+bitrix/backup/*
