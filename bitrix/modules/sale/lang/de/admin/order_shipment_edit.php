@@ -1,0 +1,37 @@
+<?
+$MESS["SOP_TAB_ANALYSIS"] = "Dokumentverknüpfungen";
+$MESS["SOP_TAB_HISTORY"] = "Änderungshistory";
+$MESS["SOP_TAB_SHIPMENT"] = "Auslieferung";
+$MESS["SALE_BLOCK_TITLE_GOODSLIST"] = "Produktliste";
+$MESS["SALE_BLOCK_TITLE_SHIPMENT"] = "Auslieferung";
+$MESS["SALE_BLOCK_TITLE_SHIPMENTSTATUS"] = "Status der Auslieferung";
+$MESS["SALE_BLOCK_TITLE_BUYER"] = "Kunde";
+$MESS["SALE_BLOCK_TITLE_ADDITIONAL"] = "Zusätzliche Informationen";
+$MESS["NEW_COLUMN_NUMBER"] = "Nr.";
+$MESS["NEW_COLUMN_IMAGE"] = "Bild";
+$MESS["NEW_COLUMN_NAME"] = "Name";
+$MESS["NEW_COLUMN_QUANTITY"] = "Menge zur Auslieferung";
+$MESS["NEW_COLUMN_REMAINING_QUANTITY"] = "Noch auszuliefern";
+$MESS["NEW_COLUMN_STORE_AMOUNT"] = "Lagerbestand";
+$MESS["NEW_COLUMN_PRICE"] = "Preis";
+$MESS["NEW_COLUMN_SUM"] = "Betrag";
+$MESS["NEW_COLUMN_SIZE"] = "Größe";
+$MESS["NEW_COLUMN_COLOR"] = "Farbe";
+$MESS["NEW_COLUMN_BARCODE"] = "Strichcode";
+$MESS["SALE_F_STORE"] = "Lager";
+$MESS["SALE_F_STORE_AMOUNT"] = "Lagerbestand";
+$MESS["SALE_F_STORE_CUR_AMOUNT"] = "Auslieferung";
+$MESS["SALE_F_STORE_BARCODE"] = "Strichcode";
+$MESS["NEW_ORDER_SHIPMENT"] = "Neue Auslieferung";
+$MESS["EDIT_ORDER_SHIPMENT"] = "Auslieferung Nr. #ID# bearbeiten";
+$MESS["SOPE_SHIPMENT_LIST"] = "Alle Auslieferungen";
+$MESS["SOPE_SHIPMENT_LIST_TITLE"] = "Alle Auslieferungen";
+$MESS["SOPE_SHIPMENT_DELETE"] = "Löschen";
+$MESS["SOPE_SHIPMENT_DELETE_TITLE"] = "Löschen";
+$MESS["SOPE_SHIPMENT_PRINT"] = "Drucken";
+$MESS["SOPE_SHIPMENT_PRINT_TITLE"] = "Drucken";
+$MESS["SOPE_SHIPMENT_TRANSITION"] = "Zur Bestellung wechseln";
+$MESS["SOPE_SHIPMENT_TRANSITION_TITLE"] = "Zur Bestellung wechseln";
+$MESS["SOPE_SHIPMENT_ERROR_MESSAGE"] = "Fehler beim Speichern der Auslieferung";
+$MESS["SOPE_SHIPMENT_DELETE_MESSAGE"] = "Möchten Sie diese Auslieferung wirklich löschen?";
+?>
