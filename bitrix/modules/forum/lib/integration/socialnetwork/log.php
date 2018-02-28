@@ -107,7 +107,7 @@ class Log
 			array(
 				'content' => $content,
 			),
-			'calendar'
+			'forum'
 		);
 
 		return $result;

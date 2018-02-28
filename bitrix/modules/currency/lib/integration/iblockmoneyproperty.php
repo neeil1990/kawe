@@ -3,6 +3,7 @@ namespace Bitrix\Currency\Integration;
 
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Currency\CurrencyTable;
+use Bitrix\Currency\Helpers\Editor;
 use Bitrix\Main\Type\RandomSequence;
 use Bitrix\Currency\CurrencyManager;
 use Bitrix\Main\Web\Json;
@@ -13,8 +14,6 @@ class IblockMoneyProperty
 {
 	const USER_TYPE = 'Money';
 	const SEPARATOR = '|';
-
-	protected static $listCurrencyCache = array();
 
 	/**
 	 * Returns property type description.
@@ -140,13 +139,10 @@ class IblockMoneyProperty
 						return $currentValue;
 				}
 			}
-			$format = \CCurrencyLang::getCurrencyFormat($currentCurrency);
-			$separators = \CCurrencyLang::getSeparators();
-			$thousandsSep = $separators[$format['THOUSANDS_VARIANT']];
-			$currentValue = number_format($currentValue, $format['DECIMALS'], $format['DEC_POINT'], $thousandsSep);
-			if($format['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE)
-				$currentValue = str_replace(' ', '&nbsp;', $currentValue);
-			return preg_replace('/(^|[^&])#/', '${1}'.$currentValue, $format['FORMAT_STRING']);
+
+			$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
+			$currentValue = number_format($currentValue, $format['DECIMALS'], $format['DEC_POINT'], $format['THOUSANDS_SEP']);
+			return \CCurrencyLang::applyTemplate($currentValue, $format['FORMAT_STRING']);
 		}
 
 		return  '';
@@ -172,22 +168,45 @@ class IblockMoneyProperty
 
 		if(CurrencyManager::isCurrencyExist($currentCurrency))
 		{
-			$format = \CCurrencyLang::getCurrencyFormat($currentCurrency);
-			$separators = \CCurrencyLang::getSeparators();
+			$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
 			$decPoint = $format['DEC_POINT'];
-			$thousandsSep = $separators[$format['THOUSANDS_VARIANT']];
-			$decimals = $format['DECIMALS'];
-			$regExp = '/^\d{1,3}('.$thousandsSep.'?\d{3})*(\\'.$decPoint.'\d{1,'.$decimals.'})?$/';
+			$thousandsSep = $format['THOUSANDS_SEP'];
+			$decimals = intval($format['DECIMALS']);
+			$regExp = '/^\d{1,3}(('.$thousandsSep.'){0,1}\d{3})*(\\'.$decPoint.'\d{1,'.$decimals.'})?$/';
 			if($thousandsSep && $decPoint)
-				$regExp = '/^\d{1,3}('.$thousandsSep.'?\d{3})*(\\'.$decPoint.'\d{1,'.$decimals.'})?$/';
+			{
+				if ($decimals > 0)
+				{
+					$regExp = '/^\d{1,3}(('.$thousandsSep.'){0,1}\d{3})*(\\'.$decPoint.'\d{1,'.$decimals.'})?$/';
+				}
+				else
+				{
+					$regExp = '/^\d{1,3}(('.$thousandsSep.'){0,1}\d{3})?$/';
+				}
+			}
 			elseif($thousandsSep && !$decPoint)
-				$regExp = '/^\d{1,3}('.$thousandsSep.'?\d{3})*$/';
+			{
+				$regExp = '/^\d{1,3}(('.$thousandsSep.'){0,1}\d{3})*$/';
+			}
 			elseif(!$thousandsSep && $decPoint)
-				$regExp = '/^[0-9]*(\\'.$decPoint.'\d{1,'.$decimals.'})?$/';
+			{
+				if ($decimals > 0)
+				{
+					$regExp = '/^[0-9]*(\\'.$decPoint.'\d{1,'.$decimals.'})?$/';
+				}
+				else
+				{
+					$regExp = '/^[0-9]?$/';
+				}
+			}
 			elseif(!$thousandsSep && !$decPoint)
+			{
 				$regExp = '/^[0-9]*$/';
+			}
 			if(!preg_match($regExp, $currentValue))
+			{
 				$result[] = Loc::getMessage('CIMP_FORMAT_ERROR');
+			}
 		}
 		else
 		{
@@ -279,33 +298,8 @@ class IblockMoneyProperty
 
 	protected static function getListCurrency()
 	{
-		if(empty(self::$listCurrencyCache))
-		{
-			$queryObject = CurrencyTable::getList(array(
-				'select' => array(
-					'CURRENCY',
-					'BASE',
-					'NAME' => 'CURRENT_LANG_FORMAT.FULL_NAME',
-					'FORMAT' => 'CURRENT_LANG_FORMAT.FORMAT_STRING',
-					'DEC_POINT' => 'CURRENT_LANG_FORMAT.DEC_POINT',
-					'THOUSANDS_VARIANT' => 'CURRENT_LANG_FORMAT.THOUSANDS_VARIANT',
-					'DECIMALS' => 'CURRENT_LANG_FORMAT.DECIMALS',
-				),
-				'filter' => array(),
-				'order' => array('SORT' => 'ASC', 'CURRENCY' => 'ASC')
-			));
-			$separators = \CCurrencyLang::getSeparators();
-			while($currency = $queryObject->fetch())
-			{
-				$currency['SEPARATOR'] = $separators[$currency['THOUSANDS_VARIANT']];
-				$currency['SEPARATOR_STRING'] = $currency['DEC_POINT'];
-				$currency['SEPARATOR_STRING'] .= ($currency['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_SPACE
-					|| $currency['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE) ?
-					Loc::getMessage('CIMP_SEPARATOR_SPACE') : $currency['SEPARATOR'];
-				self::$listCurrencyCache[$currency['CURRENCY']] = $currency;
-			}
-		}
-		return self::$listCurrencyCache;
+		$result = Editor::getListCurrency();
+		return (empty($result) ? array() : $result);
 	}
 
 	protected static function getJsHandlerSelector($randString, array $listCurrency)
@@ -313,6 +307,8 @@ class IblockMoneyProperty
 		ob_start();
 		?>
 		<script>
+			if (!window.BX && top.BX)
+				window.BX = top.BX;
 			BX.ready(function() {
 			'use strict';
 			if(!BX.HandlerMoneyField) {
@@ -320,6 +316,9 @@ class IblockMoneyProperty
 					this.randomString = params.randomString;
 					this.listCurrency = params.listCurrency;
 					this.defaultSeparator = params.defaultSeparator;
+					setTimeout(BX.proxy(this.setDefaultParams, this), 300);
+				};
+				BX.HandlerMoneyField.prototype.setDefaultParams = function() {
 					this.input = BX('input-' + this.randomString);
 					this.hidden = BX('hidden-' + this.randomString);
 					this.selector = BX('selector-' + this.randomString);
@@ -335,6 +334,9 @@ class IblockMoneyProperty
 						'decPoint': this.listCurrency[this.currentCurrency].DEC_POINT,
 						'thousandsSep': this.listCurrency[this.currentCurrency].SEPARATOR
 					};
+					this.availableKey = [8,9,13,36,37,39,38,40,46,18,17,16,188,190,86,65,112,113,114,115,116,117,118,
+						119,120,121,122,123,67,45,34,33,35];
+					this.availableSymbol = [];
 					this.changeCurrency();
 					BX.bind(this.selector, 'change', BX.proxy(this.changeCurrency, this));
 					BX.bind(this.input, 'keydown', BX.proxy(function(event) {this.onkeydown(event)}, this));
@@ -378,15 +380,23 @@ class IblockMoneyProperty
 					var decimals = '';
 					for(var i = 1; i <= this.decimals; i++)
 						decimals += i;
-					this.availableSymbol = [];
 					this.availableSymbol.push(this.thousandsSep);
 					this.availableSymbol.push(this.decPoint);
 					this.regExp = '';
+					this.isDecimalsNull = (!parseInt(this.decimals));
 					if(this.thousandsSep && this.decPoint)
 					{
-						this.regExp = '^\\d{1,3}('+this.thousandsSep+
-							'?\\d{3})*(\\'+this.decPoint+'\\d{1,'+this.decimals+'})?$';
-						this.exampleValue = '6'+this.thousandsSep+'456'+this.decPoint+decimals;
+						if (this.isDecimalsNull)
+						{
+							this.regExp = '^\\d{1,3}('+this.thousandsSep+'?\\d{3})?$';
+							this.exampleValue = '6'+this.thousandsSep+'456';
+						}
+						else
+						{
+							this.regExp = '^\\d{1,3}('+this.thousandsSep+
+								'?\\d{3})*(\\'+this.decPoint+'\\d{1,'+this.decimals+'})?$';
+							this.exampleValue = '6'+this.thousandsSep+'456'+this.decPoint+decimals;
+						}
 					}
 					else if(this.thousandsSep && !this.decPoint)
 					{
@@ -395,8 +405,16 @@ class IblockMoneyProperty
 					}
 					else if(!this.thousandsSep && this.decPoint)
 					{
-						this.regExp = '^[0-9]*(\\'+this.decPoint+'\\d{1,'+this.decimals+'})?$';
-						this.exampleValue = '6456'+this.decPoint+decimals;
+						if (this.isDecimalsNull)
+						{
+							this.regExp = '^[0-9]?$';
+							this.exampleValue = '6456';
+						}
+						else
+						{
+							this.regExp = '^[0-9]*(\\'+this.decPoint+'\\d{1,'+this.decimals+'})?$';
+							this.exampleValue = '6456'+this.decPoint+decimals;
+						}
 					}
 					else if(!this.thousandsSep && !this.decPoint)
 					{
@@ -407,10 +425,8 @@ class IblockMoneyProperty
 				};
 				BX.HandlerMoneyField.prototype.onkeydown = function(event) {
 					this.setTextError();
-					var availableKey = [8,9,13,36,37,39,38,40,46,18,17,16,190,188,86,65,112,113,114,115,116,117,118,
-						119,120,121,122,123,67,45,34,33,35];
 					if (!BX.util.in_array(event.key, this.availableSymbol)
-						&& !BX.util.in_array(event.keyCode,availableKey)) {
+						&& !BX.util.in_array(event.keyCode,this.availableKey)) {
 						if (isNaN(parseInt(event.key))) {
 							this.setTextError(BX.message('CIMP_INPUT_FORMAT_ERROR')
 								.replace('#example#', this.exampleValue));
@@ -524,6 +540,7 @@ class IblockMoneyProperty
 							formatValue = formatValue.substr(0, formatValue.length - 1);
 						}
 					}
+
 					return formatValue;
 				};
 			}

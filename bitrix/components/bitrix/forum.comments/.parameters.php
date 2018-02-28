@@ -142,6 +142,11 @@ $arComponentParameters = Array(
 			"NAME" => GetMessage("F_PREORDER"),
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => "Y"),
+		"SET_LAST_VISIT" => Array(
+			"PARENT" => "ADDITIONAL_SETTINGS",
+			"NAME" => GetMessage("F_SET_LAST_VISIT"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "N"),
 		"CACHE_TIME" => Array(),
 	)
 );

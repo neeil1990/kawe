@@ -1300,7 +1300,11 @@ class CAllCatalogProduct
 						}
 					}
 
-					$quantityList = array($productData['QUANTITY']);
+					$quantityList = array();
+					if (!isset($productData['QUANTITY']))
+					{
+						$quantityList = array($productData['QUANTITY']);
+					}
 
 					if (!empty($productData['QUANTITY_LIST']))
 					{

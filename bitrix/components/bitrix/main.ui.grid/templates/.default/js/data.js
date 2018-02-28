@@ -108,14 +108,7 @@
 
 		if (!BX.type.isNotEmptyString(url))
 		{
-			if (BX.SidePanel && BX.SidePanel.Instance && BX.SidePanel.Instance.isOpen())
-			{
-				url = BX.SidePanel.Instance.getPageUrl();
-			}
-			else
-			{
-				url = window.location.pathname + window.location.search;
-			}
+			url = this.parent.baseUrl;
 		}
 
 		url = BX.Grid.Utils.addUrlParams(url, { sessid: BX.bitrix_sessid(), internal: 'true', grid_id: this.parent.getId() });

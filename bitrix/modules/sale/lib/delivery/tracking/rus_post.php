@@ -45,6 +45,7 @@ class RusPost extends Base
 	 */
 	public function getStatus($trackingNumber)
 	{
+		$trackingNumber = trim($trackingNumber);
 		$result = new StatusResult();
 
 		if(!$this->checkTrackNumberFormat($trackingNumber))

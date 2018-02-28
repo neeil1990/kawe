@@ -390,6 +390,7 @@ class CMainUIGrid extends CBitrixComponent
 		$this->arResult["DEFAULT_COLUMNS"] = $this->prepareDefaultColumns();
 		$this->arResult["DEPTH"] = $this->prepareDepth();
 		$this->arResult["MESSAGES"] = $this->prepareMessages($this->arParams["MESSAGES"]);
+		$this->arResult["LAZY_LOAD"] = $this->arParams["LAZY_LOAD"];
 
 		return $this;
 	}

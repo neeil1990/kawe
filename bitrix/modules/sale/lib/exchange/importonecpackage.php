@@ -118,7 +118,18 @@ class ImportOneCPackage extends ImportOneCBase
 		return ($documentImport !== null);
 	}
 
-    /**
+
+	/**
+	 * @param OneC\OrderDocument $document
+	 * @return null|string
+	 */
+	protected function getDefaultTrackingNumber(OneC\OrderDocument $document)
+	{
+		$fields = $document->getFieldValues();
+		return isset($fields['REK_VALUES']['1C_TRACKING_NUMBER'])?$fields['REK_VALUES']['1C_TRACKING_NUMBER']:null;
+	}
+
+	/**
 	 * @param OneC\OrderDocument $document
 	 * @return null|int
 	 */
@@ -153,6 +164,15 @@ class ImportOneCPackage extends ImportOneCBase
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param array $fields
+	 * @return array
+	 */
+	protected function getProductsItems(array $fields)
+	{
+		return (isset($fields['ITEMS']) && is_array($fields['ITEMS'])) ? $fields['ITEMS']:array();
 	}
 
     /**

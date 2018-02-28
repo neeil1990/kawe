@@ -345,7 +345,7 @@ if (!empty($arParams['LABEL_PROP_POSITION']))
 																					data-onevalue="<?=$value['ID']?>">
 																					<div class="product-item-scu-item-color-block">
 																						<div class="product-item-scu-item-color" title="<?=$value['NAME']?>"
-																							style="background-image: url(<?=$value['PICT']['SRC']?>);">
+																							style="background-image: url('<?=$value['PICT']['SRC']?>');">
 																						</div>
 																					</div>
 																				</li>
@@ -1347,7 +1347,7 @@ if (!empty($arParams['LABEL_PROP_POSITION']))
 											?>
 											<div class="product-item-selected-scu product-item-selected-scu-color selected"
 												title="<?=$value['NAME']?>"
-												style="background-image: url(<?=$value['PICT']['SRC']?>); display: none;"
+												style="background-image: url('<?=$value['PICT']['SRC']?>'); display: none;"
 												data-sku-line="<?=$i?>"
 												data-treevalue="<?=$propertyId?>_<?=$value['ID']?>"
 												data-onevalue="<?=$value['ID']?>">

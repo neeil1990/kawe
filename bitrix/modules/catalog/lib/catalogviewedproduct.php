@@ -5,7 +5,8 @@ use Bitrix\Main,
 	Bitrix\Main\Application,
 	Bitrix\Main\Config\Option,
 	Bitrix\Main\Localization\Loc,
-	Bitrix\Iblock;
+	Bitrix\Iblock,
+	Bitrix\Catalog;
 
 Loc::loadMessages(__FILE__);
 
@@ -122,16 +123,17 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 	 */
 	public static function refresh($productId, $fuserId, $siteId = SITE_ID, $elementId = 0, $recommendationId = '')
 	{
+		$rowId = -1;
 		$productId = (int)$productId;
 		$fuserId = (int)$fuserId;
 		$siteId = (string)$siteId;
 		$elementId = (int)$elementId;
 		$recommendationId = (string)$recommendationId;
 		if ($productId <= 0 || $fuserId <= 0 || $siteId == '')
-			return -1;
+			return $rowId;
 
-		if (Main\Loader::includeModule('statistic') && isset($_SESSION['SESS_SEARCHER_ID']) && (int)$_SESSION['SESS_SEARCHER_ID'] > 0)
-			return -1;
+		if (!Catalog\Product\Basket::isNotCrawler())
+			return $rowId;
 
 		$filter = array('=FUSER_ID' => $fuserId, '=SITE_ID' => $siteId);
 
@@ -216,7 +218,6 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 				$update["RECOMMENDATION"] = $recommendationId;
 
 			$result = static::update($row['ID'], $update);
-			return ($result->isSuccess(true) ? $row['ID'] : -1);
 		}
 		else
 		{
@@ -229,8 +230,15 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 				"VIEW_COUNT" => 1,
 				"RECOMMENDATION" => $recommendationId
 			));
-			return ($result->isSuccess(true) ? $result->getId() : -1);
 		}
+
+		if ($result->isSuccess(true))
+		{
+			$rowId = $result->getId();
+			self::truncateUserViewedProducts($fuserId, $siteId);
+		}
+
+		return $rowId;
 	}
 
 	/**
@@ -421,7 +429,10 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 		$helper = $connection->getSqlHelper();
 		$liveTo = $helper->addSecondsToDateTime($liveTime * 86400, $helper->quote('DATE_VISIT'));
 
-		$connection->query('delete from '.$helper->quote(self::getTableName()).' where '.$liveTo.' < '.$helper->getCurrentDateTimeFunction());
+		$connection->query(
+			'delete from '.$helper->quote(self::getTableName()).
+			' where '.$liveTo.' < '.$helper->getCurrentDateTimeFunction()
+		);
 		unset($liveTo, $helper, $connection);
 	}
 
@@ -434,5 +445,41 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 	{
 		self::clear((int)Option::get('catalog', 'viewed_time'));
 		return '\Bitrix\Catalog\CatalogViewedProductTable::clearAgent();';
+	}
+
+	private static function truncateUserViewedProducts($fuserId, $siteId)
+	{
+		$fuserId = (int)$fuserId;
+		$siteId = (string)$siteId;
+
+		if ($fuserId <= 0 || $siteId == '')
+			return;
+
+		$maxCount = (int)Main\Config\Option::get('catalog', 'viewed_count');
+		if ($maxCount <= 0)
+			return;
+
+		$iterator = self::getList(array(
+			'select' => array('DATE_VISIT', 'FUSER_ID', 'SITE_ID'),
+			'filter' => array('=FUSER_ID' => $fuserId, '=SITE_ID' => $siteId),
+			'order' => array('FUSER_ID' => 'ASC', 'SITE_ID' => 'ASC', 'DATE_VISIT' => 'DESC'),
+			'limit' => 1,
+			'offset' => $maxCount
+		));
+		$row = $iterator->fetch();
+		unset($iterator);
+		if (!empty($row) && $row['DATE_VISIT'] instanceof Main\Type\DateTime)
+		{
+			$connection = Application::getConnection();
+			$helper = $connection->getSqlHelper();
+
+			$query = 'delete from '.$helper->quote(self::getTableName()).
+				' where '.$helper->quote('FUSER_ID').' = '.$fuserId.
+				' and '.$helper->quote('SITE_ID').' = \''.$helper->forSql($siteId).'\''.
+				' and '.$helper->quote('DATE_VISIT').' <= '.$helper->convertToDbDateTime($row['DATE_VISIT']);
+			$connection->query($query);
+			unset($query, $helper, $connection);
+		}
+		unset($row);
 	}
 }

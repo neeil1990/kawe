@@ -60,7 +60,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 
 		if (strlen($params["PATH_TO_PAYMENT"]) <= 0)
 		{
-			$params["PATH_TO_PAYMENT"] = "/personal/order/payment";
+			$params["PATH_TO_PAYMENT"] = "/personal/order/payment/";
 		}
 		else
 		{
@@ -486,7 +486,10 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 
 				if ($paySystemObject->getField('NEW_WINDOW') === 'Y')
 				{
-					$this->arResult["PAYMENT_LINK"] = $this->arParams['PATH_TO_PAYMENT'] . "/?ORDER_ID=" . $this->order->getField("ACCOUNT_NUMBER") . "&PAYMENT_ID=" . $payment->getId();
+					if (substr($this->arParams['PATH_TO_PAYMENT'], -1) !== '/')
+						$this->arParams['PATH_TO_PAYMENT'] .= '/';
+
+					$this->arResult["PAYMENT_LINK"] = $this->arParams['PATH_TO_PAYMENT'] . "?ORDER_ID=" . $this->order->getField("ACCOUNT_NUMBER") . "&PAYMENT_ID=" . $payment->getField('ACCOUNT_NUMBER');
 				}
 				else
 				{

@@ -11,4 +11,6 @@ $MESS["IBLOCK_VAT_INCLUDE"] = "Include tax in price";
 $MESS["IBLOCK_BASKET_URL"] = "Shopping cart URL";
 $MESS["CP_BCT_CACHE_GROUPS"] = "Respect access permission";
 $MESS["CP_BCT_OFFERS_CART_PROPERTIES"] = "SKU's properties in shopping cart";
+$MESS["CP_CSC_PARAM_TITLE_BUNDLE_ITEMS_COUNT"] = "Number of bundle items ready to be added to shopping cart";
+$MESS["BUNDLE_ITEMS_COUNT_TIP"] = "Not including product owning the bundle. Minimum value is 1.";
 ?>

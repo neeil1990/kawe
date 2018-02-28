@@ -129,17 +129,22 @@ class Yandex extends Engine\YandexBase implements IEngine
 		$serviceUrl = $this->getServiceUrl($this->userId, NULL, self::API_HOSTS_URL);
 		$queryResult = $this->query($serviceUrl, 'GET');
 		
-		if ($queryResult->getStatus() == self::HTTP_STATUS_OK && strlen($queryResult->getResult()) > 0)
+		if ($queryResult && $queryResult->getStatus() == self::HTTP_STATUS_OK && strlen($queryResult->getResult()) > 0)
 		{
 			$resultConverted = array();
 			$result = Json::decode($queryResult->getResult());
 			foreach ($result['hosts'] as $host)
 			{
+//				if set main mirror - we must use them
+				if(array_key_exists("main_mirror", $host) && is_array($host["main_mirror"]) && !empty($host["main_mirror"]))
+					$host = array_merge($host, $host["main_mirror"]);
+					
 //				ascii_host_url must be equal unicode_host_url for latin URLs.
 //				if it cyrillic URL - we need ASCII host.
 				$hostUrl = str_replace(array('http://', 'https://'), '', $host['ascii_host_url']);
 				$hostUrl = rtrim($hostUrl, '/');
 				$resultConverted[$hostUrl] = $host;
+				
 //				convert verified status in correct format
 				if ($host['verified'])
 					$resultConverted[$hostUrl]['verification'] = self::VERIFIED_STATE_VERIFIED;

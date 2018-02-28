@@ -1336,6 +1336,7 @@ abstract class Element extends Base
 				$item['OFFERS'][$keyOffer]['OFFER_GROUP'] = true;
 			}
 
+			$ratioSelectedIndex = $offer['ITEM_MEASURE_RATIO_SELECTED'];
 			$firstPhoto = reset($offer['MORE_PHOTO']);
 			$arOneRow = array(
 				'ID' => $offer['ID'],
@@ -1349,13 +1350,13 @@ abstract class Element extends Base
 				'ITEM_QUANTITY_RANGES' => $offer['ITEM_QUANTITY_RANGES'],
 				'ITEM_QUANTITY_RANGE_SELECTED' => $offer['ITEM_QUANTITY_RANGE_SELECTED'],
 				'ITEM_MEASURE_RATIOS' => $offer['ITEM_MEASURE_RATIOS'],
-				'ITEM_MEASURE_RATIO_SELECTED' => $offer['ITEM_MEASURE_RATIO_SELECTED'],
+				'ITEM_MEASURE_RATIO_SELECTED' => $ratioSelectedIndex,
 				'PREVIEW_PICTURE' => $firstPhoto,
 				'DETAIL_PICTURE' => $firstPhoto,
 				'CHECK_QUANTITY' => $offer['CHECK_QUANTITY'],
-				'MAX_QUANTITY' => $offer['CATALOG_QUANTITY'],
-				'STEP_QUANTITY' => $offer['ITEM_MEASURE_RATIOS'][$offer['ITEM_MEASURE_RATIO_SELECTED']]['RATIO'],
-				'QUANTITY_FLOAT' => is_float($offer['ITEM_MEASURE_RATIOS'][$offer['ITEM_MEASURE_RATIO_SELECTED']]['RATIO']),
+				'MAX_QUANTITY' => $offer['PRODUCT']['QUANTITY'],
+				'STEP_QUANTITY' => $offer['ITEM_MEASURE_RATIOS'][$ratioSelectedIndex]['RATIO'], // deprecated
+				'QUANTITY_FLOAT' => is_float($offer['ITEM_MEASURE_RATIOS'][$ratioSelectedIndex]['RATIO']), // deprecated
 				'MEASURE' => $offer['ITEM_MEASURE']['TITLE'],
 				'OFFER_GROUP' => (isset($offerSet[$offer['ID']]) && $offerSet[$offer['ID']]),
 				'CAN_BUY' => $offer['CAN_BUY'],
@@ -1363,6 +1364,7 @@ abstract class Element extends Base
 				'SLIDER' => $offer['MORE_PHOTO'],
 				'SLIDER_COUNT' => $offer['MORE_PHOTO_COUNT'],
 			);
+			unset($ratioSelectedIndex);
 
 			$matrix[$keyOffer] = $arOneRow;
 		}

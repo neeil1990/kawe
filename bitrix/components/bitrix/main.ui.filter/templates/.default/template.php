@@ -22,7 +22,7 @@
 	$arParams["CONFIG"] = $component->prepareConfig();
 	$this->addExternalCss($this->GetFolder()."/system-styles.css");
 
-	CJSCore::Init(array('ui', 'dnd'));
+	CJSCore::Init(array('ui', 'dnd', 'loader'));
 
 	$currentPreset = $arResult["CURRENT_PRESET"];
 	$isCurrentPreset = (

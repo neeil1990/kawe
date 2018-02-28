@@ -558,10 +558,8 @@
 
 				this.insertBlocks(items, true);
 			}
-			else
-			{
-				this.update(true, true);
-			}
+
+			BX.onCustomEvent(this, "onCacheInvokeAfter", [this.vars.storageBlocks, resultSet]);
 		}
 	};
 

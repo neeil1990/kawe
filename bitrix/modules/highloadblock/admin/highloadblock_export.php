@@ -123,6 +123,10 @@ if ($request->get('start') == 'Y' && $server->getRequestMethod() == 'POST')
 	{
 		$error = Loc::getMessage('XML_FILENAME_IS_NOT_XML');
 	}
+	if (!preg_match('/^[a-zA-Z0-9_\/.]+$/', $NS['url_data_file'], $n))
+	{
+		$error = Loc::getMessage('XML_FILENAME_IS_NOT_CORRECT');
+	}
 
 	// first level errors
 	if ($error != '')

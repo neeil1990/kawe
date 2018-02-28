@@ -431,6 +431,10 @@
 					{
 						this.onerror(null);
 					}
+					else if (window["URL"])
+					{
+						image.src = window["URL"]["createObjectURL"](file);
+					}
 					else if (this.getReader() !== null)
 					{
 						this.__readerOnLoad = null;
@@ -443,10 +447,6 @@
 						this.getReader().onloadend = this.__readerOnLoad;
 						this.getReader().onerror = BX.proxy(function(e) { this.onerror(null); }, this);
 						this.getReader().readAsDataURL(file);
-					}
-					else if (window["URL"])
-					{
-						image.src = window["URL"]["createObjectURL"](file);
 					}
 				},
 				push : function(file, callback, failCallback) {

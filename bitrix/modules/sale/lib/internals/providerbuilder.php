@@ -18,6 +18,7 @@ class ProviderBuilder extends ProviderBuilderBase
 	{
 		$fields = array(
 			'ITEM_CODE' => $basketItem->getProductId(),
+			'BASKET_ID' => $basketItem->getId(),
 			'BASKET_CODE' => $basketItem->getBasketCode(),
 			'PRODUCT_ID' => $basketItem->getProductId(),
 			'QUANTITY' => $basketItem->getQuantity(),

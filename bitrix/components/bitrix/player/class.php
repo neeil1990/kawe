@@ -520,6 +520,7 @@ class CBitrixPlayer extends CBitrixComponent
 		else
 			$this->arResult['ID'] = "bx_".$this->playerType."_player_".$this->getComponentId();
 
+		$this->arResult['CSS_FILES'] = $this->arResult['JS_FILES'] = array();
 		if ($this->playerType == 'wmv')
 		{
 			$this->processWmv();
@@ -533,7 +534,6 @@ class CBitrixPlayer extends CBitrixComponent
 			// process video.js
 			// flags for used technologies
 			$this->arResult['WMV'] = $this->arResult['FLASH'] = $this->arResult['STREAM'] = $this->arResult['COMMON_VIDEO'] = $this->arResult['YOUTUBE'] = $this->arResult['AUDIO_FILE'] = false;
-			$this->arResult['CSS_FILES'] = $this->arResult['JS_FILES'] = array();
 			$this->arResult['VIDEOJS_PARAMS'] = array(
 				'autoplay' => false,
 				'preload' => false,
@@ -543,6 +543,9 @@ class CBitrixPlayer extends CBitrixComponent
 				'techOrder' => array('html5', 'flash'),
 				'fluid' => false,
 				'notSupportedMessage' => GetMessage('VIDEOJS_NOT_SUPPORTED_MESSAGE'),
+				'errorMessages' => array(
+					4 => GetMessage('VIDEOJS_ERROR_MESSAGE_4'),
+				),
 			);
 			if ($this->arParams['SIZE_TYPE'] == 'fluid')
 				$this->arResult['VIDEOJS_PARAMS']['fluid'] = true;
@@ -661,6 +664,10 @@ class CBitrixPlayer extends CBitrixComponent
 				$this->arResult['JS_FILES'][] = $this->__path.'/wmvplayer/wmvplayer.js';
 				$this->arResult['JS_FILES'][] = $this->__path.'/videojs/wmv.js';
 				array_unshift($this->arResult['VIDEOJS_PARAMS']['techOrder'], 'wmv');
+			}
+			if($this->arResult['FLASH'])
+			{
+				$this->arResult['VIDEOJS_PARAMS']['hasFlash'] = true;
 			}
 			// flash and vimeo techs doesn't support playbackRate and currentTime properties
 			if ($this->arResult['FLASH'] || $this->arResult['VIMEO'])

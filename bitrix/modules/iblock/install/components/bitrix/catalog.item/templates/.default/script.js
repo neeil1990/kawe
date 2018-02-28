@@ -1770,7 +1770,7 @@
 							this.obPictSlider.appendChild(
 								BX.create('SPAN', {
 									props: {className: 'product-item-image-slide item' + (i == 0 ? ' active' : '')},
-									style: {backgroundImage: 'url(' + this.offers[index].MORE_PHOTO[i].SRC + ')'}
+									style: {backgroundImage: 'url(\'' + this.offers[index].MORE_PHOTO[i].SRC + '\')'}
 								})
 							);
 						}
@@ -1830,11 +1830,11 @@
 					{
 						if (this.offers[index].PREVIEW_PICTURE)
 						{
-							BX.adjust(this.obPict, {style: {backgroundImage: 'url(' + this.offers[index].PREVIEW_PICTURE.SRC + ')'}});
+							BX.adjust(this.obPict, {style: {backgroundImage: 'url(\'' + this.offers[index].PREVIEW_PICTURE.SRC + '\')'}});
 						}
 						else
 						{
-							BX.adjust(this.obPict, {style: {backgroundImage: 'url(' + this.defaultPict.pict.SRC + ')'}});
+							BX.adjust(this.obPict, {style: {backgroundImage: 'url(\'' + this.defaultPict.pict.SRC + '\')'}});
 						}
 
 						this.obPict.style.display = '';
@@ -1844,19 +1844,19 @@
 					{
 						if (this.offers[index].PREVIEW_PICTURE_SECOND)
 						{
-							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(' + this.offers[index].PREVIEW_PICTURE_SECOND.SRC + ')'}});
+							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(\'' + this.offers[index].PREVIEW_PICTURE_SECOND.SRC + '\')'}});
 						}
 						else if (this.offers[index].PREVIEW_PICTURE.SRC)
 						{
-							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(' + this.offers[index].PREVIEW_PICTURE.SRC + ')'}});
+							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(\'' + this.offers[index].PREVIEW_PICTURE.SRC + '\')'}});
 						}
 						else if (this.defaultPict.secondPict)
 						{
-							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(' + this.defaultPict.secondPict.SRC + ')'}});
+							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(\'' + this.defaultPict.secondPict.SRC + '\')'}});
 						}
 						else
 						{
-							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(' + this.defaultPict.pict.SRC + ')'}});
+							BX.adjust(this.obSecondPict, {style: {backgroundImage: 'url(\'' + this.defaultPict.pict.SRC + '\')'}});
 						}
 
 						this.obSecondPict.style.display = '';

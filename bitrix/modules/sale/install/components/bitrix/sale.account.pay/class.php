@@ -651,6 +651,16 @@ class SaleAccountPay extends \CBitrixComponent
 			}
 		}
 
+		$affiliateID = CSaleAffiliate::GetAffiliate();
+
+		if ($affiliateID > 0)
+		{
+			$affiliateBase = CSaleAffiliate::GetList(array(), array("SITE_ID" => Main\Context::getCurrent()->getSite(), "ID" => $affiliateID));
+			$affiliates = $affiliateBase->Fetch();
+			if (count($affiliates) > 1)
+				$order->setField('AFFILIATE_ID', $affiliateID);
+		}
+
 		$resultSaving = $order->save();
 
 		if ($resultSaving->isSuccess())

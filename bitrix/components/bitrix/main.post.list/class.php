@@ -727,6 +727,8 @@ HTML;
 				),
 				($arParams["SHOW_LOGIN"] != "N"),
 				false),
+			"#AUTHOR_PERSONAL_GENDER#" => !empty($res["AUTHOR"]["PERSONAL_GENDER"]) ?
+				$res["AUTHOR"]["PERSONAL_GENDER"] : "",
 			"#AUTHOR_TOOLTIP_PARAMS#" => CUtil::PhpToJSObject($authorTooltipParams),
 			"#SHOW_POST_FORM#" =>
 				$arParams["SHOW_POST_FORM"],

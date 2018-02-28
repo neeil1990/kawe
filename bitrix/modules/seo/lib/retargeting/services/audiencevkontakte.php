@@ -31,7 +31,7 @@ class AudienceVkontakte extends Audience
 		return false;
 	}
 
-	public function add($data)
+	public function add(array $data)
 	{
 		//https://vk.com/dev/ads.createTargetGroup
 

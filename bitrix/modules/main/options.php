@@ -197,7 +197,7 @@ foreach ($countriesReference['reference_id'] as $k => $v)
 $arAllOptions["main"][] = GetMessage("MAIN_OPTIONS_PHONE_NUMBER_FORMAT");
 $arAllOptions["main"][] = array("phone_number_default_country", GetMessage("MAIN_OPTIONS_PHONE_NUMBER_DEFAULT_COUNTRY"), "", array("selectbox", $countriesArray));
 
-if (\Bitrix\Main\Analytics\SiteSpeed::isLicenseAccepted())
+if (\Bitrix\Main\Analytics\SiteSpeed::isRussianSiteManager())
 {
 	$arAllOptions["main"][] = GetMessage("MAIN_CATALOG_STAT_SETTINGS");
 	$arAllOptions["main"][] = array("gather_catalog_stat", GetMessage("MAIN_GATHER_CATALOG_STAT"), "Y", Array("checkbox", "Y"));

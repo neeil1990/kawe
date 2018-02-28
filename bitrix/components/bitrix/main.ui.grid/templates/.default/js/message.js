@@ -103,7 +103,7 @@
 					{
 						messageDecl.content.push({
 							block: 'main-grid-message-title',
-							content: message.TITLE
+							content: BX.create("div", {html: message.TITLE}).innerText
 						});
 					}
 
@@ -111,7 +111,7 @@
 					{
 						messageDecl.content.push({
 							block: 'main-grid-message-text',
-							content: message.TEXT
+							content: BX.create("div", {html: message.TEXT}).innerText
 						});
 					}
 

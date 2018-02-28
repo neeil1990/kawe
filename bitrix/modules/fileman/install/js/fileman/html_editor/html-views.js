@@ -422,9 +422,29 @@ BXEditorIframeView.prototype.Focus = function(setToEnd)
 		this.Clear();
 	}
 
-	if (!document.querySelector || this.element.ownerDocument.querySelector(":focus") !== this.element || !this.IsFocused())
+	if (!document.querySelector
+		|| this.element.ownerDocument.querySelector(":focus") !== this.element
+		|| !this.IsFocused())
 	{
-		BX.focus(this.element);
+		if (BX.browser.IsIOS())
+		{
+			var _this = this;
+			if (this.focusTimeout)
+				clearTimeout(this.focusTimeout);
+
+			this.focusTimeout = setTimeout(function()
+			{
+				var
+					orScrollTop = document.documentElement.scrollTop || document.body.scrollTop,
+					orScrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+					BX.focus(_this.element);
+					window.scrollTo(orScrollLeft, orScrollTop);
+			}, 200);
+		}
+		else
+		{
+			BX.focus(this.element);
+		}
 	}
 
 	if (setToEnd && this.element.lastChild)
@@ -770,6 +790,14 @@ var focusWithoutScrolling = function(element)
 			{
 				_this.editor.parser.FirstLetterCheckNodes('', '', true);
 			}
+
+			//mantis:91555, mantis:93629
+			if (BX.browser.IsChrome())
+			{
+				if (_this.stopBugusScrollTimeout)
+					clearTimeout(_this.stopBugusScrollTimeout);
+				_this.stopBugusScrollTimeout = setTimeout(function(){_this.stopBugusScroll = false;}, 200);
+			}
 		});
 
 		BX.bind(element, "mousedown", function(e)
@@ -793,15 +821,14 @@ var focusWithoutScrolling = function(element)
 
 		BX.bind(element, "keydown", BX.proxy(this.KeyDown, this));
 
-		// Workaround for chrome bug with bugus scrollint to the top of the page (mantis:91555)
+		// Workaround for chrome bug with bugus scrollint to the top of the page (mantis:91555, mantis:93629)
 		if (BX.browser.IsChrome())
 		{
 			BX.bind(window, "scroll", BX.proxy(function(e)
 			{
 				if (_this.stopBugusScroll)
 				{
-					_this.stopBugusScroll = false;
-					if (!_this.savedScroll.scrollTop && _this.lastSavedScroll)
+					if ((!_this.savedScroll || !_this.savedScroll.scrollTop) && _this.lastSavedScroll)
 						_this.savedScroll = _this.lastSavedScroll;
 
 					if (_this.savedScroll && !_this.lastSavedScroll)
@@ -843,7 +870,7 @@ var focusWithoutScrolling = function(element)
 		this.SetFocusedFlag(true);
 		this.editor.iframeKeyDownPreventDefault = false;
 
-		// Workaround for chrome bug with bugus scrollint to the top of the page (mantis:91555)
+		// Workaround for chrome bug with bugus scrollint to the top of the page (mantis:91555, mantis:93629)
 		if (BX.browser.IsChrome())
 		{
 			this.stopBugusScroll = true;

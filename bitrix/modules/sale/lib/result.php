@@ -62,10 +62,22 @@ class Result extends Entity\Result
 		return null;
 	}
 
+	public function set($offset, $value)
+	{
+		if ($offset === null)
+		{
+			$this->data[] = $value;
+		}
+		else
+		{
+			$this->data[$offset] = $value;
+		}
+	}
+
 	/**
 	 * @param Error[] $errors
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function addWarnings(array $errors)
 	{
@@ -86,11 +98,12 @@ class Result extends Entity\Result
 		$this->warnings[] = $error;
 	}
 
-
 	/**
 	 * Adds the error.
 	 *
 	 * @param Error $error
+	 *
+	 * @return void
 	 */
 	public function addError(Error $error)
 	{

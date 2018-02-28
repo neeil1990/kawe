@@ -904,7 +904,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле49></a><?echo number_format($item_price, 2, ',', ' ');?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле49></a><?=SaleFormatCurrency($item_price, $arOrder["CURRENCY"], false, true);?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -912,7 +912,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><?echo number_format($item_price*$arQuantities[$mi], 2, ',', ' ');  $total_price += ($item_price)*$arQuantities[$mi];?></p>
+text-align:center;line-height:normal'><?=SaleFormatCurrency($item_price*$arQuantities[$mi], $arOrder["CURRENCY"], false, true); $total_price += ($item_price)*$arQuantities[$mi];?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -928,7 +928,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><?echo number_format($nds_val*$arQuantities[$mi], 2, ',', ' '); $total_nds += $nds_val*$arQuantities[$mi];?></p>
+text-align:center;line-height:normal'><?=SaleFormatCurrency($nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false, true); $total_nds += $nds_val*$arQuantities[$mi];?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -938,7 +938,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><?echo number_format($arQuantities[$mi]*($item_price)+$nds_val*$arQuantities[$mi], 2, ',', ' '); $total_sum += ($item_price)*$arQuantities[$mi]+$nds_val*$arQuantities[$mi]?></p>
+text-align:center;line-height:normal'><?=SaleFormatCurrency($arQuantities[$mi]*($item_price)+$nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false, true); $total_sum += ($item_price)*$arQuantities[$mi]+$nds_val*$arQuantities[$mi]?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -962,26 +962,10 @@ if ($arOrder["DELIVERY_ID"])
 	}
 	else
 	{
-		$basket_tax = CSaleOrderTax::CountTaxes(DoubleVal($arOrder["PRICE_DELIVERY"]), $arTaxList, $arOrder["CURRENCY"]);
 		//определяем начальную цену
-		$item_price = DoubleVal($arOrder["PRICE_DELIVERY"]);
-		for ($i = 0, $max = count($arTaxList); $i < $max; $i++)
-		{
-			if ($arTaxList[$i]["IS_IN_PRICE"] == "Y")
-				$item_price -= $arTaxList[$i]["TAX_VAL"];
-
-			$nds_val += $arTaxList[$i]["TAX_VAL"];
-			$nds_pr += $arTaxList[$i]["VALUE"];
-		//
-		//$nds_val = 0.00;
-		//$nds_pr = 0;
-
-		//if($iNds > -1)
-		//{
-		//	$nds_val = $arTaxList[$iNds]["TAX_VAL"];
-		//	$nds_pr = $arTaxList[$iNds]["VALUE"];
-		//}
-		}
+		$nds_val = $arOrder['DELIVERY_VAT_SUM'];
+		$nds_pr = $arOrder['DELIVERY_VAT_RATE'] * 100;
+		$item_price = DoubleVal($arOrder["PRICE_DELIVERY"]) - $arOrder['DELIVERY_VAT_SUM'];
 	}
 	?>
 <tr style='height:9.0pt'>
@@ -1048,7 +1032,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле50></a><?echo number_format($item_price, 2, ',', ' ');?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле50></a><?=SaleFormatCurrency($item_price, $arOrder["CURRENCY"], false, true);?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1056,7 +1040,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле52></a><?echo number_format($item_price, 2, ',', ' ');  $total_price += $item_price;?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле52></a><?=SaleFormatCurrency($item_price, $arOrder["CURRENCY"], false, true); $total_price += $item_price;?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1072,7 +1056,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле57></a><?echo number_format($nds_val, 2, ',', ' '); $total_nds += $nds_val;?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле57></a><?=SaleFormatCurrency($nds_val, $arOrder["CURRENCY"], false, true); $total_nds += $nds_val;?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1081,7 +1065,7 @@ text-align:center;line-height:normal'>&nbsp;</p>
 border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 padding:0cm 2.0pt 0cm 2.0pt;height:9.0pt'>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
-text-align:center;line-height:normal'><a name=ТекстовоеПоле62></a><?echo number_format($nds_val+$item_price, 2, ',', ' '); $total_sum += $nds_val+$item_price?></p>
+text-align:center;line-height:normal'><a name=ТекстовоеПоле62></a><?=SaleFormatCurrency($nds_val+$item_price, $arOrder["CURRENCY"], false, true); $total_sum += $nds_val+$item_price;?></p>
 <p class=Normal align=center style='margin:0cm;margin-bottom:.0001pt;
 text-align:center;line-height:normal'>&nbsp;</p>
 </td>
@@ -1224,7 +1208,7 @@ line-height:133%'>X</p>
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:133%'><?echo number_format($total_price, 2, ',', ' ')?></p>
+line-height:133%'><?=SaleFormatCurrency($total_price, $arOrder["CURRENCY"], false, true);?></p>
 </td>
 <td valign=top style='width:38.0pt;border:solid windowtext 1.0pt;
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
@@ -1236,7 +1220,7 @@ line-height:133%'></p>
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:133%'><?echo number_format($total_nds, 2, ',', ' ')?></p>
+line-height:133%'><?=SaleFormatCurrency($total_nds, $arOrder["CURRENCY"], false, true);?></p>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
 line-height:133%'>&nbsp;</p>
@@ -1245,7 +1229,7 @@ line-height:133%'>&nbsp;</p>
 border-left:none;padding:0cm 2.0pt 0cm 2.0pt;height:11.0pt'>
 <p class=Normal align=center style='margin-top:1.0pt;margin-right:0cm;
 margin-bottom:0cm;margin-left:0cm;margin-bottom:.0001pt;text-align:center;
-line-height:133%'><?echo number_format($total_sum, 2, ',', ' ')?></p>
+line-height:133%'><?=SaleFormatCurrency($total_sum, $arOrder["CURRENCY"], false, true);?></p>
 </td>
 </tr>
 <?

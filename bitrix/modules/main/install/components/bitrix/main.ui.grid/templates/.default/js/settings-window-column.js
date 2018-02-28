@@ -20,6 +20,7 @@
 		this.default = null;
 		this.defaultTitle = null;
 		this.state = null;
+		this.lastTitle = null;
 		this.init(parent, node);
 	};
 
@@ -29,6 +30,10 @@
 		{
 			this.parent = parent;
 			this.node = node;
+
+			try {
+				this.lastTitle = node.querySelector("label").innerText.trim();
+			} catch (err) {}
 
 			this.updateState();
 
@@ -181,7 +186,7 @@
 			if (this.defaultTitle === null)
 			{
 				var settings = this.getSettings();
-				this.defaultTitle = 'name' in settings ? settings.name : '';
+				this.defaultTitle = 'name' in settings ? settings.name : this.lastTitle;
 			}
 
 			return this.defaultTitle;

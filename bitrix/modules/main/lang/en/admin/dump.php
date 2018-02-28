@@ -200,4 +200,5 @@ By default, the backup copy is saved to Bitrix Cloud in encrypted form in multip
 
 If Bitrix Cloud services are inaccessible but the agents are scheduled using cron, the backup copy will be created locally.";
 $MESS["DUMP_TABLE_BROKEN"] = "The table #TABLE# has been destroyed due to internal MySQL error. Use <a href=\"/bitrix/admin/site_checker.php?tabControl_active_tab=edit1\" target=_blank>Site Checker</a> to fully recover the table, or just restore table structure.";
+$MESS["DUMP_ERR_AUTO"] = "Error creating backup copy. <a href=\"#LINK#\">View details</a>";
 ?>

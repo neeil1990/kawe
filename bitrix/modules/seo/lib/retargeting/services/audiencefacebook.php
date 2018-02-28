@@ -26,7 +26,7 @@ class AudienceFacebook extends Audience
 		),
 	);
 
-	public function add($data)
+	public function add(array $data)
 	{
 		// https://developers.facebook.com/docs/marketing-api/reference/custom-audience/#Creating
 

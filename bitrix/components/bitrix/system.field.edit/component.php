@@ -82,7 +82,10 @@ if($arUserField["USER_TYPE"])
 				}
 				break;
 			default:
-				$res = htmlspecialcharsbx($res);
+				if(is_string($res))
+				{
+					$res = htmlspecialcharsbx($res);
+				}
 				break;
 		}
 		$arResult["VALUE"][$key] = $res;
@@ -148,6 +151,11 @@ if($arUserField["USER_TYPE"])
 	else
 	{
 		$arParams['skip_manager'] = true;
+
+		if($arUserField['MULTIPLE'] === 'Y')
+		{
+			$arUserField['FIELD_NAME'] = $arUserField['~FIELD_NAME'];
+		}
 
 		global $USER_FIELD_MANAGER;
 		echo $USER_FIELD_MANAGER->GetPublicEdit($arUserField, $arParams);

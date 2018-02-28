@@ -52,4 +52,9 @@ $MESS["SALE_ORDER_SHIPMENT_TRACKING_DESCRIPTION"] = "Statusbeschreibung";
 $MESS["SALE_ORDER_SHIPMENT_TRACKING_S_EMPTY"] = "Auslieferungs-ID muss angegeben werden.";
 $MESS["SALE_ORDER_SHIPMENT_BLOCK_DELIVERY_ADDITIONAL"] = "Informationen vom Lieferservice";
 $MESS["SALE_ORDER_SHIPMENT_TRACKING_URL"] = "Tracking-Details";
+$MESS["SALE_ORDER_SHIPMENT_HIDDEN"] = "[Ausgeblendet]";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ_INFO"] = "Informationen zur Transportbestellung";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ"] = "Transportbestellung";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ_NAME"] = "Transportbestellung \"#REQUEST_ID#\" vom \"#REQUEST_DATE#\"";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ_ERROR"] = "Fehler beim Hinzufügen der Auslieferung zur Transportbestellung";
 ?>

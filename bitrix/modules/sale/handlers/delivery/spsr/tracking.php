@@ -121,7 +121,7 @@ class SpsrTracking extends \Bitrix\Sale\Delivery\Tracking\Base
 
 		foreach($shipmentsData as $shipmentFields)
 		{
-			$shipment = $this->getShipment($shipmentFields['ORDER_ID'], $shipmentFields['ID']);
+			$shipment = $this->getShipment($shipmentFields['ORDER_ID'], $shipmentFields['SHIPMENT_ID']);
 
 			/** @var \Bitrix\Sale\Result $res */
 			$res = $parentService->getSidResult($shipment);

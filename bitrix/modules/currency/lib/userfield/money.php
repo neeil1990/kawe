@@ -3,9 +3,9 @@ namespace Bitrix\Currency\UserField;
 
 use Bitrix\Currency\CurrencyManager;
 use Bitrix\Currency\CurrencyTable;
+use Bitrix\Currency\Helpers\Editor;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Security\Random;
-use Bitrix\Main\Text\HtmlFilter;
 use Bitrix\Main\UserField\TypeBase;
 
 Loc::loadLanguageFile(__FILE__);
@@ -14,8 +14,6 @@ class Money extends TypeBase
 {
 	const USER_TYPE_ID = 'money';
 	const DB_SEPARATOR = '|';
-
-	protected static $listCurrencyCache = null;
 
 	function getUserTypeDescription()
 	{
@@ -65,7 +63,7 @@ class Money extends TypeBase
 
 	function GetSettingsHTML($arUserField = false, $arHtmlControl, $bVarsFromForm)
 	{
-		$currencyList = static::getListCurrency();
+		$currencyList = Editor::getListCurrency();
 
 		$result = '';
 		if($bVarsFromForm)
@@ -139,17 +137,9 @@ class Money extends TypeBase
 				}
 			}
 
-			$format = \CCurrencyLang::getCurrencyFormat($currentCurrency);
-
-			$separators = \CCurrencyLang::getSeparators();
-			$thousandsSep = $separators[$format['THOUSANDS_VARIANT']];
-			$currentValue = number_format($currentValue, $format['DECIMALS'], $format['DEC_POINT'], $thousandsSep);
-			if($format['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE)
-			{
-				$currentValue = str_replace(' ', '&nbsp;', $currentValue);
-			}
-
-			return preg_replace('/(^|[^&])#/', '${1}'.$currentValue, $format['FORMAT_STRING']);
+			$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
+			$currentValue = number_format($currentValue, $format['DECIMALS'], $format['DEC_POINT'], $format['THOUSANDS_SEP']);
+			return \CCurrencyLang::applyTemplate($currentValue, $format['FORMAT_STRING']);
 		}
 
 		return '';
@@ -203,11 +193,10 @@ class Money extends TypeBase
 			$currentValue = strlen($explode[0]) > 0 ? doubleval($explode[0]) : '';
 			$currentCurrency = $explode[1] ? $explode[1] : '';
 
-			$format = \CCurrencyLang::getCurrencyFormat($currentCurrency);
+			$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
 
-			$currentValue = static::formatNumber($currentValue, $currentCurrency, $format);
-
-			$currentValue = preg_replace('/(^|[^&])#/', '${1}'.$currentValue, $format['FORMAT_STRING']);
+			$currentValue = number_format((float)$currentValue, $format['DECIMALS'], $format['DEC_POINT'], $format['THOUSANDS_SEP']);
+			$currentValue = \CCurrencyLang::applyTemplate($currentValue, $format['FORMAT_STRING']);
 
 			if(strlen($arUserField['PROPERTY_VALUE_LINK']) > 0)
 			{
@@ -224,20 +213,31 @@ class Money extends TypeBase
 		return static::getHelper()->wrapDisplayResult($html);
 	}
 
-	protected static function formatNumber($currentValue, $currentCurrency, $format)
+	public static function getPublicText($userField)
 	{
-		if($currentValue !== '')
+		$value = static::normalizeFieldValue($userField['VALUE']);
+
+		$text = '';
+		$first = true;
+		foreach ($value as $res)
 		{
-			$separators = \CCurrencyLang::getSeparators();
-			$thousandsSep = $separators[$format['THOUSANDS_VARIANT']];
-			$currentValue = number_format(doubleval($currentValue), $format['DECIMALS'], $format['DEC_POINT'], $thousandsSep);
-			if($format['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE)
-			{
-				$currentValue = str_replace(' ', '&nbsp;', $currentValue);
-			}
+			if(!$first)
+				$text .= ', ';
+			$first = false;
+
+			$explode = static::unformatFromDB($res);
+			$currentValue = strlen($explode[0]) > 0 ? doubleval($explode[0]) : '';
+			$currentCurrency = $explode[1] ? $explode[1] : '';
+
+			$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
+
+			$currentValue = number_format((float)$currentValue, $format['DECIMALS'], $format['DEC_POINT'], $format['THOUSANDS_SEP']);
+			$currentValue = \CCurrencyLang::applyTemplate($currentValue, $format['FORMAT_STRING']);
+
+			$text .= $currentValue;
 		}
 
-		return $currentValue;
+		return $text;
 	}
 
 	protected static function formatToDB($value, $currency)
@@ -259,38 +259,14 @@ class Money extends TypeBase
 		return explode(static::DB_SEPARATOR, $value);
 	}
 
+	/**
+	 * @deprecated deprecated since currency 17.5.2
+	 *
+	 * @return null|array
+	 */
 	public static function getListCurrency()
 	{
-		if(static::$listCurrencyCache === null)
-		{
-			static::$listCurrencyCache = array();
-
-			$queryObject = CurrencyTable::getList(array(
-				'select' => array(
-					'CURRENCY',
-					'BASE',
-					'NAME' => 'CURRENT_LANG_FORMAT.FULL_NAME',
-					'FORMAT' => 'CURRENT_LANG_FORMAT.FORMAT_STRING',
-					'DEC_POINT' => 'CURRENT_LANG_FORMAT.DEC_POINT',
-					'THOUSANDS_VARIANT' => 'CURRENT_LANG_FORMAT.THOUSANDS_VARIANT',
-					'DECIMALS' => 'CURRENT_LANG_FORMAT.DECIMALS',
-				),
-				'filter' => array(),
-				'order' => array('SORT' => 'ASC', 'CURRENCY' => 'ASC')
-			));
-			$separators = \CCurrencyLang::getSeparators();
-			while($currency = $queryObject->fetch())
-			{
-				$currency['SEPARATOR'] = $separators[$currency['THOUSANDS_VARIANT']];
-				$currency['SEPARATOR_STRING'] = $currency['DEC_POINT'];
-				$currency['SEPARATOR_STRING'] .= ($currency['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_SPACE
-					|| $currency['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE) ?
-					Loc::getMessage('CIMP_SEPARATOR_SPACE') : $currency['SEPARATOR'];
-				static::$listCurrencyCache[$currency['CURRENCY']] = $currency;
-			}
-		}
-
-		return static::$listCurrencyCache;
+		return Editor::getListCurrency();
 	}
 
 	protected static function getInput($arUserField, $fieldName, $dbValue)

@@ -161,6 +161,7 @@ $MESS["IBLOCK_XML2_STORE_ID"] = "ИдСклада";
 $MESS["IBLOCK_XML2_STORE_DESCRIPTION"] = "Комментарий";
 $MESS["IBLOCK_XML2_STORE_CANTACTS"] = "Контакты";
 $MESS["IBLOCK_XML2_STORE_CONTACTS"] = "Контакты";
+$MESS["IBLOCK_XML2_MULTI_STORE_IMPORT_ERROR"] = "Количество импортированных складов превышает разрешённое для данной редакции.";
 $MESS["IBLOCK_XML2_SECTION_PROPERTIES"] = "СвойстваЭлементов";
 $MESS["IBLOCK_XML2_SMART_FILTER"] = "УмныйФильтр";
 $MESS["IBLOCK_XML2_SMART_FILTER_DISPLAY_TYPE"] = "ТипОтображения";

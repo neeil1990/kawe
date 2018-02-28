@@ -2507,7 +2507,7 @@ if (!empty($orderList) && is_array($orderList))
 
 			while($shipment = $res->fetch())
 			{
-				$shipment["ID_LINKED"] = '[<a href="/bitrix/admin/sale_order_shipment_edit.php?order_id='.$arOrder['ID'].'&shipment_id='.$shipment["ID"].'&lang='.LANGUAGE_ID.'">'.$shipment["ID"].'</a>]';
+				$shipment["ID_LINKED"] = '[<a href="/bitrix/admin/sale_order_shipment_edit.php?order_id='.$arOrder['ID'].'&shipment_id='.$shipment["ID"].'&lang='.LANGUAGE_ID.'"  title="'.Loc::getMessage('SALE_O_SHIPMENT_ID_TITLE', array('#SHIPMENT_ID#' => $shipment["ID"])).'">'.$shipment["ID"].'</a>]';
 				$shipments[] = $shipment;
 			}
 
@@ -2664,11 +2664,10 @@ if (!empty($orderList) && is_array($orderList))
 				foreach($shipments as $shipment)
 				{
 					$tmp = '<span id="DEDUCTED_'.$shipment["ID"].'">'.(($shipment["DEDUCTED"] == "Y") ? Loc::getMessage("SO_YES") : Loc::getMessage("SO_NO"))."</span>";
+					$fieldValue .= $shipment["ID_LINKED"]." ".$tmp;
 
 					if(count($shipments) > 1)
-						$fieldValue .= $shipment["ID_LINKED"]." ".$tmp."<hr>";
-					else
-						$fieldValue .= $tmp;
+						$fieldValue .= "<hr>";
 
 					$fieldValueTmp = $shipment["DATE_DEDUCTED"];
 					if(strlen($shipment["DATE_DEDUCTED"]) > 0)

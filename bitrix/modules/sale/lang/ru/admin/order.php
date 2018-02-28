@@ -227,4 +227,5 @@ $MESS["SALE_O_CONTEXT_B_DELIVERY_REQUESTS_SL"] = "Добавлена возмо�
 $MESS["SALE_O_CONTEXT_B_DELIVERY_REQUESTS_SELECTED"] = "Отправить выделенные";
 $MESS["SALE_O_CONTEXT_B_DELIVERY_REQUESTS_ALL"] = "Отправить все показанные на странице";
 $MESS["SALE_O_CONTEXT_B_DELIVERY_REQUESTS_SELECTION_NEEDED"] = "Необходимо выделить хотя бы один заказ";
+$MESS["SALE_O_SHIPMENT_ID_TITLE"] = "Отгрузка № &quot;#SHIPMENT_ID#&quot;";
 ?>

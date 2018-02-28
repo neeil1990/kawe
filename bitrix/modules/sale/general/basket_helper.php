@@ -234,9 +234,9 @@ class CSaleBasketHelper
 	 */
 	public static function formatQuantity($quantity)
 	{
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			return \Bitrix\Sale\BasketItem::formatQuantity($quantity);
 		}

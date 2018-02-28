@@ -352,7 +352,8 @@ else
 																	"order" => $arResult['ACCOUNT_NUMBER'],
 																	"allow_inner" => $arParams['ALLOW_INNER'],
 																	"only_inner_full" => $arParams['ONLY_INNER_FULL'],
-																	"refresh_prices" => $arParams['REFRESH_PRICES']
+																	"refresh_prices" => $arParams['REFRESH_PRICES'],
+																	"path_to_payment" => $arParams['PATH_TO_PAYMENT']
 																);
 																$paymentSubTitle = Loc::getMessage('SPOD_TPL_BILL')." ".Loc::getMessage('SPOD_NUM_SIGN').$payment['ACCOUNT_NUMBER'];
 																if(isset($payment['DATE_BILL']))

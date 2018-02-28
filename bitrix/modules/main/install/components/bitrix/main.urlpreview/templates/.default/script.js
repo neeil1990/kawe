@@ -233,17 +233,24 @@ BXUrlPreview.adjustFrameHeight = function(iframe, counter)
 	else
 	{
 		var iframes = iframe.contentWindow.document.getElementsByTagName('iframe');
-		if(iframes[0] && iframes[0].height > 0)
+		var height = 0;
+		for(var i = 0; i < iframes.length; i++)
 		{
-			iframe.height = iframes[0].height + addToHeight;
-			BX.addClass(iframe, 'urlpreview-iframe-html-embed-adjusted');
+			if(iframes[i] && iframes[i].height > 0)
+			{
+				height = parseInt(iframes[i].height);
+			}
+			else if (iframes[i] && iframes[i].style.height)
+			{
+				height = parseInt(iframes[i].style.height);
+			}
+			if(height !== 0)
+			{
+				iframe.height = height + addToHeight + 'px';
+				BX.addClass(iframe, 'urlpreview-iframe-html-embed-adjusted');
+			}
 		}
-		else if (iframes[0] && iframes[0].style.height)
-		{
-			iframe.height = iframes[0].style.height + addToHeight;
-			BX.addClass(iframe, 'urlpreview-iframe-html-embed-adjusted');
-		}
-		else
+		if(height === 0)
 		{
 			setTimeout(function()
 			{

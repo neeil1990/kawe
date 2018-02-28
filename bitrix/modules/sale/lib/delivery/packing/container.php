@@ -97,7 +97,12 @@ class Container
 	 */
 	public function getBoxes()
 	{
-		return $this->boxes;
+		$result = array();
+
+		foreach($this->boxes as $box)
+			$result[] = clone $box;
+
+		return $result;
 	}
 
 	public function getAvailableVertexes()

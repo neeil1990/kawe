@@ -179,7 +179,7 @@ class YandexCheckoutHandler extends PaySystem\ServiceHandler implements PaySyste
 		$params = $this->getYandexPaymentQueryParams($payment, $request);
 
 		$headers = $this->getHeaders($payment);
-		$headers['Idempotence-Key'] = $this->getIdempotenceKey($payment, 'pay');
+		$headers['Idempotence-Key'] = $this->getIdempotenceKey();
 
 		$sendResult = $this->send($url, $headers, $params);
 		if (!$sendResult->isSuccess())
@@ -195,18 +195,16 @@ class YandexCheckoutHandler extends PaySystem\ServiceHandler implements PaySyste
 	}
 
 	/**
-	 * @param Payment $payment
-	 * @param $operation
 	 * @return string
 	 */
-	private function getIdempotenceKey(Payment $payment, $operation)
+	private function getIdempotenceKey()
 	{
-		return base64_encode(
-			$operation.
-			':'.
-			$payment->getId().
-			':'.
-			$this->service->getField('PS_MODE')
+		return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+			mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0x0fff) | 0x4000,
+			mt_rand(0, 0x3fff) | 0x8000,
+			mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
 		);
 	}
 
@@ -466,7 +464,7 @@ class YandexCheckoutHandler extends PaySystem\ServiceHandler implements PaySyste
 		$url = $this->getUrl($payment, 'refund');
 		$params = $this->getRefundQueryParams($payment, $refundableSum);
 		$headers = $this->getHeaders($payment);
-		$headers['Idempotence-Key'] = $this->getIdempotenceKey($payment, 'refund');
+		$headers['Idempotence-Key'] = $this->getIdempotenceKey();
 
 		$sendResult = $this->send($url, $headers, $params);
 		if (!$sendResult->isSuccess())
@@ -501,7 +499,7 @@ class YandexCheckoutHandler extends PaySystem\ServiceHandler implements PaySyste
 	{
 		$url = $this->getUrl($payment, 'cancel');
 		$headers = $this->getHeaders($payment);
-		$headers['Idempotence-Key'] = $this->getIdempotenceKey($payment, 'cancel');
+		$headers['Idempotence-Key'] = $this->getIdempotenceKey();
 
 		$sendResult = $this->send($url, $headers);
 		if (!$sendResult->isSuccess())
@@ -525,7 +523,7 @@ class YandexCheckoutHandler extends PaySystem\ServiceHandler implements PaySyste
 
 		$url = $this->getUrl($payment, 'confirm');
 		$headers = $this->getHeaders($payment);
-		$headers['Idempotence-Key'] = $this->getIdempotenceKey($payment, 'confirm');
+		$headers['Idempotence-Key'] = $this->getIdempotenceKey();
 		$params = array(
 			'amount' => array(
 				'value' => $payment->getSum(),

@@ -102,7 +102,7 @@
 		{
 			if(!listCurrency.hasOwnProperty(key))
 			{
-				break;
+				continue;
 			}
 
 			if(BX.prop.getString(listCurrency[key], 'BASE', 'N') === 'Y')
@@ -122,14 +122,14 @@
 		}
 
 		var ch = BX.prop.getString(listCurrency[currency], 'DEC_POINT', '');
-		return ch !== '' ? formattedValue.replace(new RegExp('\\' + ch + '00'), '') : formattedValue;
+		return ch !== '' ? formattedValue.replace(new RegExp('\\' + ch + '0+$'), '') : formattedValue;
 	};
 
 	BX.Currency.Editor.getUnFormattedValue = function(formattedValue, currency)
 	{
 		var listCurrency = getCurrencyList();
 		return formattedValue
-			.replace(new RegExp('[' + listCurrency[currency]['SEPARATOR'] + ']', 'g'), '')
+			.replace(new RegExp(listCurrency[currency]['SEPARATOR'], 'g'), '')
 			.replace(listCurrency[currency]['DEC_POINT'], '.');
 	};
 
@@ -157,7 +157,7 @@
 		var regExp;
 		if(listCurrency[currency]['SEPARATOR'] === ',' || listCurrency[currency]['SEPARATOR'] === '.')
 		{
-			regExp = new RegExp('[' + listCurrency[currency]['DEC_POINT'] + ']');
+			regExp = new RegExp('[.,]');
 		}
 		else
 		{

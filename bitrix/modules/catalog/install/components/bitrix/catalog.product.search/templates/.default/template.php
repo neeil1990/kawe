@@ -334,7 +334,7 @@ else
 				$arActions[] = array(
 					"TEXT" => GetMessage("SPS_SELECT"),
 					"DEFAULT" => "Y",
-					"ACTION" => $tableId . '_helper.onSectionClick(' . $arItems["ID"] . ',\'' . CUtil::JSEscape(htmlspecialcharsbx($arItems['NAME'])) . '\');'
+					"ACTION" => $tableId.'_helper.onSectionClick('.$arItems["ID"].');'
 				);
 			}
 			if (!empty($arResult['PRICES']))

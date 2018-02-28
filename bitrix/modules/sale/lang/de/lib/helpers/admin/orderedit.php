@@ -17,4 +17,7 @@ $MESS["SALE_ORDEREDIT_PRODUCT_IS_NOT_AVAILABLE"] = "Produkt \"#NAME_ID#\" ist ni
 $MESS["SALE_ORDEREDIT_MESSAGE"] = "Nachricht";
 $MESS["SALE_ORDEREDIT_ERROR_CHANGE_USER_WITH_PAID_PAYMENTS"] = "Der Kunde kann nicht geändert werden, weil die Bestellung komplett oder teilweise bezahlt wurde.";
 $MESS["SALE_ORDEREDIT_PRODUCT_QUANTITY_IS_EMPTY"] = "Unzureichende Menge von \"#NAME#\"";
+$MESS["SALE_ORDEREDIT_CONFIRM"] = "Bestätigen";
+$MESS["SALE_ORDEREDIT_CONFIRM_CONTINUE"] = "Fortfahren";
+$MESS["SALE_ORDEREDIT_CONFIRM_ABORT"] = "Unterbrechen";
 ?>

@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 	if (isset($_POST['viewed_count']))
 	{
 		$viewedCount = (int)$_POST['viewed_count'];
-		if ($viewedCount > 0)
+		if ($viewedCount >= 0)
 			Option::set('catalog', 'viewed_count', $viewedCount, '');
 	}
 
@@ -250,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && !empty($_POST['Update']) && !$bReadO
 		'product_form_show_offer_name'
 	);
 
-	foreach ($checkboxFields as &$oneCheckbox)
+	foreach ($checkboxFields as $oneCheckbox)
 	{
 		if (empty($_POST[$oneCheckbox]) || !is_string($_POST[$oneCheckbox]))
 			continue;
@@ -1448,19 +1448,19 @@ $viewedPeriod = (int)Option::get('catalog', 'viewed_period');
 <tr>
 	<td width="40%"><label for="viewed_time"><? echo Loc::getMessage("CAT_VIEWED_TIME"); ?></label></td>
 	<td width="60%">
-		<input type="text" name="viewed_time" id="viewed_time" value="<? echo $viewedTime; ?>" size="10">
+		<input type="text" name="viewed_time" id="viewed_time" value="<?=$viewedTime; ?>" size="10">
 	</td>
 </tr>
 <tr>
 	<td width="40%"><label for="viewed_count"><? echo Loc::getMessage("CAT_VIEWED_COUNT"); ?></label></td>
 	<td width="60%">
-		<input type="text" name="viewed_count" id="viewed_count" value="<? echo $viewedCount; ?>" size="10">
+		<input type="text" name="viewed_count" id="viewed_count" value="<?=$viewedCount; ?>" size="10">
 	</td>
 </tr>
 <tr>
 	<td width="40%"><label for="viewed_period"><? echo Loc::getMessage("CAT_VIEWED_PERIOD"); ?></label></td>
 	<td width="60%">
-		<input type="text" name="viewed_period" id="viewed_period" value="<? echo $viewedPeriod; ?>" size="10">
+		<input type="text" name="viewed_period" id="viewed_period" value="<?=$viewedPeriod; ?>" size="10">
 	</td>
 </tr>
 <tr class="heading">

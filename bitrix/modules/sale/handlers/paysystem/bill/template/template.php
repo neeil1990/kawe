@@ -409,7 +409,7 @@ if ($params['DELIVERY_PRICE'] > 0)
 				$data = SaleFormatCurrency($params['DELIVERY_PRICE'], $params['CURRENCY'], true);
 				break;
 			case 'VAT_RATE':
-				$data = roundEx($vat * 100, SALE_VALUE_PRECISION)."%";
+				$data = roundEx($params['DELIVERY_VAT_RATE'] * 100, SALE_VALUE_PRECISION)."%";
 				break;
 			case 'SUM':
 				$data = SaleFormatCurrency($params['DELIVERY_PRICE'], $params['CURRENCY'], true);

@@ -93,21 +93,30 @@ if (is_array($arResult["ActiveFeatures"]) && count($arResult["ActiveFeatures"]) 
 	);
 
 	$arFilter["MODULE_ITEM"] = array();           //filter for GetList
-	foreach($arModuleObjects as $key => $val)
+	if (\Bitrix\Main\ModuleManager::isModuleInstalled("bitrix24"))
 	{
-		$arObjectTypes = array_merge($arObjectTypes, $val->GetAuditTypes());
-
-		$ar = $val->GetFilter();
-		$filters = array_keys($ar);
-		$var = array_intersect($filters, $flt_event_id);
-		if ($var)
+		$arFilter["MODULE_ITEM"][] = array(
+			"AUDIT_TYPE_ID" => "USER_AUTHORIZE"
+		);
+	}
+	else
+	{
+		foreach($arModuleObjects as $key => $val)
 		{
-			if(isset($ar["IBLOCK"]))
+			$arObjectTypes = array_merge($arObjectTypes, $val->GetAuditTypes());
+
+			$ar = $val->GetFilter();
+			$filters = array_keys($ar);
+			$var = array_intersect($filters, $flt_event_id);
+			if ($var)
 			{
-				//iblock has more complex structure because logs are kept for individual blocks
-				$var = $filters;
+				if(isset($ar["IBLOCK"]))
+				{
+					//iblock has more complex structure because logs are kept for individual blocks
+					$var = $filters;
+				}
+				$arFilter["MODULE_ITEM"] = array_merge($arFilter["MODULE_ITEM"], $val->GetFilterSQL($var));
 			}
-			$arFilter["MODULE_ITEM"] = array_merge($arFilter["MODULE_ITEM"], $val->GetFilterSQL($var));
 		}
 	}
 

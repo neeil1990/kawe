@@ -6,6 +6,12 @@ use Bitrix\Main\Web;
 
 class HttpResponse extends Response
 {
+	/**
+	 * @var Context|null
+	 * @deprecated
+	 */
+	protected $context;
+
 	/** @var \Bitrix\Main\Web\Cookie[] */
 	protected $cookies = array();
 
@@ -14,6 +20,24 @@ class HttpResponse extends Response
 
 	/** @var \Bitrix\Main\Type\DateTime */
 	protected $lastModified;
+
+	/**
+	 * Response constructor.
+	 */
+	public function __construct()
+	{
+		if (func_num_args() > 0)
+		{
+			//so it's crutch. In the past we had first parameter Context. And now it's compatibility.
+			$probablyContext = func_get_arg(0);
+			if ($probablyContext instanceof Context)
+			{
+				$this->context = $probablyContext;
+			}
+		}
+
+		parent::__construct();
+	}
 
 	public function addHeader($name, $value = '')
 	{
@@ -29,11 +53,15 @@ class HttpResponse extends Response
 			$this->headers[] = $name;
 		else
 			$this->headers[] = array($name, $value);
+
+		return $this;
 	}
 
 	public function addCookie(Web\Cookie $cookie)
 	{
 		$this->cookies[] = $cookie;
+
+		return $this;
 	}
 
 	public function getCookies()
@@ -57,7 +85,7 @@ class HttpResponse extends Response
 
 	protected function createStandardHeaders()
 	{
-		$server = $this->context->getServer();
+		$server = Context::getCurrent()->getServer();
 		if (($server->get("REDIRECT_STATUS") != null) && ($server->get("REDIRECT_STATUS") == 404))
 		{
 			if (Config\Option::get("main", "header_200", "N") == "Y")
@@ -99,6 +127,8 @@ class HttpResponse extends Response
 			header(sprintf("%s: %s", $header[0], $header[1]));
 		else
 			header($header);
+
+		return $this;
 	}
 
 	protected function setCookie(Web\Cookie $cookie)
@@ -115,6 +145,8 @@ class HttpResponse extends Response
 				$cookie->getHttpOnly()
 			);
 		}
+
+		return $this;
 	}
 
 	public function setStatus($status)
@@ -128,15 +160,19 @@ class HttpResponse extends Response
 		}
 		else
 		{
-			$server = $this->context->getServer();
+			$server = Context::getCurrent()->getServer();
 			$this->addHeader($server->get("SERVER_PROTOCOL")." ".$status);
 		}
+
+		return $this;
 	}
 
 	/**
 	 * Sets the latest time for the Last-Modified header field.
 	 *
 	 * @param Type\DateTime $time
+	 *
+	 * @return HttpResponse
 	 */
 	public function setLastModified(Type\DateTime $time)
 	{
@@ -144,5 +180,7 @@ class HttpResponse extends Response
 		{
 			$this->lastModified = $time;
 		}
+
+		return $this;
 	}
 }

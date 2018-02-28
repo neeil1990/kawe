@@ -4,7 +4,7 @@
 //**    MODIFICATION OF THIS FILE WILL ENTAIL SITE FAILURE            **/
 //**********************************************************************/
 if (!defined("UPDATE_SYSTEM_VERSION"))
-	define("UPDATE_SYSTEM_VERSION", "17.5.0");
+	define("UPDATE_SYSTEM_VERSION", "17.5.10");
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 define("HELP_FILE", "marketplace/sysupdate.php");
@@ -172,16 +172,10 @@ elseif (($DB->type == "MSSQL") || ($DB->type == "ORACLE"))
 $curPhpVer = PhpVersion();
 $arCurPhpVer = Explode(".", $curPhpVer);
 if (IntVal($arCurPhpVer[0]) < 5
-	|| IntVal($arCurPhpVer[0]) == 5 && IntVal($arCurPhpVer[1]) < 3
-	|| IntVal($arCurPhpVer[0]) == 5 && IntVal($arCurPhpVer[1]) == 3 && IntVal($arCurPhpVer[2]) < 0)
+	|| IntVal($arCurPhpVer[0]) == 5 && IntVal($arCurPhpVer[1]) < 6
+	|| IntVal($arCurPhpVer[0]) == 5 && IntVal($arCurPhpVer[1]) == 6 && IntVal($arCurPhpVer[2]) < 0)
 {
-	$errorMessage .= "<br>".GetMessage("SUP_PHP_L439", array("#VERS#" => $curPhpVer));
-}
-elseif (intval($arCurPhpVer[0]) < 5
-	|| intval($arCurPhpVer[0]) == 5 && intval($arCurPhpVer[1]) < 6
-	|| intval($arCurPhpVer[0]) == 5 && intval($arCurPhpVer[1]) == 6 && intval($arCurPhpVer[2]) < 0)
-{
-    $systemMessage .= "<br>".GetMessage("SUP_PHP_L560", array("#VERS#" => $curPhpVer));
+	$errorMessage .= "<br>".GetMessage("SUP_PHP_L560F", array("#VERS#" => $curPhpVer));
 }
 
 if (array_key_exists("HTTP_BX_MASTER", $_SERVER) && ($_SERVER["HTTP_BX_MASTER"] != "Y"))

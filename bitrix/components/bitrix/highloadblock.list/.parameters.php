@@ -28,12 +28,28 @@ $arComponentParameters = array(
 		'FILTER_NAME' => array(
 			'PARENT' => 'BASE',
 			'NAME' => GetMessage('HLLIST_COMPONENT_FILTER_NAME_PARAM'),
+			'TYPE' => 'TEXT'
+		),
+		'SORT_FIELD' => array(
+			'PARENT' => 'BASE',
+			'NAME' => GetMessage('HLLIST_COMPONENT_SORT_FIELD_PARAM'),
 			'TYPE' => 'TEXT',
+			'DEFAULT' => 'ID'
+		),
+		'SORT_ORDER' => array(
+			'PARENT' => 'BASE',
+			'NAME' => GetMessage('HLLIST_COMPONENT_SORT_ORDER_PARAM'),
+			'TYPE' => 'LIST',
+			'DEFAULT' => 'DESC',
+			'VALUES' => array(
+				'DESC' => GetMessage('HLLIST_COMPONENT_SORT_ORDER_PARAM_DESC'),
+				'ASC' => GetMessage('HLLIST_COMPONENT_SORT_ORDER_PARAM_ASC')
+			)
 		),
 		'CHECK_PERMISSIONS' => array(
 			'PARENT' => 'BASE',
 			'NAME' => GetMessage('HLLIST_COMPONENT_CHECK_PERMISSIONS_PARAM'),
-			'TYPE' => 'CHECKBOX',
+			'TYPE' => 'CHECKBOX'
 		),
 	),
 );

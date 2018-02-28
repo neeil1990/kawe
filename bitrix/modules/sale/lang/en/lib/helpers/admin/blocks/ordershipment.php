@@ -52,4 +52,9 @@ $MESS["SALE_ORDER_SHIPMENT_TRACKING_DESCRIPTION"] = "Status description";
 $MESS["SALE_ORDER_SHIPMENT_TRACKING_S_EMPTY"] = "Tracking number is required";
 $MESS["SALE_ORDER_SHIPMENT_BLOCK_DELIVERY_ADDITIONAL"] = "Delivery service information";
 $MESS["SALE_ORDER_SHIPMENT_TRACKING_URL"] = "Package tracking details";
+$MESS["SALE_ORDER_SHIPMENT_HIDDEN"] = "[Hidden]";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ_INFO"] = "Transportation order information";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ"] = "Transportation order";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ_NAME"] = "Transportation order \"#REQUEST_ID#\" from \"#REQUEST_DATE#\"";
+$MESS["SALE_ORDER_SHIPMENT_DEL_REQ_ERROR"] = "Error adding shipment to transportation order";
 ?>

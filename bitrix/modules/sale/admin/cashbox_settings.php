@@ -9,6 +9,7 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Settings
 		die();
 
 	require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/cashbox/inputs/file.php");
+	require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/delivery/inputs.php");
 
 	global $APPLICATION;
 

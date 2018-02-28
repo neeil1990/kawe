@@ -44,15 +44,25 @@ $entity = HL\HighloadBlockTable::compileEntity($hlblock);
 $fields = $GLOBALS['USER_FIELD_MANAGER']->GetUserFields('HLBLOCK_'.$hlblock['ID'], 0, LANGUAGE_ID);
 
 // sort
-$sort_id = 'ID';
-$sort_type = 'DESC';
-if (!empty($_GET['sort_id']) && (isset($fields[$_GET['sort_id']])))
+$sortId = 'ID';
+$sortType = 'DESC';
+if (isset($arParams['SORT_FIELD']) && isset($fields[$arParams['SORT_FIELD']]))
 {
-	$sort_id = $_GET['sort_id'];
+	$sortId = $arParams['SORT_FIELD'];
 }
-if (!empty($_GET['sort_type']) && in_array($_GET['sort_type'], array('ASC', 'DESC'), true))
+// for compatibility
+elseif (isset($_GET['sort_id']) && isset($fields[$_GET['sort_id']]))
 {
-	$sort_type = $_GET['sort_type'];
+	$sortId = $_GET['sort_id'];
+}
+if (isset($arParams['SORT_ORDER']) && in_array($arParams['SORT_ORDER'], array('ASC', 'DESC'), true))
+{
+	$sortType = $arParams['SORT_ORDER'];
+}
+// for compatibility
+if (isset($_GET['sort_type']) && in_array($_GET['sort_type'], array('ASC', 'DESC'), true))
+{
+	$sortType = $_GET['sort_type'];
 }
 
 // pagen
@@ -73,7 +83,7 @@ else
 // start query
 $mainQuery = new Entity\Query($entity);
 $mainQuery->setSelect(array('*'));
-$mainQuery->setOrder(array($sort_id => $sort_type));
+$mainQuery->setOrder(array($sortId => $sortType));
 
 // filter
 if (
@@ -149,8 +159,8 @@ while ($row = $result->fetch())
 $arResult['rows'] = $rows;
 $arResult['fields'] = $fields;
 $arResult['tableColumns'] = $tableColumns;
-$arResult['sort_id'] = $sort_id;
-$arResult['sort_type'] = $sort_type;
+$arResult['sort_id'] = $sortId;
+$arResult['sort_type'] = $sortType;
 
 // for compatibility
 $arResult['NAV_STRING'] = '';

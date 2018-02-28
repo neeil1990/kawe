@@ -6,7 +6,6 @@ use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Sale\Cashbox\Internals\CashboxConnectTable;
-use Bitrix\Sale\Cashbox\Internals\CashboxErrLogTable;
 use Bitrix\Sale\Cashbox\Internals\CashboxTable;
 use Bitrix\Sale\Cashbox\Internals\CashboxZReportTable;
 use Bitrix\Sale\Internals\CollectableEntity;
@@ -30,6 +29,7 @@ final class Manager
 	const DEBUG_MODE = false;
 	const CACHE_ID = 'BITRIX_CASHBOX_LIST';
 	const TTL = 31536000;
+	const CHECK_STATUS_AGENT = '\Bitrix\Sale\Cashbox\Manager::updateChecksStatus();';
 
 	/**
 	 * @param CollectableEntity $entity
@@ -275,10 +275,18 @@ final class Manager
 
 		if (is_subclass_of($data['HANDLER'], '\Bitrix\Sale\Cashbox\ICheckable'))
 		{
-			\CAgent::AddAgent('\Bitrix\Sale\Cashbox\Manager::updateChecksStatus();', "sale", "N", 120, "", "Y");
+			static::addCheckStatusAgent();
 		}
 
 		return $addResult;
+	}
+
+	/**
+	 * @return void
+	 */
+	private static function addCheckStatusAgent()
+	{
+		\CAgent::AddAgent(static::CHECK_STATUS_AGENT, "sale", "N", 120, "", "Y");
 	}
 
 	/**
@@ -292,6 +300,11 @@ final class Manager
 
 		$cacheManager = Main\Application::getInstance()->getManagedCache();
 		$cacheManager->clean(Manager::CACHE_ID);
+
+		if (is_subclass_of($data['HANDLER'], '\Bitrix\Sale\Cashbox\ICheckable'))
+		{
+			static::addCheckStatusAgent();
+		}
 
 		return $updateResult;
 	}
@@ -354,6 +367,8 @@ final class Manager
 	 */
 	public static function isSupportedFFD105()
 	{
+		Cashbox::init();
+
 		$cashboxList = static::getListFromCache();
 		foreach ($cashboxList as $cashbox)
 		{
@@ -427,8 +442,7 @@ final class Manager
 			}
 		}
 
-		return '\Bitrix\Sale\Cashbox\Manager::updateChecksStatus();';
+		return static::CHECK_STATUS_AGENT;
 	}
-
 
 }

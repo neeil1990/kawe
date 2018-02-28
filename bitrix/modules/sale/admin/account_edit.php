@@ -1,11 +1,14 @@
 <?
+use Bitrix\Main\Loader;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions=="D")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+Loader::includeModule('sale');
 
 IncludeModuleLangFile(__FILE__);
 
@@ -15,7 +18,7 @@ $bVarsFromForm = false;
 
 $ID = IntVal($ID);
 
-if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" && check_bitrix_sessid())
+if ($_SERVER['REQUEST_METHOD']=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" && check_bitrix_sessid())
 {
 	if ($ID <= 0)
 	{
@@ -30,7 +33,7 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" 
 		if (strlen($CURRENCY) <= 0)
 			$errorMessage .= GetMessage("SAE_EMPTY_CURRENCY").".<br>";
 
-		if (strlen($errorMessage) <= 0)
+		if ($errorMessage == '')
 		{
 			$arFilter = array(
 					"USER_ID" => $USER_ID,
@@ -46,20 +49,17 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" 
 				$errorMessage .= str_replace("#USER#", $USER_ID, str_replace("#CURRENCY#", $CURRENCY, GetMessage("SAE_ALREADY_EXISTS"))).".<br>";
 		}
 
-		if (strlen($errorMessage) <= 0)
+		if ($errorMessage == '')
 		{
 			$OLD_BUDGET = 0.0;
 		}
 	}
 	else
 	{
-		//if($_POST["UNLOCK"] == "Y")
-		//	CSaleUserAccount::UnLock($USER_ID, $CURRENCY);		
-		
 		if (!($arOldUserAccount = CSaleUserAccount::GetByID($ID)))
 			$errorMessage .= str_replace("#ID#", $ID, GetMessage("SAE_NO_ACCOUNT")).".<br>";
 
-		if (strlen($errorMessage) <= 0)
+		if ($errorMessage == '')
 		{
 			$USER_ID = $arOldUserAccount["USER_ID"];
 			$CURRENCY = $arOldUserAccount["CURRENCY"];
@@ -68,22 +68,32 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" 
 	}
 	
 	$currentLocked = "";
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		$dbUserAccount = CSaleUserAccount::GetList(
 			array(),
 			array("USER_ID" => $USER_ID, "CURRENCY" => $CURRENCY)
 		);
 		$arUserAccount = $dbUserAccount->Fetch();
-		$currentLocked = $arUserAccount["LOCKED"];
-		
-		
+		if (is_array($arUserAccount))
+			$currentLocked = $arUserAccount["LOCKED"];
+
+		$allowUpdate = false;
 		$CURRENT_BUDGET = str_replace(",", ".", $CURRENT_BUDGET);
-		$CURRENT_BUDGET = DoubleVal($CURRENT_BUDGET);
+		$CURRENT_BUDGET = (float)$CURRENT_BUDGET;
+		if ($ID > 0)
+		{
+			$updateSum = $CURRENT_BUDGET - $OLD_BUDGET;
 
-		$updateSum = $CURRENT_BUDGET - $OLD_BUDGET;
+			$allowUpdate = ($updateSum != 0);
+		}
+		else
+		{
+			$updateSum = $CURRENT_BUDGET;
+			$allowUpdate = true;
+		}
 
-		if ($updateSum != 0)
+		if ($allowUpdate)
 		{
 			if (!CSaleUserAccount::UpdateAccount($USER_ID, $updateSum, $CURRENCY, "MANUAL", 0, $CHANGE_REASON))
 			{
@@ -95,7 +105,7 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" 
 		}
 	}
 
-	if (strlen($errorMessage) <= 0 AND $currentLocked != "")
+	if ($errorMessage == '' AND $currentLocked != "")
 	{
 		if($_POST["UNLOCK"] == "Y")
 			CSaleUserAccount::UnLock($USER_ID, $CURRENCY);
@@ -104,14 +114,14 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" 
 			CSaleUserAccount::Lock($USER_ID, $CURRENCY); 
 	}
 	
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		$arUserAccount = CSaleUserAccount::GetByUserID($USER_ID, $CURRENCY);
 		if (DoubleVal($arUserAccount["CURRENT_BUDGET"]) != $CURRENT_BUDGET)
 			$errorMessage .= GetMessage("SAE_ERROR_SAVING_SUM").".<br>";
 	}
 
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		$ID = IntVal($arUserAccount["ID"]);
 
@@ -127,10 +137,10 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" 
 		}
 	}
 
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
 		if (strlen($apply) <= 0)
-			LocalRedirect("/bitrix/admin/sale_account_admin.php?lang=".LANG.GetFilterParams("filter_", false));
+			LocalRedirect("/bitrix/admin/sale_account_admin.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
 	}
 	else
 	{
@@ -138,15 +148,12 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions>="U" 
 	}
 }
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
-
 if ($ID > 0)
 	$APPLICATION->SetTitle(GetMessage("SAE_UPDATING"));
 else
 	$APPLICATION->SetTitle(GetMessage("SAE_ADDING"));
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-
 
 $dbAccount = CSaleUserAccount::GetList(
 		array(),
@@ -165,13 +172,10 @@ if (!$dbAccount->ExtractFields("str_"))
 if ($bVarsFromForm)
 	$DB->InitTableVarsForEdit("b_sale_user_account", "", "str_");
 
-?>
-
-<?
 $aMenu = array(
 		array(
 				"TEXT" => GetMessage("SAEN_2FLIST"),
-				"LINK" => "/bitrix/admin/sale_account_admin.php?lang=".LANG.GetFilterParams("filter_"),
+				"LINK" => "/bitrix/admin/sale_account_admin.php?lang=".LANGUAGE_ID.GetFilterParams("filter_"),
 				"ICON"	=> "btn_list",
 				"TITLE" => GetMessage("SAEN_2FLIST_TITLE"),
 			)
@@ -183,7 +187,7 @@ if ($ID > 0 && $saleModulePermissions >= "U")
 
 	$aMenu[] = array(
 			"TEXT" => GetMessage("SAEN_NEW_ACCOUNT"),
-			"LINK" => "/bitrix/admin/sale_account_edit.php?lang=".LANG.GetFilterParams("filter_"),
+			"LINK" => "/bitrix/admin/sale_account_edit.php?lang=".LANGUAGE_ID.GetFilterParams("filter_"),
 			"ICON"	=> "btn_new",
 			"TITLE" => GetMessage("SAEN_NEW_ACCOUNT_TITLE"),
 		);
@@ -192,7 +196,7 @@ if ($ID > 0 && $saleModulePermissions >= "U")
 	{
 		$aMenu[] = array(
 				"TEXT" => GetMessage("SAEN_DELETE_ACCOUNT"), 
-				"LINK" => "javascript:if(confirm('".GetMessage("SAEN_DELETE_ACCOUNT_CONFIRM")."')) window.location='/bitrix/admin/sale_account_admin.php?ID=".$ID."&action=delete&lang=".LANG."&".bitrix_sessid_get()."#tb';",
+				"LINK" => "javascript:if(confirm('".GetMessage("SAEN_DELETE_ACCOUNT_CONFIRM")."')) window.location='/bitrix/admin/sale_account_admin.php?ID=".$ID."&action=delete&lang=".LANGUAGE_ID."&".bitrix_sessid_get()."#tb';",
 				"WARNING" => "Y",
 				"ICON"	=> "btn_delete"
 			);
@@ -200,33 +204,26 @@ if ($ID > 0 && $saleModulePermissions >= "U")
 }
 $context = new CAdminContextMenu($aMenu);
 $context->Show();
+
+if ($errorMessage != '')
+	CAdminMessage::ShowMessage(Array("DETAILS"=>$errorMessage, "TYPE"=>"ERROR", "MESSAGE"=>GetMessage("SAE_ERROR"), "HTML"=>true));
 ?>
-
-<?if(strlen($errorMessage)>0)
-	echo CAdminMessage::ShowMessage(Array("DETAILS"=>$errorMessage, "TYPE"=>"ERROR", "MESSAGE"=>GetMessage("SAE_ERROR"), "HTML"=>true));?>
-
-
 <form method="POST" action="<?echo $APPLICATION->GetCurPage()?>?" name="form1">
 <?echo GetFilterHiddens("filter_");?>
 <input type="hidden" name="Update" value="Y">
-<input type="hidden" name="lang" value="<?echo LANG ?>">
+<input type="hidden" name="lang" value="<?echo LANGUAGE_ID ?>">
 <input type="hidden" name="ID" value="<?echo $ID ?>">
-<?=bitrix_sessid_post()?>
+<?=bitrix_sessid_post()?><?
 
-<?
 $aTabs = array(
 		array("DIV" => "edit1", "TAB" => GetMessage("SAEN_TAB_ACCOUNT"), "ICON" => "sale", "TITLE" => GetMessage("SAEN_TAB_ACCOUNT_DESCR"))
 	);
 
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 $tabControl->Begin();
-?>
 
-<?
 $tabControl->BeginNextTab();
-?>
-
-	<?if ($ID > 0):?>
+	if ($ID > 0):?>
 		<tr>
 			<td width="40%">ID:</td>
 			<td width="60%"><?=$ID?></td>
@@ -266,8 +263,6 @@ $tabControl->BeginNextTab();
 			?>
 		</td>
 	</tr>
-	
-		
 	<?if ($ID > 0 && $str_LOCKED=="Y"):?>
 		<tr>
 			<td><?echo GetMessage("SAE_UNLOCK")?></td>
@@ -279,9 +274,9 @@ $tabControl->BeginNextTab();
 				?>
 			</td>
 		</tr>
-	<?endif;?>
+	<?endif;
 		
-	<?if ($ID > 0 && $str_LOCKED=="N"):?>
+	if ($ID > 0 && $str_LOCKED=="N"):?>
 		<tr>
 			<td><?echo GetMessage("SAE_LOCK")?></td>
 			<td>
@@ -289,7 +284,6 @@ $tabControl->BeginNextTab();
 			</td>
 		</tr>
 	<?endif;?>	
-		
 	<tr>
 		<td valign="top"><?echo GetMessage("SAE_NOTES")?></td>
 		<td valign="top">
@@ -302,23 +296,17 @@ $tabControl->BeginNextTab();
 			<textarea name="CHANGE_REASON" rows="3" cols="40"><?= htmlspecialcharsEx($CHANGE_REASON) ?></textarea>
 		</td>
 	</tr>
-
 <?
 $tabControl->EndTab();
-?>
 
-<?
 $tabControl->Buttons(
 		array(
 				"disabled" => ($saleModulePermissions < "U"),
-				"back_url" => "/bitrix/admin/sale_account_admin.php?lang=".LANG.GetFilterParams("filter_")
+				"back_url" => "/bitrix/admin/sale_account_admin.php?lang=".LANGUAGE_ID.GetFilterParams("filter_")
 			)
 	);
-?>
 
-<?
 $tabControl->End();
 ?>
-
 </form>
-<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");?>
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

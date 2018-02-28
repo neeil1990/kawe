@@ -671,8 +671,11 @@ BX.Finder.syncClientDb = function(obDestination, name, oDbData, oAjaxData)
 			)
 			{
 				BX.indexedDB.deleteValueByIndex(obDestination.obClientDb, 'users', 'id', oDbData[key]);
-				delete obDestination.obItems[name].users[oDbData[key]];
-				obDestination.deleteItem(oDbData[key], 'users', name);
+				if (BX.type.isNotEmptyString(name))
+				{
+					delete obDestination.obItems[name].users[oDbData[key]];
+					obDestination.deleteItem(oDbData[key], 'users', name);
+				}
 			}
 		}
 	}

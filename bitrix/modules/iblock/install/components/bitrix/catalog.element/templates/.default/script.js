@@ -1406,7 +1406,7 @@
 					BX.unbind(this.currentImg.node, 'mouseover', BX.proxy(this.enableMagnifier, this));
 
 					this.currentImg.node = current;
-					this.currentImg.node.style.backgroundImage = 'url(' + this.currentImg.src + ')';
+					this.currentImg.node.style.backgroundImage = 'url(\'' + this.currentImg.src + '\')';
 					this.currentImg.node.style.backgroundSize = '100% auto';
 
 					BX.bind(this.currentImg.node, 'mouseover', BX.proxy(this.enableMagnifier, this));

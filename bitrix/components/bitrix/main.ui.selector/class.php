@@ -33,6 +33,19 @@ class CMainUiSelector extends CBitrixComponent
 		{
 			$this->arParams['ITEMS_SELECTED'] = array();
 		}
+		else
+		{
+			foreach($this->arParams['ITEMS_SELECTED'] as $key => $value)
+			{
+				if (intval($key) == $key) // numeric keys
+				{
+					$this->arParams['ITEMS_SELECTED'][$value] = Selector\Entities::getEntityType(array(
+						'itemCode' => $value
+					));
+				}
+			}
+		}
+
 		if (empty($this->arParams['ITEMS_HIDDEN']))
 		{
 			$this->arParams['ITEMS_HIDDEN'] = array();

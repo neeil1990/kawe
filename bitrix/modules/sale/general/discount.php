@@ -31,13 +31,13 @@ class CAllSaleDiscount
 		if (empty($arOrder['BASKET_ITEMS']) || !is_array($arOrder['BASKET_ITEMS']))
 			return;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 		$onlySaleDiscounts = (string)Main\Config\Option::get('sale', 'use_sale_discount_only') == 'Y';
 		$oldDelivery = '';
 
 		$checkIds = true;
 		$arIDS = array();
-		if ($isOrderConverted == 'Y')
+		if ($isOrderConverted != 'N')
 		{
 			if (isset($arOrder['DELIVERY_ID']) && $arOrder['DELIVERY_ID'] != '')
 			{
@@ -324,17 +324,17 @@ class CAllSaleDiscount
 				static::prefillDiscountFields($discount, $couponList);
 				$applyFlag = static::workWithDiscountHandlers($discount);
 
-				if ($isOrderConverted == 'Y')
+				if ($isOrderConverted != 'N')
 					Sale\Compatible\DiscountCompatibility::setOrderData($arOrder);
 				if ($applyFlag && self::__Unpack($arOrder, $discount['UNPACK']))
 				{
 					$oldOrder = $arOrder;
-					if ($isOrderConverted == 'Y')
+					if ($isOrderConverted != 'N')
 						Sale\Discount\Actions::clearAction();
 
 					self::__ApplyActions($arOrder, $discount['APPLICATION']);
 
-					if ($isOrderConverted == 'Y')
+					if ($isOrderConverted != 'N')
 					{
 						$resultDiscountFullList[] = $discount;
 						if (Sale\Compatible\DiscountCompatibility::calculateSaleDiscount($arOrder, $discount))
@@ -408,7 +408,7 @@ class CAllSaleDiscount
 
 			$arOrder['DISCOUNT_LIST'] = $resultDiscountList;
 			$arOrder['FULL_DISCOUNT_LIST'] = $resultDiscountFullList;
-			if ($isOrderConverted == 'Y')
+			if ($isOrderConverted != 'N')
 				Sale\Compatible\DiscountCompatibility::setOldDiscountResult($resultDiscountList);
 		}
 		$orderData = $arOrder;
@@ -566,7 +566,7 @@ class CAllSaleDiscount
 		unset($discountResult, $publicMode);
 		unset($clearFields);
 
-		if ($isOrderConverted == 'Y' && $oldDelivery != '')
+		if ($isOrderConverted != 'N' && $oldDelivery != '')
 			$arOrder['DELIVERY_ID'] = $oldDelivery;
 
 		$arOrder["ORDER_PRICE"] = roundEx($arOrder["ORDER_PRICE"], SALE_VALUE_PRECISION);

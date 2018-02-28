@@ -56,7 +56,7 @@ class Post
 				}
 
 				if (
-					Main\ModuleManager::isModuleInstalled('vote')
+					Loader::includeModule('vote')
 					&& Main\ModuleManager::isModuleInstalled('socialnetwork')
 				)
 				{
@@ -427,7 +427,10 @@ class Post
 	 */
 	public function detectTags()
 	{
+		static $parser = null;
+
 		$result = array();
+
 		$fields = $this->getFields();
 		$searchFields = array('DETAIL_TEXT');
 		if (
@@ -441,15 +444,22 @@ class Post
 		foreach ($searchFields as $fieldCode)
 		{
 			if (
-				isset($fields[$fieldCode])
-				&& preg_match_all('/\s#([^\s,\[\]<>]+)/is', ' '.$fields[$fieldCode], $tags)
+				empty($fieldCode)
+				|| empty($fields[$fieldCode])
 			)
 			{
-				$result = array_merge($result, $tags[1]);
+				continue;
 			}
+
+			if ($parser === null)
+			{
+				$parser = new \CTextParser();
+			}
+
+			$result = array_merge($result, $parser->detectTags($fields[$fieldCode]));
 		}
 
-		return $result;
+		return array_unique($result);
 	}
 
 	public function getTags()

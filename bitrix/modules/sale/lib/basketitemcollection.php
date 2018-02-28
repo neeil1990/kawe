@@ -2,6 +2,8 @@
 
 namespace Bitrix\Sale;
 
+use Bitrix\Currency;
+use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Internals;
 
@@ -163,5 +165,67 @@ abstract class BasketItemCollection extends Internals\EntityCollection
 			return $order->getId();
 
 		return 0;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getContext()
+	{
+		global $USER;
+		$context = array();
+
+		/** @var BasketItem $basketItem */
+		$basketItem = $this->rewind();
+		if ($basketItem)
+		{
+
+			$siteId = $basketItem->getField('LID');
+			$fuserId = $basketItem->getFUserId();
+			$currency = $basketItem->getCurrency();
+
+			$userId = Fuser::getUserIdById($fuserId);
+
+			if (empty($context['SITE_ID']))
+			{
+				$context['SITE_ID'] = $siteId;
+			}
+
+			if (empty($context['USER_ID']) && $userId > 0)
+			{
+				$context['USER_ID'] = $userId;
+			}
+
+			if (empty($context['CURRENCY']) && !empty($siteId))
+			{
+				if (empty($currency))
+				{
+					$currency = Internals\SiteCurrencyTable::getSiteCurrency($siteId);
+				}
+
+				if (!empty($currency) && Currency\CurrencyManager::checkCurrencyID($currency))
+				{
+					$context['CURRENCY'] = $currency;
+				}
+			}
+		}
+
+		if (empty($context['SITE_ID']))
+		{
+			$context['SITE_ID'] = SITE_ID;
+		}
+
+		if (empty($context['USER_ID']))
+		{
+			$context['USER_ID'] = $USER->GetID() > 0 ? $USER->GetID() : 0;
+		}
+
+		if (empty($context['CURRENCY']))
+		{
+			Loader::includeModule('currency');
+			$context['CURRENCY'] = Currency\CurrencyManager::getBaseCurrency();
+		}
+
+		return $context;
 	}
 }

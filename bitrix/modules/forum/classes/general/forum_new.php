@@ -1036,37 +1036,28 @@ class CAllForumNew
 				case "FORUM_GROUP_ID":
 				case "TOPICS":
 				case "POSTS":
-					if ($strOperation == "IN")
-					{
-						if (is_array($val))
-						{
-							$val_int = array();
-							foreach ($val as $v)
-								$val_int[] = intVal($v);
-							$val = implode(", ", $val_int);
-						}
-						$val = trim($val);
-					}
-					if (($strOperation == "IN" && strLen($val) <= 0) || intVal($val) <= 0)
-						$arSqlSearch[] = ($strNegative=="Y"?"NOT":"")."(F.".$key." IS NULL OR F.".$key."<=0)";
-					elseif ($strOperation == "IN")
-						$arSqlSearch[] = ($strNegative=="Y"?" NOT ":"")."(F.".$key." IN (".$DB->ForSql($val)."))";
+					$val = array_map("intval", (is_array($val) ? $val : explode(",", $val)));
+					if (array_sum($val) <= 0)
+						$arSqlSearch[] = ($strNegative == "Y" ? "NOT" : "") . "(F.".$key." IS NULL OR F.".$key."<=0)";
+					elseif ($strOperation == "IN" || count($val) > 1)
+						$arSqlSearch[] = ($strNegative=="Y"?" NOT ":"")."(F.".$key." IN (".$DB->ForSql(implode(",", $val))."))";
 					else
-						$arSqlSearch[] = ($strNegative=="Y"?" F.".$key." IS NULL OR NOT ":"")."(F.".$key." ".$strOperation." ".intVal($val)." )";
+						$arSqlSearch[] = ($strNegative=="Y"?" F.".$key." IS NULL OR NOT ":"")."(F.".$key." ".$strOperation." ".reset($val)." )";
 					break;
 				case "TEXT":
 					$arSqlSearch[] = " (".GetFilterQuery("F.NAME,F.DESCRIPTION", $DB->ForSql($val), "Y").") ";
 					break;
 				case "PERMS":
-					if (!is_array($val) || count($val) <= 0 ):
+					$v = (is_array($val) && isset($val[0]) && !empty($val[0]) ? array_map("intval", is_array($val[0]) ? $val[0] : explode(",", $val[0])) : array());
+					if (empty($v))
 						continue;
-					endif;
+					$val[0] = $DB->ForSql(implode(", ", $v));
 					$arSqlFrom["FP"] = "
 					INNER JOIN b_forum_perms FP ON (F.ID = FP.FORUM_ID)";
-					if (strToUpper($val[1]) == "ALLOW_MOVE_TOPIC")
-						$arSqlSearch[] = "FP.GROUP_ID IN (".$DB->ForSql($val[0]).") AND ((FP.PERMISSION > 'M') OR (F.ALLOW_MOVE_TOPIC = 'Y'))";
+					if (strtoupper($val[1]) == "ALLOW_MOVE_TOPIC")
+						$arSqlSearch[] = "FP.GROUP_ID IN (".$val[0].") AND ((FP.PERMISSION > 'M') OR (F.ALLOW_MOVE_TOPIC = 'Y'))";
 					else
-						$arSqlSearch[] = "FP.GROUP_ID IN (".$DB->ForSql($val[0]).") AND FP.PERMISSION > '".$DB->ForSql($val[1])."' ";
+						$arSqlSearch[] = "FP.GROUP_ID IN (".$val[0].") AND FP.PERMISSION > '".$DB->ForSql($val[1])."' ";
 					break;
 				case "APPROVED":
 					if (strLen($val) <= 0):

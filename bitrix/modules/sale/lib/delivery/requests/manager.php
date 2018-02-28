@@ -3,6 +3,7 @@ namespace Bitrix\Sale\Delivery\Requests;
 
 use Bitrix\Main;
 use Bitrix\Sale\Order;
+use Bitrix\Sale\ResultWarning;
 use Bitrix\Sale\Shipment;
 use Bitrix\Sale\Internals;
 use Bitrix\Sale\EntityMarker;
@@ -153,7 +154,9 @@ final class Manager
 	 * @param int $deliveryId
 	 * @return HandlerBase|null Delivery request handler
 	 * @throws Main\ArgumentNullException
+	 * @throws Main\SystemException
 	 */
+
 	public static function getDeliveryRequestHandlerByDeliveryId($deliveryId)
 	{
 		if(intval($deliveryId) <= 0)
@@ -170,8 +173,12 @@ final class Manager
 	 * @param int[] $shipmentIds
 	 * @param array $additional Additional info required for creation. Depends on delivery service.
 	 * @return Result
+	 * @throws Main\ArgumentException
 	 * @throws Main\ArgumentNullException
+	 * @throws Main\SystemException
+	 * @throws \Exception
 	 */
+
 	public static function createDeliveryRequest($deliveryId, array $shipmentIds, array $additional = array())
 	{
 		$result = new Result();
@@ -1019,10 +1026,15 @@ final class Manager
 	}
 
 	/**
-	 * @param int $shipmentId
+	 * @param $shipmentId
 	 * @param ShipmentResult $shipmentResult
 	 * @return Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotSupportedException
 	 * @throws Main\ObjectNotFoundException
+	 * @throws \Exception
 	 */
 	protected static function saveShipmentResult($shipmentId, ShipmentResult $shipmentResult)
 	{
@@ -1091,8 +1103,8 @@ final class Manager
 	{
 		$r = new \Bitrix\Sale\Result();
 
-		$r->addError(
-			new Main\Error(
+		$r->addWarning(
+			new ResultWarning(
 				Loc::getMessage(
 					'SALE_DLVR_REQ_MNGR_NOT_UPDATED'
 				),

@@ -205,6 +205,7 @@ class Event
 			unset($parameters['hasPushCallback']);
 
 			self::$push[$pushCode]['push'] = $parameters['push'];
+			self::$push[$pushCode]['extra'] = $parameters['extra'];
 			self::$push[$pushCode]['hasPushCallback'] = $hasPushCallback;
 			self::$push[$pushCode]['users'] = array_unique(array_values($users));
 		}
@@ -283,6 +284,7 @@ class Event
 		$data['message'] = str_replace("\n", " ", trim($data['message']));
 		$data['params'] = isset($data['params'])? $data['params']: Array();
 		$data['advanced_params'] = isset($data['advanced_params'])? $data['advanced_params']: Array();
+		$data['advanced_params']['extra'] = $parameters['extra']? $parameters['extra']: Array();
 		$data['badge'] = isset($data['badge'])? intval($data['badge']): '';
 		$data['sound'] = isset($data['sound'])? $data['sound']: '';
 		$data['tag'] = isset($data['tag'])? $data['tag']: '';
@@ -421,6 +423,10 @@ class Event
 		{
 			$parameters['expire'] = intval($parameters['expire']);
 		}
+		else
+		{
+			$parameters['expire'] = 86400;
+		}
 
 		if (isset($parameters['paramsCallback']))
 		{
@@ -465,6 +471,15 @@ class Event
 			{
 				$parameters['params'] = Array();
 			}
+		}
+
+		if (!isset($parameters['extra']['server_time']))
+		{
+			$parameters['extra']['server_time'] = date('c');
+		}
+		if (!$parameters['extra']['server_time_unix'])
+		{
+			$parameters['extra']['server_time_unix'] = microtime(true);
 		}
 
 		return $parameters;
@@ -522,13 +537,33 @@ class Event
 			}
 		}
 
+		if (!isset($parameters['extra']['server_time']))
+		{
+			$parameters['extra']['server_time'] = date('c');
+		}
+		if (!$parameters['extra']['server_time_unix'])
+		{
+			$parameters['extra']['server_time_unix'] = microtime(true);
+		}
+
 		return $parameters;
 	}
 
 	public static function getParamsCode($params)
 	{
-		$code = isset($params['groupId'])? $params['groupId']: serialize($params);
-		return md5($code);
+		if (isset($params['groupId']) && !empty($params['groupId']))
+		{
+			return md5($params['groupId']);
+		}
+		else
+		{
+			$paramsWithoutTime = $params;
+
+			unset($paramsWithoutTime['extra']['server_time']);
+			unset($paramsWithoutTime['extra']['server_time_unix']);
+
+			return serialize($paramsWithoutTime);
+		}
 	}
 
 	private static function getEntitiesByType($recipient)

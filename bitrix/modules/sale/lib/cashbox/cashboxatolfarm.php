@@ -59,7 +59,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 				'attributes' => array(
 					'email' => $data['client_email'] ?: '',
 					'phone' => $phone,
-					'sno' => $this->getValueFromSettings('TAX', 'SNO'),
+					'sno' => $this->getValueFromSettings('TAX', 'SNO')
 				),
 				'payments' => array(),
 				'items' => array(),
@@ -70,7 +70,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		foreach ($data['payments'] as $payment)
 		{
 			$result['receipt']['payments'][] = array(
-				'type' => (int)$this->getValueFromSettings('PAYMENT_TYPE', $payment['is_cash']),
+				'type' => (int)$this->getValueFromSettings('PAYMENT_TYPE', $payment['type']),
 				'sum' => (float)$payment['sum']
 			);
 		}
@@ -94,7 +94,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @return string
 	 */
-	private function getCallbackUrl()
+	protected function getCallbackUrl()
 	{
 		$context = Main\Application::getInstance()->getContext();
 		$scheme = $context->getRequest()->isHttps() ? 'https' : 'http';
@@ -188,7 +188,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @return array
 	 */
-	private function getCheckTypeMap()
+	protected function getCheckTypeMap()
 	{
 		return array(
 			SellCheck::getType() => 'sell',
@@ -204,7 +204,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	 * @return string
 	 * @throws Main\SystemException
 	 */
-	private function getUrl($operation, $token, array $queryData = array())
+	protected function getUrl($operation, $token, array $queryData = array())
 	{
 		$groupCode = $this->getField('NUMBER_KKM');
 
@@ -246,10 +246,8 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 			return $validateResult;
 		}
 
-		$checkTypeMap = $this->getCheckTypeMap();
-		$checkType = $checkTypeMap[$check::getType()];
-
-		$url = $this->getUrl(static::OPERATION_CHECK_REGISTRY, $token, array('CHECK_TYPE' => $checkType));
+		$operation = $check::getCalculatedSign() === Check::CALCULATED_SIGN_INCOME ? 'sell' : 'sell_refund';
+		$url = $this->getUrl(static::OPERATION_CHECK_REGISTRY, $token, array('CHECK_TYPE' => $operation));
 
 		$result = $this->send(static::REQUEST_TYPE_POST, $url, $checkQuery);
 		if (!$result->isSuccess())
@@ -265,7 +263,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 				return $printResult;
 			}
 
-			$url = $this->getUrl(static::OPERATION_CHECK_REGISTRY, $token, array('CHECK_TYPE' => $checkType));
+			$url = $this->getUrl(static::OPERATION_CHECK_REGISTRY, $token, array('CHECK_TYPE' => $operation));
 			$result = $this->send(static::REQUEST_TYPE_POST, $url, $checkQuery);
 			if (!$result->isSuccess())
 				return $result;
@@ -338,6 +336,12 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 			$response = $result->getData();
 		}
 
+		if ($response['status'] === 'wait')
+		{
+			$result->addError(new Main\Error(Localization\Loc::getMessage('SALE_CASHBOX_ATOL_REQUEST_STATUS_WAIT')));
+			return $result;
+		}
+
 		return static::applyCheckResult($response);
 	}
 
@@ -345,7 +349,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	 * @param array $checkData
 	 * @return Result
 	 */
-	private function validate(array $checkData)
+	protected function validate(array $checkData)
 	{
 		$result = new Result();
 
@@ -377,6 +381,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		$result = new Result();
 
 		$http = new Main\Web\HttpClient();
+		$http->setHeader('Content-Type', 'application/json; charset=utf-8');
 
 		if ($method === static::REQUEST_TYPE_POST)
 		{
@@ -460,12 +465,15 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 			'ITEMS' => array()
 		);
 
-		$systemPaymentType = array('Y' => 0, 'N' => 1, 'A' => 1);
+		$systemPaymentType = array(
+			Check::PAYMENT_TYPE_CASH => 0,
+			Check::PAYMENT_TYPE_CASHLESS => 1,
+		);
 		foreach ($systemPaymentType as $type => $value)
 		{
 			$settings['PAYMENT_TYPE']['ITEMS'][$type] = array(
 				'TYPE' => 'STRING',
-				'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_P_TYPE_LABEL_'.$type),
+				'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_P_TYPE_LABEL_'.ToUpper($type)),
 				'VALUE' => $value
 			);
 		}
@@ -614,11 +622,4 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		return Errors\Error::TYPE;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public static function isSupportedFFD105()
-	{
-		return false;
-	}
 }

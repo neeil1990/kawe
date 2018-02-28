@@ -112,12 +112,6 @@ class Tax
 			throw new Main\ObjectNotFoundException('Entity "Order" not found');
 		}
 
-		/** @var Basket $basket */
-		if (!$basket = $order->getBasket())
-		{
-			throw new Main\ObjectNotFoundException('Entity "Basket" not found');
-		}
-
 		$taxResult = array();
 
 		$taxList = $this->getTaxList();

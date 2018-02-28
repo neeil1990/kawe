@@ -608,7 +608,7 @@ class CForumMessage extends CAllForumMessage
 							$val = explode(",", $val);
 						if (!in_array(2, $val))
 							$val[] = 2;
-						$val = implode(",", $val);
+						$val = implode(",", array_map("intval", $val));
 						$arIndexFields[] = "FP.GROUP_ID";
 						$arSqlFrom["FP"] = "LEFT JOIN b_forum_perms FP ON (FP.FORUM_ID=FM.FORUM_ID)";
 						$arSqlSearch[] = "FP.GROUP_ID IN (".$DB->ForSql($val).") AND ((FP.PERMISSION IN ('E','I','M') AND FM.APPROVED='Y') OR (FP.PERMISSION IN ('Q','U','Y')))";

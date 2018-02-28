@@ -88,7 +88,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 		$sum = $this->getValueByTag($this->getOperationXml($request), 'amount');
 		$paymentSum = $this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY');
 
-		return PriceMaths::roundByFormatCurrency($paymentSum, $payment->getField('CURRENCY')) == PriceMaths::roundByFormatCurrency($sum, $payment->getField('CURRENCY'));
+		return PriceMaths::roundPrecision($paymentSum) === PriceMaths::roundPrecision($sum);
 	}
 
 	/**
@@ -108,7 +108,7 @@ class LiqPayHandler extends PaySystem\ServiceHandler
 	{
 		return array(
 			'pay' => array(
-				self::ACTIVE_URL => 'https://liqpay.ua/?do=clickNbuy'
+				self::ACTIVE_URL => 'https://www.liqpay.ua/?do=clickNbuy'
 			)
 		);
 	}

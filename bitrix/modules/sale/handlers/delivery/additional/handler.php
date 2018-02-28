@@ -791,7 +791,13 @@ class AdditionalHandler extends Base
 
 		if($serviceType == "RUSPOST" )
 		{
-			if(!empty($shopLocation['CODE']))
+			$zipFrom = \CSaleHelper::getShopLocationZIP();
+
+			if(strlen($zipFrom) > 0)
+			{
+				$result["ZIP_FROM"] = $zipFrom;
+			}
+			elseif(!empty($shopLocation['CODE']))
 			{
 				$extLoc = LocationHelper::getZipByLocation($shopLocation['CODE'], array('limit' => 1))->fetch();
 
@@ -799,7 +805,14 @@ class AdditionalHandler extends Base
 					$result["ZIP_FROM"] = $extLoc['XML_ID'];
 			}
 
-			if(!empty($locToInternalCode))
+			$zipTo = $props->getDeliveryLocationZip();
+			$zipTo = !!$zipTo ? $zipTo->getValue() : "";
+
+			if(strlen($zipTo) > 0)
+			{
+				$result["ZIP_TO"] = $zipTo;
+			}
+			elseif(!empty($locToInternalCode))
 			{
 				$extLoc = LocationHelper::getZipByLocation($locToInternalCode, array('limit' => 1))->fetch();
 

@@ -1278,9 +1278,11 @@ class CAllForumUser
 	{
 		if ($arFields["RESULT"] &&
 			array_key_exists("PERSONAL_PHOTO", $arFields) && $arFields["PERSONAL_PHOTO"] > 0 &&
-			($user = CForumUser::GetByUSER_ID($arFields["ID"])) && $user)
+			($user = CForumUser::GetByUSER_ID($arFields["ID"])) && $user &&
+			($avatar = CFile::MakeFileArray($arFields["PERSONAL_PHOTO"])) &&
+			is_array($avatar))
 		{
-			self::Update($user["ID"], array( "AVATAR" => CFile::MakeFileArray($arFields["PERSONAL_PHOTO"]) + array("old_file" => $user["AVATAR"])));
+			self::Update($user["ID"], array( "AVATAR" => $avatar + array("old_file" => $user["AVATAR"])));
 		}
 	}
 }

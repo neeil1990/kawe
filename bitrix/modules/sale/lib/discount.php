@@ -1189,9 +1189,8 @@ class Discount
 		{
 			if ($this->isBasketNotEmpty())
 			{
-				$basket->rewind();
 				/** @var BasketItem $basketItem */
-				$basketItem = $basket->current();
+				$basketItem = $basket->rewind();
 				$currency = $basketItem->getCurrency();
 				unset($basketItem);
 			}
@@ -1788,8 +1787,15 @@ class Discount
 
 			$couponsResult = $this->calculateApplyAdditionalCoupons();
 			if (!$couponsResult->isSuccess())
+			{
 				$result->addErrors($couponsResult->getErrors());
+				unset($couponsResult);
+				return $result;
+			}
 			unset($couponsResult);
+
+			if ($this->isRoundMode(self::ROUND_MODE_FINAL_PRICE))
+				$this->roundFullBasketPrices();
 		}
 
 		return $result;
@@ -1868,7 +1874,11 @@ class Discount
 
 			$couponsResult = $this->calculateApplyAdditionalCoupons();
 			if (!$couponsResult->isSuccess())
+			{
 				$result->addErrors($couponsResult->getErrors());
+				unset($couponsResult);
+				return $result;
+			}
 			unset($couponsResult);
 
 			if ($this->isRoundMode(self::ROUND_MODE_FINAL_PRICE))
@@ -2692,8 +2702,16 @@ class Discount
 			|| !isset($this->saleDiscountCache[$this->saleDiscountCacheKey][$this->currentStep['cacheIndex']])
 		)
 			return false;
-		$key = $this->enableCheckingPrediction? 'PREDICTIONS_APP' : 'UNPACK';
+
+		$key = 'UNPACK';
 		$executeKey = $key.'_EXECUTE';
+
+		if ($this->enableCheckingPrediction && !empty($this->saleDiscountCache[$this->saleDiscountCacheKey][$this->currentStep['cacheIndex']]['PREDICTIONS_APP']))
+		{
+			$key = 'PREDICTIONS_APP';
+			$executeKey = $key.'_EXECUTE';
+		}
+
 		if (empty($this->saleDiscountCache[$this->saleDiscountCacheKey][$this->currentStep['cacheIndex']][$key]))
 			return false;
 

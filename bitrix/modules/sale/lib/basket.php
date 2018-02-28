@@ -168,23 +168,33 @@ class Basket extends BasketBase
 
 		$sqlExpiredDate = $sqlHelper->getDateToCharFunction("'" . $expiredValue . "'");
 
-		$query = "DELETE FROM b_sale_basket_props WHERE
-									BASKET_ID IN (
-										 SELECT ID FROM b_sale_basket WHERE
-													FUSER_ID IN (
-															SELECT b_sale_fuser.id FROM b_sale_fuser WHERE
-																	b_sale_fuser.DATE_UPDATE < ".$sqlExpiredDate."
-																	AND b_sale_fuser.USER_ID IS NULL
-															)  AND ORDER_ID IS NULL
-									) LIMIT " . static::BASKET_DELETE_LIMIT;
+		$query = "
+			DELETE bsbp 
+			FROM b_sale_basket_props as bsbp 
+				INNER JOIN b_sale_basket as bsb ON bsbp.BASKET_ID = bsb.ID
+				LEFT JOIN b_sale_fuser bsf ON bsf.ID = bsb.FUSER_ID 
+			WHERE 
+				bsf.DATE_UPDATE < ".$sqlExpiredDate." 
+				AND
+				bsf.USER_ID IS NULL 
+				AND 
+				bsb.ORDER_ID IS NULL
+			LIMIT ".static::BASKET_DELETE_LIMIT;
+
 		$connection->queryExecute($query);
 
-		$query = "DELETE FROM b_sale_basket	WHERE
-								FUSER_ID IN (
-										SELECT b_sale_fuser.id FROM b_sale_fuser WHERE
-												b_sale_fuser.DATE_UPDATE < ".$sqlExpiredDate."
-												AND b_sale_fuser.USER_ID IS NULL
-										) AND ORDER_ID IS NULL LIMIT " . static::BASKET_DELETE_LIMIT;
+		$query = "
+			DELETE bsb 
+			FROM b_sale_basket as bsb 
+				LEFT JOIN b_sale_fuser bsf ON bsf.ID = bsb.FUSER_ID  
+			WHERE 
+				bsf.DATE_UPDATE < ".$sqlExpiredDate." 
+				AND
+				bsf.USER_ID IS NULL 
+				AND 
+				bsb.ORDER_ID IS NULL
+			LIMIT ".static::BASKET_DELETE_LIMIT;
+
 		$connection->queryExecute($query);
 
 		return true;
@@ -398,6 +408,30 @@ class Basket extends BasketBase
 		$registry  = Registry::getInstance(Registry::REGISTRY_TYPE_ORDER);
 
 		return $registry->getBasketItemClassName();
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getContext()
+	{
+		global $USER;
+		$context = array();
+
+		$order = $this->getOrder();
+		/** @var OrderBase $order */
+		if ($order)
+		{
+			$context['USER_ID'] = $order->getUserId();
+			$context['SITE_ID'] = $order->getSiteId();
+			$context['CURRENCY'] = $order->getCurrency();
+		}
+		else
+		{
+			$context = parent::getContext();
+		}
+
+		return $context;
 	}
 
 }

@@ -326,6 +326,8 @@ $oFilter->End();
 
 if (!Cashbox\Manager::isSupportedFFD105())
 {
+	Cashbox\Cashbox::init();
+
 	$cashboxList = Cashbox\Manager::getListFromCache();
 	$cashboxFfd105 = array();
 	$cashboxNoFfd105 = array();

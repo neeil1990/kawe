@@ -112,6 +112,8 @@
 
 							<?if($prop["TYPE"] == "Y/N"):?>
 								<?=GetMessage('SPOD_'.($prop["VALUE"] == "Y" ? 'YES' : 'NO'))?>
+							<?elseif ($prop["TYPE"] == "FILE"):?>
+								<?=$prop["VALUE"]?>
 							<?else:?>
 								<?=htmlspecialcharsbx($prop["VALUE"])?>
 							<?endif?>

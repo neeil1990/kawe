@@ -259,7 +259,7 @@ if($obModule->errors===false && $catalog == "Y" && strlen($catalog_dir) > 0):
 	{
 		?>
 		<tr>
-			<td width="0%"><p>[<?=$site["ID"]?>] <?=$site["NAME"]?></p></td>
+			<td width="0%"><p>[<?=$site["ID"]?>] <?=htmlspecialcharsbx($site["NAME"])?></p></td>
 			<td width="0%"><p><a href="<?if(strlen($site["SERVER_NAME"])>0) echo "http://".$site["SERVER_NAME"];?><?=$site["DIR"].$catalog_dir?>/"><?=$site["DIR"].$catalog_dir?>/</a></p></td>
 		</tr>
 		<?

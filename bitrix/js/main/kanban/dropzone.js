@@ -368,9 +368,11 @@ BX.Kanban.DropZone.prototype =
 	{
 		if (!this.layout.name)
 		{
+			var isDark = BX.Kanban.Utils.isDarkColor(this.getColor());
+
 			this.layout.name = BX.create("div", {
 				attrs: {
-					className: "main-kanban-dropzone-title"
+					className: isDark ? "main-kanban-dropzone-title" : "main-kanban-dropzone-title main-kanban-dropzone-title-light"
 				}
 			})
 		}

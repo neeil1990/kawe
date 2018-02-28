@@ -62,7 +62,7 @@ if ($db_res && ($res = $db_res->Fetch()))
 				foreach ($arSites as $res):
 					?><tr>
 						<td><input type="checkbox" name="PUBLIC_INFO[<?=$iIndex?>][ID]" id="ID_<?=$iIndex?>" value="<?=$iIndex?>" onclick="ChangeInstallPublic(this)" checked="checked" /></td>
-						<td><input name="PUBLIC_INFO[<?=$iIndex?>][PATH]" type="text" value="<?=$res["DIR"]?>" /></td>
+						<td><input name="PUBLIC_INFO[<?=$iIndex?>][PATH]" type="text" value="<?=htmlspecialcharsbx($res["DIR"])?>" /></td>
 						<td><select name="PUBLIC_INFO[<?=$iIndex?>][MODE]">
 							<option value="sef"><?=GetMessage("FORUM_HEADER_MODE_SEF")?></option>
 							<option value="nsef"><?=GetMessage("FORUM_HEADER_MODE_NSEF")?></option></select></td></tr><?

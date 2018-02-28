@@ -421,9 +421,11 @@ foreach ($arResult["QUESTIONS"] as $key => $arQuestion):
 			$arResult["QUESTIONS"][$key][$keyq] = htmlspecialcharsbx($valq);
 			$arResult["QUESTIONS"][$key]["~".$keyq] = $valq;
 		elseif (is_array($valq) && $keyq == "ANSWERS"):
-			foreach ($valq as $keya => $vala):
-				$arResult["QUESTIONS"][$key]["ANSWERS"][$keya] = htmlspecialcharsbx($vala);
-				$arResult["QUESTIONS"][$key]["~ANSWERS"][$keya] = $vala;
+			foreach ($valq as $keyAnswer => $valAnswer):
+				foreach ($valAnswer as $k => $v):
+					$arResult["QUESTIONS"][$key]["ANSWERS"][$keyAnswer][$k] = htmlspecialcharsbx($v);
+					$arResult["QUESTIONS"][$key]["~ANSWERS"][$keyAnswer][$k] = $v;
+				endforeach;
 			endforeach;
 		endif;
 	endforeach;

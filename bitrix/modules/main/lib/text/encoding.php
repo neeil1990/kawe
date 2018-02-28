@@ -19,6 +19,26 @@ class Encoding
 		$this->errors = new ErrorCollection();
 	}
 
+	public static function resolveAlias($alias)
+	{
+		static $map = array(
+			'csksc56011987'  => 'euc-kr',
+			'ks_c_5601-1987' => 'euc-kr',
+			'ks_c_5601-1989' => 'euc-kr',
+			'ksc5601'        => 'euc-kr',
+			'ksc_5601'       => 'euc-kr',
+		);
+
+		if (is_string($alias))
+		{
+			$alias = strtolower(trim($alias));
+			if (array_key_exists($alias, $map))
+				return $map[$alias];
+		}
+
+		return $alias;
+	}
+
 	/**
 	 * Converts data from a source encoding to a target encoding.
 	 *
@@ -30,6 +50,9 @@ class Encoding
 	 */
 	public static function convertEncoding($data, $charsetFrom, $charsetTo, &$errorMessage = "")
 	{
+		$charsetFrom = static::resolveAlias($charsetFrom);
+		$charsetTo   = static::resolveAlias($charsetTo);
+
 		if(strcasecmp($charsetFrom, $charsetTo) == 0)
 		{
 			//no need to convert

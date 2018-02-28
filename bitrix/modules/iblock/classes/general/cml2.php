@@ -1434,6 +1434,7 @@ class CIBlockCMLImport
 
 	function ImportStores($XML_STORES_PARENT)
 	{
+		$error = '';
 		$ID = 0;
 		$arDBStores = array();
 		$rsStore = CCatalogStore::GetList(array(), array(), false, false, array("ID", "XML_ID"));
@@ -1482,14 +1483,20 @@ class CIBlockCMLImport
 			{
 				if ((count($arDBStores) < 1) || CBXFeatures::IsFeatureEnabled('CatMultiStore'))
 					$arDBStores[$arStore["XML_ID"]] = $ID = CCatalogStore::Add($arStore);
+				else
+					$error = GetMessage("IBLOCK_XML2_MULTI_STORE_IMPORT_ERROR");
 			}
 			else
 			{
 				if ((count($arDBStores) <= 1) || CBXFeatures::IsFeatureEnabled('CatMultiStore'))
 					$ID = CCatalogStore::Update($arDBStores[$arStore["XML_ID"]], $arStore);
+				else
+					$error = GetMessage("IBLOCK_XML2_MULTI_STORE_IMPORT_ERROR");
 			}
 		}
 
+		if($error)
+			return $error;
 		if(!$ID)
 			return false;
 		return true;

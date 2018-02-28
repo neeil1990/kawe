@@ -970,7 +970,7 @@
 					}
 				);
 
-				BX.style(this.popup.popupContainer, 'min-width', nodeRect.width + 'px');
+				BX.style(this.popup.popupContainer, 'width', nodeRect.width + 'px');
 				BX.addClass(this.popup.popupContainer, this.classPopup);
 
 				popupItems = this.createPopupItems(items);

@@ -152,7 +152,7 @@ $arComponentParameters = array(
 			"NAME" => GetMessage("SOA_PATH_TO_BASKET1"),
 			"TYPE" => "STRING",
 			"MULTIPLE" => "N",
-			"DEFAULT" => "basket.php",
+			"DEFAULT" => "/personal/cart/",
 			"COLS" => 25,
 			"PARENT" => "ADDITIONAL_SETTINGS",
 		),

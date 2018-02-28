@@ -771,6 +771,7 @@
 	overflow: hidden;
 	position: relative;
 	font-family: "OpenSans-Light", "Helvetica Neue", Arial, Helvetica, sans-serif;
+	min-height: 25px;
 	line-height: 70px;
 	color: #525c68;
 	text-align: center;
@@ -948,22 +949,20 @@
 	-webkit-box-align: end;
 	-ms-flex-align: end;
 	align-items: flex-end;
-	overflow: hidden;
 	left: 0;
 	bottom: 0;
 	padding: 0;
-	height: 0;
+	height: 67px;
 	width: 100%;
 	line-height: 0;
-	opacity: 0;
-	z-index: -9999;
+	opacity: 1;
+	pointer-events: none;
+	z-index: 99;
 }
 
 .main-kanban-dropzone-show {
-	z-index: 9999;
 	opacity: 1;
-	-webkit-animation: main-kanban-dropzone-show .5s forwards;
-	animation: main-kanban-dropzone-show .5s forwards;
+	pointer-events: auto;
 }
 
 @keyframes main-kanban-dropzone-show {
@@ -990,18 +989,16 @@
 	-webkit-box-direction: normal;
 	-ms-flex-direction: column;
 	flex-direction: column;
-	height: 40px;
-	-ms-flex-line-pack: center;
+	height: 100%;
 	align-content: center;
 	-webkit-box-pack: center;
 	-ms-flex-pack: center;
 	justify-content: center;
-	-webkit-transition: .2s;
 	transition: .2s;
 }
 
-.main-kanban-dropzone-area-active .main-kanban-dropzone {
-	height: 60px;
+.main-kanban-dropzone-active {
+
 }
 
 .main-kanban-dropzone-title {
@@ -1009,36 +1006,60 @@
 	position: relative;
 	text-align: center;
 	font-size: 16px;
-	color: #666;
+	color: #fff;
+	opacity: 0;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	line-height: normal;
+	line-height: 160px;
 	padding: 0 15px;
 	z-index: 9;
-	-webkit-transition: .2s;
-	transition: .2s;
+	transition: 1s;
+}
+
+.main-kanban-dropzone-title-light {
+	color: #333;
 }
 
 .main-kanban-dropzone-bg {
 	position: absolute;
-	top: 0;
 	left: 0;
 	bottom: 0;
 	right: 0;
-	opacity: .3;
-	-webkit-transition: .2s;
-	transition: .2s;
+	opacity: .8;
+	height: 0;
+	transition: 1.1s;
 }
 
-.main-kanban-dropzone-active .main-kanban-dropzone-title,
-.main-kanban-dropzone-captured .main-kanban-dropzone-title {
-	color: #fff;
+.main-kanban-dropzone-show .main-kanban-dropzone-title {
+	line-height: 60px;
+	opacity: 1;
+	transition: .4s;
+}
+
+.main-kanban-dropzone-show .main-kanban-dropzone-bg {
+	height: calc(100% - 8px);
+	transition: .3s;
+}
+
+.main-kanban-dropzone-show .main-kanban-dropzone-bg {
+	opacity: .9;
+}
+
+.main-kanban-dropzone-show .main-kanban-dropzone-bg {
+	opacity: .9;
 }
 
 .main-kanban-dropzone-active .main-kanban-dropzone-bg,
 .main-kanban-dropzone-captured .main-kanban-dropzone-bg {
-	opacity: .8;
+	opacity: 1;
+	height: 68px;
+}
+
+.main-kanban-dropzone-active .main-kanban-dropzone-title,
+.main-kanban-dropzone-captured .main-kanban-dropzone-title {
+	transform: translateY(-7px);
+	transition: .3s;
 }
 
 .main-kanban-dropzone-cancel {

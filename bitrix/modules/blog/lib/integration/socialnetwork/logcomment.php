@@ -79,7 +79,8 @@ class LogComment
 				$metadata = \Bitrix\Main\UrlPreview\UrlMetadataTable::getRowById($commentFieldList['UF_BLOG_COMM_URL_PRV']);
 				if (
 					$metadata
-					&& !empty($metadata['TITLE'])
+					&& isset($metadata['TITLE'])
+					&& strlen($metadata['TITLE']) > 0
 				)
 				{
 					$content .= ' '.$metadata['TITLE'];

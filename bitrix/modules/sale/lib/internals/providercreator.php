@@ -247,7 +247,14 @@ class ProviderCreator
 		/** @var ProviderBuilderBase $builder */
 		foreach ($this->pool as $builder)
 		{
-			$r = $builder->setItemsResultAfterTryShip($pool, $productTryShipList);
+			$providerName = $builder->getProviderName();
+
+			if (!$productTryShipList[$providerName])
+			{
+				continue;
+			}
+
+			$r = $builder->setItemsResultAfterTryShip($pool, $productTryShipList[$providerName]);
 			if (!$r->isSuccess())
 			{
 				$result->addErrors($r->getErrors());
@@ -415,9 +422,19 @@ class ProviderCreator
 			if ($r->isSuccess())
 			{
 				$data = $r->getData();
+
+				$providerName = null;
+
+				$providerClass = $builder->getProviderClass();
+				if ($providerClass)
+				{
+					$reflect = new \ReflectionClass($providerClass);
+					$providerName = $this->clearProviderName($reflect->getName());
+				}
+
 				if (!empty($data[$outputName]))
 				{
-					$resultList = $data[$outputName] + $resultList;
+					$resultList[$providerName] = $data[$outputName];
 				}
 			}
 			else

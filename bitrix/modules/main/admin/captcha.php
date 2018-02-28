@@ -158,7 +158,6 @@ $arSettings = array(
 	),
 );
 
-include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/captcha.php");
 $cpt = new CCaptcha;
 $dh = opendir($_SERVER["DOCUMENT_ROOT"].$cpt->GetTTFFontsPath());
 if($dh)

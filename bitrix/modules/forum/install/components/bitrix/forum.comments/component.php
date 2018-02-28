@@ -36,6 +36,7 @@ $arParams["MESSAGES_PER_PAGE"] = intVal($arParams["MESSAGES_PER_PAGE"] > 0 ? $ar
 $arParams["DATE_TIME_FORMAT"] = trim(empty($arParams["DATE_TIME_FORMAT"]) ? $DB->DateFormatToPHP(CSite::GetDateFormat("FULL")) : $arParams["DATE_TIME_FORMAT"]);
 $arParams["NAME_TEMPLATE"] = empty($arParams["NAME_TEMPLATE"]) ? "" : str_replace(array("#NOBR#","#/NOBR#"), array("",""), $arParams["NAME_TEMPLATE"]);
 $arParams["PREORDER"] = ($arParams["PREORDER"] == "Y" ? "Y" : "N");
+$arParams["SET_LAST_VISIT"] = empty($arParams["SET_LAST_VISIT"]) ? "N" : ($arParams["SET_LAST_VISIT"] == "Y" ? "Y" : "N");
 
 $arParams["SHOW_RATING"] = ($arParams["SHOW_RATING"] == "Y" ? "Y" : "N");
 $arParams["PAGE_NAVIGATION_TEMPLATE"] = trim($arParams["PAGE_NAVIGATION_TEMPLATE"]);
@@ -301,7 +302,10 @@ $cache_id = "forum_comment_".serialize($ar_cache_id);
 
 if ($arResult['DO_NOT_CACHE'] || $this->StartResultCache($arParams["CACHE_TIME"], $cache_id))
 {
-	ForumSetLastVisit($arParams["FORUM_ID"], $arResult["FORUM_TOPIC_ID"], array("nameTemplate" => $arParams["NAME_TEMPLATE"]));
+	if ($arParams["SET_LAST_VISIT"] == "Y")
+	{
+		ForumSetLastVisit($arParams["FORUM_ID"], $arResult["FORUM_TOPIC_ID"], array("nameTemplate" => $arParams["NAME_TEMPLATE"]));
+	}
 	if ($arResult["FORUM_TOPIC_ID"] > 0)
 	{
 		$arMessages = array();
@@ -372,6 +376,11 @@ if ($arResult['DO_NOT_CACHE'] || $this->StartResultCache($arParams["CACHE_TIME"]
 					}
 					/************** Message info/***************************************/
 					/************** Author info ****************************************/
+					if (empty($res["NAME"]) && !empty($res["AUTHOR_NAME"]))
+					{
+						$res["NAME"] = $res["AUTHOR_NAME"];
+						$res["~NAME"] = $res["~AUTHOR_NAME"];
+					}
 					if (!empty($arParams["NAME_TEMPLATE"]) && $res["SHOW_NAME"] != "Y")
 					{
 						$name = CUser::FormatName(

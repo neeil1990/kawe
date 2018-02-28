@@ -22,7 +22,7 @@ function __getEnumUserFields($ufId=false, $clear=false)
 {
 	static $userFieldsEnums = array();
 
-	if ($clear && array_key_exists($ufId, $userFieldsEnums))
+	if ($clear && $ufId !== false &&array_key_exists($ufId, $userFieldsEnums))
 	{
 		unset($userFieldsEnums[$ufId]);
 	}
@@ -105,6 +105,7 @@ function __hlImportPrepareField($value, &$userField, array $params=array())
 
 // init data
 $hls = array();
+$hlsOriginal = array();
 $hlTables = array();
 $xmlFields = array();
 $res = HL\HighloadBlockTable::getList(array(
@@ -117,6 +118,8 @@ $res = HL\HighloadBlockTable::getList(array(
 ));
 while ($row = $res->fetch())
 {
+	$hlsOriginal[$row['ID']] = $row;
+
 	$row['NAME'] = $row['NAME_LANG'] != '' ? $row['NAME_LANG'] : $row['NAME'];
 
 	// get fields for HL
@@ -413,7 +416,7 @@ if ($request->get('start') == 'Y' && $server->getRequestMethod() == 'POST')
 	// import data
 	$import->registerNodeHandler(
 		'/hiblock/items/item',
-		function (CDataXML $xmlObject) use (&$NS, $hls, $filesPath, $userFelds, &$errors, $USER_FIELD_MANAGER)
+		function (CDataXML $xmlObject) use (&$NS, $hls, $filesPath, $userFelds, &$errors, $USER_FIELD_MANAGER, $hlsOriginal)
 		{
 			static $class = null;
 			static $hlLocal = null;
@@ -469,7 +472,7 @@ if ($request->get('start') == 'Y' && $server->getRequestMethod() == 'POST')
 					}
 					if ($class === null)
 					{
-						if ($entity = HL\HighloadBlockTable::compileEntity($hls[$NS['object']]))
+						if ($entity = HL\HighloadBlockTable::compileEntity($hlsOriginal[$NS['object']]))
 						{
 							$class = $entity->getDataClass();
 						}

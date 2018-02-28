@@ -77,6 +77,8 @@ if (check_bitrix_sessid())
 	}
 	elseif ($_POST['PULL_UPDATE_STATE'] == 'Y')
 	{
+		$serverTime = date('c');
+		$serverTimeUnix = microtime(true);
 		$arMessage = CPullStack::Get($_POST['CHANNEL_ID'], intval($_POST['CHANNEL_LAST_ID']));
 
 		if (!empty($counters))
@@ -86,7 +88,8 @@ if (check_bitrix_sessid())
 				'command' => 'user_counter',
 				'params' => $counters,
 				'extra' => Array(
-					'server_time' => date('c'),
+					'server_time' => $serverTime,
+					'server_time_unix' => $serverTimeUnix,
 					'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
 					'revision' => PULL_REVISION,
 					'revision_mobile' => PULL_REVISION_MOBILE,

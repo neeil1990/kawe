@@ -6,7 +6,6 @@ define("NOT_CHECK_PERMISSIONS", true);
 $HTTP_ACCEPT_ENCODING = "";
 $_SERVER["HTTP_ACCEPT_ENCODING"] = "";
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
-include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/captcha.php");
 
 $cpt = new CCaptcha();
 

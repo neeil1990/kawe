@@ -23,6 +23,7 @@ class CAllPullStack
 			$data['id'] = $arRes['ID'];
 			$data['extra'] = Array(
 				'server_time' => date('c'),
+				'server_time_unix' => microtime(true),
 				'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
 				'revision' => PULL_REVISION,
 				'revision_mobile' => PULL_REVISION_MOBILE,
@@ -55,11 +56,19 @@ class CAllPullStack
 
 		$extra = is_array($params['extra'])? $params['extra']: Array();
 		$extra = array_merge($extra, Array(
-			'server_time' => date('c'),
 			'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
 			'revision' => PULL_REVISION,
 			'revision_mobile' => PULL_REVISION_MOBILE,
 		));
+
+		if (!isset($extra['server_time']))
+		{
+			$extra['server_time'] = date('c');
+		}
+		if (!$extra['server_time_unix'])
+		{
+			$extra['server_time_unix'] = microtime(true);
+		}
 
 		$arData = Array(
 			'module_id' => strtolower($params['module_id']),
@@ -74,7 +83,7 @@ class CAllPullStack
 				$arData['extra']['channel'] = $channelId;
 			}
 
-			$options = isset($params['expiry']) ? array('expiry' => intval($params['expiry'])) : array();
+			$options = array('expiry' => isset($params['expiry'])? intval($params['expiry']): 86400);
 			$res = CPullChannel::Send($channelId, \Bitrix\Pull\Common::jsonEncode($arData), $options);
 			$result = $res? true: false;
 		}

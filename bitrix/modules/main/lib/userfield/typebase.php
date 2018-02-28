@@ -136,4 +136,15 @@ abstract class TypeBase
 
 		return static::normalizeFieldValue($value);
 	}
+
+	public static function getPublicText($userField)
+	{
+		$value = static::normalizeFieldValue($userField['VALUE']);
+
+		return join(', ', array_map(function ($v)
+		{
+			return is_null($v) || is_scalar($v) ? (string) $v : '';
+		}, $value));
+	}
+
 }

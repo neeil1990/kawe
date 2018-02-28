@@ -1039,8 +1039,7 @@
 			if (message[i].extra.revision && !BX.PULL.checkRevision(message[i].extra.revision))
 				return false;
 
-			message[i].extra.server_time_unix = parseInt((new Date(message[i].extra.server_time)).getTime()/1000);
-			message[i].extra.server_time_ago = parseInt(((new Date()).getTime()-(new Date(message[i].extra.server_time)).getTime())/1000);
+			message[i].extra.server_time_ago = (((new Date()).getTime()-(message[i].extra.server_time_unix*1000))/1000);
 
 			if (message[i].module_id == 'pull')
 			{
@@ -1442,7 +1441,7 @@
 		if (typeof(buttons) == "undefined" || typeof(buttons) == "object" && buttons.length <= 0)
 		{
 			buttons = [new BX.PopupWindowButton({
-				text : BX.message('IM_NOTIFY_CONFIRM_CLOSE'),
+				text : BX.message('JS_CORE_WINDOW_CLOSE'),
 				className : "popup-window-button-decline",
 				events : { click : function(e) { this.popupWindow.close(); BX.PreventDefault(e) } }
 			})];

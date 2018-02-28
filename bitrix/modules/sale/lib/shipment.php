@@ -1303,7 +1303,34 @@ class Shipment
 	 */
 	public function deliver()
 	{
-		return Provider::deliverShipment($this);
+		$order = $this->getParentOrder();
+		if (!$order)
+		{
+			throw new Main\ObjectNotFoundException('Entity "Order" not found');
+		}
+
+		$context = array(
+			'USER_ID' => $order->getUserId(),
+			'SITE_ID' => $order->getSiteId(),
+		);
+
+		$creator = Internals\ProviderCreator::create($context);
+
+		$shipmentItemCollection = $this->getShipmentItemCollection();
+
+		/** @var ShipmentItemCollection $shipmentItemCollection */
+		if (!$shipmentItemCollection)
+		{
+			throw new Main\ObjectNotFoundException('Entity "ShipmentItemCollection" not found');
+		}
+
+		/** @var ShipmentItem $shipmentItem */
+		foreach ($shipmentItemCollection as $shipmentItem)
+		{
+			$creator->addShipmentItem($shipmentItem);
+		}
+
+		return $creator->deliver();
 	}
 
 	/**

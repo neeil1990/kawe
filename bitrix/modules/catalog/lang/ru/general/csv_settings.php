@@ -28,6 +28,7 @@ $MESS["I_PAY_PERIOD_LENGTH"] = "Длина периода оплаты";
 $MESS["I_PAY_PERIOD_TYPE"] = "Единица времени периода оплаты";
 $MESS["I_TRIAL_FOR"] = "Пробная для (ID)";
 $MESS["I_WITHOUT_ORDER"] = "Продление без оформления заказа";
+$MESS["I_VAT_ID"] = "ID ставки НДС";
 $MESS["I_VAT_INCLUDED"] = "НДС включен в цену";
 $MESS["I_NAME_PRICE"] = "Цена";
 $MESS["I_NAME_CURRENCY"] = "Валюта";

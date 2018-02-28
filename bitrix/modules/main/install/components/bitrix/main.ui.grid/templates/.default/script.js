@@ -108,6 +108,7 @@
 	BX.Main.grid.prototype = {
 		init: function(containerId, arParams, userOptions, userOptionsActions, userOptionsHandlerUrl, panelActions, panelTypes, editorTypes, messageTypes)
 		{
+			this.baseUrl = window.location.pathname + window.location.search;
 			this.initArguments = [].slice.call(arguments);
 			this.container = BX(containerId);
 
@@ -129,6 +130,7 @@
 			if (event.animationName === 'main-grid-load')
 			{
 				this.initAfterResourcesReady.apply(this, this.initArguments);
+				BX.unbind(this.container, 'animationend', BX.proxy(this._onResourcesReady, this));
 			}
 		},
 
@@ -1585,6 +1587,7 @@
 
 
 		/**
+		 * Gets loader instance
 		 * @return {BX.Grid.Loader}
 		 */
 		getLoader: function()

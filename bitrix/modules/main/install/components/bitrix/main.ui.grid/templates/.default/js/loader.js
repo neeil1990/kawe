@@ -13,6 +13,8 @@
 		this.lastPosTop = null;
 		this.lastBottomPos = null;
 		this.table = null;
+		this.loader = null;
+		this.adjustLoaderOffset = this.adjustLoaderOffset.bind(this);
 		this.init(parent);
 	};
 
@@ -21,10 +23,9 @@
 		{
 			this.parent = parent;
 			this.table = this.parent.getTable();
-			BX.bind(this.getContainer(), 'animationend', BX.proxy(this._onAnimationEnd, this));
-			BX.bind(this.getContainer(), 'webkitAnimationEnd', BX.proxy(this._onAnimationEnd, this));
-			BX.bind(this.getContainer(), 'oanimationend', BX.proxy(this._onAnimationEnd, this));
-			BX.bind(this.getContainer(), 'MSAnimationEnd', BX.proxy(this._onAnimationEnd, this));
+			this.loader = new BX.Loader({
+				target: this.getContainer()
+			});
 		},
 
 		adjustLoaderOffset: function()
@@ -58,7 +59,7 @@
 				bottomPos += this.headerPos.height;
 			}
 
-			BX.Grid.Utils.requestAnimationFrame(BX.proxy(function() {
+			requestAnimationFrame(function() {
 				if (posTop !== this.lastPosTop)
 				{
 					this.getContainer().style.transform = 'translate3d(0px, ' + posTop + 'px, 0)';
@@ -71,7 +72,7 @@
 
 				this.lastPosTop = posTop;
 				this.lastBottomPos = bottomPos;
-			}, this));
+			}.bind(this));
 		},
 
 		getContainer: function()
@@ -86,36 +87,19 @@
 
 		show: function()
 		{
-			var loader = this.getContainer();
 			this.adjustLoaderOffset();
-
-			BX.style(loader, 'display', 'block');
-			BX.removeClass(loader, this.parent.settings.get('classLoaderHide'));
-
-			setTimeout(BX.delegate(function() {
-				BX.addClass(loader, this.parent.settings.get('classLoaderShow'));
-			}, this), 0);
+			this.getContainer().style.display = "block";
+			this.getContainer().style.opacity = "1";
+			this.getContainer().style.visibility = "visible";
+			this.loader.show();
 		},
 
 		hide: function()
 		{
-			var loader = this.getContainer();
 			this.adjustLoaderOffset();
-			BX.removeClass(loader, this.parent.settings.get('classLoaderShow'));
-			BX.addClass(loader, this.parent.settings.get('classLoaderHide'));
-		},
-
-		_onAnimationEnd: function(event)
-		{
-			if ('animationName' in event &&
-				event.animationName &&
-				event.animationName === this.parent.settings.get('loaderHideAnimationName'))
-			{
-				var loader = this.getContainer();
-				BX.removeClass(loader, this.parent.settings.get('classLoaderShow'));
-				BX.removeClass(loader, this.parent.settings.get('classLoaderHide'));
-				BX.style(loader, 'display', '');
-			}
+			this.loader.hide().then(function() {
+				this.getContainer().style.display = "none";
+			}.bind(this));
 		}
 	};
 })();

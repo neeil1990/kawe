@@ -1753,14 +1753,14 @@
 
 		CheckForVideo: function(str)
 		{
-			var videoRe = /(?:src)\s*=\s*("|')([\s\S]*?((?:youtube.com)|(?:youtu.be)|(?:rutube.ru)|(?:vimeo.com))[\s\S]*?)(\1)/ig;
+			var videoRe = new RegExp('(?:src)\\s*=\\s*("|\')([\\s\\S]*?((?:youtube.com)|(?:youtu.be)|(?:rutube.ru)|(?:vimeo.com)|(?:vk.com)|(?:' + location.host + '))[\\s\\S]*?)(\\1)', 'ig');
 
 			var res = videoRe.exec(str);
 			if (res)
 			{
 				return {
 					src: res[2],
-					provider: this.GetVideoProviderName(res[3])
+					provider: this.GetVideoProviderName(res[3], str)
 				};
 			}
 			else
@@ -1769,10 +1769,14 @@
 			}
 		},
 
-		GetVideoProviderName: function(url)
+		GetVideoProviderName: function(host, url)
 		{
 			var name = '';
-			switch (url)
+			if(!BX.type.isNotEmptyString(url))
+			{
+				url = '';
+			}
+			switch (host)
 			{
 				case 'youtube.com':
 				case 'youtu.be':
@@ -1783,6 +1787,17 @@
 					break;
 				case 'vimeo.com':
 					name = 'Vimeo';
+					break;
+				case 'vk.com':
+					name = 'Vk';
+					break;
+				case location.host:
+					var providerRe = /((?:provider))=([\S]+)(?:&*)/ig;
+					res = providerRe.exec(url);
+					if(res)
+					{
+						name = res[2];
+					}
 					break;
 			}
 			return name;
@@ -3803,13 +3818,14 @@
 			return res;
 		},
 
-		GetVideoSourse: function(src, params, source)
+		GetVideoSourse: function(src, params, source, title)
 		{
+			title = title || BX.message.BXEdVideoTitle;
 			return this.editor.phpParser.GetVideoHTML({
 				params: {
 					width: params.width,
 					height: params.height,
-					title: BX.message.BXEdVideoTitle,
+					title: title,
 					origTitle: '',
 					provider: params.type
 				},

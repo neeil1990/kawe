@@ -989,7 +989,12 @@ class CTextParser
 		}
 		elseif (in_array($arParams["TYPE"], $trustedProviders))
 		{
-			$uri = new \Bitrix\Main\Web\Uri('http:'.$arParams["PATH"]);
+			// add missing protocol to get host
+			if(substr($arParams['PATH'], 0, 2) == '//')
+			{
+				$arParams['PATH'] = 'http:'.$arParams['PATH'];
+			}
+			$uri = new \Bitrix\Main\Web\Uri($arParams["PATH"]);
 			if(\Bitrix\Main\UrlPreview\UrlPreview::isHostTrusted($uri) || $uri->getHost() == \Bitrix\Main\Application::getInstance()->getContext()->getServer()->getServerName())
 			{
 				// Replace http://someurl, https://someurl by //someurl
@@ -999,7 +1004,7 @@ class CTextParser
 
 				if ($this->bMobile)
 				{
-					?><a href="<?=$pathEncoded?>"><?=$pathEncoded?></a><?
+					?><iframe class="bx-mobile-video-frame" src="<?=$pathEncoded?>" allowfullscreen="" frameborder="0" height="100%" width="100%" style="max-width: 600px; min-height: 300px;"></iframe><?
 				}
 				else
 				{
@@ -1009,56 +1014,21 @@ class CTextParser
 		}
 		else
 		{
+			$playerParams = $arParams;
+			$playerParams['TYPE'] = $arParams['MIME_TYPE'];
+			$playerComponent = 'bitrix:player';
 			if ($this->bMobile)
 			{
-				?><div onclick="return BX.eventCancelBubble(event);"><?
+				$playerComponent = 'bitrix:mobile.player';
 			}
 
 			$APPLICATION->IncludeComponent(
-				"bitrix:player", "",
-				array(
-					"PLAYER_TYPE" => "auto",
-					"USE_PLAYLIST" => "N",
-					"PATH" => $arParams["PATH"],
-					"WIDTH" => $arParams["WIDTH"],
-					"HEIGHT" => $arParams["HEIGHT"],
-					"PREVIEW" => $arParams["PREVIEW"],
-					"LOGO" => "",
-					"FULLSCREEN" => "Y",
-					"SKIN_PATH" => "/bitrix/components/bitrix/player/mediaplayer/skins",
-					"SKIN" => "bitrix.swf",
-					"CONTROLBAR" => "bottom",
-					"WMODE" => "transparent",
-					"HIDE_MENU" => "N",
-					"SHOW_CONTROLS" => "Y",
-					"SHOW_STOP" => "N",
-					"SHOW_DIGITS" => "Y",
-					"CONTROLS_BGCOLOR" => "FFFFFF",
-					"CONTROLS_COLOR" => "000000",
-					"CONTROLS_OVER_COLOR" => "000000",
-					"SCREEN_COLOR" => "000000",
-					"AUTOSTART" => "N",
-					"REPEAT" => "N",
-					"VOLUME" => "90",
-					"DISPLAY_CLICK" => "play",
-					"MUTE" => "N",
-					"HIGH_QUALITY" => "Y",
-					"ADVANCED_MODE_SETTINGS" => "N",
-					"BUFFER_LENGTH" => "10",
-					"DOWNLOAD_LINK" => "",
-					"DOWNLOAD_LINK_TARGET" => "_self",
-					"TYPE" => $arParams['MIME_TYPE'],
-				),
+				$playerComponent, "", $playerParams,
 				null,
 				array(
 					"HIDE_ICONS" => "Y"
 				)
 			);
-
-			if ($this->bMobile)
-			{
-				?></div><?
-			}
 		}
 
 		return ob_get_clean();

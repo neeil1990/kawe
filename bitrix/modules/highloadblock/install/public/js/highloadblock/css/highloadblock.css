@@ -235,7 +235,7 @@ div.filter-field input.webform-field-textbox {height:20px; width:200px; padding:
 .reports-add-popup-it-children .reports-add-pop-left-bord {display:inline-block;}
 .reports-add-popup-item-last .reports-add-pop-left-bord {margin-left:-12px;}
 .reports-add-popup-arrow-open .reports-add-popup-arrow {background-position:-18px -194px; display:inline-block; height: 12px; width: 12px;}
-.reports-add-popup-it-text {display:inline-block; line-height:16px; margin-top:-2px; max-width:250px; overflow:hidden; text-overflow:ellipsis; vertical-align:top;}
+.reports-add-popup-it-text {line-height:16px; margin-top:-2px; max-width:250px; overflow:hidden; text-overflow:ellipsis;}
 .reports-add-popup-it-node .reports-add-popup-it-text {max-width:230px;}
 * + HTML .reports-add-popup-it-text {line-height:16px;}
 .reports-add-popup-it-node {cursor:pointer;}

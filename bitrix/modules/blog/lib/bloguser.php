@@ -11,7 +11,9 @@ namespace Bitrix\Blog;
 use Bitrix\Main\ArgumentNullException;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Data\Cache;
+use Bitrix\Main\SystemException;
 use Bitrix\Main\UserConsent\Internals\ConsentTable;
+use Bitrix\Main\Type\DateTime;
 
 Loc::loadMessages(__FILE__);
 
@@ -243,6 +245,8 @@ class BlogUser
 	
 	private function addNotExistingUsers($ids = array())
 	{
+		global $APPLICATION, $DB;
+		
 //		get Users data
 		$rsUsers = \CUser::GetList(
 			$by = 'id',
@@ -254,12 +258,21 @@ class BlogUser
 		while ($user = $rsUsers->Fetch())
 		{
 //			todo: use new BlogUser class, when finish them
-			\CBlogUser::Add(
+//			check correctly date
+			if (!is_set($user, "DATE_REGISTER") || (!$DB->IsDate($user["DATE_REGISTER"], false, LANG, "FULL")))
+				$user["DATE_REGISTER"] = new DateTime();
+				
+			$resId = \CBlogUser::Add(
 				array(
 					'USER_ID' => $user['ID'],
-					'DATE_REG' => $user['DATE_REGISTER'],
+					'DATE_REG' => $user["DATE_REGISTER"],
 				)
 			);
+			
+//			during ADD process we can catch errors. If not process them - we get infinity cicle between getUsersFromDB>addNotExistingUsers
+			if(!$resId)
+				if($ex = $APPLICATION->GetException())
+					throw new SystemException($ex->GetString());
 		}
 
 //		get created BlogUsers from DB

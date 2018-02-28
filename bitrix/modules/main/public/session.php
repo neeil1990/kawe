@@ -26,7 +26,7 @@ elseif($USER->IsAuthorized())
 	if($_COOKIE[$cookie_prefix.'_UIDH'] <> '')
 	{
 		$salt = $_COOKIE[$cookie_prefix.'_UIDH']."|".$USER->GetID()."|".$_SERVER["REMOTE_ADDR"]."|".@filemtime($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/version.php")."|".LICENSE_KEY."|".CMain::GetServerUniqID();
-		if($_REQUEST["k"] == md5($_REQUEST["sessid"].$salt))
+		if($_REQUEST["k"] === md5($_REQUEST["sessid"].$salt))
 		{
 			bitrix_sessid_set($_REQUEST['sessid']);
 			die("SESSION_CHANGED");

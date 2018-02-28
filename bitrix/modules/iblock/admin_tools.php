@@ -1,5 +1,6 @@
 <?
 use Bitrix\Main,
+	Bitrix\Main\Loader,
 	Bitrix\Iblock;
 
 IncludeModuleLangFile(__FILE__);
@@ -1049,6 +1050,9 @@ class CEditorPopupControl
 	function getControlHtml($name, $value, $maxLength = 255)
 	{
 		$result = '';
+		if (!Loader::includeModule('fileman'))
+			return $result;
+
 		if (!$this->initHtml)
 		{
 			$this->initHtml = true;

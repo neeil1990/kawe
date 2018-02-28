@@ -143,6 +143,7 @@ if($isSavingOperation || $needFieldsRestore)
 				\CSaleMobileOrderPush::send("ORDER_CREATED", array("ORDER_ID" => $order->getId()));
 
 				$customTabber->SetArgs(array("ID" => $order->getId()));
+
 				if (!$customTabber->Action())
 				{
 					if ($ex = $APPLICATION->GetException())
@@ -150,6 +151,8 @@ if($isSavingOperation || $needFieldsRestore)
 					else
 						$errorMessage .= "Custom tabber action unknown error!";
 				}
+
+				$customDraggableBlocks->setArgs(array('ORDER' => $order));
 
 				if (!$customDraggableBlocks->action())
 				{

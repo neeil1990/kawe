@@ -7,6 +7,7 @@ BX.Sale.OrderPaymentChange = (function()
 		this.paymentNumber = params.paymentNumber || {};
 		this.wrapperId = params.wrapperId || "";
 		this.onlyInnerFull = params.onlyInnerFull || "";
+		this.pathToPayment = params.pathToPayment || "";
 		this.refreshPrices = params.refreshPrices || "N";
 		this.inner = params.inner || "";
 		this.templateFolder = params.templateFolder;
@@ -55,7 +56,8 @@ BX.Sale.OrderPaymentChange = (function()
 							paymentNumber: this.paymentNumber,
 							inner: this.inner,
 							refreshPrices: this.refreshPrices,
-							onlyInnerFull: this.onlyInnerFull
+							onlyInnerFull: this.onlyInnerFull,
+							pathToPayment: this.pathToPayment
 						},
 						onsuccess: BX.proxy(function(result)
 						{

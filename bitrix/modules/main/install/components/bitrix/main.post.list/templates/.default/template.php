@@ -3,6 +3,10 @@
  * @var CMain $APPLICATION
  * @var CUser $USER
  */
+use \Bitrix\Main\UI;
+
+UI\Extension::load("ui.animations");
+
 $APPLICATION->SetAdditionalCSS("/bitrix/components/bitrix/socialnetwork.log.ex/templates/.default/style.css");
 $APPLICATION->SetAdditionalCSS("/bitrix/components/bitrix/socialnetwork.blog.blog/templates/.default/style.css");
 \Bitrix\Main\Page\Asset::getInstance()->addJs("/bitrix/components/bitrix/main.post.list/templates/.default/scripts_for_form.js");
@@ -59,6 +63,7 @@ ob_start();
 						?>id="record-#FULL_ID#-actions-reply" <?
 						?>onclick="window['UC']['#ENTITY_XML_ID#'].reply(this)" <?
 						?>bx-mpl-author-id="#AUTHOR_ID#" <?
+						?>bx-mpl-author-gender="#AUTHOR_PERSONAL_GENDER#" <?
 						?>bx-mpl-author-name="#AUTHOR_NAME#"><?=GetMessage("BLOG_C_REPLY")?></a><?
 				} ?>
 				<a href="#" <?
@@ -90,7 +95,7 @@ ob_start();
 						<div>#TEXT#</div>
 					</div>
 				</div>
-				<div class="feed-post-text-more" onclick="fcExpandComment('#FULL_ID#', this)" id="record-#FULL_ID#-more">
+				<div class="feed-post-text-more" onclick="fcCommentExpand(this);" id="record-#FULL_ID#-more">
 					<div class="feed-post-text-more-but"><div class="feed-post-text-more-left"></div><div class="feed-post-text-more-right"></div></div>
 				</div><?
 				?><script>

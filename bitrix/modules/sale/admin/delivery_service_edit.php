@@ -347,7 +347,7 @@ $isGroup = $fields["CLASS_NAME"] == '\Bitrix\Sale\Delivery\Services\Group';
 
 $service = null;
 
-if(isset($fields["CLASS_NAME"]) && strlen($fields["CLASS_NAME"]) > 0)
+if((isset($fields["CLASS_NAME"]) && strlen($fields["CLASS_NAME"]) > 0) || $parentService)
 {
 	/* We must convert handler config from post as it was taken from database */
 	if($isItSavingProcess && strlen($srvStrError) > 0)
@@ -362,7 +362,15 @@ if(isset($fields["CLASS_NAME"]) && strlen($fields["CLASS_NAME"]) > 0)
 		catch(\Bitrix\Main\SystemException $e){}
 	}
 
-	$service = Services\Manager::createObject($fields);
+	if($parentService && get_class($parentService) != 'Bitrix\Sale\Delivery\Services\Group')
+	{
+		$service = $parentService->createProfileObject($fields);
+		$fields['CLASS_NAME'] = get_class($service);
+	}
+	else
+	{
+		$service = Services\Manager::createObject($fields);
+	}
 
 	if($service)
 	{

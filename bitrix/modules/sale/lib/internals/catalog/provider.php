@@ -59,22 +59,12 @@ final class Provider
 			$data = $r->getData();
 			if (array_key_exists('PRODUCT_DATA_LIST', $data))
 			{
-				$resultList = $data['PRODUCT_DATA_LIST'];
+				$result->setData($data);
 			}
 		}
 		else
 		{
 			$result->addErrors($r->getErrors());
-		}
-
-
-		if (!empty($resultList))
-		{
-			$result->setData(
-				array(
-					'PRODUCT_DATA_LIST' => $resultList
-				)
-			);
 		}
 
 		return $result;
@@ -247,6 +237,12 @@ final class Provider
 		}
 
 		$order = $basket->getOrder();
+
+		if (empty($context) && !$order)
+		{
+			$context = $basket->getContext();
+		}
+
 		if (empty($context) && $order)
 		{
 			$context = static::prepareContext($order, $context);

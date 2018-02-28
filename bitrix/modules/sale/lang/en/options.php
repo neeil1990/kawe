@@ -232,4 +232,9 @@ $MESS["SALE_ORDER_HISTORY_CLEANER_TITLE"] = "Order Update History Preferences";
 $MESS["SALE_ORDER_HISTORY_CLEANER_SWITCHER"] = "Delete outdated history entries";
 $MESS["SALE_ORDER_HISTORY_CLEANER_DAYS"] = "Delete entries older than (days)";
 $MESS["SALE_ORDER_HISTORY_CLEANER_BY_HIT"] = "Number of entries to delete at a single agent run";
+$MESS["SALE_P2P_COLLECT_DATA"] = "Collect information on also-bought items";
+$MESS["SALE_BASKET_PUBLIC_BEHAVIOR_TITLE"] = "Shopping cart preferences for the public area";
+$MESS["SALE_BLOCK_CHECK_TITLE"] = "Receipt printout preferences";
+$MESS["SALE_USE_ADVANCE_CHECK_BY_DEFAULT"] = "Print advance receipt upon receipt of payment";
+$MESS["SALE_BASKET_REFRESH_GAP"] = "Refresh shopping cart after (sec.)";
 ?>

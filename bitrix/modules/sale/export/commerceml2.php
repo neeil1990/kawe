@@ -19,7 +19,7 @@ class CSaleExportCML2 extends CSaleExport
 	{
 	}
 
-	protected function outputXmlUnit($arBasket)
+	protected static function outputXmlUnit($arBasket)
 	{
 		$measures = \Bitrix\Sale\Helpers\Admin\Blocks\OrderBasket::getCatalogMeasures();
 		?>

@@ -70,40 +70,10 @@ class CategoryTable extends Entity\DataManager
 				'required' => true,
 				'title' => Loc::getMessage('TRADING_PLATFORM_EBAY_GENERAL_METADATA_ENTITY_LEVEL_FIELD'),
 			),
-			'CONDITION_ID_VALUES' => array(
-				'data_type' => 'string',
-				'required' => false,
-				'validation' => array(__CLASS__, 'validateConditionIdValues'),
-				'title' => Loc::getMessage('TRADING_PLATFORM_EBAY_GENERAL_METADATA_ENTITY_CONDITION_ID_VALUES_FIELD'),
-			),
-			'CONDITION_ID_DEFINITION_URL' => array(
-				'data_type' => 'string',
-				'required' => false,
-				'validation' => array(__CLASS__, 'validateConditionIdDefinitionUrl'),
-				'title' => Loc::getMessage('TRADING_PLATFORM_EBAY_GENERAL_METADATA_ENTITY_CONDITION_ID_DEFINITION_URL_FIELD'),
-			),
-			'ITEM_SPECIFIC_ENABLED' => array(
-				'data_type' => 'string',
-				'required' => false,
-				'validation' => array(__CLASS__, 'validateItemSpecificEnabled'),
-				'title' => Loc::getMessage('TRADING_PLATFORM_EBAY_GENERAL_METADATA_ENTITY_ITEM_SPECIFIC_ENABLED_FIELD'),
-			),
-			'VARIATIONS_ENABLED' => array(
-				'data_type' => 'string',
-				'required' => false,
-				'validation' => array(__CLASS__, 'validateVariationsEnabled'),
-				'title' => Loc::getMessage('TRADING_PLATFORM_EBAY_GENERAL_METADATA_ENTITY_VARIATIONS_ENABLED_FIELD'),
-			),
-			'PRODUCT_CREATION_ENABLED' => array(
-				'data_type' => 'string',
-				'required' => false,
-				'validation' => array(__CLASS__, 'validateProductCreationEnabled'),
-				'title' => Loc::getMessage('TRADING_PLATFORM_EBAY_GENERAL_METADATA_ENTITY_PRODUCT_CREATION_ENABLED_FIELD'),
-			),
 			'LAST_UPDATE' => array(
 				'data_type' => 'datetime',
 				'required' => false,
-				'default' => DateTime::createFromTimestamp(time()),
+				'default_value' => DateTime::createFromTimestamp(time()),
 				'title' => Loc::getMessage('TRADING_PLATFORM_EBAY_GENERAL_METADATA_ENTITY_LAST_UPDATE_FIELD'),
 			),
 		);
@@ -157,36 +127,6 @@ class CategoryTable extends Entity\DataManager
 	{
 		return array(
 			new Entity\Validator\Length(null, 255),
-		);
-	}
-	public static function validateConditionIdValues()
-	{
-		return array(
-			new Entity\Validator\Length(null, 255),
-		);
-	}
-	public static function validateConditionIdDefinitionUrl()
-	{
-		return array(
-			new Entity\Validator\Length(null, 255),
-		);
-	}
-	public static function validateItemSpecificEnabled()
-	{
-		return array(
-			new Entity\Validator\Length(null, 1),
-		);
-	}
-	public static function validateVariationsEnabled()
-	{
-		return array(
-			new Entity\Validator\Length(null, 1),
-		);
-	}
-	public static function validateProductCreationEnabled()
-	{
-		return array(
-			new Entity\Validator\Length(null, 1),
 		);
 	}
 }

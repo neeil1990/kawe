@@ -13,20 +13,17 @@ if($moduleAccess < "R")
 	$APPLICATION->AuthForm(Loc::getMessage("B24C_PB_ACCESS_DENIED"));
 
 if(!\Bitrix\Main\Loader::includeModule(ADMIN_MODULE_NAME))
+	$errorMsgs[] = Loc::getMessage('B24C_PB_MODULE_B24C_NOT_INSTALLED');
+
+if(!\Bitrix\Main\Loader::includeModule("socialservices"))
 {
 	$errorMsgs[] = Loc::getMessage('B24C_PB_MODULE_SS_NOT_INSTALLED',array(
-		'#A1#' => '<a href="/bitrix/admin/module_admin.php?lang=<?=LANGUAGE_ID?>">',
+		'#A1#' => '<a href="/bitrix/admin/module_admin.php?lang='.LANGUAGE_ID.'">',
 		'#A2#' => '</a>'
 	));
 }
 
-$ssModuleIncluded = \Bitrix\Main\Loader::includeModule("socialservices");
-
-if(!$ssModuleIncluded)
-	$errorMsgs[] = Loc::getMessage('B24C_PB_MODULE_B24C_NOT_INSTALLED');
-
 Asset::getInstance()->addString('<link rel="stylesheet" type="text/css" href="/bitrix/css/b24connector/style.css">');
-
 Asset::getInstance()->addJs("/bitrix/js/main/core/core.js");
 Asset::getInstance()->addJs("/bitrix/js/b24connector/connector.js");
 

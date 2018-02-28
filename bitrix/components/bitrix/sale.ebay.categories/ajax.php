@@ -13,7 +13,8 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_bef
 
 $arResult = array();
 
-use \Bitrix\Main\Localization\Loc;
+use \Bitrix\Main\Localization\Loc,
+	\Bitrix\Sale\TradingPlatform;
 Loc::loadMessages(__FILE__);
 
 if (!\Bitrix\Main\Loader::includeModule('sale'))
@@ -30,7 +31,7 @@ if(isset($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 			$topCategory = isset($_REQUEST['topCategory']) ? intval($_REQUEST['topCategory']): '';
 			$categoriesList = array();
 
-			$categoriesRes = \Bitrix\Sale\TradingPlatform\Ebay\CategoryTable::getList(array(
+			$categoriesRes = TradingPlatform\Ebay\CategoryTable::getList(array(
 				'select' =>array('CATEGORY_ID', 'NAME', 'LEVEL'),
 				'order' => array('NAME' =>'ASC'),
 				'filter'=> array('PARENT_ID' => $topCategory)
@@ -47,7 +48,7 @@ if(isset($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 
 			$siteId = isset($_REQUEST['siteId']) ? trim($_REQUEST['siteId']): '';
 			$category = isset($_REQUEST['category']) ? trim($_REQUEST['category']): '';
-			$arResult["VARIATIONS_LIST"] = \Bitrix\Sale\TradingPlatform\Ebay\Helper::getEbayCategoryVariations($category, $siteId);
+			$arResult["VARIATIONS_LIST"] = TradingPlatform\Ebay\Helper::getEbayCategoryVariations($category, $siteId);
 
 			break;
 
@@ -76,7 +77,7 @@ if(isset($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 
 			$ebayCategoryId = isset($_REQUEST['ebayCategoryId']) ? trim($_REQUEST['ebayCategoryId']): '';
 
-			$categoriesRes = \Bitrix\Sale\TradingPlatform\Ebay\CategoryTable::getList( array(
+			$categoriesRes = TradingPlatform\Ebay\CategoryTable::getList( array(
 				'select' =>array('CATEGORY_ID', 'PARENT_ID', 'NAME'),
 				'order' => array('NAME' =>'ASC'),
 				'filter' => array('PARENT_ID' => $ebayCategoryId)
@@ -85,6 +86,29 @@ if(isset($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 			while($cat = $categoriesRes->fetch())
 				if($cat["CATEGORY_ID"] != $ebayCategoryId)
 					$arResult["CATEGORY_CHILDREN"][$cat["CATEGORY_ID"]] =  $cat;
+
+			break;
+
+		case "delete_category_map":
+
+			$bitrixCategoryId = isset($_REQUEST['bitrixCategoryId']) ? intval($_REQUEST['bitrixCategoryId']) : 0;
+			$iBlockId = isset($_REQUEST['iBlockId']) ? intval($_REQUEST['iBlockId']) : 0;
+
+			$categoryEntityId = TradingPlatform\Ebay\MapHelper::getCategoryEntityId($iBlockId);
+
+			$catMapRes = TradingPlatform\MapTable::getList(array(
+				"filter" => array(
+					"ENTITY_ID" => $categoryEntityId,
+					"VALUE_INTERNAL" => $bitrixCategoryId
+				)
+			));
+
+			if($res = $catMapRes->fetch())
+			{
+				$catVarEntId = TradingPlatform\Ebay\MapHelper::getCategoryVariationEntityId($iblockId, $res['VALUE_EXTERNAL']);
+				TradingPlatform\MapTable::deleteByMapEntityId($catVarEntId);
+				TradingPlatform\MapTable::delete($res['ID']);
+			}
 
 			break;
 

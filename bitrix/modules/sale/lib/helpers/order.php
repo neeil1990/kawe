@@ -46,7 +46,8 @@ class Order
 
 		if (isset($path) && strpos($path, '#order_id#'))
 		{
-			$path = str_replace('#order_id#', $order->getField('ACCOUNT_NUMBER'),$path);
+			$accountNumber = urlencode(urlencode($order->getField('ACCOUNT_NUMBER')));
+			$path = str_replace('#order_id#', $accountNumber,$path);
 			if (strpos($path, '/') !== 0)
 			{
 				$path = '/'.$path;

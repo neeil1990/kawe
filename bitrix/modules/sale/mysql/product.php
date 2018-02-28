@@ -400,7 +400,20 @@ class CSaleViewedProduct extends CAllSaleViewedProduct
 					}
 				}
 
-				$strSql = "INSERT INTO b_sale_viewed_product (".$arInsert[0].", DATE_VISIT) VALUES(".$arInsert[1].", ".$DB->GetNowFunction().")";
+				
+				$sqlInsertNames = $arInsert[0];
+				if (strval(trim($sqlInsertNames)) != '')
+				{
+					$sqlInsertNames .= ', ';
+				}
+
+				$sqlInsertValues = $arInsert[1];
+				if (strval(trim($sqlInsertValues)) != '')
+				{
+					$sqlInsertValues .= ', ';
+				}
+
+				$strSql = "INSERT INTO b_sale_viewed_product (".$sqlInsertNames." DATE_VISIT) VALUES(".$sqlInsertValues." ".$DB->GetNowFunction().")";
 				$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
 				$ID = IntVal($DB->LastID());

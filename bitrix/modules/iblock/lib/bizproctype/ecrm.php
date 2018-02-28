@@ -163,4 +163,15 @@ class ECrm extends UserTypeProperty
 		$type = explode('_', $documentType[2]);
 		return intval($type[1]);
 	}
+
+	public static function toSingleValue(FieldType $fieldType, $value)
+	{
+		if (is_array($value))
+		{
+			$values = array_values($value);
+			return isset($values[0]) ? $values[0] : null;
+		}
+		return parent::toSingleValue($fieldType, $value);
+	}
+
 }

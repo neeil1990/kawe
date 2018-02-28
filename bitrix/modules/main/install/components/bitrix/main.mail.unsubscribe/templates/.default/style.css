@@ -70,33 +70,29 @@ body {
 	padding: 0 0 0 20px;
 }
 
-.main-mail-unsubscribe-button {
-	height: 39px;
-	line-height: 39px;
-	margin: 0 12px 0 0;
-	-webkit-box-sizing: border-box;
-	box-sizing: border-box;
-	background: #3bc8f5;
-	border-radius: 2px;
-	cursor: pointer;
-	color: #fff;
-	display: inline-block;
-	font-family: "OpenSans-Bold", Helvetica, Arial, sans-serif;
-	font-size: 12px;
-	font-weight: normal;
-	outline: none;
-	padding: 0 18px;
-	vertical-align: middle;
-	text-decoration: none;
-	text-transform: uppercase;
-	text-shadow: none;
-	white-space: nowrap;
-	-webkit-font-smoothing: antialiased;
-	-webkit-transition: background-color 0.2s linear, color 0.2s linear;
-	transition: background-color 0.2s linear, color 0.2s linear;
-	border: none;
+.main-mail-unsubscribe-spam {
+	display: none;
 }
-
-.main-mail-unsubscribe-button:hover {
-	background: #3fddff;
+.main-mail-unsubscribe-spam.main-mail-unsubscribe-spam-visible{
+	display: block;
+}
+.main-mail-unsubscribe-unsub.main-mail-unsubscribe-spam-visible{
+	display: none;
+}
+.main-mail-unsubscribe-spam-text {
+	padding: 0 0 25px 0;
+}
+.main-mail-unsubscribe-spam-text textarea {
+	width: 500px;
+	height: 150px;
+	border: 1px solid #D4D9DE;
+	resize: none;
+	outline: none;
+	padding: 15px;
+	box-sizing: border-box;
+	font-size: 15px;
+	border-radius: 3px
+}
+.main-mail-unsubscribe-button-spam {
+	cursor: pointer;
 }

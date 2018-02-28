@@ -372,12 +372,16 @@ if (!empty($errors))
 							?>
 						<tr>
 							<td align="right">
-								<?=
-								htmlspecialcharsbx(
+								<?
+								$title = isset($currentRightsName[$code]['provider']) && $currentRightsName[$code]['provider']
+										? $currentRightsName[$code]['provider'].': '
+										: '';
+								echo htmlspecialcharsbx(
 									isset($currentRightsName[$code]) && isset($currentRightsName[$code]['name'])
-									? (isset($currentRightsName[$code]['provider']) ? $currentRightsName[$code]['provider'].': ' : '') . $currentRightsName[$code]['name']
+									? $title . $currentRightsName[$code]['name']
 									: $code
-								)?>:
+								);
+								?>:
 							</td>
 							<td>
 								<select name="RIGHTS[TASK_ID][]">
@@ -387,7 +391,7 @@ if (!empty($errors))
 								</select>
 								<input type="hidden" name="RIGHTS[RIGHT_ID][]" value="<?= $i?>">
 								<input type="hidden" name="RIGHTS[ACCESS_CODE][]" value="<?= htmlspecialcharsbx($code)?>">
-								<a href="javascript:void(0);" onclick="deleteRow(this);" class="access-delete"></a>
+								<a href="javascript:void(0);" onclick="deleteRow(this);" data-id="<?= htmlspecialcharsbx($code)?>" class="access-delete"></a>
 							</td>
 						</tr>
 						<?endforeach;?>
@@ -402,44 +406,54 @@ if (!empty($errors))
 			</table>
 			<?\CUtil::InitJSCore(array('access'))?>
 			<script type="text/javascript">
+
 				var selected = <?= json_encode(array_fill_keys($accessCodes, true))?>;
 				var name = 'RIGHTS';
 				var tbl = BX(name + '_table');
 				var select = '<?= CUtil::JSEscape($tasksStr)?>';
+
 				BX.Access.Init({
 					other: {
-						disabled: true
+						disabled_cr: true
 					}
 				});
+
 				BX.Access.SetSelected(selected, name);
+
 				function deleteRow(link)
 				{
+					selected[BX.data(BX(link), 'id')] = false;
 					BX.remove(BX.findParent(BX(link), {tag: 'tr'}, true));
 				}
+
 				function showForm()
 				{
 					BX.Access.ShowForm({callback: function(obSelected)
 					{
-						for(var provider in obSelected)
+						for (var provider in obSelected)
 						{
 							if (obSelected.hasOwnProperty(provider))
 							{
-								for(var id in obSelected[provider])
+								for (var id in obSelected[provider])
 								{
 									if (obSelected[provider].hasOwnProperty(id))
 									{
 										var cnt = tbl.rows.length;
 										var row = tbl.insertRow(cnt-1);
+
+										selected[id] = true;
 										row.vAlign = 'top';
 										row.insertCell(-1);
 										row.insertCell(-1);
 										row.cells[0].align = 'right';
 										row.cells[0].style.textAlign = 'right';
 										row.cells[0].style.verticalAlign = 'middle';
-										row.cells[0].innerHTML = BX.Access.GetProviderName(provider)+' '+obSelected[provider][id].name+':'+'<input type="hidden" name="'+name+'[RIGHT_ID][]" value="">'+
-																																			'<input type="hidden" name="'+name+'[ACCESS_CODE][]" value="'+id+'">';
+										row.cells[0].innerHTML = BX.Access.GetProviderName(provider) + ' ' +
+																	obSelected[provider][id].name + ':' +
+																	'<input type="hidden" name="' + name + '[RIGHT_ID][]" value="">'+
+																	'<input type="hidden" name="' + name + '[ACCESS_CODE][]" value="' + id + '">';
 										row.cells[1].align = 'left';
-										row.cells[1].innerHTML = select + ' ' + '<a href="javascript:void(0);" onclick="JCIBlockAccess.DeleteRow(this, \''+id+'\', \''+this.variable_name+'\')" class="access-delete"></a>';
+										row.cells[1].innerHTML = select + ' ' + '<a href="javascript:void(0);" onclick="deleteRow(this);" data-id="' + id + '" class="access-delete"></a>';
 									}
 								}
 							}

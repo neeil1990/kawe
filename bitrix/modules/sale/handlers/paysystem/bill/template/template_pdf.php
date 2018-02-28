@@ -469,7 +469,7 @@ if (count($params['BASKET_ITEMS']) > 0)
 					$data = CSalePdf::prepareToPdf(SaleFormatCurrency($params['DELIVERY_PRICE'], $params['CURRENCY'], true));
 					break;
 				case 'VAT_RATE':
-					$data = CSalePdf::prepareToPdf(roundEx($vat*100, SALE_VALUE_PRECISION)."%");
+					$data = CSalePdf::prepareToPdf(roundEx($params['DELIVERY_VAT_RATE']*100, SALE_VALUE_PRECISION)."%");
 					break;
 				case 'SUM':
 					$data = CSalePdf::prepareToPdf(SaleFormatCurrency($params['DELIVERY_PRICE'], $params['CURRENCY'], true));

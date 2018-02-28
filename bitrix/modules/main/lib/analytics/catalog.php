@@ -424,7 +424,7 @@ class Catalog
 
 	public static function isOn()
 	{
-		return SiteSpeed::isLicenseAccepted()
+		return SiteSpeed::isRussianSiteManager()
 			&& Option::get("main", "gather_catalog_stat", "Y") === "Y"
 			&& defined("LICENSE_KEY") && LICENSE_KEY !== "DEMO"
 		;

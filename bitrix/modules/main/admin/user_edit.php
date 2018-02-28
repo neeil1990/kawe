@@ -77,6 +77,14 @@ $editable = ($USER->IsAdmin() ||
 	($USER->CanDoOperation('edit_all_users') && !in_array(1, $arUserGroups))
 );
 
+//authorize as user
+if($_REQUEST["action"] == "authorize" && check_bitrix_sessid() && $USER->CanDoOperation('edit_php'))
+{
+	$USER->Logout();
+	$USER->Authorize(intval($_REQUEST["ID"]));
+	LocalRedirect("user_edit.php?lang=".LANGUAGE_ID."&ID=".intval($_REQUEST["ID"]));
+}
+
 
 $canSelfEdit = true;
 if($ID==$uid && !($USER->CanDoOperation('edit_php') || ($USER->CanDoOperation('edit_all_users') && $USER->CanDoOperation('edit_groups'))))
@@ -464,6 +472,17 @@ if($canViewUserList)
 		"LINK"	=> "/bitrix/admin/user_admin.php?lang=".LANGUAGE_ID."&apply_filter=Y",
 		"ICON"	=> "btn_list",
 		"TITLE"	=> GetMessage("RECORD_LIST_TITLE"),
+	);
+}
+
+if($USER->CanDoOperation('edit_php') && $ID != $USER->GetID())
+{
+	$aMenu[] = array("SEPARATOR"=>true);
+	$aMenu[] = array(
+		"ICON" => "",
+		"TEXT" => GetMessage("MAIN_ADMIN_AUTH"),
+		"TITLE" => GetMessage("MAIN_ADMIN_AUTH_TITLE"),
+		"LINK" => "/bitrix/admin/user_edit.php?lang=".LANGUAGE_ID."&ID=".$ID."&action=authorize&".bitrix_sessid_get()
 	);
 }
 

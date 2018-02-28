@@ -12,6 +12,7 @@ Loader::registerAutoLoadClasses(
 		'CCurrencyRates' => $strDBType.'/currency_rate.php',
 		'\Bitrix\Currency\Compatible\Tools' => 'lib/compatible/tools.php',
 		'\Bitrix\Currency\Helpers\Admin\Tools' => 'lib/helpers/admin/tools.php',
+		'\Bitrix\Currency\Helpers\Editor' => 'lib/helpers/editor.php',
 		'\Bitrix\Currency\UserField\Money' => 'lib/userfield/money.php',
 		'\Bitrix\Currency\CurrencyManager' => 'lib/currencymanager.php',
 		'\Bitrix\Currency\CurrencyTable' => 'lib/currency.php',

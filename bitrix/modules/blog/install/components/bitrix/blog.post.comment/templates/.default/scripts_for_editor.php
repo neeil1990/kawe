@@ -128,7 +128,10 @@ window.FCForm.prototype = {
 		if (this.eventNode.style.display != 'none') {
 			BX.onCustomEvent(this.eventNode, 'OnShowLHE', [(quick === true ? false : 'hide')]);
 		}
-		if (quick) { document.body.appendChild(this.form); }
+		if (quick) {
+			BX.hide(this.form);
+			document.body.appendChild(this.form);
+		}
 	},
 	show : function(id, text, data, act)
 	{
@@ -136,6 +139,8 @@ window.FCForm.prototype = {
 			return true;
 		else
 			this.hide(true);
+		
+		BX.show(this.form);
 
 		if (this.form.subject)
 		{

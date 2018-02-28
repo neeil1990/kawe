@@ -52,7 +52,7 @@ final class DeliveryLocationTable extends Sale\Location\Connector
 			),
 			'LOCATION_TYPE' => array(
 				'data_type' => 'string',
-				'default' => self::DB_LOCATION_FLAG,
+				'default_value' => self::DB_LOCATION_FLAG,
 				'required' => true,
 				'primary' => true
 			),

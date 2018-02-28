@@ -24,6 +24,10 @@ if ($arParams["USE_COMPARE"]=="Y")
 			"NAME" => $arParams["COMPARE_NAME"],
 			"DETAIL_URL" => $arResult["FOLDER"].$arResult["URL_TEMPLATES"]["element"],
 			"COMPARE_URL" => $arResult["FOLDER"].$arResult["URL_TEMPLATES"]["compare"],
+			"ACTION_VARIABLE" => (!empty($arParams["ACTION_VARIABLE"]) ? $arParams["ACTION_VARIABLE"] : "action"),
+			"PRODUCT_ID_VARIABLE" => $arParams["PRODUCT_ID_VARIABLE"],
+			'POSITION_FIXED' => isset($arParams['COMPARE_POSITION_FIXED']) ? $arParams['COMPARE_POSITION_FIXED'] : '',
+			'POSITION' => isset($arParams['COMPARE_POSITION']) ? $arParams['COMPARE_POSITION'] : ''
 		),
 		$component,
 		array("HIDE_ICONS" => "Y")
@@ -154,7 +158,8 @@ $APPLICATION->IncludeComponent(
 		'ADD_TO_BASKET_ACTION' => $basketAction,
 		'SHOW_CLOSE_POPUP' => isset($arParams['COMMON_SHOW_CLOSE_POPUP']) ? $arParams['COMMON_SHOW_CLOSE_POPUP'] : '',
 		'COMPARE_PATH' => $arResult['FOLDER'].$arResult['URL_TEMPLATES']['compare'],
-		'COMPARE_NAME' => $arParams['COMPARE_NAME']
+		'COMPARE_NAME' => $arParams['COMPARE_NAME'],
+		'USE_COMPARE_LIST' => 'Y',
 	),
 	$component,
 	array("HIDE_ICONS" => "Y")

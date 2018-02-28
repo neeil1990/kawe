@@ -10,6 +10,8 @@ class CAllCatalog
 	protected static $arCatalogCache = array();
 	protected static $catalogVatCache = array();
 
+	private static $disableCheckIblock = 0;
+
 	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
 		global $APPLICATION;
@@ -1296,19 +1298,25 @@ class CAllCatalog
 		return 'CCatalog::PreGenerateXML("'.$xml_type.'");';
 	}
 
-/*
-* @deprecated deprecated since catalog 11.0.2
-* @see CCatalogSKU::GetInfoByProductIBlock()
-*/
+	/**
+	 * @deprecated deprecated since catalog 11.0.2
+	 * @see CCatalogSku::GetInfoByProductIBlock()
+	 *
+	 * @param int $ID
+	 * @return false|array
+	 */
 	public static function GetSkuInfoByProductID($ID)
 	{
 		return CCatalogSKU::GetInfoByProductIBlock($ID);
 	}
 
-/*
-* @deprecated deprecated since catalog 11.0.2
-* @see CCatalogSKU::GetInfoByLinkProperty()
-*/
+	/**
+	 * @deprecated deprecated since catalog 11.0.2
+	 * @see CCatalogSku::GetInfoByLinkProperty()
+	 *
+	 * @param int $ID
+	 * @return false|array
+	 */
 	public static function GetSkuInfoByPropID($ID)
 	{
 		return CCatalogSKU::GetInfoByLinkProperty($ID);
@@ -1440,10 +1448,54 @@ class CAllCatalog
 		return false;
 	}
 
-/*
-* @deprecated deprecated since catalog 14.0.0
-* @see CCatalogSKU::GetInfoByIBlock()
-*/
+	public static function OnBeforeIBlockUpdate(array &$fields)
+	{
+		if (!self::isEnabledHandler())
+			return true;
+		if (isset($fields['ID']) && isset($fields['ACTIVE']))
+		{
+			$catalog = CCatalogSku::GetInfoByOfferIBlock($fields['ID']);
+			if (!empty($catalog))
+			{
+				$parentActive = CIBlock::GetArrayByID($catalog['PRODUCT_IBLOCK_ID'], 'ACTIVE');
+				if (!empty($parentActive))
+					$fields['ACTIVE'] = $parentActive;
+				unset($parentActive);
+			}
+			unset($catalog);
+		}
+
+		return true;
+	}
+
+	public static function OnAfterIBlockUpdate(array &$fields)
+	{
+		if (!self::isEnabledHandler())
+			return true;
+		if (!$fields['RESULT'])
+			return;
+		if (!isset($fields['ID']) || !isset($fields['ACTIVE']))
+			return;
+
+		$catalog = CCatalogSku::GetInfoByProductIBlock($fields['ID']);
+		if (!empty($catalog))
+		{
+			self::disableHandler();
+			$iblock = new CIBlock();
+			$result = $iblock->Update($catalog['IBLOCK_ID'], array('ACTIVE' => $fields['ACTIVE']));
+			unset($result);
+			self::enableHandler();
+		}
+		unset($catalog);
+	}
+
+	/**
+	 * @deprecated deprecated since catalog 14.0.0
+	 * @see CCatalogSku::GetInfoByIBlock()
+	 *
+	 * @param int $ID
+	 * @return false|array
+	 */
 	public static function GetByIDExt($ID)
 	{
 		$arResult = CCatalogSKU::GetInfoByIBlock($ID);
@@ -1584,9 +1636,11 @@ class CAllCatalog
 		}
 	}
 
-	/*
+	/**
 	 * @deprecated deprecated since catalog 10.0.3
 	 * @internal
+	 *
+	 * @return array
 	 */
 	public static function GetCatalogFieldsList()
 	{
@@ -1611,5 +1665,20 @@ class CAllCatalog
 	{
 		self::$arCatalogCache = array();
 		self::$catalogVatCache = array();
+	}
+
+	private static function disableHandler()
+	{
+		self::$disableCheckIblock--;
+	}
+
+	private static function enableHandler()
+	{
+		self::$disableCheckIblock++;
+	}
+
+	private static function isEnabledHandler()
+	{
+		return (self::$disableCheckIblock >= 0);
 	}
 }

@@ -48,4 +48,13 @@ $MESS["SALE_SHIPMENT_F_USER_ID"] = "Customer ID";
 $MESS["SALE_SHIPMENT_F_USER_LOGIN"] = "Customer login";
 $MESS["SALE_ORDER_DELIVERY_RESPONSIBLE_ID"] = "Responsible person";
 $MESS["SALE_ORDER_USER_NAME"] = "Customer";
+$MESS["SALE_ORDER_DELIVERY_REQ_DELIVERY_ERROR"] = "Error adding shipments to transportation order";
+$MESS["SALE_ORDER_DELIVERY_REQ_ID"] = "Transportation order ID";
+$MESS["SALE_ORDER_DELIVERY_REQ_IS_SENT"] = "Transportation order submitted";
+$MESS["SALE_ORDER_DELIVERY_REQ_IS_SENT_Y"] = "Sent";
+$MESS["SALE_ORDER_DELIVERY_REQ_IS_SENT_N"] = "Not sent";
+$MESS["SALE_ORDER_DELIVERY_ACTION_DEDUCT"] = "Ship";
+$MESS["SALE_ORDER_DELIVERY_ACTION_DEDUCT_N"] = "Don't ship";
+$MESS["SALE_ORDER_DELIVERY_ACTION_ALLOW_DLV"] = "Approve shipment";
+$MESS["SALE_ORDER_DELIVERY_ACTION_ALLOW_DLV_N"] = "Cancel shipment";
 ?>

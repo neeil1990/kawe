@@ -1184,7 +1184,7 @@ class CSaleOrderChangeFormat
 
 	public static function FormatOrderDeliverySystemChanged($data)
 	{
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 		$info = GetMessage("SOC_ORDER_DELIVERY_SYSTEM_CHANGED_INFO");
 		if (is_array($data))
 		{
@@ -1204,7 +1204,7 @@ class CSaleOrderChangeFormat
 						}
 						elseif (intval($value) > 0)
 						{
-							if ($isOrderConverted == "Y")
+							if ($isOrderConverted != 'N')
 							{
 								$arDelivery = \Bitrix\Sale\Delivery\Services\Manager::getById($value);
 							}

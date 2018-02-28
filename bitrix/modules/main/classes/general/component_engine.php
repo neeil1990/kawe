@@ -302,12 +302,17 @@ class CComponentEngine
 						$arVariables[$variableName] = $_REQUEST[$aliasName];
 		}
 
-		for ($i = 0, $cnt = count($arComponentVariables); $i < $cnt; $i++)
-			if (!array_key_exists($arComponentVariables[$i], $arVariables)
-				&& array_key_exists($arComponentVariables[$i], $_REQUEST))
+		if ($arComponentVariables && is_array($arComponentVariables))
+		{
+			for ($i = 0, $cnt = count($arComponentVariables); $i < $cnt; $i++)
 			{
-				$arVariables[$arComponentVariables[$i]] = $_REQUEST[$arComponentVariables[$i]];
+				if (!array_key_exists($arComponentVariables[$i], $arVariables)
+					&& array_key_exists($arComponentVariables[$i], $_REQUEST))
+				{
+					$arVariables[$arComponentVariables[$i]] = $_REQUEST[$arComponentVariables[$i]];
+				}
 			}
+		}
 	}
 	/**
 	 * Prepares templates based on default and provided.

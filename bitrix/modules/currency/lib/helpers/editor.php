@@ -23,14 +23,24 @@ class Editor
 					'DEC_POINT' => 'CURRENT_LANG_FORMAT.DEC_POINT',
 					'THOUSANDS_VARIANT' => 'CURRENT_LANG_FORMAT.THOUSANDS_VARIANT',
 					'DECIMALS' => 'CURRENT_LANG_FORMAT.DECIMALS',
+					'THOUSANDS_SEP' => 'CURRENT_LANG_FORMAT.THOUSANDS_SEP'
 				),
 				'filter' => array(),
 				'order' => array('SORT' => 'ASC', 'CURRENCY' => 'ASC')
 			));
-			$separators = \CCurrencyLang::getSeparators();
+			$separators = \CCurrencyLang::GetSeparators();
 			while($currency = $queryObject->fetch())
 			{
-				$currency['SEPARATOR'] = $separators[$currency['THOUSANDS_VARIANT']];
+				if ($currency['THOUSANDS_VARIANT'] !== null && isset($separators[$currency['THOUSANDS_VARIANT']]))
+				{
+					$currency['SEPARATOR'] = $separators[$currency['THOUSANDS_VARIANT']];
+					if ($currency['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE)
+						$currency['SEPARATOR'] = ' ';
+				}
+				else
+				{
+					$currency['SEPARATOR'] = $currency['THOUSANDS_SEP'];
+				}
 				$currency['SEPARATOR_STRING'] = $currency['DEC_POINT'];
 				$currency['SEPARATOR_STRING'] .= ($currency['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_SPACE
 					|| $currency['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE) ?
@@ -41,5 +51,4 @@ class Editor
 
 		return static::$listCurrencyCache;
 	}
-
 }

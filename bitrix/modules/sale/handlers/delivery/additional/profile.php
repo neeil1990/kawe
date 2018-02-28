@@ -62,6 +62,16 @@ class AdditionalProfile extends \Bitrix\Sale\Delivery\Services\Base
 				if(!empty($profileParams['LOGOTIP']))
 					$this->logotip = $profileParams['LOGOTIP'];
 			}
+
+			$parentConfig = $this->additionalHandler->getConfigValues();
+
+			if($parentConfig['MAIN']['SERVICE_TYPE'] == "RUSPOST")
+			{
+				if(isset($profileParams['IS_OTPRAVKA_SUPPORTED']) && $profileParams['IS_OTPRAVKA_SUPPORTED'] == 'Y')
+					$this->config['MAIN']['IS_OTPRAVKA_SUPPORTED'] = 'Y';
+				else
+					$this->config['MAIN']['IS_OTPRAVKA_SUPPORTED'] = 'N';
+			}
 		}
 
 		$this->inheritParams();

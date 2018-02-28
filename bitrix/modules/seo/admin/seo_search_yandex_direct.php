@@ -65,7 +65,6 @@ catch(Engine\YandexDirectException $e)
 	));
 }
 
-
 $request = Main\Context::getCurrent()->getRequest();
 
 $archive = isset($request['archive']) && $request['archive'] == 1;

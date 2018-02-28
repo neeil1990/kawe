@@ -7,9 +7,12 @@ use Bitrix\Main;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Sale\BasketBase;
+use Bitrix\Sale\BasketItem;
 use Bitrix\Sale\BasketItemBase;
 use Bitrix\Sale\EventActions;
+use Bitrix\Sale\Fuser;
 use Bitrix\Sale\Internals\PoolQuantity;
+use Bitrix\Sale\Internals\SiteCurrencyTable;
 use Bitrix\Sale\OrderBase;
 use Bitrix\Sale\PriceMaths;
 use Bitrix\Sale\Internals\Catalog\Provider;
@@ -325,23 +328,44 @@ abstract class BaseRefreshStrategy
 			$context['SITE_ID'] = $order->getSiteId();
 			$context['CURRENCY'] = $order->getCurrency();
 		}
-
-		if (empty($context['SITE_ID']))
+		else
 		{
-			$context['SITE_ID'] = SITE_ID;
-		}
-
-		if (empty($context['USER_ID']))
-		{
-			if (!(defined('ADMIN_SECTION') && ADMIN_SECTION === true) && $USER->GetID() > 0)
+			/** @var BasketItem $basketItem */
+			$basketItem = $basket->rewind();
+			if (!$basketItem)
 			{
-				$context['USER_ID'] = $USER->GetID();
+				return $context;
 			}
-		}
 
-		if (empty($context['CURRENCY']))
-		{
-			$context['CURRENCY'] = CurrencyManager::getBaseCurrency();
+			$siteId = $basketItem->getField('LID');
+			$fuserId = $basketItem->getFUserId();
+			$currency = $basketItem->getCurrency();
+
+			$userId = Fuser::getUserIdById($fuserId);
+
+			if (empty($context['SITE_ID']))
+			{
+				$context['SITE_ID'] = $siteId;
+			}
+
+			if (empty($context['USER_ID']) && $userId > 0)
+			{
+				$context['USER_ID'] = $userId;
+			}
+
+			if (empty($context['CURRENCY']))
+			{
+				if (empty($currency))
+				{
+					$currency = SiteCurrencyTable::getSiteCurrency($siteId);
+				}
+
+				if (!empty($currency) && CurrencyManager::checkCurrencyID($currency))
+				{
+					$context['CURRENCY'] = $currency;
+				}
+
+			}
 		}
 
 		return $context;
@@ -383,7 +407,7 @@ abstract class BaseRefreshStrategy
 	{
 		if (!empty($itemsToRefresh))
 		{
-			$context = $this->getProviderContext($basket);
+			$context = $basket->getContext();
 			$result = Provider::getProductData($itemsToRefresh, $context);
 		}
 		else

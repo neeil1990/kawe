@@ -190,7 +190,7 @@ class CAgent extends CAllAgent
 			{
 				$strSql = "
 					UPDATE b_agent SET
-						NAME='".$DB->ForSQL($eval_result, 2000)."',
+						NAME='".$DB->ForSQL($eval_result)."',
 						LAST_EXEC=now(),
 						NEXT_EXEC=DATE_ADD(".($arAgent["IS_PERIOD"]=="Y"? "NEXT_EXEC" : "now()").", INTERVAL ".$pPERIOD." SECOND),
 						DATE_CHECK=NULL,

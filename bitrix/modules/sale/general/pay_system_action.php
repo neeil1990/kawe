@@ -511,10 +511,14 @@ class CAllSalePaySystemAction
 			);
 		}
 
-		if ($relatedData)
+		if (self::$relatedData)
 		{
 			$eventManager = \Bitrix\Main\EventManager::getInstance();
-			$eventManager->addEventHandler('sale', 'OnGetBusinessValueProviders', array('\CSalePaySystemAction', 'getProviders'));
+			$event = $eventManager->findEventHandlers('sale', 'OnGetBusinessValueProviders');
+			if (empty($event))
+			{
+				$eventManager->addEventHandler('sale', 'OnGetBusinessValueProviders', array('\CSalePaySystemAction', 'getProviders'));
+			}
 		}
 	}
 

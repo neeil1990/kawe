@@ -277,8 +277,8 @@ class CUserTypeBoolean extends \Bitrix\Main\UserField\TypeBase
 			"name" => $arHtmlControl["NAME"],
 			"type" => "list",
 			"items" => array(
-				"1" => GetMessage("MAIN_YES"),
-				"0" => GetMessage("MAIN_NO")
+				"Y" => GetMessage("MAIN_YES"),
+				"N" => GetMessage("MAIN_NO")
 			),
 			"filterable" => ""
 		);
@@ -359,6 +359,24 @@ class CUserTypeBoolean extends \Bitrix\Main\UserField\TypeBase
 		return static::getHelper()->wrapDisplayResult($html);
 	}
 
+	public static function getPublicText($userField)
+	{
+		$value = static::normalizeFieldValue($userField['VALUE']);
+		$label = static::getLabels($userField);
+
+		$text = '';
+		$first = true;
+		foreach ($value as $res)
+		{
+			if (!$first)
+				$html .= ', ';
+			$first = false;
+
+			$text .= $res ? $label[1] : $label[0];
+		}
+
+		return $text;
+	}
 
 	public function getPublicEdit($arUserField, $arAdditionalParameters = array())
 	{
@@ -445,9 +463,17 @@ class CUserTypeBoolean extends \Bitrix\Main\UserField\TypeBase
 					}
 
 					$label = GetMessage('MAIN_YES');
-					if(isset($arUserField["SETTINGS"]["LABEL_CHECKBOX"]) && strlen($arUserField["SETTINGS"]["LABEL_CHECKBOX"]) > 0)
+					if(isset($arUserField["SETTINGS"]["LABEL_CHECKBOX"]))
 					{
-						$label = $arUserField["SETTINGS"]["LABEL_CHECKBOX"];
+						if(is_array($arUserField["SETTINGS"]["LABEL_CHECKBOX"]))
+						{
+							$arUserField["SETTINGS"]["LABEL_CHECKBOX"] = $arUserField["SETTINGS"]["LABEL_CHECKBOX"][LANGUAGE_ID];
+						}
+
+						if(strlen($arUserField["SETTINGS"]["LABEL_CHECKBOX"]) > 0)
+						{
+							$label = $arUserField["SETTINGS"]["LABEL_CHECKBOX"];
+						}
 					}
 
 					$tag .= '<label><input '.static::buildTagAttributes($attrList).'>'.\Bitrix\Main\Text\HtmlFilter::encode($label).'</label>';

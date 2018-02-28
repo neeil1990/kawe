@@ -1184,14 +1184,53 @@ class CHTMLEditor
 
 	public static function GetVideoOembed($url = '')
 	{
-		// Get oembed url
-		$oembed = self::GetOembedUrlInfo($url);
 		$output = array('result' => false, 'error' => "");
-
-		$http = new \Bitrix\Main\Web\HttpClient();
-		$resp = $http->get($oembed['url']);
-		if ($resp === false)
+		if(empty($url))
 		{
+			return $output;
+		}
+
+		$metaData = \Bitrix\Main\UrlPreview\UrlPreview::fetchVideoMetaData($url);
+		if($metaData && isset($metaData['EMBED']))
+		{
+			$output['result'] = true;
+			$output['data'] = array(
+				'html' => $metaData['EMBED'],
+				'title' => $metaData['TITLE'],
+				'provider' => $metaData['EXTRA']['PROVIDER_NAME'],
+				'width' => intval($metaData['EXTRA']['VIDEO_WIDTH']),
+				'height' => intval($metaData['EXTRA']['VIDEO_HEIGHT']),
+			);
+		}
+		else
+		{
+			if($metaData &&
+				isset($metaData['EXTRA']['VIDEO']) &&
+				!empty($metaData['EXTRA']['VIDEO']) &&
+				$metaData['EXTRA']['VIDEO_TYPE'] != 'application/x-shockwave-flash'
+			)
+			{
+				$output = self::getRemoteVideoUrlInfo($metaData['EXTRA']['VIDEO']);
+				if($output['result'] == true)
+				{
+					unset($output['data']['local']);
+					$output['data']['remote'] = true;
+					$output['data']['title'] = $metaData['TITLE'];
+					if(isset($metaData['EXTRA']['VIDEO_WIDTH']))
+					{
+						$output['data']['width'] = $metaData['EXTRA']['VIDEO_WIDTH'];
+					}
+					if(isset($metaData['EXTRA']['VIDEO_HEIGHT']))
+					{
+						$output['data']['height'] = $metaData['EXTRA']['VIDEO_HEIGHT'];
+					}
+					if(isset($metaData['EXTRA']['VIDEO_TYPE']))
+					{
+						$output['data']['mimeType'] = $metaData['EXTRA']['VIDEO_TYPE'];
+					}
+					return $output;
+				}
+			}
 			$io = CBXVirtualIo::GetInstance();
 			$path = $url;
 			$serverPath = self::GetServerPath();
@@ -1211,60 +1250,47 @@ class CHTMLEditor
 			}
 			else
 			{
-				$path = $url;
-				$http = new \Bitrix\Main\Web\HttpClient();
-				$resp1 = $http->get($path);
-				if ($resp1 !== false)
-				{
-					$output['data'] = array(
-						'local' => true,
-						'path' => $url
-					);
-				}
-				$output['result'] = true;
-			}
-
-			if (!$output['result'])
-			{
-				$error = $http->getError();
-				foreach($error as $errorCode => $errorMessage)
-				{
-					$output['error'] .=  '['.$errorCode.'] '.$errorMessage.";\n";
-				}
+				$output = self::getRemoteVideoUrlInfo($url);
 			}
 		}
-		elseif($resp == '403 Forbidden')
+		return $output;
+	}
+
+	protected static function getRemoteVideoUrlInfo($path)
+	{
+		$output = array('result' => false, 'error' => "");
+		$http = new \Bitrix\Main\Web\HttpClient();
+		$http->setTimeout(5);
+		$http->setStreamTimeout(5);
+		$resp1 = $http->head($path);
+		if ($resp1 !== false)
 		{
-			$output['error'] .=  '[FVID403] '.GetMessage('HTMLED_VIDEO_FORBIDDEN').";\n";
-		}
-		else
-		{
-			$resParams = json_decode($resp, true);
-			if ($resParams && is_array($resParams))
+			if($resp1 == '403 Forbidden' || $http->getStatus() == '403')
 			{
-				if (!defined('BX_UTF') || BX_UTF !== true)
-				{
-					$resParams['title'] = CharsetConverter::ConvertCharset($resParams['title'], 'UTF-8', SITE_CHARSET);
-					$resParams['html'] = CharsetConverter::ConvertCharset($resParams['html'], 'UTF-8', SITE_CHARSET);
-					$resParams['provider_name'] = CharsetConverter::ConvertCharset($resParams['provider_name'], 'UTF-8', SITE_CHARSET);
-
-				}
-
-				$resParams['html'] = preg_replace("/https?:\/\//is", '//', $resParams['html']);
-				$output['result'] = true;
-				$output['data'] = array(
-					'html' => $resParams['html'],
-					'title' => $resParams['title'],
-					'width' => intval($resParams['width']),
-					'height' => intval($resParams['height']),
-					'provider' => $resParams['provider_name']
-				);
+				$output['error'] .=  '[FVID403] '.GetMessage('HTMLED_VIDEO_FORBIDDEN').";\n";
 			}
-			else
+			elseif($resp1 == 'Not Found' || $http->getStatus() == '404' || $http->getContentType() == 'text/html')
 			{
 				$output['error'] .=  '[FVID404] '.GetMessage('HTMLED_VIDEO_NOT_FOUND').";\n";
 			}
+			else
+			{
+				$output['result'] = true;
+				$output['data'] = array(
+					'local' => true,
+					'path' => $path,
+				);
+			}
 		}
+		else
+		{
+			$error = $http->getError();
+			foreach($error as $errorCode => $errorMessage)
+			{
+				$output['error'] .=  '['.$errorCode.'] '.$errorMessage.";\n";
+			}
+		}
+
 		return $output;
 	}
 
@@ -1289,31 +1315,6 @@ class CHTMLEditor
 		$serverPath = (CMain::IsHTTPS() ? "https://" : "http://").$server_name;
 
 		return $serverPath;
-	}
-
-	public static function GetOembedUrlInfo($url = '')
-	{
-		$res = array(
-			'url' => '',
-			'provider' => ''
-		);
-		if (preg_match('/(youtube.com)|(youtu.be)/i', $url))
-		{
-			$res['url'] = 'http://www.youtube.com/oembed?url='.urlencode($url).'&format=json';
-			$res['provider'] = 'youtube';
-		}
-		elseif (preg_match('/vimeo.com/i', $url))
-		{
-			$res['url'] = 'http://vimeo.com/api/oembed.json?url='.urlencode($url);
-			$res['provider'] = 'vimeo';
-		}
-		elseif (preg_match('/rutube.ru/i', $url))
-		{
-			$res['url'] = 'http://rutube.ru/api/oembed/?url='.urlencode($url).'&format=json';
-			$res['provider'] = 'rutube';
-		}
-
-		return $res;
 	}
 
 	private static function GetSettingKey($params = array())

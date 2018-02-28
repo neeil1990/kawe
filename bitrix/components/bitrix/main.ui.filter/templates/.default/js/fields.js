@@ -177,12 +177,25 @@
 						label = [ label ];
 					}
 
+					var value = !!fieldData.VALUES._value ? fieldData.VALUES._value : [];
+					if (BX.type.isPlainObject(value))
+					{
+						value = Object.keys(value).map(function(key) {
+							return value[key];
+						});
+					}
+
+					if (!BX.type.isArray(value))
+					{
+						value = [ value ];
+					}
+
 					label.forEach(function(currentLabel, index) {
 						field.content.content.push({
 							block: 'main-ui-square',
 							tag: 'span',
 							name: currentLabel,
-							item: {_label: currentLabel, _value: fieldData.VALUES._value[index]}
+							item: {_label: currentLabel, _value: value[index]}
 						});
 					});
 				}

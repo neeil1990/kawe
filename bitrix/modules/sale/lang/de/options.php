@@ -232,4 +232,9 @@ $MESS["SALE_ORDER_HISTORY_CLEANER_TITLE"] = "Einstellungen der Bestellungs-Histo
 $MESS["SALE_ORDER_HISTORY_CLEANER_SWITCHER"] = "Veraltete History-Einträge löschen";
 $MESS["SALE_ORDER_HISTORY_CLEANER_DAYS"] = "Einträge löschen, die älter sind als (Tage)";
 $MESS["SALE_ORDER_HISTORY_CLEANER_BY_HIT"] = "Anzahl der Einträge, die pro Start des Agenten gelöscht werden können";
+$MESS["SALE_P2P_COLLECT_DATA"] = "Informationen zu Produkten sammeln, die Kunden auch interessierten";
+$MESS["SALE_BASKET_PUBLIC_BEHAVIOR_TITLE"] = "Einstellungen des Warenkorbs für den Ansichtsbereich";
+$MESS["SALE_BLOCK_CHECK_TITLE"] = "Druckeinstellungen für den Kassenzettel";
+$MESS["SALE_USE_ADVANCE_CHECK_BY_DEFAULT"] = "Vorauszahlungszettel drucken, wenn Vorauszahlung erhalten wird";
+$MESS["SALE_BASKET_REFRESH_GAP"] = "Warenkorb aktualisieren nach (Sek.)";
 ?>

@@ -54,7 +54,7 @@ class Product2ProductTable extends Main\Entity\DataManager
 		$now = $helper->getCurrentDateTimeFunction();
 
 		// Update existing
-		if ($type == "mysql")
+		if ($type == "mysql" && $connection->isTableExists('b_sale_order_product_stat'))
 		{
 			$liveTo = $helper->addSecondsToDateTime($liveTime * 24 * 3600, "ORDER_DATE");
 			$sqlDelete = "DELETE FROM b_sale_order_product_stat WHERE $now > $liveTo";
@@ -127,6 +127,10 @@ class Product2ProductTable extends Main\Entity\DataManager
 	{
 		$liveTime = (int)$liveTime;
 		$connection = Main\Application::getConnection();
+
+		if (!$connection->isTableExists('b_sale_order_product_stat'))
+			return;
+
 		$sqlDelete = "TRUNCATE TABLE b_sale_order_product_stat";
 		$connection->query($sqlDelete);
 		$dateLimit = "";
@@ -178,7 +182,7 @@ class Product2ProductTable extends Main\Entity\DataManager
 		$type = $connection->getType();
 
 		// Update existing
-		if ($type == "mysql")
+		if ($type == "mysql" && $connection->isTableExists('b_sale_order_product_stat'))
 		{
 			$sqlUpdate = "
 				INSERT INTO b_sale_order_product_stat (PRODUCT_ID, RELATED_PRODUCT_ID, ORDER_DATE) 
@@ -257,7 +261,8 @@ class Product2ProductTable extends Main\Entity\DataManager
 		$limit = (int)$limit;
 		$connection = Main\Application::getConnection();
 		$type = $connection->getType();
-		if ($type == "mysql")
+		$isTableExists = $connection->isTableExists('b_sale_order_product_stat');
+		if ($type == "mysql" && $isTableExists)
 		{
 			$params = array(
 				"filter" => array("PRODUCTS_ADDED" => 'N'),
@@ -349,7 +354,7 @@ class Product2ProductTable extends Main\Entity\DataManager
 
 		if ($processingData->fetch())
 		{
-			if ($agent['ID'] && $agent['ID'] > 60)
+			if ($isTableExists && $agent['ID'] && $agent['ID'] > 60)
 			{
 				\CAgent::Delete($agent["ID"]);
 				\CAgent::AddAgent("Bitrix\\Sale\\Product2ProductTable::addProductsByAgent($limit);", "sale", "N", 60, "", "Y");

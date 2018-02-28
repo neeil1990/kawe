@@ -76,7 +76,8 @@ class Log
 			$content .= LogIndex::getUserName($postFieldList["AUTHOR_ID"])." ";
 			if (
 				$postFieldList["MICRO"] != "Y"
-				&& !empty($postFieldList["TITLE"])
+				&& isset($postFieldList["TITLE"])
+				&& strlen($postFieldList["TITLE"]) > 0
 			)
 			{
 				$content .= \blogTextParser::killAllTags($postFieldList["TITLE"])." ";
@@ -112,7 +113,8 @@ class Log
 				$metadata = \Bitrix\Main\UrlPreview\UrlMetadataTable::getRowById($postFieldList['UF_BLOG_POST_URL_PRV']);
 				if (
 					$metadata
-					&& !empty($metadata['TITLE'])
+					&& isset($metadata['TITLE'])
+					&& strlen($metadata['TITLE']) > 0
 				)
 				{
 					$content .= ' '.$metadata['TITLE'];

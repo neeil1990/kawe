@@ -427,8 +427,8 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 		}
 
 		$priorityFields = array(
-			'CUSTOM_PRICE', 'VAT_RATE', 'VAT_INCLUDED',
-			'PRODUCT_PROVIDER_CLASS', 'SUBSCRIBE', 'TYPE'
+			'CURRENCY', 'CUSTOM_PRICE', 'VAT_RATE', 'VAT_INCLUDED',
+			'PRODUCT_PROVIDER_CLASS', 'SUBSCRIBE', 'TYPE', 'LID', 'FUSER_ID'
 		);
 		foreach ($priorityFields as $fieldName)
 		{
@@ -508,7 +508,7 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 			|| (strval($productProviderName) == "")
 		)
 		{
-			return false;
+			return null;
 		}
 
 		$providerName = Internals\Catalog\Provider::getProviderName($module, $productProviderName);
@@ -538,21 +538,9 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 			$oldValue = (float)$oldValue;
 			$deltaQuantity = $value - $oldValue;
 
-			/** @var BasketItemCollection $collection */
-			$collection = $this->getCollection();
-			$context = array();
-
-
-			/** @var Order $order */
-			$order = $collection->getOrder();
-			if (!$order)
-			{
-				$context = array(
-					'SITE_ID' => SITE_ID,
-					'USER_ID' => $USER->GetID() > 0 ? $USER->GetID() : 0,
-					'CURRENCY' => CurrencyManager::getBaseCurrency(),
-				);
-			}
+			/** @var Basket $basket */
+			$basket = $this->getCollection();
+			$context = $basket->getContext();
 
 			/** @var Result $r */
 			$r = Internals\Catalog\Provider::getAvailableQuantityAndPriceByBasketItem($this, $context);
@@ -590,6 +578,14 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 			else
 			{
 				$availableQuantity = $value;
+			}
+
+			if (!empty($providerData['PRICE_DATA']))
+			{
+				if (isset($providerData['PRICE_DATA']['CUSTOM_PRICE']))
+				{
+					$this->setField('CUSTOM_PRICE', $providerData['PRICE_DATA']['CUSTOM_PRICE']);
+				}
 			}
 
 			if ($value != 0
@@ -662,7 +658,7 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 						$this->setField('DISCOUNT_PRICE', $providerData['PRICE_DATA']['DISCOUNT_PRICE']);
 					}
 				}
-				else
+				elseif (!$this->isCustom())
 				{
 					$result->addError(
 						new ResultError(
@@ -1006,11 +1002,15 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 			throw new Main\ObjectNotFoundException('Entity "Basket" not found');
 		}
 
+		$includedOrderId = false;
 		if ($this->getField('ORDER_ID') <= 0)
 		{
 			$orderId = (int)$collection->getOrderId();
 			if ($orderId > 0)
+			{
+				$includedOrderId = true;
 				$this->setFieldNoDemand('ORDER_ID', $orderId);
+			}
 		}
 
 		/** @var array $oldEntityValues */
@@ -1054,44 +1054,47 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 
 			$fields = $this->fields->getChangedValues();
 
-			$r = $this->updateInternal($id, $fields);
-			if (!$r->isSuccess())
+			if (!empty($fields))
 			{
-				if (($order = $basket->getOrder()) && $basket->getOrderId() > 0)
+				$r = $this->updateInternal($id, $fields);
+				if (!$r->isSuccess())
 				{
-					OrderHistory::addAction(
-						'BASKET',
-						$order->getId(),
-						'BASKET_ITEM_UPDATE_ERROR',
-						null,
-						$this,
-						array("ERROR" => $r->getErrorMessages())
-					);
+					if (($order = $basket->getOrder()) && $basket->getOrderId() > 0)
+					{
+						OrderHistory::addAction(
+							'BASKET',
+							$order->getId(),
+							'BASKET_ITEM_UPDATE_ERROR',
+							null,
+							$this,
+							array("ERROR" => $r->getErrorMessages())
+						);
+					}
+
+					$result->addErrors($r->getErrors());
+					return $result;
 				}
 
-				$result->addErrors($r->getErrors());
-				return $result;
-			}
-
-			if ($r->getAffectedRowsCount() == 0)
-			{
-				$this->delete();
-
-				if ($order = $basket->getOrder())
+				if ($includedOrderId && $r->getAffectedRowsCount() == 0)
 				{
-					$oldErrorText = $order->getField('REASON_MARKED');
-					$oldErrorText .= strval($oldErrorText) != '' ? "\n" : "";
-					$oldErrorText .= Localization\Loc::getMessage(
-						'SALE_BASKET_ITEM_NOT_UPDATED_BECAUSE_NOT_EXISTS',
-						array('#PRODUCT_NAME#' => $this->getField("NAME"))
-					);
+					$this->delete();
 
-					$order->addMarker($oldErrorText);
+					if ($order = $basket->getOrder())
+					{
+						$oldErrorText = $order->getField('REASON_MARKED');
+						$oldErrorText .= strval($oldErrorText) != '' ? "\n" : "";
+						$oldErrorText .= Localization\Loc::getMessage(
+							'SALE_BASKET_ITEM_NOT_UPDATED_BECAUSE_NOT_EXISTS',
+							array('#PRODUCT_NAME#' => $this->getField("NAME"))
+						);
+
+						$order->addMarker($oldErrorText);
+					}
 				}
-			}
 
-			if ($resultData = $r->getData())
-				$result->setData($resultData);
+				if ($resultData = $r->getData())
+					$result->setData($resultData);
+			}
 		}
 		else
 		{
@@ -1300,4 +1303,16 @@ abstract class BasketItemBase extends Internals\CollectableEntity
 	 * @return float
 	 */
 	abstract public function getReservedQuantity();
+
+	/**
+	 * @return bool
+	 */
+	public function isCustom()
+	{
+		$moduleId = trim($this->getField('MODULE'));
+		$providerClassName = trim($this->getField('PRODUCT_PROVIDER_CLASS'));
+		$callbackFunct = trim($this->getField('CALLBACK_FUNC'));
+
+		return (empty($moduleId) && empty($providerClassName) && empty($callbackFunct));
+	}
 }

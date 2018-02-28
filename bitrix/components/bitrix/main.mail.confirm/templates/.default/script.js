@@ -31,10 +31,10 @@
 								var emailBlock = BX.findChildByClassName(dlg.contentContainer, 'new-from-email-dialog-email-block', true);
 								var codeBlock  = BX.findChildByClassName(dlg.contentContainer, 'new-from-email-dialog-code-block', true);
 
-								var nameField   = BX.findChild(emailBlock, {attr: {name: 'name'}}, true);
-								var emailField  = BX.findChild(emailBlock, {attr: {name: 'email'}}, true);
-								var codeField   = BX.findChild(codeBlock, {attr: {name: 'code'}}, true);
-								var publicField = BX.findChild(dlg.contentContainer, {attr: {name: 'public'}}, true);
+								var nameField   = BX.findChild(emailBlock, {attr: {'data-name': 'name'}}, true);
+								var emailField  = BX.findChild(emailBlock, {attr: {'data-name': 'email'}}, true);
+								var codeField   = BX.findChild(codeBlock, {attr: {'data-name': 'code'}}, true);
+								var publicField = BX.findChild(dlg.contentContainer, {attr: {'data-name': 'public'}}, true);
 
 								if (step == 'email')
 								{

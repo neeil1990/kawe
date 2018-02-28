@@ -28,6 +28,10 @@ class CBlogNotifySchema
 				"NAME" => GetMessage('BLG_NS_MENTION'),
 				"PUSH" => 'N'
 			),
+			"mention_comment" => Array(
+				"NAME" => GetMessage('BLG_NS_MENTION_COMMENT'),
+				"PUSH" => 'Y'
+			),
 			"share" => Array(
 				"NAME" => GetMessage('BLG_NS_SHARE'),
 				"PUSH" => 'N'

@@ -5244,7 +5244,7 @@ BX.CViewer.prototype.createIframeElement = function(element, params)
 		pdfFallback: element.getAttribute('data-bx-pdfFallback'),
 		previewImage: element.getAttribute('data-bx-previewImage'),
 		transformTimeout: params.transformTimeout,
-		getLastVersionUri: params.getLastVersionUri,
+		getLastVersionUri: params.getLastVersionUri || element.getAttribute('data-bx-getLastVersionUri'),
 		buttons: []
 	});
 	if(iframeElement.isConverted())

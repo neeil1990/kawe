@@ -41,3 +41,4 @@ $MESS['CASHBOX_OA_SHIPMENT'] = 'Отгрузка';
 $MESS['CASHBOX_OA_PAYMENT'] = 'Оплата';
 $MESS['CASHBOX_OA_PAYMENT_TYPE_ADVANCE'] = 'Аванс';
 $MESS['CASHBOX_OA_PAYMENT_TYPE_CREDIT'] = 'Кредит';
+$MESS['SALE_OA_SHIPMENT_DELIVERY_REQ_SENT'] = 'Данная отгрузка входит в транспортную заявку № "#REQUEST_ID#". Перед изменением службы доставки рекомендуется удалить отгрузку из транспортной заявки.';

@@ -1088,10 +1088,13 @@ else
 					$fp,
 					$start_time,
 					array(
+						'INTERVAL'=>$arParams["INTERVAL"],
+						'ELEMENTS_PER_STEP'=>$arParams["ELEMENTS_PER_STEP"],
 						'IBLOCK_ID'=>is_array($arCatalog)? $arCatalog["IBLOCK_ID"]: $arParams["IBLOCK_ID"],
 						'PRODUCT_IBLOCK_ID'=>is_array($arCatalog)? $arCatalog["PRODUCT_IBLOCK_ID"]: false
 					)
 				);
+
 				$schema->exportOffers();
 
 				if($_SESSION["BX_CML2_EXPORT"]["step"] === $manager::STEP_FINISHED)
@@ -1113,6 +1116,8 @@ else
 					$fp,
 					$start_time,
 					array(
+						'INTERVAL'=>$arParams["INTERVAL"],
+						'ELEMENTS_PER_STEP'=>$arParams["ELEMENTS_PER_STEP"],
 						'IBLOCK_ID'=>$arParams['IBLOCK_ID'],
 						'PRODUCT_IBLOCK_ID'=>false,
 						'CATALOG_TYPE' => array(\Bitrix\Catalog\ProductTable::TYPE_PRODUCT,

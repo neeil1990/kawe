@@ -70,6 +70,8 @@ $arFilterFields = array(
 	"filter_buyer",
 	"filter_person_type",
 	"filter_user_id",
+	"filter_user_login",
+	"filter_user_email",
 	"filter_status"
 );
 
@@ -261,6 +263,8 @@ if (strlen($filter_payed)>0) $arFilter["=PAYED"] = trim($filter_payed);
 if (strlen($filter_canceled)>0) $arFilter["=CANCELED"] = trim($filter_canceled);
 if (strlen($filter_deducted)>0) $arFilter["=DEDUCTED"] = trim($filter_deducted);
 if ((int)($filter_user_id)>0) $arFilter["=USER_ID"] = (int)($filter_user_id);
+if (strlen($filter_user_login)>0) $arFilter["USER.LOGIN"] = trim($filter_user_login);
+if (strlen($filter_user_email)>0) $arFilter["USER.EMAIL"] = trim($filter_user_email);
 if (strlen($filter_xml_id)>0) $arFilter["%XML_ID"] = trim($filter_xml_id);
 
 if (isset($filter_person_type) && is_array($filter_person_type) && count($filter_person_type) > 0)
@@ -337,6 +341,7 @@ $arHeaders = array(
 	array("id"=>"DATE_ARCHIVED","content"=>Loc::getMessage("SI_DATE_ARCHIVED"), "sort"=>"DATE_ARCHIVED", "default"=>true),
 	array("id"=>"ID", "content"=>"ID", "sort"=>"ID"),
 	array("id"=>"LID","content"=>Loc::getMessage("SI_SITE"), "sort"=>"LID"),
+	array("id"=>"USER_EMAIL","content"=>Loc::getMessage("SALE_F_USER_EMAIL"), "sort"=>"USER_EMAIL", "default"=>false),
 	array("id"=>"PERSON_TYPE","content"=>Loc::getMessage("SI_PAYER_TYPE"), "sort"=>"PERSON_TYPE_ID"),
 	array("id"=>"BASKET_NAME","content"=>Loc::getMessage("SOA_BASKET_NAME"), "sort"=>""),
 	array("id"=>"BASKET_PRODUCT_ID","content"=>Loc::getMessage("SOA_BASKET_PRODUCT_ID"), "sort"=>""),
@@ -351,7 +356,7 @@ $lAdmin->AddHeaders($arHeaders);
 
 $arSelectFields = array(
 	"ORDER_ID", "ACCOUNT_NUMBER","USER_ID", "PRICE", "DATE_ARCHIVED", "DATE_INSERT", "STATUS_ID",
-	"PAYED", "DEDUCTED", "CANCELED", "PERSON_TYPE_ID", "XML_ID", "ID_1C", "ID", "LID"
+	"PAYED", "DEDUCTED", "CANCELED", "PERSON_TYPE_ID", "XML_ID", "ID_1C", "ID", "LID", "USER_EMAIL"
 );
 
 $arVisibleColumns = $lAdmin->GetVisibleHeaderColumns();
@@ -381,6 +386,14 @@ foreach ($arVisibleColumns as $visibleColumn)
 			}
 		}
 	}
+}
+
+if (in_array('USER_EMAIL', $arSelectFields))
+{
+	$arSelectFields["USER_EMAIL"] = 'USER.EMAIL';
+
+	if ($searchIndex = array_search('USER_EMAIL', $arSelectFields))
+		unset($arSelectFields[$searchIndex]);
 }
 
 $filterOrderSelection = array();
@@ -882,6 +895,8 @@ $arFilterFieldsTmp = array(
 	"filter_price" => Loc::getMessage("SOA_F_PRICE"),
 	"filter_person_type" => Loc::getMessage("SALE_F_PERSON_TYPE"),
 	"filter_user_id" => Loc::getMessage("SALE_F_USER_ID"),
+	"filter_user_login" => Loc::getMessage("SALE_F_USER_LOGIN"),
+	"filter_user_email" => Loc::getMessage("SALE_F_USER_EMAIL"),
 	"filter_date_archived" => Loc::getMessage("SALE_F_DATE_ARCHIVED"),
 	"filter_status" => Loc::getMessage("SALE_F_STATUS"),
 	"filter_canceled" => Loc::getMessage("SALE_F_CANCELED"),
@@ -968,6 +983,18 @@ $oFilter->Begin();
 		<td><?echo Loc::getMessage("SALE_F_USER_ID");?>:</td>
 		<td>
 			<?echo FindUserID("filter_user_id", $filter_user_id, "", "find_form");?>
+		</td>
+	</tr>
+	<tr>
+		<td><?echo Loc::getMessage("SALE_F_USER_LOGIN");?>:</td>
+		<td>
+			<input type="text" name="filter_user_login" value="<?echo htmlspecialcharsbx($filter_user_login)?>" size="40">
+		</td>
+	</tr>
+	<tr>
+		<td><?echo Loc::getMessage("SALE_F_USER_EMAIL");?>:</td>
+		<td>
+			<input type="text" name="filter_user_email" value="<?echo htmlspecialcharsbx($filter_user_email)?>" size="40">
 		</td>
 	</tr>
 	<tr>

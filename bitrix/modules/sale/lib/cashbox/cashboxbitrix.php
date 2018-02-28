@@ -7,7 +7,6 @@ use Bitrix\Catalog;
 use Bitrix\Main\Localization;
 use Bitrix\Sale\Cashbox\Internals\CashboxTable;
 use Bitrix\Sale\PriceMaths;
-use Bitrix\Sale\Result;
 
 Localization\Loc::loadMessages(__FILE__);
 
@@ -20,17 +19,6 @@ class CashboxBitrix extends Cashbox
 	const TYPE_Z_REPORT = 1;
 
 	/**
-	 * @return array
-	 */
-	private function getPaymentTypeMap()
-	{
-		return array(
-			Check::PAYMENT_TYPE_CASH => 1,
-			Check::PAYMENT_TYPE_CASHLESS => 4,
-		);
-	}
-
-	/**
 	 * @param Check $check
 	 * @return array
 	 */
@@ -40,11 +28,10 @@ class CashboxBitrix extends Cashbox
 
 		$data = $check->getDataForCheck();
 
-		$paymentTypeMap = $this->getPaymentTypeMap();
 		foreach ($data['payments'] as $payment)
 		{
 			$result['payments'][] = array(
-				'type' => $paymentTypeMap[$payment['type']],
+				'type' => $this->getValueFromSettings('PAYMENT_TYPE', $payment['type']),
 				'value' => $payment['sum']
 			);
 		}
@@ -387,6 +374,29 @@ class CashboxBitrix extends Cashbox
 		{
 			$defaultSettings = $kkmList[$modelId]['SETTINGS'];
 
+			if (isset($defaultSettings['PAYMENT_TYPE']))
+			{
+				$settings['PAYMENT_TYPE'] = array(
+					'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_BITRIX_SETTINGS_P_TYPE'),
+					'REQUIRED' => 'Y',
+					'ITEMS' => array()
+				);
+
+				$systemPaymentType = array(
+					Check::PAYMENT_TYPE_CASH,
+					Check::PAYMENT_TYPE_CASHLESS,
+				);
+				foreach ($systemPaymentType as $type)
+				{
+					$settings['PAYMENT_TYPE']['ITEMS'][$type] = array(
+						'TYPE' => 'STRING',
+						'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_BITRIX_SETTINGS_P_TYPE_LABEL_'.ToUpper($type)),
+						'VALUE' => $defaultSettings['PAYMENT_TYPE'][$type]
+					);
+				}
+			}
+
+
 			$settings['VAT'] = array(
 				'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_BITRIX_SETTINGS_VAT'),
 				'REQUIRED' => 'Y',
@@ -514,6 +524,10 @@ class CashboxBitrix extends Cashbox
 						10 => 2,
 						18 => 3
 					),
+					'PAYMENT_TYPE' => array(
+						Check::PAYMENT_TYPE_CASH => 0,
+						Check::PAYMENT_TYPE_CASHLESS => 3,
+					)
 				)
 			),
 		);

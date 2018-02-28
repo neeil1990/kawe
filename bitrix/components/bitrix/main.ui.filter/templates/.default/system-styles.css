@@ -406,12 +406,15 @@ input[type=number].main-ui-number-input::-webkit-outer-spin-button {
 	margin-top: 6px;
 	margin-left: 27px;
 	word-break: break-word;
+	padding-top: 0;
+	padding-left: 0;
+	padding-bottom: 0;
 }
 
 .main-ui-filter-field-list-item .main-ui-select-inner-label::before {
 	position: absolute;
 	top: 2px;
-	left: -32px;
+	left: -26px;
 }
 
 .main-ui-control-field-label {
@@ -424,6 +427,9 @@ input[type=number].main-ui-number-input::-webkit-outer-spin-button {
 	font: 13px "Helvetica Neue", Arial, Helvetica, sans-serif;
 	opacity: .7;
 	cursor: default;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .main-ui-filter-wield-with-label {
@@ -720,4 +726,25 @@ input[type=number].main-ui-number-input::-webkit-outer-spin-button {
 		transform: rotateX(90deg);
 		opacity: 0;
 	}
+}
+
+
+.main-ui-filter-error {
+	animation: fieldError 500ms ease;
+}
+
+
+@keyframes fieldError {
+	0% {
+		border-color: #f54819;
+	}
+
+	100% {
+		border-color: #e7eaec;
+	}
+}
+
+
+.main-ui-no-before::before {
+	display: none!important;
 }

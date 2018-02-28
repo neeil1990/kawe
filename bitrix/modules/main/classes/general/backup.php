@@ -88,7 +88,7 @@ class CBackup
 
 		## Symlinks
 		if (is_dir($path))
-		{ 
+		{
 			if (is_link($path))
 			{
 				if (IntOption("skip_symlinks"))
@@ -115,7 +115,7 @@ class CBackup
 		if (strpos(self::$DOCUMENT_ROOT_SITE.BX_ROOT, $path) !== false) // на пути к /bitrix
 			return false;
 
-		if (strpos($path, self::$DOCUMENT_ROOT_SITE.BX_ROOT) === false) // за пределами /bitrix 
+		if (strpos($path, self::$DOCUMENT_ROOT_SITE.BX_ROOT) === false) // за пределами /bitrix
 			return !$dump_file_public;
 
 		$path_root = substr($path, strlen(self::$DOCUMENT_ROOT_SITE));
@@ -171,7 +171,7 @@ class CBackup
 		{
 			$preg_mask_array = array();
 			foreach($skip_mask_array as $a)
-				$preg_mask_array[] = CBackup::_preg_escape($a); 
+				$preg_mask_array[] = CBackup::_preg_escape($a);
 		}
 
 		reset($skip_mask_array);
@@ -179,7 +179,7 @@ class CBackup
 		{
 			if (strpos($mask,'/')===0) // absolute path
 			{
-				if (strpos($mask,'*') === false) // нет звездочки 
+				if (strpos($mask,'*') === false) // нет звездочки
 				{
 					if (strpos($path.'/',$mask.'/') === 0)
 						return true;
@@ -310,7 +310,7 @@ class CBackup
 				if (!$string) // VIEW
 				{
 					$string = $row['Create View'];
-					if (!$B->file_put_contents_ex($strDumpFile,  
+					if (!$B->file_put_contents_ex($strDumpFile,
 						"-- -----------------------------------\n".
 						"-- Creating view ".$DB->ForSQL($table)."\n".
 						"-- -----------------------------------\n".
@@ -323,7 +323,7 @@ class CBackup
 				elseif (CBackup::SkipTableData($table))
 				{
 					$string = str_replace('CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $string);
-					if (!$B->file_put_contents_ex($strDumpFile,  
+					if (!$B->file_put_contents_ex($strDumpFile,
 						"-- -----------------------------------\n".
 						"-- Creating empty table ".$DB->ForSQL($table)."\n".
 						"-- -----------------------------------\n".
@@ -334,7 +334,7 @@ class CBackup
 				}
 
 
-				if (!$B->file_put_contents_ex($strDumpFile,  
+				if (!$B->file_put_contents_ex($strDumpFile,
 					"-- -----------------------------------\n".
 					"-- Dumping table ".$DB->ForSQL($table)."\n".
 					"-- -----------------------------------\n".
@@ -629,7 +629,7 @@ class CDirScan
 				$this->DirCount++;
 			}
 		}
-		else 
+		else
 		{
 		#############################
 		# FILE
@@ -1055,7 +1055,7 @@ class CTar
 			$this->lastPath = $f = $this->path.'/'.$header['filename'];
 		}
 
-		if ($header['type'] != 5) // пишем контент в файл 
+		if ($header['type'] != 5) // пишем контент в файл
 		{
 			if (!$rs)
 			{
@@ -1082,7 +1082,7 @@ class CTar
 
 			//chmod($f, $header['mode']);
 			if (($s=filesize($f)) != $header['size'])
-				return $this->Error('File size is wrong: '.$header['filename']).' (actual: '.$s.'  expected: '.$header['size'].')';
+				return $this->Error('File size is wrong: '.$header['filename'].' (real: '.$s.'  expected: '.$header['size'].')');
 		}
 
 		if ($this->header['type']==5)
@@ -1128,7 +1128,7 @@ class CTar
 	##############
 
 	##############
-	# WRITE 
+	# WRITE
 	# {
 	function openWrite($file)
 	{
@@ -1345,7 +1345,7 @@ class CTar
 		if ($mode == 'r' && !file_exists($file))
 			return $this->Error('File does not exist: '.$file);
 
-		if ($this->gzip) 
+		if ($this->gzip)
 		{
 			if(!function_exists('gzopen'))
 				return $this->Error('Function &quot;gzopen&quot; is not available');

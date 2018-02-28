@@ -315,6 +315,7 @@ abstract class Base extends \CBitrixComponent
 		$params['DISPLAY_COMPARE'] = isset($params['DISPLAY_COMPARE']) && $params['DISPLAY_COMPARE'] === 'Y';
 		$params['COMPARE_PATH'] = isset($params['COMPARE_PATH']) ? trim($params['COMPARE_PATH']) : '';
 		$params['COMPARE_NAME'] = isset($params['COMPARE_NAME']) ? trim($params['COMPARE_NAME']) : 'CATALOG_COMPARE_LIST';
+		$params['USE_COMPARE_LIST'] = (isset($params['USE_COMPARE_LIST']) && $params['USE_COMPARE_LIST'] === 'Y' ? 'Y' : 'N');
 
 		$params['USE_PRICE_COUNT'] = isset($params['USE_PRICE_COUNT']) && $params['USE_PRICE_COUNT'] === 'Y';
 		$params['SHOW_PRICE_COUNT'] = isset($params['SHOW_PRICE_COUNT']) ? (int)$params['SHOW_PRICE_COUNT'] : 1;
@@ -549,7 +550,6 @@ abstract class Base extends \CBitrixComponent
 				if (!empty($catalog) && is_array($catalog))
 				{
 					$this->isIblockCatalog = $this->isIblockCatalog || $catalog['CATALOG_TYPE'] != \CCatalogSku::TYPE_PRODUCT;
-					$this->useDiscountCache = true;
 					$catalogs[$iblockId] = $catalog;
 				}
 			}
@@ -582,7 +582,14 @@ abstract class Base extends \CBitrixComponent
 		if ($this->useCatalog)
 			$this->storage['PRICE_TYPES'] = \CCatalogGroup::GetListArray();
 
-		if ($this->useCatalog && $this->useDiscountCache && !empty($this->storage['PRICES_ALLOW']))
+		$this->useDiscountCache = false;
+		if ($this->useCatalog)
+		{
+			if (!empty($this->storage['CATALOGS']) && !empty($this->storage['PRICES_ALLOW']))
+				$this->useDiscountCache = true;
+		}
+
+		if ($this->useCatalog && $this->useDiscountCache)
 		{
 			$this->useDiscountCache = \CIBlockPriceTools::SetCatalogDiscountCache(
 				$this->storage['PRICES_ALLOW'],
@@ -2980,21 +2987,26 @@ abstract class Base extends \CBitrixComponent
 		);
 		$currentPath .= (stripos($currentPath, '?') === false ? '?' : '&');
 
-		if ($this->arParams['COMPARE_PATH'] == '')
+		if ($this->arParams['USE_COMPARE_LIST'] == 'Y')
 		{
 			$comparePath = $currentPath;
 		}
 		else
 		{
-			$comparePath = \CHTTP::urlDeleteParams(
-				$this->arParams['COMPARE_PATH'],
-				array($productIdVar, $actionVar, ''),
-				array('delete_system_params' => true)
-			);
-			$comparePath .= (stripos($comparePath, '?') === false ? '?' : '&');
+			if ($this->arParams['COMPARE_PATH'] == '')
+			{
+				$comparePath = $currentPath;
+			}
+			else
+			{
+				$comparePath = \CHTTP::urlDeleteParams(
+					$this->arParams['COMPARE_PATH'],
+					array(''),
+					array('delete_system_params' => true)
+				);
+				$comparePath .= (stripos($comparePath, '?') === false ? '?' : '&');
+			}
 		}
-
-		$this->arParams['COMPARE_PATH'] = $comparePath.$actionVar.'=COMPARE';
 
 		$urls = array();
 		$urls['~BUY_URL_TEMPLATE'] = $currentPath.$actionVar.'='.self::ACTION_BUY.'&'.$productIdVar.'=#ID#';

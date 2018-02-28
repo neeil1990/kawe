@@ -20,6 +20,9 @@ if ($saleModulePermissions < 'R')
 Loader::includeModule('sale');
 Loc::loadMessages(__FILE__);
 
+$catalogNamePostfix = ' (' . Loc::getMessage('BT_SALE_DISCOUNT_LIST_MESS_TITLE_CATALOG_ID') . ')';
+$catalogNamePostfixLength = strlen($catalogNamePostfix);
+
 $adminListTableID = 'tbl_sale_discount';
 
 $adminSort = new CAdminSorting($adminListTableID, 'ID', 'ASC');
@@ -175,7 +178,13 @@ if ($filterValues['filter_date_active_to'] !== null)
 }
 
 if ($filterValues['filter_name'] !== null)
-	$filter['%NAME'] = $filterValues['filter_name'];
+{
+	$nameFilter = $filterValues['filter_name'];
+	if (substr($nameFilter, -$catalogNamePostfixLength) == $catalogNamePostfix)
+		$nameFilter = substr($nameFilter, 0, -$catalogNamePostfixLength);
+	$filter['%NAME'] = $nameFilter;
+	unset($nameFilter);
+}
 
 if ($filterValues['filter_priority'] !== null)
 	$filter['=PRIORITY'] = $filterValues['filter_priority'];
@@ -580,10 +589,6 @@ $arRows = array();
 while ($discount = $discountIterator->Fetch())
 {
 	$discount['ID'] = (int)$discount['ID'];
-	if(!empty($discount['CATALOG_DISCOUNT_ID']))
-	{
-		$discount['NAME'] .= ' (' . Loc::getMessage('BT_SALE_DISCOUNT_LIST_MESS_TITLE_CATALOG_ID') . ')';
-	}
 
 	if ($selectFieldsMap['CREATED_BY'])
 	{
@@ -633,6 +638,11 @@ while ($discount = $discountIterator->Fetch())
 	if ($selectFieldsMap['USE_COUPONS'])
 		$row->AddCheckField('USE_COUPONS', false);
 
+	if (!empty($discount['CATALOG_DISCOUNT_ID']))
+	{
+		if ($selectFieldsMap['NAME'])
+			$row->AddViewField('NAME', htmlspecialcharsbx($discount['NAME'].$catalogNamePostfix));
+	}
 	if (!$readOnly)
 	{
 		if ($selectFieldsMap['LID'])

@@ -163,7 +163,7 @@
 
 .main-ui-select-inner-item {
 	padding: 0 6px 0 3px;
-	height: 33px;
+	min-height: 33px;
 	font: 14px/33px "Helvetica Neue", Arial, Helvetica, sans-serif;
 	color: #80868e;
 	-webkit-transition: background .3s;
@@ -286,14 +286,19 @@
 
 .main-ui-select-inner-label {
 	display: inline-block;
-	height: 33px;
-	line-height: 33px;
+	position: relative;
+	line-height: 21px;
+	padding-left: 28px;
+	padding-top: 6px;
+	padding-bottom: 6px;
 }
 
 .main-ui-select-inner-label:before {
 	content: '';
 	display: inline-block;
-	margin: 0 8px 2px 4px;
+	position: absolute;
+	top: 9px;
+	left: 4px;
 	height: 15px;
 	width: 18px;
 	background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2213%22%20height%3D%2213%22%20x%3D%22.5%22%20y%3D%22.5%22%20fill%3D%22%23FFF%22%20fill-rule%3D%22evenodd%22%20stroke%3D%22%23C6CDD3%22%20rx%3D%222%22/%3E%3C/svg%3E');

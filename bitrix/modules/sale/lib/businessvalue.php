@@ -710,6 +710,7 @@ class BusinessValueHandlers
 					'PERSONAL_STATE'      => array('NAME' => Loc::getMessage('BIZVAL_CODE_REGION'), 'GROUP' => 'CLIENT'),
 					'PERSONAL_ZIP'        => array('NAME' => Loc::getMessage('BIZVAL_CODE_ZIP'), 'GROUP' => 'CLIENT'),
 					'PERSONAL_COUNTRY'    => array('NAME' => Loc::getMessage('BIZVAL_CODE_COUNTRY'), 'GROUP' => 'CLIENT'),
+					'PERSONAL_NOTES'      => array('NAME' => Loc::getMessage('BIZVAL_CODE_NOTES'), 'GROUP' => 'CLIENT'),
 					'WORK_COMPANY'        => array('NAME' => Loc::getMessage('BIZVAL_CODE_NAME'), 'GROUP' => 'CLIENT_COMPANY'),
 					'WORK_DEPARTMENT'     => array('NAME' => Loc::getMessage('BIZVAL_CODE_JOB_DEPARTMENT'), 'GROUP' => 'CLIENT_COMPANY'),
 					'WORK_POSITION'       => array('NAME' => Loc::getMessage('BIZVAL_CODE_JOB_POSITION'  ), 'GROUP' => 'CLIENT_COMPANY'),
@@ -737,7 +738,6 @@ class BusinessValueHandlers
 					{
 						$value = $user[$providerValue];
 					}
-
 					return $value;
 				},
 			),
@@ -1110,6 +1110,7 @@ class BusinessValueConsumer1C
 				'BUYER_PERSON_BUILDING'      => array('NAME' => Loc::getMessage('BIZVAL_CODE_BUILDING'    ), 'SORT' => 2000, 'GROUP' => 'BUYER_PERSON' , 'DOMAINS' => array(BusinessValue::INDIVIDUAL_DOMAIN)),
 				'BUYER_PERSON_APARTMENT'     => array('NAME' => Loc::getMessage('BIZVAL_CODE_APARTMENT'   ), 'SORT' => 2100, 'GROUP' => 'BUYER_PERSON' , 'DOMAINS' => array(BusinessValue::INDIVIDUAL_DOMAIN)),
 				'BUYER_PERSON_PHONE'         => array('NAME' => Loc::getMessage('BIZVAL_CODE_PHONE'       ), 'SORT' => 2200, 'GROUP' => 'BUYER_PERSON' , 'DOMAINS' => array(BusinessValue::INDIVIDUAL_DOMAIN)),
+				'BUYER_PERSON_NOTES'         => array('NAME' => Loc::getMessage('BIZVAL_CODE_NOTES'       ), 'SORT' => 2250, 'GROUP' => 'BUYER_PERSON' , 'DOMAINS' => array(BusinessValue::INDIVIDUAL_DOMAIN)),
 				'BUYER_PERSON_EMAIL'         => array('NAME' => Loc::getMessage('BIZVAL_CODE_EMAIL'       ), 'SORT' => 2300, 'GROUP' => 'BUYER_PERSON' , 'DOMAINS' => array(BusinessValue::INDIVIDUAL_DOMAIN)),
 				'BUYER_PERSON_F_ADDRESS_FULL'=> array('NAME' => Loc::getMessage('BIZVAL_CODE_F_ADDRESS_FULL'), 'SORT' => 2400, 'GROUP' => 'BUYER_PERSON' , 'DOMAINS' => array(BusinessValue::INDIVIDUAL_DOMAIN)),
 				'BUYER_PERSON_F_INDEX'		 => array('NAME' => Loc::getMessage('BIZVAL_CODE_F_INDEX'	  ), 'SORT' => 2500, 'GROUP' => 'BUYER_PERSON' , 'DOMAINS' => array(BusinessValue::INDIVIDUAL_DOMAIN)),

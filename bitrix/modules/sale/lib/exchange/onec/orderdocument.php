@@ -68,6 +68,9 @@ class OrderDocument extends DocumentImport
 						'DELIVERY_SYSTEM_ID' => array(
 							'TYPE' => 'string'
 						),
+						'1C_TRACKING_NUMBER' => array(
+							'TYPE' => 'string'
+						),
                     ),
                 ),
                 'ITEMS' => array(

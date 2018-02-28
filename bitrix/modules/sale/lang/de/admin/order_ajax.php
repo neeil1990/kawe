@@ -37,4 +37,11 @@ $MESS["CASHBOX_CREATE_CHECK_ERROR_EMPTY_SHIPMENT"] = "Kassenzettel kann nicht er
 $MESS["CASHBOX_CREATE_CHECK_ERROR_SHIPMENT_ID"] = "Kassenzettel kann nicht erstellt werden, weil die gewählte Lieferung nicht korrekt ist.";
 $MESS["CASHBOX_CREATE_CHECK_ERROR_TYPE"] = "Kassenzettel ist nicht korrekt, weil der Typ nicht gültig ist.";
 $MESS["CASHBOX_ADD_ZREPORT_WRONG_CHECKBOX"] = "Es wurde ein nicht korrekter Kassenapparat gewählt";
+$MESS["SALE_CASHBOX_SHIPMENT_PRICE"] = "Gesamtbetrag der Auslieferung";
+$MESS["SALE_CASHBOX_SELECT_ENTITIES"] = "Zusätzliche Zahlungen / Auslieferungen auswählen";
+$MESS["CASHBOX_OA_SHIPMENT"] = "Auslieferung";
+$MESS["CASHBOX_OA_PAYMENT"] = "Zahlung";
+$MESS["CASHBOX_OA_PAYMENT_TYPE_ADVANCE"] = "Vorauszahlung";
+$MESS["CASHBOX_OA_PAYMENT_TYPE_CREDIT"] = "Kredit";
+$MESS["SALE_OA_SHIPMENT_DELIVERY_REQ_SENT"] = "Diese Auslieferung ist ein Teil der Transportbestellung ##REQUEST_ID#. Es wird empfohlen, dass Sie die Auslieferung aus der Transportbestellung entfernen, bevor Sie den Lieferservice ändern.";
 ?>

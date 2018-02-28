@@ -3,21 +3,25 @@ IncludeModuleLangFile(__FILE__);
 
 class CIBlockPropertyUserID
 {
-	function GetUserTypeDescription()
+	const USER_TYPE = 'UserID';
+
+	public static function GetUserTypeDescription()
 	{
 		return array(
 			"PROPERTY_TYPE" => "S",
-			"USER_TYPE" => "UserID",
+			"USER_TYPE" => self::USER_TYPE,
 			"DESCRIPTION" => GetMessage("IBLOCK_PROP_USERID_DESC"),
-			"GetAdminListViewHTML" => array("CIBlockPropertyUserID","GetAdminListViewHTML"),
-			"GetPropertyFieldHtml" => array("CIBlockPropertyUserID","GetPropertyFieldHtml"),
-			"ConvertToDB" => array("CIBlockPropertyUserID","ConvertToDB"),
-			"ConvertFromDB" => array("CIBlockPropertyUserID","ConvertFromDB"),
-			"GetSettingsHTML" => array("CIBlockPropertyUserID","GetSettingsHTML"),
+			"GetAdminListViewHTML" => array(__CLASS__, "GetAdminListViewHTML"),
+			"GetPropertyFieldHtml" => array(__CLASS__, "GetPropertyFieldHtml"),
+			"ConvertToDB" => array(__CLASS__, "ConvertToDB"),
+			"ConvertFromDB" => array(__CLASS__, "ConvertFromDB"),
+			"GetSettingsHTML" => array(__CLASS__, "GetSettingsHTML"),
+			"AddFilterFields" => array(__CLASS__,'AddFilterFields'),
+			"GetAdminFilterHTML" => array(__CLASS__, "GetAdminFilterHTML")
 		);
 	}
 
-	function GetAdminListViewHTML($arProperty, $value, $strHTMLControlName)
+	public static function GetAdminListViewHTML($arProperty, $value, $strHTMLControlName)
 	{
 		static $cache = array();
 		$value = intVal($value["VALUE"]);
@@ -42,7 +46,7 @@ class CIBlockPropertyUserID
 	//return:
 	//safe html
 
-	function GetPropertyFieldHtml($arProperty, $value, $strHTMLControlName)
+	public static function GetPropertyFieldHtml($arProperty, $value, $strHTMLControlName)
 	{
 		global $USER;
 		$default_value = intVal($value["VALUE"]);
@@ -105,7 +109,7 @@ class CIBlockPropertyUserID
 	//$value - array("VALUE",["DESCRIPTION"]) -- here comes HTML form value
 	//return:
 	//DB form of the value
-	function ConvertToDB($arProperty, $value)
+	public static function ConvertToDB($arProperty, $value)
 	{
 		$value["VALUE"] = intval($value["VALUE"]);
 		if($value["VALUE"] <= 0)
@@ -113,7 +117,7 @@ class CIBlockPropertyUserID
 		return $value;
 	}
 
-	function ConvertFromDB($arProperty, $value)
+	public static function ConvertFromDB($arProperty, $value)
 	{
 		$value["VALUE"] = intval($value["VALUE"]);
 		if($value["VALUE"] <= 0)
@@ -121,12 +125,55 @@ class CIBlockPropertyUserID
 		return $value;
 	}
 
-	function GetSettingsHTML($arProperty, $strHTMLControlName, &$arPropertyFields)
+	public static function GetSettingsHTML($arProperty, $strHTMLControlName, &$arPropertyFields)
 	{
 		$arPropertyFields = array(
 			"HIDE" => array("WITH_DESCRIPTION"),
 		);
 		return '';
+	}
+
+	public static function AddFilterFields($arProperty, $control, &$arFilter, &$filtered)
+	{
+		$filtered = false;
+		$filterValue = self::getFilterValue($control);
+
+		if ($filterValue !== null)
+		{
+			$arFilter["=PROPERTY_".$arProperty["ID"]] = $filterValue;
+			$filtered = true;
+		}
+	}
+
+	public static function GetAdminFilterHTML($property, $control)
+	{
+		$controlName = $control["VALUE"];
+
+		$value = (string)self::getFilterValue($control);
+		return '<input type="text" name="'.$controlName.'" value="'.htmlspecialcharsbx($value).'" size="30">';
+	}
+
+	private static function getFilterValue($control)
+	{
+		$filterValue = null;
+
+		$controlName = $control["VALUE"];
+
+		if (isset($GLOBALS[$controlName]) && !is_array($GLOBALS[$controlName]))
+		{
+			if (is_int($GLOBALS[$controlName]))
+			{
+				$filterValue = $GLOBALS[$controlName];
+			}
+			elseif (is_string($GLOBALS[$controlName]))
+			{
+				$rawValue = trim($GLOBALS[$controlName]);
+				if ($rawValue !== '')
+					$filterValue = (int)$rawValue;
+			}
+		}
+
+		return $filterValue;
 	}
 }
 
@@ -214,4 +261,3 @@ Ch".$tag_name_x."();
 	}
 	return $strReturn;
 }
-?>

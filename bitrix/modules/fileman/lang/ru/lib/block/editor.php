@@ -1,5 +1,5 @@
 <?php
-$MESS["BLOCK_EDITOR_COMMON_DEFAULT"] = "по-умолчанию";
+$MESS["BLOCK_EDITOR_COMMON_DEFAULT"] = "по умолчанию";
 $MESS["BLOCK_EDITOR_COMMON_NO"] = "Нет";
 
 
@@ -13,10 +13,10 @@ $MESS["BLOCK_EDITOR_TABS_HTML"] = "Получить html";
 
 $MESS["BLOCK_EDITOR_UI_BTN_MAX"] = "развернуть";
 $MESS["BLOCK_EDITOR_UI_BTN_MIN"] = "свернуть";
-$MESS["BLOCK_EDITOR_UI_STYLES"] = "Стили";
+$MESS["BLOCK_EDITOR_UI_STYLES"] = "Дизайн";
 $MESS["BLOCK_EDITOR_UI_BLOCKS"] = "Блоки";
-$MESS["BLOCK_EDITOR_UI_TOOL_CONTENT"] = "Содержимое";
-$MESS["BLOCK_EDITOR_UI_TOOL_STYLES"] = "Стили";
+$MESS["BLOCK_EDITOR_UI_TOOL_CONTENT"] = "Основное";
+$MESS["BLOCK_EDITOR_UI_TOOL_STYLES"] = "Дизайн";
 $MESS["BLOCK_EDITOR_UI_TOOL_SETTINGS"] = "Настройки";
 $MESS["BLOCK_EDITOR_UI_TOOL_EMPTY"] = "Данный блок не имеет настроек";
 $MESS["BLOCK_EDITOR_UI_TOOL_SAVE"] = "свернуть";

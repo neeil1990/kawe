@@ -103,6 +103,68 @@
 		},
 
 
+		fetchColumns: function()
+		{
+			var promise = new BX.Promise();
+
+			BX.ajax({
+				url: this.parent.getParam("LAZY_LOAD")["GET_LIST"],
+				method: "GET",
+				dataType: "json",
+				onsuccess: promise.fulfill.bind(promise)
+			});
+
+			return promise;
+		},
+
+
+		prepareColumnOptions: function(options)
+		{
+			var customNames = this.parent.getUserOptions().getCurrentOptions().custom_names;
+
+			if (BX.type.isPlainObject(options))
+			{
+				if (BX.type.isPlainObject(customNames))
+				{
+					if (options.id in customNames)
+					{
+						options.name = customNames[options.id];
+					}
+				}
+
+				if (this.parent.getColumnHeaderCellByName(options.id))
+				{
+					options.selected = true;
+				}
+			}
+
+			return options;
+		},
+
+
+		/**
+		 * Creates column element
+		 * @param {{id: string, name: string}} options
+		 * @return {HTMLElement}
+		 */
+		createColumnElement: function(options)
+		{
+			var html = "<div data-name=\""+options.id+"\" class=\"main-grid-settings-window-list-item\">" +
+				"<input id=\""+options.id+"-checkbox\" type=\"checkbox\" class=\"main-grid-settings-window-list-item-checkbox\""+(options.selected ? " checked" : "")+">" +
+				"<label for=\""+options.id+"-checkbox\" class=\"main-grid-settings-window-list-item-label\">"+options.name+"</label>" +
+				"<span class=\"main-grid-settings-window-list-item-edit-button\"></span>" +
+			"</div>";
+
+			return BX.create("div", {html: html}).firstElementChild;
+		},
+
+
+		useLazyLoadColumns: function()
+		{
+			return !!this.parent.getParam("LAZY_LOAD");
+		},
+
+
 		/**
 		 * @private
 		 * @return {?HTMLElement}
@@ -111,7 +173,58 @@
 		{
 			if (!this.sourceContent)
 			{
-				this.sourceContent = BX.Grid.Utils.getByClass(this.parent.getContainer(), this.parent.settings.get('classSettingsWindow'), true);
+				this.sourceContent = BX.Grid.Utils.getByClass(
+					this.parent.getContainer(),
+					this.parent.settings.get('classSettingsWindow'),
+					true
+				);
+
+				if (this.useLazyLoadColumns())
+				{
+					// Clear columns list
+					this.contentList = this.sourceContent.querySelector(".main-grid-settings-window-list");
+					this.contentList.innerHTML = "";
+
+					// Make and show loader
+					var loader = new BX.Loader({
+						target: this.contentList
+					});
+
+					loader.show();
+
+					// Fetch all columns list
+					this.fetchColumns()
+						// Make list items
+						.then(function(response) {
+							response.forEach(function(columnOptions) {
+								columnOptions = this.prepareColumnOptions(columnOptions);
+								this.contentList.appendChild(this.createColumnElement(columnOptions));
+							}, this);
+
+							// Remove loader
+							loader.hide().then(function() {
+								loader.destroy();
+							});
+
+							// Reset cached items
+							this.reset();
+
+							// Init new item
+							this.getItems().forEach(function(item) {
+								BX.bind(item.getNode(), 'click', BX.delegate(this.onItemClick, this));
+							}, this);
+
+							this.fixedFooter = BX.create("div", {
+								props: {className: "main-grid-popup-window-buttons-wrapper"},
+								children: [this.sourceContent.querySelector(".popup-window-buttons")]
+							});
+
+							requestAnimationFrame(function() {
+								this.popup.popupContainer.appendChild(this.fixedFooter);
+								this.fixedFooter.style.width = this.popup.popupContainer.clientWidth + "px";
+							}.bind(this));
+						}.bind(this));
+				}
 			}
 
 			return this.sourceContent;
@@ -505,33 +618,36 @@
 		 */
 		createPopup: function()
 		{
-			this.popup = new BX.PopupWindow(
-				this.getPopupId(),
-				null,
-				{
-					titleBar: this.createTitle(),
-					autoHide: false,
-					overlay: 0.6,
-					width: 800,
-					closeIcon: true,
-					closeByEsc: true,
-					contentNoPaddings: true,
-					content: this.getSourceContent(),
-					events: {
-						onPopupClose: BX.delegate(this.onPopupClose, this)
+			if (!this.popup)
+			{
+				this.popup = new BX.PopupWindow(
+					this.getPopupId(),
+					null,
+					{
+						titleBar: this.createTitle(),
+						autoHide: false,
+						overlay: 0.6,
+						width: 1000,
+						closeIcon: true,
+						closeByEsc: true,
+						contentNoPaddings: true,
+						content: this.getSourceContent(),
+						events: {
+							onPopupClose: BX.delegate(this.onPopupClose, this)
+						}
 					}
-				}
-			);
+				);
 
-			this.getItems().forEach(function(item) {
-				BX.bind(item.getNode(), 'click', BX.delegate(this.onItemClick, this));
-			}, this);
+				this.getItems().forEach(function(item) {
+					BX.bind(item.getNode(), 'click', BX.delegate(this.onItemClick, this));
+				}, this);
 
-			BX.bind(this.getResetButton(), 'click', BX.proxy(this.onResetButtonClick, this));
-			BX.bind(this.getApplyButton(), 'click', BX.proxy(this.onApplyButtonClick, this));
-			BX.bind(this.getCancelButton(), 'click', BX.proxy(this.popup.close, this.popup));
-			BX.bind(this.getSelectAllButton(), 'click', BX.delegate(this.onSelectAll, this));
-			BX.bind(this.getUnselectAllButton(), 'click', BX.delegate(this.onUnselectAll, this));
+				BX.bind(this.getResetButton(), 'click', BX.proxy(this.onResetButtonClick, this));
+				BX.bind(this.getApplyButton(), 'click', BX.proxy(this.onApplyButtonClick, this));
+				BX.bind(this.getCancelButton(), 'click', BX.proxy(this.popup.close, this.popup));
+				BX.bind(this.getSelectAllButton(), 'click', BX.delegate(this.onSelectAll, this));
+				BX.bind(this.getUnselectAllButton(), 'click', BX.delegate(this.onUnselectAll, this));
+			}
 
 			return this.popup;
 		},

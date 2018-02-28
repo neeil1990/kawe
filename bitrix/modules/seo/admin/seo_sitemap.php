@@ -135,14 +135,14 @@ while($sitemap = $data->NavNext())
 $arDDMenu = array();
 
 $arDDMenu[] = array(
-	"TEXT" => "<b>".Loc::getMessage("SEO_ADD_SITEMAP_CHOOSE_SITE")."</b>",
+	"HTML" => "<b>".Loc::getMessage("SEO_ADD_SITEMAP_CHOOSE_SITE")."</b>",
 	"ACTION" => false
 );
 
 foreach($arSites as $arRes)
 {
 	$arDDMenu[] = array(
-		"TEXT" => "[".$arRes["LID"]."] ".$arRes["NAME"],
+		"HTML" => "[".$arRes["LID"]."] ".$arRes["NAME"],
 		"LINK" => "seo_sitemap_edit.php?lang=".LANGUAGE_ID."&site_id=".$arRes['LID']
 	);
 }

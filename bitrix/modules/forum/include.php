@@ -591,6 +591,7 @@ function ForumAddMessage(
 			}
 			else
 			{
+				$arFields["MESSAGE_ID"] = $MID;
 				if (is_set($arFieldsG, "AUTHOR_NAME")):
 					if ($arTopic["LAST_MESSAGE_ID"] == $MID && $arMessage["LAST_POSTER_NAME"] != $arFieldsG["AUTHOR_NAME"]):
 						$arFields["LAST_POSTER_NAME"] = $arFieldsG["AUTHOR_NAME"];

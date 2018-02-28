@@ -966,9 +966,9 @@ class Notify
 	{
 		$userEmail = "";
 
-		if (!empty(static::$cacheUserData[$order->getUserId()]))
+		if (!empty(static::$cacheUserData[$order->getId()]))
 		{
-			$userData = static::$cacheUserData[$order->getUserId()];
+			$userData = static::$cacheUserData[$order->getId()];
 			if (!empty($userData['EMAIL']))
 			{
 				$userEmail = $userData['EMAIL'];
@@ -984,7 +984,7 @@ class Notify
 				if ($propUserEmail = $propertyCollection->getUserEmail())
 				{
 					$userEmail = $propUserEmail->getValue();
-					static::$cacheUserData[$order->getUserId()]['EMAIL'] = $userEmail;
+					static::$cacheUserData[$order->getId()]['EMAIL'] = $userEmail;
 				}
 			}
 		}
@@ -997,7 +997,7 @@ class Notify
 											   ));
 			if ($userData = $userRes->fetch())
 			{
-				static::$cacheUserData[$order->getUserId()] = $userData;
+				static::$cacheUserData[$order->getId()] = $userData;
 				$userEmail = $userData['EMAIL'];
 			}
 		}

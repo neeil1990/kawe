@@ -1,5 +1,6 @@
 <?php
 
+$MESS["BLOCK_EDITOR_BLOCK_DYNAMIC_CONTENT"] = "Динамический контент";
 $MESS["BLOCK_EDITOR_BLOCK_COMPONENT_BASKET_NAME"] = "Корзина";
 $MESS["BLOCK_EDITOR_BLOCK_COMPONENT_ORDER_NAME"] = "Заказ";
 $MESS["BLOCK_EDITOR_BLOCK_COMPONENT_CATALOG_NAME"] = "Каталог";
@@ -46,3 +47,4 @@ $MESS["BLOCK_EDITOR_BLOCK_SOCIAL_DESC"] = "Это блок ссылок на с�
 $MESS["BLOCK_EDITOR_BLOCK_SOCIAL_FACEBOOK"] = "facebook";
 $MESS["BLOCK_EDITOR_BLOCK_SOCIAL_VK"] = "вконтакте";
 $MESS["BLOCK_EDITOR_BLOCK_SOCIAL_TWITTER"] = "twitter";
+$MESS["BLOCK_EDITOR_BLOCK_SOCIAL_INSTAGRAM"] = "instagram";

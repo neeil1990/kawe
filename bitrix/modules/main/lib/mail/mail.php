@@ -811,7 +811,7 @@ class Mail
 			$url = $this->trackLinkProtocol . "://" . $this->settingServerName . $url;
 		}
 
-		$html .= '<img src="' . $url . '" border="0" height="1" width="1" alt="Read" />';
+		$html .= '<img src="' . $url . '" border="0" height="1" width="1" alt="" />';
 
 		return $html;
 	}

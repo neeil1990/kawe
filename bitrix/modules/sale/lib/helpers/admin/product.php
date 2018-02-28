@@ -103,10 +103,6 @@ class Product
 
 		foreach($productsData as $productFields)
 		{
-			$providerClassName = null;
-			if(isset($productFields["PRODUCT_PROVIDER_CLASS"]) && strlen($productFields["PRODUCT_PROVIDER_CLASS"]) > 0)
-				$providerClassName = trim($productFields["PRODUCT_PROVIDER_CLASS"]);
-
 			if (isset($productFields['OFFER_ID']))
 			{
 				$productFields['PRODUCT_ID'] = $productFields['OFFER_ID'];
@@ -117,12 +113,6 @@ class Product
 			{
 				return null;
 			}
-//			$item = BasketItem::create($basket, $productFields["MODULE"], $productFields["OFFER_ID"]);
-//
-//			$item->setField('QUANTITY', $productFields['QUANTITY']);
-//			$item->setField("NAME", $productFields["NAME"]);
-//
-//			$item->refresh();
 		}
 
 		return Provider::getProductData($basket, array("PRICE", "AVAILABLE_QUANTITY"));

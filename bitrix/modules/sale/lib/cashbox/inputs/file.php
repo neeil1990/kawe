@@ -5,12 +5,9 @@ namespace Bitrix\Sale\Cashbox\Inputs;
 use Bitrix\Main\Localization;
 use Bitrix\Sale\Internals\Input;
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/internals/input.php");
+Localization\Loc::loadMessages(__FILE__);
 
-Input\Manager::register('SECURITY_FILE_CONTROL', array(
-	'CLASS' => __NAMESPACE__.'\\File',
-	'NAME' => Localization\Loc::getMessage('SALE_CASHBOX_INPUT_SECURITY_FILE_CONTROL')
-));
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/internals/input.php");
 
 /**
  * Class File
@@ -62,3 +59,8 @@ class File extends Input\Base
 	}
 
 }
+
+Input\Manager::register('SECURITY_FILE_CONTROL', array(
+	'CLASS' => __NAMESPACE__.'\\File',
+	'NAME' => Localization\Loc::getMessage('SALE_CASHBOX_INPUT_SECURITY_FILE_CONTROL')
+));

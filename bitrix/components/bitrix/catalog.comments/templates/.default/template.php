@@ -71,8 +71,9 @@ if (!$templateData['BLOG']['BLOG_FROM_AJAX'])
 			'CACHE_GROUPS' => $arParams['CACHE_GROUPS'],
 			'TEMPLATE_THEME' => $arParams['~TEMPLATE_THEME'],
 			'SHOW_DEACTIVATED' => $arParams['SHOW_DEACTIVATED'],
+			'CHECK_DATES' => $arParams['CHECK_DATES']
 		);
-		
+
 		if(isset($arParams["USER_CONSENT"]))
 			$templateData['BLOG']['AJAX_PARAMS']["USER_CONSENT"] = $arParams["USER_CONSENT"];
 		if(isset($arParams["USER_CONSENT_ID"]))
@@ -98,11 +99,26 @@ if (!$templateData['BLOG']['BLOG_FROM_AJAX'])
 
 	if ($arParams["FB_USE"] == "Y")
 	{
+		$currentLanguage = strtolower(LANGUAGE_ID);
+		switch ($currentLanguage)
+		{
+			case 'en':
+				$facebookLocale = 'en_US';
+				break;
+			case 'ua':
+				$facebookLocale = 'uk_UA';
+				break;
+			case 'by':
+				$facebookLocale = 'be_BY';
+				break;
+			default:
+				$facebookLocale = $currentLanguage.'_'.strtoupper(LANGUAGE_ID);
+		}
 		$arJSParams['serviceList']['facebook'] = true;
 		$arJSParams['settings']['facebook'] = array(
 			'parentContID' => $templateData['TABS_ID'],
 			'contID' => 'bx-cat-soc-comments-fb_'.$arResult['ELEMENT']['ID'],
-			'facebookPath' => 'https://connect.facebook.net/'.(strtolower(LANGUAGE_ID)."_".strtoupper(LANGUAGE_ID)).'/sdk.js#xfbml=1&version=v2.8'
+			'facebookPath' => 'https://connect.facebook.net/'.$facebookLocale.'/sdk.js#xfbml=1&version=v2.11'
 		);
 		$arData["FB"] = array(
 			"NAME" => isset($arParams["FB_TITLE"]) && trim($arParams["FB_TITLE"]) != "" ? $arParams["FB_TITLE"] : "Facebook",

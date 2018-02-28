@@ -202,6 +202,7 @@ class CPullChannel
 					'params' => Array(),
 					'extra' => Array(
 						'server_time' => date('c'),
+						'server_time_unix' => microtime(true),
 						'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
 						'revision' => PULL_REVISION,
 						'revision_mobile' => PULL_REVISION_MOBILE,
@@ -232,6 +233,7 @@ class CPullChannel
 					'params' => Array(),
 					'extra' => Array(
 						'server_time' => date('c'),
+						'server_time_unix' => microtime(true),
 						'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
 						'revision' => PULL_REVISION,
 						'revision_mobile' => PULL_REVISION_MOBILE,

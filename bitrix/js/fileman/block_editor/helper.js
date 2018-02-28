@@ -176,10 +176,14 @@ BXBlockEditorHelper.prototype.attr = function(node, attr, value)
 
 	if(typeof(value) !== "undefined")
 	{
-		if(value.length > 0)
+		if(value !== null && value.length > 0)
+		{
 			node.setAttribute(attr, value);
+		}
 		else
+		{
 			node.setAttribute(attr, null);
+		}
 	}
 
 	return node.getAttribute(attr);

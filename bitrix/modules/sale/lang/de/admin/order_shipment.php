@@ -48,4 +48,13 @@ $MESS["SALE_SHIPMENT_F_USER_ID"] = "Kunden-ID";
 $MESS["SALE_SHIPMENT_F_USER_LOGIN"] = "Kundenlogin";
 $MESS["SALE_ORDER_DELIVERY_RESPONSIBLE_ID"] = "Verantwortlich";
 $MESS["SALE_ORDER_USER_NAME"] = "Kunde";
+$MESS["SALE_ORDER_DELIVERY_REQ_DELIVERY_ERROR"] = "Fehler beim Hinzufügen der Auslieferungen zur Transportbestellung";
+$MESS["SALE_ORDER_DELIVERY_REQ_ID"] = "ID der Transportbestellung";
+$MESS["SALE_ORDER_DELIVERY_REQ_IS_SENT"] = "Transportbestellung abgegeben";
+$MESS["SALE_ORDER_DELIVERY_REQ_IS_SENT_Y"] = "Gesendet";
+$MESS["SALE_ORDER_DELIVERY_REQ_IS_SENT_N"] = "Nicht gesendet";
+$MESS["SALE_ORDER_DELIVERY_ACTION_DEDUCT"] = "Ausliefern";
+$MESS["SALE_ORDER_DELIVERY_ACTION_DEDUCT_N"] = "Nicht ausliefern";
+$MESS["SALE_ORDER_DELIVERY_ACTION_ALLOW_DLV"] = "Auslieferung erlauben";
+$MESS["SALE_ORDER_DELIVERY_ACTION_ALLOW_DLV_N"] = "Auslieferung abbrechen";
 ?>

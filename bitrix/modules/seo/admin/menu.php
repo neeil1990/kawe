@@ -18,7 +18,8 @@ if($APPLICATION->GetGroupRight("seo") > "D")
 		$bShowYandexServices =
 			COption::GetOptionString('main', 'vendor', '') == '1c_bitrix'
 			&& Loc::getDefaultLang(LANGUAGE_ID) == 'ru';
-
+		$bShowGoogleServices = $bShowYandexServices;
+		
 		$aMenu = array(
 			array(
 				"parent_menu" => "global_menu_marketing",
@@ -36,6 +37,8 @@ if($APPLICATION->GetGroupRight("seo") > "D")
 
 		$arEngineList = array();
 		$arAdvList = array();
+		
+//		not show Yandex services on portal
 		if ($bShowYandexServices)
 		{
 			$arEngineList[] = array(
@@ -139,18 +142,14 @@ if($APPLICATION->GetGroupRight("seo") > "D")
 
 			$arAdvList[] = $yandexAdvItem;
 		}
+		
+//		not show Yandex and Google on portal
+		if($bShowGoogleServices)
+			$arEngineList[] = array(
+				'url' => 'seo_search_google.php?lang='.LANGUAGE_ID,
+				'text' => Loc::getMessage("SEO_MENU_GOOGLE"),
+			);
 
-		$arEngineList[] = array(
-			'url' => 'seo_search_google.php?lang='.LANGUAGE_ID,
-			'text' => Loc::getMessage("SEO_MENU_GOOGLE"),
-		);
-/*
-		$arAdvList[] = array(
-			'url' => 'seo_search_google_adwords.php?lang='.LANGUAGE_ID,
-			'more_url' => array('seo_search_google_adwords_edit.php?lang='.LANGUAGE_ID),
-			'text' => Loc::getMessage("SEO_MENU_GOOGLE_ADWORDS"),
-		);
-*/
 		if(count($arEngineList) > 0)
 		{
 			$aMenu[0]["items"][] = array(

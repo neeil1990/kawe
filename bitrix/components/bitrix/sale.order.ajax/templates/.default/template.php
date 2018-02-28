@@ -6,21 +6,21 @@ use Bitrix\Main,
 /**
  * @var array $arParams
  * @var array $arResult
- * @var $APPLICATION CMain
- * @var $USER CUser
- * @var $component SaleOrderAjax
+ * @var CMain $APPLICATION
+ * @var CUser $USER
+ * @var SaleOrderAjax $component
+ * @var string $templateFolder
  */
 
 $context = Main\Application::getInstance()->getContext();
 $request = $context->getRequest();
-$server = $context->getServer();
 
 if (empty($arParams['TEMPLATE_THEME']))
 {
 	$arParams['TEMPLATE_THEME'] = Main\ModuleManager::isModuleInstalled('bitrix.eshop') ? 'site' : 'blue';
 }
 
-if ($arParams['TEMPLATE_THEME'] == 'site')
+if ($arParams['TEMPLATE_THEME'] === 'site')
 {
 	$templateId = Main\Config\Option::get('main', 'wizard_template_id', 'eshop_bootstrap', $component->getSiteId());
 	$templateId = preg_match('/^eshop_adapt/', $templateId) ? 'eshop_adapt' : $templateId;
@@ -29,7 +29,7 @@ if ($arParams['TEMPLATE_THEME'] == 'site')
 
 if (!empty($arParams['TEMPLATE_THEME']))
 {
-	if (!is_file($server->getDocumentRoot().'/bitrix/css/main/themes/'.$arParams['TEMPLATE_THEME'].'/style.css'))
+	if (!is_file(Main\Application::getDocumentRoot().'/bitrix/css/main/themes/'.$arParams['TEMPLATE_THEME'].'/style.css'))
 	{
 		$arParams['TEMPLATE_THEME'] = 'blue';
 	}
@@ -51,7 +51,7 @@ $arParams['SHOW_DELIVERY_INFO_NAME'] = $arParams['SHOW_DELIVERY_INFO_NAME'] === 
 $arParams['SHOW_DELIVERY_PARENT_NAMES'] = $arParams['SHOW_DELIVERY_PARENT_NAMES'] === 'N' ? 'N' : 'Y';
 $arParams['SHOW_STORES_IMAGES'] = $arParams['SHOW_STORES_IMAGES'] === 'N' ? 'N' : 'Y';
 
-if (!isset($arParams['BASKET_POSITION']))
+if (!isset($arParams['BASKET_POSITION']) || !in_array($arParams['BASKET_POSITION'], array('before', 'after')))
 {
 	$arParams['BASKET_POSITION'] = 'after';
 }
@@ -269,6 +269,7 @@ if ($useDefaultMessages || !isset($arParams['MESS_PAY_SYSTEM_PAYABLE_ERROR']))
 }
 
 $scheme = $request->isHttps() ? 'https' : 'http';
+
 switch (LANGUAGE_ID)
 {
 	case 'ru':
@@ -295,11 +296,11 @@ $this->addExternalJs($templateFolder.'/script.js');
 
 if (strlen($request->get('ORDER_ID')) > 0)
 {
-	include($server->getDocumentRoot().$templateFolder.'/confirm.php');
+	include(Main\Application::getDocumentRoot().$templateFolder.'/confirm.php');
 }
 elseif ($arParams['DISABLE_BASKET_REDIRECT'] === 'Y' && $arResult['SHOW_EMPTY_BASKET'])
 {
-	include($server->getDocumentRoot().$templateFolder.'/empty.php');
+	include(Main\Application::getDocumentRoot().$templateFolder.'/empty.php');
 }
 else
 {
@@ -337,7 +338,7 @@ else
 				<!--	DUPLICATE MOBILE ORDER SAVE BLOCK	-->
 				<div id="bx-soa-total-mobile" style="margin-bottom: 6px;"></div>
 
-				<? if (!isset($arParams['BASKET_POSITION']) || $arParams['BASKET_POSITION'] === 'before'): ?>
+				<? if ($arParams['BASKET_POSITION'] === 'before'): ?>
 					<!--	BASKET ITEMS BLOCK	-->
 					<div id="bx-soa-basket" data-visited="false" class="bx-soa-section bx-active">
 						<div class="bx-soa-section-title-container">

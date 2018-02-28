@@ -7,7 +7,7 @@ $frame = $this->createFrame()->begin(false);
 	window.BxLiveChatInit = function() {
 		var config = <?=CUtil::PhpToJSObject($arResult['CONFIG'])?>;
 		config.firstMessage = config.firstMessage.replace('#VAR_HOST#', location.hostname).replace('#VAR_PAGE#', '[url='+location.href+']'+(document.title || location.href)+'[/url]');
-		BX.LiveChat.setCookie('LIVECHAT_HASH', '<?=$arResult['HASH']?>', {expires: 600000});
+		BX.LiveChat.setCookie('LIVECHAT_HASH', '<?=$arResult['HASH']?>', {expires: 600000, path: '/'});
 		return config;
 	};
 	<?if ($arResult['GA_MARK']):?>

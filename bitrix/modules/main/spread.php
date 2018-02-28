@@ -10,7 +10,7 @@ if(isset($_GET["k"]) && isset($_GET["s"]) && is_string($_GET["k"]) && is_string(
 
 	$cookie = base64_decode($_GET["s"]);
 	$salt = $_SERVER["REMOTE_ADDR"]."|".@filemtime($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/version.php")."|".$LICENSE_KEY;
-	if(md5($cookie.$salt) == $_GET["k"])
+	if(md5($cookie.$salt) === $_GET["k"])
 	{
 		$arr = explode(chr(2), $cookie);
 		if(is_array($arr) && count($arr)>0)

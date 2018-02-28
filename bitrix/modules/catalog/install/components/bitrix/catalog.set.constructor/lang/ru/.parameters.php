@@ -11,4 +11,6 @@ $MESS["IBLOCK_VAT_INCLUDE"] = "Включать НДС в цену";
 $MESS["IBLOCK_BASKET_URL"] = "URL, ведущий на страницу с корзиной покупателя";
 $MESS["CP_BCT_CACHE_GROUPS"] = "Учитывать права доступа";
 $MESS["CP_BCT_OFFERS_CART_PROPERTIES"] = "Свойства предложений, добавляемые в корзину";
+$MESS["CP_CSC_PARAM_TITLE_BUNDLE_ITEMS_COUNT"] = "Число элементов набора, готовых к добавлению в корзину";
+$MESS["BUNDLE_ITEMS_COUNT_TIP"] = "В это количество не входит товар, которому принадлежит набор. Минимальное значение - 1.";
 ?>

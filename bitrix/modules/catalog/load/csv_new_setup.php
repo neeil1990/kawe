@@ -395,6 +395,7 @@ if ($STEP == 2)
 				{
 					$arAvailFields[$intCount] = $oneField;
 					$arAvailFields[$intCount]['value'] .= $currentDepthLevel;
+					$arAvailFields[$intCount]['sort'] = ($intCount+1)*10;
 					if ($boolSep)
 					{
 						$arAvailFields[$intCount]['SEP'] = GetMessage('CAT_ADM_CSV_EXP_SEP_SECTIONS');

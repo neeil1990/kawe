@@ -28,11 +28,11 @@ if($arParams["arUserField"]["USER_TYPE"])
 	if (empty($arResult["VALUE"]))
 		$arResult["VALUE"] = array(null);
 	$arResult["~VALUE"] = $arResult["VALUE"];
+	$enum = array();
 	if ($arParams["arUserField"]["USER_TYPE"]["BASE_TYPE"] == "enum")
 	{
 		$obEnum = new CUserFieldEnum;
 		$rsEnum = $obEnum->GetList(array(), array("USER_FIELD_ID"=>$arParams["arUserField"]["ID"]));
-		$enum = array();
 		while($arEnum = $rsEnum->GetNext())
 		{
 			$enum[$arEnum["ID"]] = $arEnum["VALUE"];
@@ -49,10 +49,10 @@ if($arParams["arUserField"]["USER_TYPE"])
 					$res = round(doubleval($res), $arParams["arUserField"]["SETTINGS"]["PRECISION"]);
 				break;
 			case "int":
-				$res = intVal($res);
+				$res = intval($res);
 				break;
 			case "enum":
-				$res = strLen($enum[$res]) > 0 ? $enum[$res] : htmlspecialcharsbx($res);
+				$res = strlen($enum[$res]) > 0 ? $enum[$res] : htmlspecialcharsbx($res);
 				break;
 			default:
 				if(is_string($res))

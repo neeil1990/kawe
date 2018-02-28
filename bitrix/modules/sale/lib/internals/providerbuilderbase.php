@@ -178,11 +178,9 @@ abstract class ProviderBuilderBase
 	 *
 	 * @return Sale\Result
 	 */
-	private function decomposeIntoProvider(Sale\Result $resultProvider, $outputName)
+	protected function decomposeIntoProvider(Sale\Result $resultProvider, $outputName)
 	{
 		$result = new Sale\Result();
-		$resultList = array();
-		$providerClass = $this->getProviderClass();
 		$providerData = $resultProvider->getData();
 
 		if (empty($providerData[$outputName]))
@@ -190,46 +188,8 @@ abstract class ProviderBuilderBase
 			return $result;
 		}
 
-		if ($providerClass)
-		{
-			$reflect = new \ReflectionClass($providerClass);
-			$providerName = trim($reflect->getName());
-
-			if (isset($providerData[$outputName][$providerName]))
-			{
-				$resultList[$outputName][$providerName] = $providerData[$outputName][$providerName];
-			}
-
-		}
-		else
-		{
-			$items = $this->getItems();
-
-			foreach ($items as $itemId => $item)
-			{
-				/** @var Sale\BasketItem $basketItem */
-				$basketItem = $item['BASKET_ITEM'];
-				$callbackFunction = trim($basketItem->getCallbackFunction());
-
-				if (!isset($resultList[$outputName][$callbackFunction]))
-				{
-					$resultList[$outputName][$callbackFunction] = array();
-				}
-
-				if (isset($providerData[$outputName][$callbackFunction]))
-				{
-					$resultList[$outputName][$callbackFunction] = $resultList[$outputName][$callbackFunction] + $providerData[$outputName][$callbackFunction];
-				}
-			}
-		}
-
-		if (!empty($resultList))
-		{
-			$result->setData($resultList);
-			return $result;
-		}
-
-		return $resultProvider;
+		$result->setData($providerData);
+		return $result;
 	}
 
 	/**
@@ -358,14 +318,43 @@ abstract class ProviderBuilderBase
 	}
 
 	/**
+	 * @internal
 	 * @return mixed
 	 */
-	protected function getProviderClass()
+	public function getProviderClass()
 	{
 		return $this->providerClass;
 	}
 
 	/**
+	 * @internal
+	 * @return string
+	 */
+	public function getProviderName()
+	{
+		$reflect = new \ReflectionClass($this->getProviderClass());
+		$providerName = $reflect->getName();
+		return  $this->clearProviderName($providerName);
+	}
+
+	/**
+	 * @param $providerName
+	 *
+	 * @return string
+	 */
+	protected function clearProviderName($providerName)
+	{
+		if (substr($providerName, 0, 1) == "\\")
+		{
+			$providerName = substr($providerName, 1);
+		}
+
+		return $providerName;
+	}
+
+
+	/**
+	 * @internal
 	 * @return array
 	 */
 	protected function getContext()

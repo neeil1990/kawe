@@ -117,7 +117,7 @@ $arVariables = array();
 				Default params
 ********************************************************************/
 
-$arAuthPageParams = array("login", "logout", "register", "forgot_password", "change_password", "auth", "forum_auth");
+$arAuthPageParams = array("login", "logout", "register", "forgot_password", "change_password", "auth");
 if (($_REQUEST["auth"]=="yes" || $_REQUEST["register"] == "yes" ||  $_REQUEST["login"] == "yes") &&
 	$USER->IsAuthorized() || $_REQUEST["logout"] == "yes")
 {

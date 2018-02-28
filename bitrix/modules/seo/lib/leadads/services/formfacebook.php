@@ -50,6 +50,22 @@ class FormFacebook extends Form
 				$locale = strtolower($languageId) . '_' . strtoupper($languageId);
 				break;
 
+			case 'la':
+				$locale = 'es_LA';
+				break;
+
+			case 'br': // Brazilian
+				$locale = 'pt_BR';
+				break;
+
+			case 'sc': // simplified Chinese
+				$locale = 'zh_CN';
+				break;
+
+			case 'tc': // traditional Chinese
+				$locale = 'zh_TW';
+				break;
+
 			default:
 				$locale = 'en_US';
 				break;
@@ -67,23 +83,27 @@ class FormFacebook extends Form
 			'url' => $data['PRIVACY_POLICY_URL']
 		);
 
-		$content = array();
-		for ($pos = 0, $len = 80; $contentItem = substr($data['DESCRIPTION'], $pos, $len); $pos = $pos + $len)
-		{
-			$content[] = $contentItem;
-		}
-		$contextCard = array(
-			'title' => $data['TITLE'],
-			'style' => 'LIST_STYLE',
-			'content' => $content, // max 80 chars each
+		$privacyPolicy['url'] = 'http://www.1c-bitrix.ru/download/files/manuals/ru/privacy.htm';
+		$contextCard = [
+			'style' => 'PARAGRAPH_STYLE',
+			'content' => [' '],
 			'button_text' => $data['BUTTON_CAPTION']
-		);
+		];
+		if ($data['TITLE'])
+		{
+			$contextCard['title'] = $data['TITLE'];
+		}
+		if ($data['DESCRIPTION'])
+		{
+			$contextCard['content'] = [$data['DESCRIPTION']];
+		}
+
 
 		$account = $this->service->getAccount(static::TYPE_CODE);
 		/** @var AccountFacebook $account */
 		$accountData = $account->getRowById($this->accountId);
 
-		$response = $this->getRequest()->send(array(
+		$requestParameters = array(
 			'method' => 'POST',
 			'endpoint' => $this->accountId . '/leadgen_forms',
 			'fields' => array(
@@ -99,7 +119,8 @@ class FormFacebook extends Form
 				'context_card' => Json::encode($contextCard),
 				'questions' => Json::encode($questions)
 			)
-		));
+		);
+		$response = $this->getRequest()->send($requestParameters);
 
 		$responseData = $response->getData();
 		if (isset($responseData['id']))

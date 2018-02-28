@@ -2227,10 +2227,16 @@ class Asset
 
 		if($type == 'css')
 		{
+			$adit = "";
+			if(strlen($data) > 0)
+				$adit .= " ".trim($data);
+			if(strlen($label) > 0)
+				$adit .= " ".trim($label);
+
 			if($writeResult || !$writeResult && $unique && $action == 'UP')
 			{
 				$css = \CUtil::GetAdditionalFileURL($optimFile);
-				$res .= '<link href="'.$css.'" type="text/css" '.$data.' '.$label.' rel="stylesheet"'.($this->xhtmlStyle? ' /':'').'>'."\n";
+				$res .= '<link href="'.$css.'" type="text/css"'.$adit.' rel="stylesheet"'.($this->xhtmlStyle? ' /':'').'>'."\n";
 				$this->fileList['CSS'][$setName]['FILES'][] = $css;
 			}
 
@@ -2238,7 +2244,7 @@ class Asset
 			{
 				foreach($files as $file)
 				{
-					$res .= '<link href="'.$file['FULL_PATH'].'" type="text/css" '.$data.' '.$label.' rel="stylesheet"'.($this->xhtmlStyle? ' /':'').'>'."\n";
+					$res .= '<link href="'.$file['FULL_PATH'].'" type="text/css"'.$adit.' rel="stylesheet"'.($this->xhtmlStyle? ' /':'').'>'."\n";
 					$this->fileList['CSS'][$setName]['FILES'][] = $file['FULL_PATH'];
 				}
 			}

@@ -134,6 +134,14 @@ class MainMailConfirmComponent extends CBitrixComponent
 
 		$mailboxes = array_values($mailboxes);
 
+		foreach ($mailboxes as $k => $item)
+		{
+			$mailboxes[$k]['formated'] = sprintf(
+				$item['name'] ? '%s <%s>' : '%s%s',
+				$item['name'], $item['email']
+			);
+		}
+
 		return $mailboxes;
 	}
 
@@ -147,12 +155,7 @@ class MainMailConfirmComponent extends CBitrixComponent
 		$mailboxesFormated = array();
 
 		foreach (static::prepareMailboxes() as $item)
-		{
-			$mailboxesFormated[] = sprintf(
-				$item['name'] ? '%s <%s>' : '%s%s',
-				$item['name'], $item['email']
-			);
-		}
+			$mailboxesFormated[] = $item['formated'];
 
 		return $mailboxesFormated;
 	}

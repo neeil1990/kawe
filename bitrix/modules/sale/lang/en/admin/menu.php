@@ -198,4 +198,5 @@ $MESS["SALE_PAY_SYS_RETURN_DESCR"] = "Configure returns";
 $MESS["SALE_MENU_MARKETPLACE_READY_SHOPS"] = "Install a ready to use shop from Marketplace";
 $MESS["SALE_MENU_MARKETING_MARKETPLACE_ADD"] = "Install from Marketplace";
 $MESS["SALE_MENU_TRADING_PLATFORMS_MARKETPLACE_ADD"] = "Install from Marketplace";
+$MESS["SALE_MENU_DELIVERY_REQUESTS"] = "Transportation orders";
 ?>

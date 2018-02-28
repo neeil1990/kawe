@@ -65,6 +65,9 @@ class CBitrixComponent
 	private $siteTemplateId = false;
 	private $languageId = false;
 
+	/** @var string|null */
+	protected $signedParameters;
+
 	/**
 	 * Event called from includeComponent before component execution.
 	 *
@@ -141,7 +144,8 @@ class CBitrixComponent
 		{
 			$this->setSiteId(SITE_ID);
 			$this->setLanguageId(LANGUAGE_ID);
-			$this->setSiteTemplateId(SITE_TEMPLATE_ID);
+			if (defined('SITE_TEMPLATE_ID'))
+				$this->setSiteTemplateId(SITE_TEMPLATE_ID);
 		}
 
 		$this->request = \Bitrix\Main\Context::getCurrent()->getRequest();
@@ -267,6 +271,43 @@ class CBitrixComponent
 		return $this->languageId;
 	}
 
+	/**
+	 * Returns signed parameters.
+	 * The list contains parameters which are presented in  \CBitrixComponent::listKeysSignedParameters().
+	 *
+	 * @see \CBitrixComponent::listKeysSignedParameters()
+	 *
+	 * @return string|null
+	 */
+	final public function getSignedParameters()
+	{
+		return $this->signedParameters;
+	}
+
+	/**
+	 * Sings and stores parameters.
+	 *
+	 * @param array $params Parameters of component.
+	 *
+	 * @return $this
+	 * @throws \Bitrix\Main\ArgumentTypeException
+	 */
+	private function storeSignedParameters(array $params)
+	{
+		$this->signedParameters = \Bitrix\Main\Component\ParameterSigner::signParameters($this->getName(), $params);
+
+		return $this;
+	}
+
+	/**
+	 * List of keys of parameters which the component have to sign,
+	 *
+	 * @return null|array
+	 */
+	protected function listKeysSignedParameters()
+	{
+		return null;
+	}
 
 	/**
 	 * Function returns the template page witch was set with initComponentTemplate
@@ -348,6 +389,8 @@ class CBitrixComponent
 	{
 		$component = new CBitrixComponent;
 		$component->initComponent($componentName);
+
+		return $component->classOfComponent;
 	}
 	/**
 	 * Function returns class name of the component by it's path.
@@ -448,7 +491,7 @@ class CBitrixComponent
 	 * @return void
 	 *
 	 */
-	final protected function __prepareComponentParams(&$arParams)
+	final public function __prepareComponentParams(&$arParams)
 	{
 		if(!is_array($arParams))
 		{
@@ -579,6 +622,13 @@ class CBitrixComponent
 			/** @var CBitrixComponent $component  */
 			$component = new $this->classOfComponent($this);
 			$component->onIncludeComponentLang();
+
+			$keysToExport = $component->listKeysSignedParameters();
+			if($keysToExport)
+			{
+				$component->storeSignedParameters(array_intersect_key($arParams, array_combine($keysToExport, $keysToExport)));
+			}
+
 			$component->arParams = $component->onPrepareComponentParams($arParams);
 			$component->__prepareComponentParams($component->arParams);
 

@@ -53,6 +53,7 @@ if (CModule::IncludeModule("sale"))
 {
 	if ($arOrder = CSaleOrder::GetByID($ORDER_ID))
 	{
+		$order = \Bitrix\Sale\Order::load($ORDER_ID);
 		$allowedStatusesView = \Bitrix\Sale\OrderStatus::getStatusesUserCanDoOperations($USER->GetID(), array('view'));
 
 
@@ -83,7 +84,7 @@ if (CModule::IncludeModule("sale"))
 		}
 
 		$shipmentRes = \Bitrix\Sale\Shipment::getList(array(
-			'select' => array( 'DATE_ALLOW_DELIVERY', 'EMP_ALLOW_DELIVERY_ID', 'DATE_DEDUCTED', 'EMP_ALLOW_DELIVERY_ID', 'TRACKING_NUMBER', 'DELIVERY_DOC_NUM', 'DELIVERY_DOC_DATE' ),
+			'select' => array('ID', 'DATE_ALLOW_DELIVERY', 'EMP_ALLOW_DELIVERY_ID', 'DATE_DEDUCTED', 'EMP_ALLOW_DELIVERY_ID', 'TRACKING_NUMBER', 'DELIVERY_DOC_NUM', 'DELIVERY_DOC_DATE' ),
 			'filter' => array(
 				'ORDER_ID' => $arOrder['ID'],
 				'SYSTEM' => 'N'
@@ -95,6 +96,11 @@ if (CModule::IncludeModule("sale"))
 		if ($shipmentData = $shipmentRes->fetch())
 		{
 			$arOrder = array_merge($arOrder, $shipmentData);
+			$shipmentCollection = $order->getShipmentCollection();
+			/** @var \Bitrix\Sale\Shipment $shipment */
+			$shipment = $shipmentCollection->getItemById($shipmentData['ID']);
+			$arOrder['DELIVERY_VAT_SUM'] = $shipment->getVatSum();
+			$arOrder['DELIVERY_VAT_RATE'] = $shipment->getVatRate();
 		}
 
 		$rep_file_name = GetRealPath2Report($doc.".php");

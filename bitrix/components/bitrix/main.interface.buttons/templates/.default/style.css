@@ -527,11 +527,11 @@
 }
 
 
-.main-buttons-submenu-item.main-buttons-submenu-settings-apply {
+.menu-popup .menu-popup-item.main-buttons-submenu-item.main-buttons-submenu-settings-apply {
 	display: none;
 }
 
-.main-buttons-submenu-item.main-buttons-submenu-settings-apply::after {
+.menu-popup .menu-popup-item.main-buttons-submenu-item.main-buttons-submenu-settings-apply::after {
 	content: '';
 	position: relative;
 	top: 6px;

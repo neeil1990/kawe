@@ -97,6 +97,28 @@ class CAllCurrency
 			$strCurrencyID = Currency\CurrencyManager::checkCurrencyID($strCurrencyID);
 			if ($strCurrencyID === false)
 				$arMsg[] = array('id' => 'CURRENCY','text' => Loc::getMessage('BT_MOD_CURR_ERR_CURR_CUR_ID_BAD'));
+			$iterator = Currency\CurrencyTable::getList(array(
+				'select' => array('*'),
+				'filter' => array('=CURRENCY' => $strCurrencyID)
+			));
+			$row = $iterator->fetch();
+			unset($iterator);
+			if (!empty($row) && $row['BASE'] == 'Y')
+			{
+				if (array_key_exists('AMOUNT_CNT', $arFields))
+				{
+					$arFields['AMOUNT_CNT'] = (int)$arFields['AMOUNT_CNT'];
+					if ($arFields['AMOUNT_CNT'] != 1)
+						$arMsg[] = array('id' => 'AMOUNT_CNT','text' => Loc::getMessage('BX_CURRENCY_ERR_CURR_BASE_AMOUNT_CNT_BAD'));
+				}
+				if (array_key_exists('AMOUNT', $arFields))
+				{
+					$arFields['AMOUNT'] = (float)$arFields['AMOUNT'];
+					if ($arFields['AMOUNT'] != 1)
+						$arMsg[] = array('id' => 'AMOUNT','text' => Loc::getMessage('BX_CURRENCY_ERR_CURR_BASE_AMOUNT_BAD'));
+				}
+			}
+			unset($row);
 		}
 
 		if (empty($arMsg))

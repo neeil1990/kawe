@@ -34,4 +34,10 @@ $MESS["SOPE_SHIPMENT_TRANSITION"] = "Zur Bestellung wechseln";
 $MESS["SOPE_SHIPMENT_TRANSITION_TITLE"] = "Zur Bestellung wechseln";
 $MESS["SOPE_SHIPMENT_ERROR_MESSAGE"] = "Fehler beim Speichern der Auslieferung";
 $MESS["SOPE_SHIPMENT_DELETE_MESSAGE"] = "Möchten Sie diese Auslieferung wirklich löschen?";
+$MESS["SOPE_DELIVERY_REQUEST_SHIPMENT_DELETE"] = "Auslieferung aus der Transportbestellung entfernen";
+$MESS["SOPE_DELIVERY_REQUEST_SHIPMENT_UPDATE"] = "Auslieferung in der Transportbestellung aktualisieren";
+$MESS["SOPE_DELIVERY_REQUEST_CREATE"] = "Neue Transportbestellung erstellen und Auslieferung dazu hinzufügen";
+$MESS["SOPE_DELIVERY_REQUEST_ADD"] = "Auslieferung zu einer existierenden Transportbestellung hinzufügen";
+$MESS["SOPE_DELIVERY_REQUEST"] = "Transportbestellung";
+$MESS["SOPE_DELIVERY_REQUEST_TITLE"] = "Aktionen der Transportbestellung";
 ?>

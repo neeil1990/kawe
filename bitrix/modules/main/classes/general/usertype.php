@@ -1626,6 +1626,21 @@ class CUserTypeManager
 				}
 				continue;
 			}
+			elseif ($arUserField['SHOW_FILTER'] != 'N' && $arUserField['USER_TYPE']['BASE_TYPE'] == 'int')
+			{
+				switch ($arUserField['USER_TYPE_ID'])
+				{
+					case 'boolean':
+						if ($filterData[$fieldName] === 'Y')
+							$filterData[$fieldName] = 1;
+						if ($filterData[$fieldName] === 'N')
+							$filterData[$fieldName] = 0;
+						$value = $filterData[$fieldName];
+						break;
+					default:
+						$value = $filterData[$fieldName];
+				}
+			}
 			else
 			{
 				$value = $filterData[$fieldName];
@@ -2216,6 +2231,18 @@ class CUserTypeManager
 		$event->send();
 
 		return $html;
+	}
+
+	public function getPublicText($userField)
+	{
+		$userType = $this->getUserType($userField['USER_TYPE_ID']);
+		if (!empty($userType['CLASS_NAME']) && is_callable(array($userType['CLASS_NAME'], 'getPublicText')))
+			return call_user_func_array(array($userType['CLASS_NAME'], 'getPublicText'), array($userField));
+
+		return join(', ', array_map(function ($v)
+		{
+			return is_null($v) || is_scalar($v) ? (string) $v : '';
+		}, (array) $userField['VALUE']));
 	}
 
 	function GetPublicEdit($arUserField, $arAdditionalParameters = array())

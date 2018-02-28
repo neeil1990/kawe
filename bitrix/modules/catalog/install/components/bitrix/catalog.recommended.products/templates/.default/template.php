@@ -27,7 +27,15 @@ if (!empty($arResult['RECOMMENDED_IDS']))
 		<?
 	}
 
-	$iblockId = $arParams['IBLOCK_ID'];
+	if (!empty($arParams['SHOW_PRODUCTS']))
+	{
+		$iblockId = key($arParams['SHOW_PRODUCTS']);
+	}
+	else
+	{
+		$iblockId = $arParams['IBLOCK_ID'];
+	}
+
 	$arSku = CCatalogSku::GetInfoByProductIBlock($iblockId);
 	$offerIblockId = !empty($arSku) ? $arSku['IBLOCK_ID'] : 0;
 

@@ -7,7 +7,7 @@ $arComponentParameters = array(
 			"NAME" => GetMessage("SOPC_PATH_TO_PAYMENT"),
 			"TYPE" => "STRING",
 			"MULTIPLE" => "N",
-			"DEFAULT" => "/personal/order/payment",
+			"DEFAULT" => "/personal/order/payment/",
 			"COLS" => 25,
 		),
 		"SET_TITLE" => array()

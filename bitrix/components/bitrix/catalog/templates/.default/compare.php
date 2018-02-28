@@ -21,7 +21,7 @@ $this->addExternalCss("/bitrix/css/main/bootstrap.css");
 		"IBLOCK_TYPE" => $arParams["IBLOCK_TYPE"],
 		"IBLOCK_ID" => $arParams["IBLOCK_ID"],
 		"BASKET_URL" => $arParams["BASKET_URL"],
-		"ACTION_VARIABLE" => (!empty($arParams["ACTION_VARIABLE"]) ? $arParams["ACTION_VARIABLE"] : "action"),
+		"ACTION_VARIABLE" => (!empty($arParams["ACTION_VARIABLE"]) ? $arParams["ACTION_VARIABLE"] : "action")."_ccr",
 		"PRODUCT_ID_VARIABLE" => $arParams["PRODUCT_ID_VARIABLE"],
 		"SECTION_ID_VARIABLE" => $arParams["SECTION_ID_VARIABLE"],
 		"FIELD_CODE" => $arParams["COMPARE_FIELD_CODE"],

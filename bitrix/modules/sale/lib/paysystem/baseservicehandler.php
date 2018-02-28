@@ -104,7 +104,7 @@ abstract class BaseServiceHandler
 		$documentRoot = Application::getDocumentRoot();
 		$siteTemplate = \CSite::GetCurTemplate();
 		$template = Manager::sanitize($template);
-		$handlerName = $this->getName();
+		$handlerName = static::getName();
 
 		$folders = array();
 

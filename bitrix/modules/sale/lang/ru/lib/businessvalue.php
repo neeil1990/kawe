@@ -55,6 +55,7 @@ $MESS["BIZVAL_CODE_ADDRESS"] = "Адрес";
 $MESS["BIZVAL_CODE_POSTAL_ADDRESS"] = "Почтовый адрес";
 $MESS["BIZVAL_CODE_ZIP"] = "Почтовый индекс";
 $MESS["BIZVAL_CODE_COUNTRY"] = "Страна";
+$MESS["BIZVAL_CODE_NOTES"] = "Дополнительные заметки";
 $MESS["BIZVAL_CODE_REGION"] = "Регион";
 $MESS["BIZVAL_CODE_CITY"] = "Город";
 $MESS["BIZVAL_CODE_DISTRICT"] = "Район";

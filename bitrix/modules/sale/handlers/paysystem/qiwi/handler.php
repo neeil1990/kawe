@@ -335,8 +335,8 @@ class QiwiHandler extends PaySystem\ServiceHandler implements PaySystem\ICheckab
 			foreach($bill as $key => $value)
 				$psData['PS_STATUS_DESCRIPTION'] .= "{$key}:{$value}, ";
 
-			$billAmount = PriceMaths::roundByFormatCurrency($bill['amount'], $payment->getField('CURRENCY'));
-			$paymentSum = PriceMaths::roundByFormatCurrency($payment->getSum(), $payment->getField('CURRENCY'));
+			$billAmount = PriceMaths::roundPrecision($bill['amount']);
+			$paymentSum = PriceMaths::roundPrecision($payment->getSum());
 
 			if($bill['status'] == "paid" && $billAmount == $paymentSum && $this->getBusinessValue($payment, 'PS_CHANGE_STATUS_PAY'))
 				$result->setOperationType(PaySystem\ServiceResult::MONEY_COMING);

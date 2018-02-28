@@ -30,6 +30,7 @@
 	margin: -3px 10px 0 0;
 }
 #bx-soa-order{
+    transition: 500ms opacity ease;
 	counter-reset: heading;
 }
 .bx-soa-section .bx-soa-section-title-count:after {
@@ -1193,31 +1194,8 @@ ul.bx-soa-pp-list li {
 .wsnw{white-space: nowrap;}
 
 .bx-step-opacity {
-    opacity: 0;
-    -webkit-animation: animationBorderStepOpacity ease 1s;
-    -moz-animation: animationBorderStepOpacity ease 1s;
-    -o-animation: animationBorderStepOpacity ease 1s;
-    animation: animationBorderStepOpacity ease 1s;
-    -webkit-animation-iteration-count: 1;
-    -moz-animation-iteration-count: 1;
-    -o-animation-iteration-count: 1;
-    animation-iteration-count: 1;
-    -webkit-transform-origin: 0% 0%;
-    -moz-transform-origin: 0% 0%;
-    -ms-transform-origin: 0% 0%;
-    -o-transform-origin: 0% 0%;
-    transform-origin: 0% 0%;
-    -webkit-animation-fill-mode:forwards;
-    -moz-animation-fill-mode:forwards;
-    -o-animation-fill-mode:forwards;
-    animation-fill-mode:forwards;
+    transition: 500ms opacity ease;
 }
-
-@-webkit-keyframes animationBorderStepOpacity{ 0%{opacity:0} 100%{opacity:100} }
-@-moz-keyframes animationBorderStepOpacity{ 0%{opacity:0} 100%{opacity:100} }
-@-ms-keyframes animationBorderStepOpacity{ 0%{opacity:0} 100%{opacity:100} }
-@-o-keyframes animationBorderStepOpacity{ 0%{opacity:0} 100%{opacity:100} }
-@keyframes animationBorderStepOpacity{ 0%{opacity:0} 100%{opacity:100} }
 
 /* MAPS */
 ymaps h3{

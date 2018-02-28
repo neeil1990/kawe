@@ -19,4 +19,5 @@ $MESS["SALE_OANALYSIS_SHIPMENT_ALLOWED"] = "Shipment approved";
 $MESS["SALE_OANALYSIS_CREATED_AT"] = "Created on";
 $MESS["SALE_OANALYSIS_RESPONSIBLE"] = "Responsible person";
 $MESS["SALE_OANALYSIS_HIDDEN"] = "[Hidden]";
+$MESS["SALE_OANALYSIS_DELIVERY_REQUEST"] = "Transportation order ##REQUEST_ID#";
 ?>

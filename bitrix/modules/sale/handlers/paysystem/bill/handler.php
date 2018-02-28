@@ -88,6 +88,7 @@ class BillHandler extends PaySystem\BaseServiceHandler
 			{
 				$extraParams['DELIVERY_NAME'] = $shipment->getDeliveryName();
 				$extraParams['DELIVERY_PRICE'] = $shipment->getPrice();
+				$extraParams['DELIVERY_VAT_RATE'] = $shipment->getVatRate();
 				break;
 			}
 		}

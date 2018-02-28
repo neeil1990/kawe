@@ -11,7 +11,6 @@ use Bitrix\Main\Event;
 use Bitrix\Main\EventResult;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\SiteTable;
-use Bitrix\Main\Application;
 use Bitrix\Main\Mail\EventMessageCompiler;
 use \Bitrix\Main\Web\DOM\StyleInliner;
 
@@ -20,15 +19,22 @@ Loc::loadMessages(__FILE__);
 class EditorMail
 {
 	/**
-	 * Create instance of editor
+	 * Create instance of editor.
 	 *
-	 * @param array $params
-	 * @return \Bitrix\Fileman\Block\Editor
+	 * @param array $params Parameters.
+	 * @return Editor
 	 */
 	public static function createInstance($params)
 	{
 		$params['componentFilter'] = array('TYPE' => 'mail');
-		$params['previewUrl'] = '/bitrix/admin/fileman_block_editor.php?action=preview_mail';
+		if (!isset($params['previewUrl']))
+		{
+			$params['previewUrl'] = '/bitrix/admin/fileman_block_editor.php?action=preview_mail';
+		}
+		if (!isset($params['saveFileUrl']))
+		{
+			$params['saveFileUrl'] = '/bitrix/admin/fileman_block_editor.php?action=save_file';
+		}
 
 		$editor = new Editor($params);
 
@@ -46,21 +52,57 @@ class EditorMail
 	}
 
 	/**
-	 * Show editor
+	 * Show editor.
 	 *
-	 * @param array $params
+	 * @param array $params Parameters.
 	 * @return string
 	 */
-	public static function show($params)
+	public static function show(array $params)
 	{
-		\Bitrix\Main\Page\Asset::getInstance()->addJs('/bitrix/js/fileman/block_editor/mail_handlers.js');
-		return self::createInstance($params)->show();
+		$result = self::createInstance($params)->show();
+		\CJSCore::RegisterExt('block_editor_mail', array(
+			'js' => array('/bitrix/js/fileman/block_editor/mail_handlers.js'),
+			'rel' => array('core', 'block_editor')
+		));
+		\CJSCore::Init(array('block_editor_mail'));
+
+		return $result;
 	}
 
 	/**
-	 * Show preview of content
+	 * Remove php from html.
 	 *
-	 * @param array $params
+	 * @param string $html Html.
+	 * @param string $previousHtml Previous html.
+	 * @param bool $canEditPhp Can edit php.
+	 * @param bool $canUseLpa Can use LPA.
+	 * @return string
+	 */
+	public static function removePhpFromHtml($html, $previousHtml = null, $canEditPhp = false, $canUseLpa = false)
+	{
+		if (!$canEditPhp && $canUseLpa)
+		{
+			$html = \LPA::Process($html, $previousHtml);
+		}
+		else if (!$canEditPhp)
+		{
+			$phpList = \PHPParser::ParseFile($html);
+			foreach($phpList as $php)
+			{
+				$surrogate = '<span class="bxhtmled-surrogate" title="">'
+					. htmlspecialcharsbx(Loc::getMessage('BLOCK_EDITOR_BLOCK_DYNAMIC_CONTENT'))
+					.'</span>';
+				$html = str_replace($php[2], $surrogate, $html);
+			}
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Show preview of content.
+	 *
+	 * @param array $params Parameters.
 	 * @return string
 	 */
 	public static function getPreview(array $params)
@@ -76,17 +118,17 @@ class EditorMail
 		{
 			$fields = array();
 		}
-		if(!isset($params['CAN_EDIT_PHP']) || !$params['CAN_EDIT_PHP'])
-		{
-			$html = \LPA::Process($html);
-		}
+
+		$canEditPhp = (isset($params['CAN_EDIT_PHP']) && $params['CAN_EDIT_PHP']);
+		$canUseLpa = (isset($params['CAN_USE_LPA']) && $params['CAN_USE_LPA']);
+		$html = static::removePhpFromHtml($html, null, $canEditPhp, $canUseLpa);
 
 		if(is_object($GLOBALS["USER"]))
 		{
-			/* @var $GLOBALS["USER"] \CUser */
+			/* @var $GLOBALS["USER"] \CAllUser */
 			$fields['EMAIL_TO'] = $GLOBALS["USER"]->GetEmail();
 			$fields['USER_ID'] = $GLOBALS["USER"]->GetID();
-			$fields['NAME'] = $GLOBALS["USER"]->GetFullName();
+			$fields['NAME'] = $GLOBALS["USER"]->GetFirstName() ?: $GLOBALS["USER"]->GetLastName();
 		}
 
 		$siteDb = SiteTable::getList(array(
@@ -148,7 +190,7 @@ class EditorMail
 	}
 
 	/**
-	 * Get block list
+	 * Get block list.
 	 *
 	 * @return array
 	 */
@@ -481,6 +523,21 @@ class EditorMail
 														target="_blank"
 														style="font-weight: bold; color: #626262; letter-spacing: normal;line-height: 100%;text-align: center; text-decoration: underline; font-size: 12px;"
 													>' . Loc::getMessage('BLOCK_EDITOR_BLOCK_SOCIAL_FACEBOOK') . '</a>
+												</td>
+											</tr>
+										</tbody>
+										</table>
+
+										<table align="left" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate !important; margin-right: 10px;">
+										<tbody>
+											<tr>
+												<td valign="top" class="" style="padding-top: 5px; padding-right: 10px; padding-bottom: 5px; padding-left: 10px; font-size: 12px;">
+													<a
+														class="bxBlockContentSocial"
+														href="http://www.instagram.com/"
+														target="_blank"
+														style="font-weight: bold; color: #626262; letter-spacing: normal;line-height: 100%;text-align: center; text-decoration: underline; font-size: 12px;"
+													>' . Loc::getMessage('BLOCK_EDITOR_BLOCK_SOCIAL_INSTAGRAM') . '</a>
 												</td>
 											</tr>
 										</tbody>

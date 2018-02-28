@@ -244,4 +244,5 @@ $MESS["SALE_F_COMPANY_ID"] = "Office";
 $MESS["SALE_F_RESPONSIBLE_ID"] = "Responsible person";
 $MESS["SOAN_MARKETPLACE_ADD_NEW"] = "Install from Marketplace";
 $MESS["SOAN_MARKETPLACE_ADD_NEW_TITLE"] = "Install from Marketplace";
+$MESS["SALE_SEND_DELIVERY_REQUEST"] = "Submit transportation orders";
 ?>

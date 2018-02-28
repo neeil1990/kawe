@@ -549,7 +549,9 @@ class CAllBlogComment
 	public static function UpdateLog($commentID, $arBlogUser, $arUser, $arComment, $arPost, $arParams)
 	{
 		if (!CModule::IncludeModule('socialnetwork'))
+		{
 			return;
+		}
 
 		$AuthorName = CBlogUser::GetUserName($arBlogUser["~ALIAS"], $arUser["~NAME"], $arUser["~LAST_NAME"], $arUser["~LOGIN"], $arUser["~SECOND_NAME"]);
 		$parserBlog = new blogTextParser(false, $arParams["PATH_TO_SMILE"]);
@@ -562,7 +564,8 @@ class CAllBlogComment
 			"TITLE_TEMPLATE" => htmlspecialcharsback($AuthorName)." ".GetMessage("BLG_SONET_COMMENT_TITLE"),
 			"TITLE" => $arPost['~TITLE'],
 			"MESSAGE" => $text4message,
-			"TEXT_MESSAGE" => $text4mail
+			"TEXT_MESSAGE" => $text4mail,
+			"TAG" => \Bitrix\Socialnetwork\Util::detectTags($arComment, array('POST_TEXT'))
 		);
 
 		$dbRes = CSocNetLogComments::GetList(
@@ -576,7 +579,9 @@ class CAllBlogComment
 			array("ID")
 		);
 		while ($arRes = $dbRes->Fetch())
+		{
 			CSocNetLogComments::Update($arRes["ID"], $arSoFields);
+		}
 	}
 
 	public static function DeleteLog($commentID)
@@ -759,54 +764,39 @@ class CAllBlogComment
 					}
 				}
 			}
-			if (
-				(
-					!empty($arPerms["U"][$userId])
-					&& in_array("US".$userId, $arPerms["U"][$userId])
-				)
-				|| (
-					$authorId > 0
-					&& $userId == $authorId
-				)
-			) // if author
+
+			if($authorId <= 0)
 			{
-				$perms = BLOG_PERMS_FULL;
-			}
-			else
-			{
-				if($authorId <= 0)
+				foreach($arPerms["U"] as $id => $p)
 				{
-					foreach($arPerms["U"] as $id => $p)
+					if(in_array("US".$id, $p))
 					{
-						if(in_array("US".$id, $p))
-						{
-							$authorId = $id;
-							break;
-						}
+						$authorId = $id;
+						break;
 					}
 				}
+			}
 
-				if (
-					!empty($arPerms["U"][$userId])
-					|| (
-						!empty($arPerms["U"][$authorId])
-						&& in_array("US".$authorId, $arPerms["U"][$authorId])
-					)
-					|| $perms == BLOG_PERMS_READ
+			if (
+				!empty($arPerms["U"][$userId])
+				|| (
+					!empty($arPerms["U"][$authorId])
+					&& in_array("US".$authorId, $arPerms["U"][$authorId])
 				)
+				|| $perms == BLOG_PERMS_READ
+			)
+			{
+				if (CSocNetFeaturesPerms::CanPerformOperation($userId, SONET_ENTITY_USER, $authorId, "blog", "write_comment"))
 				{
-					if (CSocNetFeaturesPerms::CanPerformOperation($userId, SONET_ENTITY_USER, $authorId, "blog", "write_comment"))
-					{
-						$perms = BLOG_PERMS_WRITE;
-					}
-					elseif (CSocNetFeaturesPerms::CanPerformOperation($userId, SONET_ENTITY_USER, $authorId, "blog", "premoderate_comment"))
-					{
-						$perms = BLOG_PERMS_PREMODERATE;
-					}
-					elseif (CSocNetFeaturesPerms::CanPerformOperation($userId, SONET_ENTITY_USER, $authorId, "blog", "view_comment"))
-					{
-						$perms = BLOG_PERMS_READ;
-					}
+					$perms = BLOG_PERMS_WRITE;
+				}
+				elseif (CSocNetFeaturesPerms::CanPerformOperation($userId, SONET_ENTITY_USER, $authorId, "blog", "premoderate_comment"))
+				{
+					$perms = BLOG_PERMS_PREMODERATE;
+				}
+				elseif (CSocNetFeaturesPerms::CanPerformOperation($userId, SONET_ENTITY_USER, $authorId, "blog", "view_comment"))
+				{
+					$perms = BLOG_PERMS_READ;
 				}
 			}
 

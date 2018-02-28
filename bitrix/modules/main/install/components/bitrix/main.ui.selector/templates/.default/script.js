@@ -4,6 +4,15 @@
 	BX.namespace('BX.Main');
 
 	BX.Main.selectorManager = {
+		getById: function (id)
+		{
+			if (typeof this.controls[id] != 'undefined')
+			{
+				return this.controls[id];
+			}
+
+			return null;
+		},
 		controls: {}
 	};
 
@@ -57,7 +66,11 @@
 		BX.Main.selectorManager.controls[self.getId()] = self;
 
 		return self;
+	};
 
+	BX.Main.Selector.proxyCallback = function(callback, data)
+	{
+		callback(data);
 	};
 
 	BX.Main.Selector.prototype = {
@@ -103,6 +116,7 @@
 					offsetLeft: '15px'
 				},
 				userSearchArea: this.getOption('userSearchArea'),
+				lazyLoad: (this.getOption('lazyLoad') == 'Y'),
 				useClientDatabase: (this.getOption('useClientDatabase') == 'Y'),
 				sendAjaxSearch: (this.getOption('sendAjaxSearch') != 'N'),
 				showSearchInput: (this.getOption('useSearch') == 'Y'),
@@ -118,14 +132,70 @@
 				enableProjects: (this.getOption('enableProjects') == 'Y'),
 				isCrmFeed: (this.getOption('isCrmFeed') == 'Y'),
 				callback : {
-					select : this.callback.select,
-					unSelect: this.callback.unSelect,
-					openDialog: this.callback.openDialog,
-					closeDialog: this.callback.closeDialog,
-					openSearch: this.callback.openSearch,
-					closeSearch: this.callback.closeSearch,
-					openEmailAdd: this.callback.openEmailAdd,
-					closeEmailAdd: this.callback.closeEmailAdd
+					select : this.callback.select != null ? BX.delegate(function(item, type, search, bUndeleted, name, state) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.select, {
+								name: name,
+								item: item,
+								type: type,
+								search: search,
+								bUndeleted: bUndeleted,
+								state: state
+							})
+							: this.callback.select(item, type, search, bUndeleted, name, state)
+					}, this) : null,
+					unSelect: this.callback.unSelect != null ? BX.delegate(function(item, type, search, name) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.unSelect, {
+								name: name,
+								item: item,
+								type: type,
+								search: search
+							})
+							: this.callback.unSelect(item, type, search, name)
+					}, this) : null,
+					openDialog: this.callback.openDialog != null ? BX.delegate(function(name) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.openDialog, {
+								name: name
+							})
+							: this.callback.openDialog(name)
+					}, this) : null,
+					closeDialog: this.callback.closeDialog != null ? BX.delegate(function(name) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.closeDialog, {
+								name: name
+							})
+							: this.callback.closeDialog(name)
+					}, this) : null,
+					openSearch: this.callback.openSearch != null ? BX.delegate(function(name) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.openSearch, {
+								name: name
+							})
+							: this.callback.openSearch(name)
+					}, this) : null,
+					closeSearch: this.callback.closeSearch != null ? BX.delegate(function(name) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.closeSearch, {
+								name: name
+							})
+							: this.callback.closeSearch(name)
+					}, this) : null,
+					openEmailAdd: this.callback.openEmailAdd != null ? BX.delegate(function(name) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.openEmailAdd, {
+								name: name
+							})
+							: this.callback.openEmailAdd(name)
+					}, this) : null,
+					closeEmailAdd: this.callback.closeEmailAdd != null ? BX.delegate(function(name) {
+						this.getOption('useNewCallback') == 'Y'
+							? BX.Main.Selector.proxyCallback(this.callback.closeEmailAdd, {
+								name: name
+							})
+							: this.callback.closeEmailAdd(name)
+					}, this) : null
 				},
 				allowSonetGroupsAjaxSearchFeatures: this.getOption('allowSonetGroupsAjaxSearchFeatures')
 			};
@@ -146,7 +216,10 @@
 
 			if (this.input)
 			{
-				this.initDialog();
+				if (!this.options.lazyLoad)
+				{
+					this.initDialog()
+				}
 
 				if (this.tag)
 				{
@@ -181,7 +254,10 @@
 			}
 			else if(parameters.showSearchInput)
 			{
-				this.initDialog()
+				if (!this.options.lazyLoad)
+				{
+					this.initDialog()
+				}
 			}
 
 			if (this.items.hidden)
@@ -204,6 +280,11 @@
 					}
 				}
 			}
+		},
+
+		show: function()
+		{
+			this.initDialog();
 		},
 
 		initDialog: function(openDialogParams)

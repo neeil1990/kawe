@@ -22,4 +22,6 @@ $MESS["MPL_SAFE_EDIT"] = "Вы пишете сообщение. Сбросить
 $MESS["MPL_ERROR_OCCURRED"] = "Произошла ошибка";
 $MESS["MPL_CLOSE"] = "Закрыть";
 $MESS["MPL_LINK_COPIED"] = "Ссылка скопирована";
+$MESS["MPL_HAVE_WRITTEN_M"] = "написал:";
+$MESS["MPL_HAVE_WRITTEN_F"] = "написала:";
 ?>

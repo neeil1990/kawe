@@ -17,6 +17,7 @@ BX.Sale.Admin.OrderEditPage =
 	autoPriceChange: true,
 	runningCheckTimeout: {},
 	tailsLoaded: false,
+	rollbackMethods: [],
 
 	getForm: function()
 	{
@@ -125,6 +126,57 @@ BX.Sale.Admin.OrderEditPage =
 					}
 				}
 		)]);
+
+		dialog.show();
+	},
+
+	showConfirmDialog: function(text, title, onAcceptCallback, onRejectCallback)
+	{
+		var dialog = new BX.PopupWindow(
+			'adm-sale-order-alert-dialog',
+			null,
+			{
+				autoHide: false,
+				draggable: true,
+				offsetLeft: 0,
+				offsetTop: 0,
+				bindOptions: { forceBindPosition: false },
+				closeByEsc: true,
+				closeIcon: true,
+				titleBar: title || BX.message('SALE_ORDEREDIT_CONFIRM'),
+				contentColor: 'white',
+				content: BX.create(
+					'span',
+					{
+						html: text,
+						style: {backgroundColor: "white"}
+					}
+		)});
+
+		dialog.setButtons([
+			new BX.PopupWindowButton({
+				text: BX.message('SALE_ORDEREDIT_CONFIRM_CONTINUE'),
+				className: "popup-window-button-accept",
+				events: {click : function(){
+					if(onAcceptCallback && typeof onAcceptCallback == "function")
+						onAcceptCallback.call(null);
+
+						dialog.close();
+						dialog.destroy()
+				}}
+			}),
+			new BX.PopupWindowButton({
+				text: BX.message('SALE_ORDEREDIT_CONFIRM_ABORT'),
+				className: "popup-window-button-decline",
+				events: {click : function() {
+					if(onRejectCallback && typeof onRejectCallback == "function")
+						onRejectCallback.call(null);
+
+					 dialog.close();
+					 dialog.destroy()
+				}}
+			})
+		]);
 
 		dialog.show();
 	},
@@ -816,6 +868,33 @@ BX.Sale.Admin.OrderEditPage =
 			},
 		500
 		);
+	},
+
+	rollBack: function()
+	{
+		for(var i in BX.Sale.Admin.OrderEditPage.rollbackMethods)
+		{
+			if(!BX.Sale.Admin.OrderEditPage.rollbackMethods.hasOwnProperty(i))
+				continue;
+
+			var method = BX.Sale.Admin.OrderEditPage.rollbackMethods[i];
+
+			if(typeof method !== "function")
+				continue;
+
+			method.call(method);
+			delete BX.Sale.Admin.OrderEditPage.rollbackMethods[i];
+		}
+	},
+
+	addRollbackMethod: function(method)
+	{
+		BX.Sale.Admin.OrderEditPage.rollbackMethods.push(method);
+	},
+
+	resetRollbackMethods: function()
+	{
+		BX.Sale.Admin.OrderEditPage.rollbackMethods = [];
 	},
 
 	enableFormButtons: function (formId)

@@ -1486,11 +1486,31 @@ class AjaxProcessor
 		$profiles = array();
 		$index = $this->request['index'];
 		$formData = isset($this->request["formData"]) ? $this->request["formData"] : array();
+		$confirmed = isset($this->request["confirmed"]) ? $this->request["confirmed"] : 'N';
 		$formData['ID'] = $formData['order_id'];
 		$deliveryId = intval($formData['SHIPMENT'][$index]['DELIVERY_ID']);
 
 		if ($deliveryId <= 0)
 			return;
+
+		$shipmentId = intval($formData['SHIPMENT'][$index]['SHIPMENT_ID']);
+
+		if($shipmentId > 0 && Sale\Delivery\Requests\Manager::isShipmentSent($shipmentId) && $confirmed != 'Y')
+		{
+			$requestId = Sale\Delivery\Requests\Manager::getRequestIdByShipmentId($shipmentId);
+			$this->addResultData("NEED_CONFIRM", "Y");
+			$this->addResultData(
+				"CONFIRM",
+				array(
+					"TEXT" =>
+						Loc::getMessage(
+							'SALE_OA_SHIPMENT_DELIVERY_REQ_SENT',
+							array(
+								'#REQUEST_ID#' => Sale\Delivery\Requests\Helper::getRequestViewLink($requestId)
+
+			))));
+			return;
+		}
 
 		Admin\OrderEdit::$isTrustProductFormData = true;
 		$order = $this->getOrder($formData);
@@ -1518,7 +1538,7 @@ class AjaxProcessor
 			$resShipment = Sale\Internals\ShipmentTable::getList(array(
 																	 'filter' => array(
 																		 '=ORDER_ID' => intval($this->request["orderId"]),
-																		 '=ID' => intval($formData['SHIPMENT'][$index]['SHIPMENT_ID']),
+																		 '=ID' => $shipmentId,
 																	 ),
 																	 'select' => array(
 																		 'RESPONSIBLE_ID', 'COMPANY_ID', 'STATUS_ID'
@@ -1544,6 +1564,7 @@ class AjaxProcessor
 				throw new UserMessageException(Loc::getMessage('SALE_OA_PERMISSION'));
 			}
 		}
+
 
 		/** @var  \Bitrix\Sale\Delivery\Services\Base $service */
 		$service = Sale\Delivery\Services\Manager::getObjectById($deliveryId);

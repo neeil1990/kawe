@@ -112,7 +112,7 @@ class CEbayCategoriesLink extends CBitrixComponent
 			return;
 		}
 
-		$this->arResult["BITRIX_CATEGORY_ID"] = isset($this->arParams["BITRIX_CATEGORY_ID"]) ? $this->arParams["BITRIX_CATEGORY_ID"] : 0;
+		$this->arResult["BITRIX_CATEGORY_ID"] = isset($this->arParams["BITRIX_CATEGORY_ID"]) ? intval($this->arParams["BITRIX_CATEGORY_ID"]) : 0;
 		$this->arResult["IBLOCK_ID"] =isset($this->arParams["IBLOCK_ID"]) ? $this->arParams["IBLOCK_ID"] : 0;
 
 		if(isset($this->arParams["EBAY_CATEGORY_ID"]))

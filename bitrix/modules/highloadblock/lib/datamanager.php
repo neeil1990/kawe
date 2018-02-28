@@ -111,9 +111,6 @@ abstract class DataManager extends Entity\DataManager
 
 		$id = $connection->add($tableName, $data, $identity);
 
-		$result->setId($id);
-		$result->setData($data);
-
 		// save multi values
 		if (!empty($multiValues))
 		{
@@ -128,18 +125,22 @@ abstract class DataManager extends Entity\DataManager
 			}
 		}
 
-		// build stamdard primary
+		// build standard primary
 		$primary = null;
 
 		if (!empty($id))
 		{
-			$primary = $id;
+			$primary = array($entity->getAutoIncrement() => $id);
 			static::normalizePrimary($primary);
 		}
 		else
 		{
 			static::normalizePrimary($primary, $data);
 		}
+
+		// fill result
+		$result->setPrimary($primary);
+		$result->setData($data);
 
 		//event after adding
 		$event = new Entity\Event($entity, self::EVENT_ON_AFTER_ADD, array("id"=>$id, "fields"=>$data));
@@ -242,7 +243,7 @@ abstract class DataManager extends Entity\DataManager
 		}
 		$where = implode(' AND ', $id);
 
-		$sql = "UPDATE ".$tableName." SET ".$update[0]." WHERE ".$where;
+		$sql = "UPDATE ".$helper->quote($tableName)." SET ".$update[0]." WHERE ".$where;
 		$connection->queryExecute($sql, $update[1]);
 
 		$result->setAffectedRowsCount($connection);
@@ -344,7 +345,7 @@ abstract class DataManager extends Entity\DataManager
 		}
 		$where = implode(' AND ', $id);
 
-		$sql = "DELETE FROM ".$tableName." WHERE ".$where;
+		$sql = "DELETE FROM ".$helper->quote($tableName)." WHERE ".$where;
 		$connection->queryExecute($sql);
 
 		$fields = $USER_FIELD_MANAGER->getUserFields('HLBLOCK_'.$hlblock['ID']);

@@ -3085,15 +3085,12 @@ if ($bCatalog)
 {
 	if ($strUseStoreControl == "Y" && in_array("CATALOG_BAR_CODE", $arSelectedFields) && !empty($arElemID))
 	{
-		$rsProducts = CCatalogProduct::GetList(
-			array(),
-			array("ID" => $arElemID),
-			false,
-			false,
-			array('ID', 'BARCODE_MULTI')
-		);
 		$productsWithBarCode = array();
-		while ($product = $rsProducts->Fetch())
+		$rsProducts = Catalog\ProductTable::getList(array(
+			'select' => array('ID', 'BARCODE_MULTI'),
+			'filter' => array('@ID' => $arElemID)
+		));
+		while ($product = $rsProducts->fetch())
 		{
 			if (isset($arRows['E'.$product["ID"]]))
 			{

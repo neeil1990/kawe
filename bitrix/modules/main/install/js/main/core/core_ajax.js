@@ -651,14 +651,14 @@ BX.ajax.post = function(url, data, callback)
 
 /**
  * BX.ajax with BX.Promise
- * 
+ *
  * @param config
  * @returns {BX.Promise|false}
  */
-BX.ajax.promise = function(config)	
+BX.ajax.promise = function(config)
 {
 	var result = new BX.Promise();
-	
+
 	config.onsuccess = function(data)
 	{
 		result.fulfill(data);
@@ -666,21 +666,21 @@ BX.ajax.promise = function(config)
 	config.onfailure = function(reason, data)
 	{
 		result.reject({
-			reason: reason, 
+			reason: reason,
 			data: data
 		});
 	};
-	config.onprogress = function(data) 
+	config.onprogress = function(data)
 	{
 		if (data.position == 0 && data.totalSize == 0)
 		{
 			result.reject({
-				reason: 'progress', 
+				reason: 'progress',
 				data: data
 			});
 		}
 	};
-	
+
 	var xhr = BX.ajax(config);
 	if (!xhr)
 	{
@@ -689,7 +689,7 @@ BX.ajax.promise = function(config)
 			data: false
 		});
 	}
-	
+
 	return result;
 };
 
@@ -768,6 +768,130 @@ BX.ajax.loadJSON = function(url, data, callback, callback_failure)
 		'url': url,
 		'onsuccess': callback,
 		'onfailure': callback_failure
+	});
+};
+
+
+var prepareAjaxGetParameters = function(config)
+{
+	var getParameters = {};
+	if (typeof config.analyticsLabel !== 'undefined')
+	{
+		getParameters.analyticsLabel = config.analyticsLabel;
+	}
+	if (typeof config.mode !== 'undefined')
+	{
+		getParameters.mode = config.mode;
+	}
+	if (config.navigation && config.navigation.page)
+	{
+		getParameters.nav = 'page-' + config.navigation.page;
+	}
+
+	return getParameters;
+};
+
+var prepareAjaxConfig = function(config)
+{
+	config = BX.type.isPlainObject(config) ? config : {};
+	config.data = BX.type.isPlainObject(config.data) ? config.data : {};
+	config.data.SITE_ID = BX.message('SITE_ID');
+	config.data.sessid = BX.bitrix_sessid();
+	if (typeof config.signedParameters !== 'undefined')
+	{
+		config.data.signedParameters = config.signedParameters;
+	}
+	if (!config.method)
+	{
+		config.method = 'POST'
+	}
+
+	return config;
+};
+
+var buildAjaxPromiseToRestoreCsrf = function(config)
+{
+	var originalConfig = BX.clone(config);
+	var promise = BX.ajax.promise(config);
+
+	return promise.then(function(response) {
+		if (BX.type.isPlainObject(response) && BX.type.isArray(response.errors))
+		{
+			var csrfProblem = false;
+			response.errors.forEach(function(error) {
+				if (error.code === 'invalid_csrf' && error.customData.csrf)
+				{
+					BX.message({'bitrix_sessid': error.customData.csrf});
+					originalConfig.data.sessid = BX.bitrix_sessid();
+
+					csrfProblem = true;
+				}
+			});
+
+			if (csrfProblem)
+			{
+				return BX.ajax.promise(originalConfig);
+			}
+		}
+
+		return response;
+	});
+};
+
+/**
+ *
+ * @param {string} action
+ * @param {Object} config
+ * @param {?string} [config.analyticsLabel]
+ * @param {string} [config.method='POST']
+ * @param {Object} [config.data]
+ * @param {Object} [config.navigation]
+ * @param {number} [config.navigation.page]
+ */
+BX.ajax.runAction = function(action, config)
+{
+	config = prepareAjaxConfig(config);
+	var getParameters = prepareAjaxGetParameters(config);
+	getParameters.action = action;
+
+	var url = BX.util.add_url_param('/bitrix/services/main/ajax.php', getParameters);
+
+	return buildAjaxPromiseToRestoreCsrf({
+		method: config.method,
+		dataType: 'json',
+		url: url,
+		data: config.data
+	});
+};
+
+/**
+ *
+ * @param {string} component
+ * @param {string} action
+ * @param {Object} config
+ * @param {?string} [config.analyticsLabel]
+ * @param {?string} [config.signedParameters]
+ * @param {string} [config.method='POST']
+ * @param {string} [config.mode='ajax'] Ajax or class.
+ * @param {Object} [config.data]
+ * @param {Object} [config.navigation]
+ */
+BX.ajax.runComponentAction = function (component, action, config)
+{
+	config = prepareAjaxConfig(config);
+	config.mode = config.mode || 'ajax';
+
+	var getParameters = prepareAjaxGetParameters(config);
+	getParameters.c = component;
+	getParameters.action = action;
+
+	var url = BX.util.add_url_param('/bitrix/services/main/ajax.php', getParameters);
+
+	return buildAjaxPromiseToRestoreCsrf({
+		method: config.method,
+		dataType: 'json',
+		url: url,
+		data: config.data
 	});
 };
 

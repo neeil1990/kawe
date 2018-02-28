@@ -356,12 +356,17 @@ if ($USER->IsAuthorized() && check_bitrix_sessid() && isset($_REQUEST['IBLOCK_ID
 	$entityDataClass = null;
 
 	$hlblockFields = $defaultValues;
+	$orderFields = array();
 	if ($hlBlockID !== '' && $hlBlockID !== '-1')
 	{
-		$hlblock = Bitrix\Highloadblock\HighloadBlockTable::getList(array("filter" => array("TABLE_NAME" => $hlBlockID)))->fetch();
+		$hlblock = Bitrix\Highloadblock\HighloadBlockTable::getList(array("filter" => array("=TABLE_NAME" => $hlBlockID)))->fetch();
 		$entity = Bitrix\Highloadblock\HighloadBlockTable::compileEntity($hlblock);
 		$entityDataClass = $entity->getDataClass();
 		$hlblockFields = $entityDataClass::getEntity()->getFields();
+		if (isset($hlblockFields['UF_SORT']))
+			$orderFields['UF_SORT'] = 'ASC';
+		if (isset($hlblockFields['UF_NAME']))
+			$orderFields['UF_NAME'] = 'ASC';
 	}
 
 	if (isset($_REQUEST['addEmptyRow']) && $_REQUEST['addEmptyRow'] === 'Y')
@@ -378,7 +383,9 @@ if ($USER->IsAuthorized() && check_bitrix_sessid() && isset($_REQUEST['IBLOCK_ID
 				$result .= addHeadRow($hlblockFields, $colCount);
 			}
 			$exist = false;
-			$rsData = $entityDataClass::getList(array());
+			$rsData = $entityDataClass::getList(array(
+				'order' => $orderFields
+			));
 			while ($arData = $rsData->fetch())
 			{
 				$result .= addTableRow($rowNumber, $arData, $hlblockFields, false);

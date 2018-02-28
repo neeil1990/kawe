@@ -271,10 +271,13 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 					<?echo Bitrix\Sale\BasketItem::formatQuantity($arQuantities[$mi]); ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo number_format($arBasket["PRICE"], 2, ',', ' ') ?>
+					<?echo SaleFormatCurrency($arBasket["PRICE"], $arOrder["CURRENCY"], false, true) ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo number_format(($arBasket["PRICE"])*$arQuantities[$mi], 2, ',', ' ') ?>
+					<?
+						$sum = $arBasket["PRICE"] * $arQuantities[$mi];
+						echo SaleFormatCurrency($sum, $arOrder["CURRENCY"], false, true);
+					?>
 				</td>
 			</tr>
 			<?
@@ -293,10 +296,10 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 				</td>
 				<td valign="top" align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">1 </td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo number_format($arOrder["DISCOUNT_VALUE"], 2, ',', ' ') ?>
+					<?echo SaleFormatCurrency($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false, true);?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo number_format($arOrder["DISCOUNT_VALUE"], 2, ',', ' ') ?>
+					<?echo SaleFormatCurrency($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false, true);?>
 				</td>
 			</tr>
 		<?endif?>
@@ -320,28 +323,16 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 						if(strlen($deliveryService["NAME"]) > 0)
 							echo "(".htmlspecialcharsEx($deliveryService["NAME"]).")";
 
-					$basket_tax = CSaleOrderTax::CountTaxes(DoubleVal($arOrder["PRICE_DELIVERY"]), $arTaxList, $arOrder["CURRENCY"]);
-					$nds_val = 0;
-					$item_price = DoubleVal($arOrder["PRICE_DELIVERY"]);
-
-					for ($i = 0, $max = count($arTaxList); $i < $max; $i++)
-					{
-						if ($arTaxList[$i]["IS_IN_PRICE"] == "Y")
-						{
-							$item_price -= $arTaxList[$i]["TAX_VAL"];
-						}
-						$nds_val += ($arTaxList[$i]["TAX_VAL"]);
-						$total_nds += $nds_val;
-					}
-					$total_sum += $nds_val+$item_price
+					$total_nds += $arOrder["DELIVERY_VAT_SUM"];
+					$total_sum += $arOrder["PRICE_DELIVERY"];
 					?>
 				</td>
 				<td valign="top" align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">1 </td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo number_format($arOrder["PRICE_DELIVERY"], 2, ',', ' ') ?>
+					<?echo SaleFormatCurrency($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false, true);?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo number_format($arOrder["PRICE_DELIVERY"], 2, ',', ' ') ?>
+					<?echo SaleFormatCurrency($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false, true);?>
 				</td>
 			</tr>
 		<?endif?>
@@ -366,7 +357,7 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 					?>:
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?=number_format($total_nds, 2, ',', ' ')?>
+					<?echo SaleFormatCurrency($total_nds, $arOrder["CURRENCY"], false, true);?>
 				</td>
 			</tr>
 			<?
@@ -374,7 +365,9 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 		?>
 		<tr>
 			<td align="right" bgcolor="#ffffff" colspan="4" style="border: 1pt solid #000000; border-right:none; border-top:none;">Итого:</td>
-			<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;"><?echo number_format($total_sum, 2, ',', ' ') ?></td>
+			<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
+				<?=SaleFormatCurrency($total_sum, $arOrder["CURRENCY"], false, true);?>
+			</td>
 		</tr>
 	</table>
 <?//endif?>

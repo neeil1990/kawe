@@ -90,8 +90,8 @@ class RoboxchangeHandler extends PaySystem\ServiceHandler
 	 */
 	private function isCorrectSum(Payment $payment, Request $request)
 	{
-		$sum = PriceMaths::roundByFormatCurrency($request->get('OutSum'), $payment->getField('CURRENCY'));
-		$paymentSum = PriceMaths::roundByFormatCurrency($this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY'), $payment->getField('CURRENCY'));
+		$sum = PriceMaths::roundPrecision($request->get('OutSum'));
+		$paymentSum = PriceMaths::roundPrecision($this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY'));
 
 		return $paymentSum == $sum;
 	}

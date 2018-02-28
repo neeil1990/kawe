@@ -135,14 +135,14 @@ $aMenu = array();
 $arDDMenu = array();
 
 $arDDMenu[] = array(
-	"TEXT" => "<b>".Loc::getMessage("SEO_ROBOTS_CHOOSE_SITE")."</b>",
+	"HTML" => "<b>".Loc::getMessage("SEO_ROBOTS_CHOOSE_SITE")."</b>",
 	"ACTION" => false
 );
 
 foreach($arSites as $arRes)
 {
 	$arDDMenu[] = array(
-		"TEXT" => "[".$arRes["LID"]."] ".$arRes["NAME"],
+		"HTML" => "[".$arRes["LID"]."] ".$arRes["NAME"],
 		"LINK" => "seo_robots.php?lang=".LANGUAGE_ID."&site_id=".$arRes['LID']
 	);
 }

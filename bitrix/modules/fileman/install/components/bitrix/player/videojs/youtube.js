@@ -33,6 +33,11 @@ THE SOFTWARE. */
 }(this, function(videojs) {
   'use strict';
 
+  if(!videojs)
+  {
+    return;
+  }
+
   var _isOnMobile = videojs.browser.IS_IOS || videojs.browser.IS_ANDROID;
   var Tech = videojs.getTech('Tech');
 

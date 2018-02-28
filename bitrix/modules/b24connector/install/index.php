@@ -56,6 +56,7 @@ class b24connector extends CModule
 			$APPLICATION->ThrowException(implode("<br>", $this->errors));
 		}
 
+		\Bitrix\Main\ModuleManager::registerModule("b24connector");
 		return true;
 	}
 
@@ -74,6 +75,7 @@ class b24connector extends CModule
 			$APPLICATION->ThrowException(implode("<br>", $this->errors));
 		}
 
+		\Bitrix\Main\ModuleManager::unRegisterModule("b24connector");
 		return true;
 	}
 
@@ -142,7 +144,6 @@ class b24connector extends CModule
 					$this->InstallDB();
 					$this->InstallEvents();
 					$this->InstallFiles();
-					\Bitrix\Main\ModuleManager::registerModule("b24connector");
 					$GLOBALS["errors"] = $this->errors;
 					$APPLICATION->IncludeAdminFile(Loc::getMessage("B24C_INSTALL_TITLE"), $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/b24connector/install/step2.php");
 				}
@@ -163,7 +164,6 @@ class b24connector extends CModule
 			}
 			elseif ($step == 2)
 			{
-				\Bitrix\Main\ModuleManager::unRegisterModule("b24connector");
 				$this->UnInstallDB();
 				$this->UnInstallEvents();
 				$this->UnInstallFiles();

@@ -314,7 +314,7 @@ class HighloadBlockTable extends Entity\DataManager
 	}
 
 	/**
-	 * @param array $hlblock
+	 * @param array|int|string $hlblock Could be a block, ID or NAME of block.
 	 *
 	 * @return Entity\Base
 	 * @throws \Bitrix\Main\SystemException
@@ -332,6 +332,21 @@ class HighloadBlockTable extends Entity\DataManager
 			'primary' => true,
 			'autocomplete' => true
 		);
+
+		// get hlblock
+		if (!is_array($hlblock))
+		{
+			if (is_numeric(substr($hlblock, 0, 1)))
+			{
+				// we have an id
+				$hlblock = HighloadBlockTable::getById($hlblock)->fetch();
+			}
+			else
+			{
+				// we have a name
+				$hlblock = HighloadBlockTable::query()->addSelect('*')->where('NAME', $hlblock)->exec()->fetch();
+			}
+		}
 
 		// build datamanager class
 		$entity_name = $hlblock['NAME'];

@@ -107,4 +107,6 @@ $MESS["MAIN_USER_EDIT_EXT"] = "External code:";
 $MESS["USER_EDIT_TITLE"] = "Salutation:";
 $MESS["user_edit_lang_not_set"] = "(not set)";
 $MESS["user_edit_lang"] = "Notification language:";
+$MESS["MAIN_ADMIN_AUTH"] = "Authorize";
+$MESS["MAIN_ADMIN_AUTH_TITLE"] = "Authorize as this user";
 ?>

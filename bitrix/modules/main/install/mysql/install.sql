@@ -303,7 +303,8 @@ CREATE TABLE b_agent
 	RUNNING char(1) not null default 'N',
 	PRIMARY KEY (ID),
 	INDEX ix_act_next_exec(ACTIVE, NEXT_EXEC),
-	INDEX ix_agent_user_id(USER_ID)
+	INDEX ix_agent_user_id(USER_ID),
+	INDEX ix_agent_name(NAME(100))
 );
 
 CREATE TABLE b_file

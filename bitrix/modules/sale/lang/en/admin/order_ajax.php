@@ -37,4 +37,11 @@ $MESS["CASHBOX_CREATE_CHECK_ERROR_EMPTY_SHIPMENT"] = "Cannot create receipt beca
 $MESS["CASHBOX_CREATE_CHECK_ERROR_SHIPMENT_ID"] = "Cannot create receipt because shipment selected is incorrect.";
 $MESS["CASHBOX_CREATE_CHECK_ERROR_TYPE"] = "Cannot create receipt because type is invalid.";
 $MESS["CASHBOX_ADD_ZREPORT_WRONG_CHECKBOX"] = "Incorrect cash register selected";
+$MESS["SALE_CASHBOX_SHIPMENT_PRICE"] = "Total shipment amount";
+$MESS["SALE_CASHBOX_SELECT_ENTITIES"] = "Select extra payments / shipments";
+$MESS["CASHBOX_OA_SHIPMENT"] = "Shipment";
+$MESS["CASHBOX_OA_PAYMENT"] = "Payment";
+$MESS["CASHBOX_OA_PAYMENT_TYPE_ADVANCE"] = "In advance";
+$MESS["CASHBOX_OA_PAYMENT_TYPE_CREDIT"] = "Loan";
+$MESS["SALE_OA_SHIPMENT_DELIVERY_REQ_SENT"] = "This shipment is part of transportation order ##REQUEST_ID#. It is recommended that you remove the shipment from the transportation order before changing the delivery service.";
 ?>

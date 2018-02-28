@@ -2732,8 +2732,11 @@ REQ
 			}
 		}
 
+		$id = (int)$arr["ID"];
+		$preparedId = $id > 0 ? $id : '';
+
 		if(strpos($url, "#PRODUCT_URL#") !== false)
-			$url = str_replace("#PRODUCT_URL#", CIBlock::_GetProductUrl($arr["ID"], $arr["IBLOCK_ID"], $server_name, $arrType), $url);
+			$url = str_replace("#PRODUCT_URL#", CIBlock::_GetProductUrl($id, $arr["IBLOCK_ID"], $server_name, $arrType), $url);
 
 		static $arSearch = array(
 			/*Thees come from GetNext*/
@@ -2754,7 +2757,7 @@ REQ
 		);
 		$arReplace = array(
 			$arr["LANG_DIR"],
-			intval($arr["ID"]) > 0? intval($arr["ID"]): "",
+			$preparedId,
 			rawurlencode(isset($arr["~CODE"])? $arr["~CODE"]: $arr["CODE"]),
 			rawurlencode(isset($arr["~EXTERNAL_ID"])? $arr["~EXTERNAL_ID"]: $arr["EXTERNAL_ID"]),
 			rawurlencode(isset($arr["~IBLOCK_TYPE_ID"])? $arr["~IBLOCK_TYPE_ID"]: $arr["IBLOCK_TYPE_ID"]),
@@ -2765,7 +2768,7 @@ REQ
 
 		if($arrType === "E")
 		{
-			$arReplace[] = intval($arr["ID"]) > 0? intval($arr["ID"]): "";
+			$arReplace[] = $preparedId;
 			$arReplace[] = rawurlencode(isset($arr["~CODE"])? $arr["~CODE"]: $arr["CODE"]);
 			#Deal with symbol codes
 			$SECTION_ID = intval($arr["IBLOCK_SECTION_ID"]);
@@ -2794,7 +2797,7 @@ REQ
 		}
 		elseif($arrType === "S")
 		{
-			$SECTION_ID = intval($arr["ID"]);
+			$SECTION_ID = $id;
 			$SECTION_CODE_PATH = "";
 			if(
 				$SECTION_ID > 0

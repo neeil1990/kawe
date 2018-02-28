@@ -268,7 +268,8 @@ class CUserTypeHlblock extends CUserTypeEnum
 					}
 					else
 					{
-						if ($clearValues)
+						//see #0088117
+						if ($userfield['USER_TYPE_ID'] != 'enumeration' && $clearValues)
 						{
 							$row['VALUE'] = $row[$userfield['FIELD_NAME']];
 						}

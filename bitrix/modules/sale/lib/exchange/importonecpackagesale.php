@@ -10,61 +10,68 @@ class ImportOneCPackageSale extends ImportOneCPackage
 {
 	protected function convert(array $documents)
 	{
-		$settingsShipment = Manager::getSettingsByType(EntityType::SHIPMENT);
+		$documentOrder = $this->getDocumentByTypeId(EntityType::ORDER, $documents);
 
-		if($settingsShipment->canCreateOrder(EntityType::SHIPMENT)=='Y' && !$this->hasDocumentByTypeId(EntityType::ORDER, $documents))
+		if($documentOrder instanceof OrderDocument)
 		{
+			//region Presset - create Shipment if Service in the Order by information from 1C
 			$documentShipment = $this->getDocumentByTypeId(EntityType::SHIPMENT, $documents);
-			if($documentShipment !== null)
+			if($documentShipment == null)
 			{
-				$order['ID_1C'] = $documentShipment->getField('ID_1C');
-				$order['VERSION_1C'] = $documentShipment->getField('VERSION_1C');
-				$order['AMOUNT'] = $documentShipment->getField('AMOUNT');
-				$order['ITEMS'] = $documentShipment->getField('ITEMS');
-				$order['TAXES'] = $documentShipment->getField('TAXES');
-				$order['AGENT'] = $documentShipment->getField('AGENT');
+				$fieldsOrder = $documentOrder->getFieldValues();
+				$items = $this->getProductsItems($fieldsOrder);
 
-				$documentOrder = new OrderDocument();
-				$documentOrder->setFields($order);
-				$documents[] = $documentOrder;
+				if($this->deliveryServiceExists($items))
+				{
+					$shipment['ID_1C'] = $documentOrder->getField('ID_1C');
+					$shipment['VERSION_1C'] = $documentOrder->getField('VERSION_1C');
+					$shipment['ITEMS'] = $items;
+					$shipment['REK_VALUES']['1C_TRACKING_NUMBER'] = $this->getDefaultTrackingNumber($documentOrder);
+
+					$documentShipment = new ShipmentDocument();
+					$documentShipment->setFields($shipment);
+					$documents[] = $documentShipment;
+				}
+			}
+			//endregion
+
+			foreach($documents as $document)
+			{
+				if($document instanceof OneC\PaymentDocument)
+				{
+					$paymentFields = $document->getFieldValues();
+					$paymentFields['REK_VALUES']['PAY_SYSTEM_ID_DEFAULT'] = $this->getDefaultPaySystem($documentOrder);
+					$document->setFields($paymentFields);
+				}
+
+				if($document instanceof OneC\ShipmentDocument)
+				{
+					$shimpentFields = $document->getFieldValues();
+					$shimpentFields['REK_VALUES']['DELIVERY_SYSTEM_ID_DEFAULT'] = $this->getDefaultDeliverySystem($documentOrder);
+					$document->setFields($shimpentFields);
+				}
 			}
 		}
-
-		//region Presset - create Shipment if Service in the Order by information from 1C
-		if(!isset($documentOrder))
-			$documentOrder = $this->getDocumentByTypeId(EntityType::ORDER, $documents);
-
-		$documentShipment = $this->getDocumentByTypeId(EntityType::SHIPMENT, $documents);
-		if($documentShipment == null)
+		else
 		{
-			$fieldsOrder = $documentOrder->getFieldValues();
-			if($this->deliveryServiceExists($fieldsOrder['ITEMS']))
-			{
-				$shipment['ID_1C'] = $documentOrder->getField('ID_1C');
-				$shipment['VERSION_1C'] = $documentOrder->getField('VERSION_1C');
-				$shipment['ITEMS'] = $documentOrder->getField('ITEMS');
+			$settingsShipment = Manager::getSettingsByType(EntityType::SHIPMENT);
 
-				$documentShipment = new ShipmentDocument();
-				$documentShipment->setFields($shipment);
-				$documents[] = $documentShipment;
-			}
-		}
-		//endregion
-
-		foreach($documents as $document)
-		{
-			if($document instanceof OneC\PaymentDocument)
+			if($settingsShipment->canCreateOrder(EntityType::SHIPMENT)=='Y')
 			{
-				$paymentFields = $document->getFieldValues();
-				$paymentFields['REK_VALUES']['PAY_SYSTEM_ID_DEFAULT'] = $this->getDefaultPaySystem($documentOrder);
-				$document->setFields($paymentFields);
-			}
+				$documentShipment = $this->getDocumentByTypeId(EntityType::SHIPMENT, $documents);
+				if($documentShipment !== null)
+				{
+					$order['ID_1C'] = $documentShipment->getField('ID_1C');
+					$order['VERSION_1C'] = $documentShipment->getField('VERSION_1C');
+					$order['AMOUNT'] = $documentShipment->getField('AMOUNT');
+					$order['ITEMS'] = $documentShipment->getField('ITEMS');
+					$order['TAXES'] = $documentShipment->getField('TAXES');
+					$order['AGENT'] = $documentShipment->getField('AGENT');
 
-			if($document instanceof OneC\ShipmentDocument)
-			{
-				$shimpentFields = $document->getFieldValues();
-				$shimpentFields['REK_VALUES']['DELIVERY_SYSTEM_ID_DEFAULT'] = $this->getDefaultDeliverySystem($documentOrder);
-				$document->setFields($shimpentFields);
+					$documentOrder = new OrderDocument();
+					$documentOrder->setFields($order);
+					$documents[] = $documentOrder;
+				}
 			}
 		}
 

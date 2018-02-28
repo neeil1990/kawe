@@ -23,7 +23,7 @@ BX.Sale.Admin.OrderAjaxer =
 
 		postData.sessid = BX.bitrix_sessid();
 
-		BX.ajax({
+		var ajaxParams = {
 			timeout:    60,
 			method:     'POST',
 			dataType:   'json',
@@ -34,8 +34,24 @@ BX.Sale.Admin.OrderAjaxer =
 			{
 				if(result)
 				{
-					if(callback && typeof callback == "function")
-						callback.call(null, result);
+					if(result.NEED_CONFIRM && result.NEED_CONFIRM === 'Y')
+					{
+						BX.Sale.Admin.OrderEditPage.showConfirmDialog(
+							result.CONFIRM.TEXT,
+							result.CONFIRM.TITLE,
+							function()
+							{
+								postData.confirmed = 'Y';
+								ajaxParams.data = postData;
+								BX.ajax(ajaxParams);
+							}
+						);
+					}
+					else
+					{
+						if(callback && typeof callback === "function")
+							callback.call(null, result);
+					}
 				}
 				else
 				{
@@ -70,7 +86,9 @@ BX.Sale.Admin.OrderAjaxer =
 				BX.debug("ajax onfailure");
 				BX.debug("status: "+ status);
 			}
-		});
+		};
+
+		BX.ajax(ajaxParams);
 	},
 
 	refreshOrderData: {
@@ -80,9 +98,21 @@ BX.Sale.Admin.OrderAjaxer =
 			if(result)
 			{
 				if(result.ERROR)
+				{
 					BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
+					/*
+					 * If for example where is no requested quantity of product.
+					 * We will receive an error.
+					 * So we must return the old value of product witch was before the request with wrong quantity was send
+					 * to avoid unpredictable side effects.
+					 */
+					BX.Sale.Admin.OrderEditPage.rollBack();
+				}
 				else if(result.ORDER_DATA)
+				{
+					BX.Sale.Admin.OrderEditPage.resetRollbackMethods();
 					BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.ORDER_DATA);
+				}
 			}
 			else
 				BX.debug("Error receiving order data!");

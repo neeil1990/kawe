@@ -380,10 +380,33 @@
 			if (comment && comment.node)
 			{
 				BX.addClass(comment.node, "feed-com-block-cover-undelivered");
-				if (
+
+				var bindUndelivered = (
 					typeof comment.attachments == 'undefined'
 					|| comment.attachments.length <= 0
+				);
+
+				if (
+					!bindUndelivered
+					&& BX.type.isArray(comment.attachments)
 				)
+				{
+					bindUndelivered = true;
+
+					for (var ij = 0; ij < comment.attachments.length; ij++)
+					{
+						if (
+							BX.type.isNotEmptyString(comment.attachments[ij].fieldValue) // attached UF
+							|| BX.type.isNotEmptyString(comment.attachments[ij].url) // attached file
+						)
+						{
+							bindUndelivered = false;
+							break;
+						}
+					}
+				}
+
+				if (bindUndelivered)
 				{
 					BX.bind(comment.node, 'click', BX.proxy(function(e) {
 						BX.unbindAll(comment.node);
@@ -392,6 +415,7 @@
 						this.handler.simpleForm.handleAppData(comment.text, true);
 					}, this));
 				}
+
 /*
 				node = BX.findChild(comment.node, {'tagName' : "DIV", 'className' : "post-comment-text"}, true);
 				if (node)

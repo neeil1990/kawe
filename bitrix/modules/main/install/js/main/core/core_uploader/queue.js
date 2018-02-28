@@ -305,9 +305,9 @@
 
 			var obj = item.parentNode,
 				n = obj.childNodes.length,
-				act, it, buff;
+				act, it, buff, j;
 
-			for (var j=0; j<n; j++)
+			for (j=0; j<n; j++)
 			{
 				if (obj.childNodes[j] == item)
 					item.number = j;
@@ -376,7 +376,21 @@
 			}
 			else
 			{
-				item.parentNode.appendChild(currentNode);
+				for (j=0; j<n; j++)
+				{
+					if (obj.childNodes[j] == item)
+						item.number = j;
+					else if (obj.childNodes[j] == currentNode)
+						currentNode.number = j;
+				}
+				if (item.number <= currentNode.number)
+				{
+					item.parentNode.insertBefore(currentNode, item);
+				}
+				else
+				{
+					item.parentNode.appendChild(currentNode);
+				}
 			}
 			BX.onCustomEvent(item, "onFileOrderIsChanged", [item.id, item, this.caller]);
 			BX.onCustomEvent(this.uploader, "onQueueIsChanged", [this, "sort", item.id, item]);

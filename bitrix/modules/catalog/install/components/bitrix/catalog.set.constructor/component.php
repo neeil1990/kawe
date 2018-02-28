@@ -47,6 +47,10 @@ foreach($arParams["OFFERS_CART_PROPERTIES"] as $i => $pid)
 	if ($pid === "")
 		unset($arParams["OFFERS_CART_PROPERTIES"][$i]);
 
+$arParams['BUNDLE_ITEMS_COUNT'] = (isset($arParams['BUNDLE_ITEMS_COUNT']) ? (int)$arParams['BUNDLE_ITEMS_COUNT'] : 3);
+if ($arParams['BUNDLE_ITEMS_COUNT'] < 1)
+	$arParams['BUNDLE_ITEMS_COUNT'] = 3;
+
 if($this->startResultCache(false, array($elementID, ($arParams["CACHE_GROUPS"]==="N"? false: $USER->GetGroups()))))
 {
 	if (!Loader::includeModule('catalog'))
@@ -388,7 +392,7 @@ if($this->startResultCache(false, array($elementID, ($arParams["CACHE_GROUPS"]==
 	unset($minimalPrice, $priceList, $item);
 
 	if ($arConvertParams['CURRENCY_ID'] !== '')
-		$tagCurrencyList[$arConvertParams['CURRENCY_ID']] = $arConvertParams['CURRENCY_ID']['CURRENCY'];
+		$tagCurrencyList[$arConvertParams['CURRENCY_ID']] = $arConvertParams['CURRENCY_ID'];
 
 	foreach ($itemsList as $item)
 	{
@@ -485,7 +489,7 @@ if($this->startResultCache(false, array($elementID, ($arParams["CACHE_GROUPS"]==
 			$setItem['ITEM_DATA']['PRICE_CONVERT_DISCOUNT_DIFFERENCE_VALUE'] = CCurrencyRates::ConvertCurrency($setItem['ITEM_DATA']['PRICE_DISCOUNT_DIFFERENCE_VALUE'], $setItem['ITEM_DATA']['PRICE_CURRENCY'], $defaultCurrency);
 			$setItem['ITEM_DATA']['PRICE_CURRENCY'] = $defaultCurrency;
 		}
-		if ($setItem['ITEM_DATA']['CAN_BUY'] && $countSetDefaultItems < 3)
+		if ($setItem['ITEM_DATA']['CAN_BUY'] && $countSetDefaultItems < $arParams['BUNDLE_ITEMS_COUNT'])
 		{
 			$arResult['SET_ITEMS']['DEFAULT'][] = $setItem['ITEM_DATA'];
 			$arResult['SET_ITEMS']['PRICE'] += $setItem['ITEM_DATA']['PRICE_DISCOUNT_VALUE']*$setItem['ITEM_DATA']['BASKET_QUANTITY'];

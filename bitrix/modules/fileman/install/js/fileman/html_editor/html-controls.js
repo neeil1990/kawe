@@ -5085,7 +5085,9 @@ function __run()
 	{
 		this.data = data || {};
 		this.pErrorRow.style.display = 'none';
-		BX.removeClass(this.pCont, 'bxhtmled-video-local');
+		this.pPreviewCont.style.display = 'none';
+		this.pPreview.innerHTML = '';
+			BX.removeClass(this.pCont, 'bxhtmled-video-local');
 		if (data === false || typeof data != 'object')
 		{
 			BX.addClass(this.pCont, 'bxhtmled-video-empty');
@@ -5094,6 +5096,19 @@ function __run()
 			{
 				this.pErrorRow.style.display = '';
 				this.pError.innerHTML = BX.util.htmlspecialchars(error);
+			}
+		}
+		else if (data.remote && !this.bEdit)
+		{
+			BX.removeClass(this.pCont, 'bxhtmled-video-empty');
+			this.pTitle.value = data.title || '';
+			if(data.width && data.height)
+			{
+				this.SetSize(data.width, data.height);
+			}
+			else
+			{
+				this.SetSize(400, 300);
 			}
 		}
 		else if (data.local && !this.bEdit)
@@ -5237,7 +5252,8 @@ function __run()
 			_this = this,
 			title = this.pTitle.value,
 			width = parseInt(this.pWidth.value) || 100,
-			height = parseInt(this.pHeight.value) || 100;
+			height = parseInt(this.pHeight.value) || 100,
+			mimeType = this.data.mimeType || '';
 
 		if (this.pSize.value !== '')
 		{
@@ -5279,6 +5295,17 @@ function __run()
 			{
 				bbSource = this.data.html = '[VIDEO width=' + width + ' height=' + height + ']' + this.data.path + '[/VIDEO]';
 				html = this.editor.bbParser.GetVideoSourse(this.data.path, {type: false, width: width, height: height, html: this.data.html}, this.data.html);
+			}
+			else if (this.editor.bbCode && this.data.remote)
+			{
+				bbSource = '[VIDEO ';
+				if(mimeType)
+				{
+					bbSource += 'mimetype=\'' + mimeType + '\' ';
+				}
+				bbSource += 'width=' + width + ' height=' + height + ']' + this.data.path + '[/VIDEO]';
+				this.data.html = bbSource;
+				html = this.editor.bbParser.GetVideoSourse(this.data.path, {type: false, width: width, height: height, html: this.data.html, title: this.data.title}, this.data.html);
 			}
 			else if (this.data.html)
 			{

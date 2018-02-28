@@ -83,26 +83,22 @@ BXBlockEditorPreview.prototype.show = function(params)
 	params = params || {};
 	BX.addClass(this.shadowNode, 'active');
 	BX.removeClass(this.shadowNode, 'access-denied');
-	var _this = this;
 	this.previewContext.style.display = 'block';
-	BX.ajax({
-		'url': '/bitrix/admin/fileman_block_editor.php?action=set',
-		'method': 'POST',
-		'data': {'sessid': BX.bitrix_sessid(), 'src': params.content},
-		'onsuccess': function()
-		{
-			var randomString = Math.random();
-			var url = _this.url + '&site_id=' + _this.site +'&r=' + randomString;
-			_this.iframePreview.setAttribute('src', url);
-		},
-		'onfailure': function(data)
-		{
-			if(data == 'auth')
-			{
-				BX.addClass(_this.shadowNode, 'access-denied');
-			}
-		}
-	});
+
+	var frameDoc = this.iframePreview.contentDocument;
+	frameDoc.body.innerHTML = '<div style="display: none;">' +
+		'<form method="post">' +
+		'<textarea name="content"></textarea>' +
+		'<input type="hidden" name="sessid" value="' + BX.bitrix_sessid() +'">' +
+		'</form>' +
+		'</div>';
+
+	var input = frameDoc.body.querySelector('textarea');
+	input.textContent = params.content;
+
+	var form = frameDoc.body.querySelector('form');
+	form.action = this.url;
+	BX.submit(form);
 };
 BXBlockEditorPreview.prototype.hide = function()
 {
@@ -405,7 +401,7 @@ BXBlockEditorDialogFileInput.prototype =
 		}
 
 		BX.ajax({
-			'url': '/bitrix/admin/fileman_block_editor.php?action=save_file',
+			'url': this.caller.saveFileUrl,
 			'method': 'POST',
 			'data': postData,
 			'dataType': 'json',
@@ -719,6 +715,7 @@ BXBlockEditorEditDialog.prototype =
 
 		this.caller = params.caller;
 		this.callerContext = params.context;
+		this.saveFileUrl = params.saveFileUrl;
 		this.context = this.callerContext.querySelector('.edit-panel');
 
 		this.contextTools = this.context.querySelector('.block-edit-cont');
@@ -869,64 +866,59 @@ BXBlockEditorEditDialog.prototype =
 		}, this));
 	},
 
-	initColorPicker: function(node)
+	initColorPicker: function()
 	{
-		this.picker = new window.BXColorPicker({'id': "picker", 'name': 'picker'});
-		this.picker.Create();
+		this.picker = new BX.ColorPicker({'popupOptions': {
+			'offsetLeft': 15,
+			'offsetTop': 5
+		}});
 
-		var _this = this;
+		BX.addCustomEvent(this, "onHide", this.picker.close.bind(this.picker));
 
-		BX.addCustomEvent(this, "onHide", function(){
-			_this.picker.Close();
-		});
-		var clickHandler = function ()
+		var changeHandler = function(inputNode, iconNode)
 		{
-			var element = this;
-			element.parentNode.appendChild(_this.picker.pCont);
-			_this.picker.oPar.OnSelect = BX.proxy(function (color)
+			var color = inputNode.value;
+			if (!color)
 			{
-				if(!color)
-					color = '';
-
-				element.value = color;
-				var colorBox = BX.nextSibling(element);
-				if(colorBox)
-				{
-					colorBox.style.background = color;
-				}
-				BX.fireEvent(element, 'change');
-			}, _this);
-
-			_this.picker.pCont.style.display = '';
-			_this.picker.Close();
-			_this.picker.Open(element);
-			_this.picker.pCont.style.display = 'none';
-
-		};
-
-		var changeHandler = function()
-		{
-			var colorBox = BX.nextSibling(this);
-			if (colorBox)
-			{
-				colorBox.style.background = this.value;
+				return;
 			}
+
+			iconNode.style.background = inputNode.value;
 		};
 
-
-		var inputList = BX.findChildren(this.context, {'className': 'bx-editor-color-picker'}, true);
-		for(var i in inputList)
+		var clickHandler = function (inputNode, iconNode)
 		{
-			var inputCtrl = inputList[i];
-			var colorBox = BX.nextSibling(inputCtrl);
+			if (!this.picker)
+			{
+				return;
+			}
 
-			BX.bind(colorBox, 'click', BX.proxy(clickHandler, inputCtrl));
-			BX.bind(inputCtrl, 'click', clickHandler);
-			BX.bind(inputCtrl, "focus", clickHandler);
+			this.picker.close();
+			this.picker.open({
+				'defaultColor': '',
+				'allowCustomColor': true,
+				'bindElement': iconNode,
+				'onColorSelected': function (color) {
+					inputNode.value = color;
+					BX.fireEvent(inputNode, 'change');
+				}
+			});
+		};
 
-			BX.addCustomEvent(inputCtrl, "onSettingLoadValue", BX.delegate(changeHandler, inputCtrl));
-			BX.bind(inputCtrl, "bxchange", BX.delegate(changeHandler, inputCtrl));
-		}
+		var inputs = this.context.querySelectorAll('.bx-editor-color-picker');
+		inputs = BX.convert.nodeListToArray(inputs);
+		inputs.forEach(function (inputNode) {
+			var iconNode = BX.nextSibling(inputNode);
+			var textNode = BX.nextSibling(iconNode);
+
+			var onClick = clickHandler.bind(this, inputNode, iconNode);
+			var onChange = changeHandler.bind(this, inputNode, iconNode);
+			BX.bind(iconNode, 'click', onClick);
+			BX.bind(textNode, 'click', onClick);
+
+			BX.addCustomEvent(inputNode, "onSettingLoadValue", onChange);
+			BX.bind(inputNode, "bxchange", onChange);
+		}, this);
 	},
 
 	initBorderControl: function()
@@ -1202,6 +1194,7 @@ BXBlockEditorEditDialog.prototype =
 			contextVisual.style.width = (context.offsetWidth - contextTools.offsetWidth) + 'px';
 		}
 		contextTools.style.right = '0';
+		contextTools.style.visibility = 'visible';
 	},
 
 	hide: function(callbackFunction)
@@ -1228,7 +1221,8 @@ BXBlockEditorEditDialog.prototype =
 			else
 			{
 				contextTools.style.right = "-100%";
-				contextTools.style.display = 'none';
+				contextTools.style.display = 'block';
+				contextTools.style.visibility = 'hidden';
 				contextVisual.style.width = '100%';
 			}
 		}
@@ -1752,3 +1746,163 @@ BX.addCustomEvent('GetControlsMap', function(controlsMap){
 		}
 	}
 });
+
+(function (window)
+{
+
+	function Content(params)
+	{
+		this.textarea = params.textarea;
+		this.caller = params.caller;
+
+		var content = this.getRaw();
+		this.converter = new SliceConverter();
+
+		/*
+		if (!content || JsonConverter.isValid(content))
+		{
+			this.converter = new JsonConverter();
+		}
+		else
+		{
+			this.converter = new SliceConverter();
+		}
+		*/
+	}
+	Content.prototype.getRaw = function()
+	{
+		return this.textarea.value;
+	};
+	Content.prototype.setRaw = function(value)
+	{
+		this.textarea.value = value;
+	};
+	Content.prototype.getString = function(list)
+	{
+		return this.converter.toString(list);
+	};
+	Content.prototype.getList = function()
+	{
+		var content = this.getRaw();
+		if (content)
+		{
+			return this.converter.toArray(content);
+		}
+
+		return [];
+	};
+	Content.prototype.getStyles = function()
+	{
+		return this.getList().filter(function (item) {
+			return item && item.type === 'STYLES';
+		})
+	};
+	Content.prototype.getBlocks = function()
+	{
+		return this.getList().filter(function (item) {
+			return item && item.type === 'BLOCKS';
+		})
+	};
+
+	function JsonConverter()
+	{
+	}
+	JsonConverter.isValid = function(value)
+	{
+		try
+		{
+			var result = JSON.parse(value);
+			return BX.type.isPlainObject(result) || BX.type.isArray(result);
+		}
+		catch (e)
+		{
+			return false;
+		}
+	};
+	JsonConverter.prototype.toArray = function(value)
+	{
+		try
+		{
+			return JSON.parse(value);
+		}
+		catch (e)
+		{
+			return [];
+		}
+
+	};
+	JsonConverter.prototype.toString = function(list)
+	{
+		list = list.map(function (item) {
+			var newItem = {
+				'type': item.type,
+				'place': item.place,
+				'value': item.value
+			};
+			if (item.block)
+			{
+				newItem.block = item.block;
+			}
+
+			return newItem;
+		});
+
+		try
+		{
+			return JSON.stringify(list);
+		}
+		catch (e)
+		{
+			return '';
+		}
+	};
+
+
+	function SliceConverter()
+	{
+		this.sectionId = 'BX_BLOCK_EDITOR_EDITABLE_SECTION';
+	}
+	SliceConverter.prototype.toArray = function(content)
+	{
+		var result = [];
+		var pattern = "<!--START "
+			+ this.sectionId + "\/([\\w]+?)\/([\\w]*?)\/-->"
+			+ "([\\s\\S,\\n]*?)"
+			+ "<!--END " + this.sectionId + "[\/\\w]+?-->";
+
+		var sliceRegExp = new RegExp(pattern, "g");
+		var matches;
+		while(matches = sliceRegExp.exec(content))
+		{
+			var section = matches[1].trim();
+			var item = matches[2].trim();
+			var value = matches[3].trim();
+
+			result.push({
+				'type': section,
+				'place': item,
+				'value': value
+			});
+		}
+
+		return result;
+	};
+	SliceConverter.prototype.toString = function(list)
+	{
+		return list.map(this.getItemString, this).join('\n');
+	};
+	SliceConverter.prototype.getItemString = function(item)
+	{
+		var path = [item.type, item.place];
+		var content = item.value;
+
+		var tag = [this.sectionId].concat(path).join('/') + '/';
+		return '<!--START %TAG%-->\n%CONTENT%\n<!--END %TAG%-->'
+			.replace('%TAG%', tag)
+			.replace('%TAG%', tag)
+			.replace('%CONTENT%', content);
+	};
+
+	BX.namespace('BX.BlockEditor');
+	BX.BlockEditor.Content = Content;
+})(window);

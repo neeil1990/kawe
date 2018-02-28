@@ -23,6 +23,7 @@ class ProviderBuilderCompatibility extends ProviderBuilderBase
 		$fields = array(
 			'BASKET_ITEM' => $basketItem,
 			'ITEM_CODE' => $basketItem->getBasketCode(),
+			'BASKET_ID' => $basketItem->getId(),
 			'BASKET_CODE' => $basketItem->getBasketCode(),
 			'PRODUCT_ID' => $productId,
 			'QUANTITY' => $basketItem->getQuantity(),

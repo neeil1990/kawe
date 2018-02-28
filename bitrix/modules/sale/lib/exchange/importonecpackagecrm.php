@@ -130,8 +130,9 @@ class ImportOneCPackageCRM extends ImportOneCPackage
 				{
 					$documentOrder = $this->getDocumentByTypeId(EntityType::ORDER, $documents);
 					$fieldsOrder = $documentOrder->getFieldValues();
+					$items = $this->getProductsItems($fieldsOrder);
 
-					if(!$this->deliveryServiceExists($fieldsOrder['ITEMS']))
+					if(!$this->deliveryServiceExists($items))
 					{
 						$fieldsOrder['ITEMS'][][self::DELIVERY_SERVICE_XMLID] = array(
 							'ID' => self::DELIVERY_SERVICE_XMLID,

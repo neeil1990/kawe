@@ -165,33 +165,33 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 	}
 	
 	/**
-	 * Returns campaign params got from Yandex
+	 * Get campaigns by IDs (not all)
 	 *
-	 * @param mixed $campaignId XML_ID or array of XML_IDs
+	 * @param mixed $campaignsId XML_ID or array of XML_IDs
 	 *
 	 * @return array with campaign data
 	 * @throws SystemException
 	 * @throws YandexDirectException
 	 */
-	public function getCampaign($campaignId)
+	public function getCampaign($campaignsId)
 	{
-		if (empty($campaignId))
+		if (empty($campaignsId))
 		{
 			throw new ArgumentNullException("campaignId");
 		}
 		
-		if (!is_array($campaignId))
+		if (!is_array($campaignsId))
 		{
-			$campaignId = array($campaignId);
+			$campaignsId = array($campaignsId);
 		}
 		
 		$offset = 0;
 		
 		$result = array();
 		
-		while ($offset < count($campaignId))
+		while ($offset < count($campaignsId))
 		{
-			$currentCampaigns = array_slice($campaignId, $offset, static::CAMPAIGN_LIMIT);
+			$currentCampaigns = array_slice($campaignsId, $offset, static::CAMPAIGN_LIMIT);
 			
 			$currentResult = $this->getProxy()->getInterface()->getCampaign(static::ENGINE_ID, $currentCampaigns);
 			
@@ -208,6 +208,7 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 		return $result;
 	}
 	
+//	get ALL campaigns for current client
 	public function getCampaignList()
 	{
 		$result = $this->getProxy()->getInterface()->getCampaignList(static::ENGINE_ID);
@@ -560,11 +561,15 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 		else
 		{
 			$result = $this->getProxy()->getInterface()->getClientsSettings(static::ENGINE_ID);
-			if (!empty($result['error']))
-				throw new YandexDirectException($result);
-			else
-				$cacheManager->set(self::CACHE_ID, $result);
 		}
+		
+		if(!is_array($result) || empty($result))
+			$result = array('error' => 'No authentication.');
+		
+		if (!empty($result['error']))
+			throw new YandexDirectException($result);
+		else
+			$cacheManager->set(self::CACHE_ID, $result);
 		
 		return $result;
 	}
@@ -835,8 +840,10 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 			$campaignId = array($campaignId);
 		}
 		
+		$campaignList = array();
 		if (is_array($campaignId) && count($campaignId) > 0)
 		{
+//			get just current campaigns by ID
 			$dbRes = YandexCampaignTable::getList(array(
 				'filter' => array(
 					'=ID' => $campaignId,
@@ -849,20 +856,16 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 			{
 				$keys[] = $campaign['XML_ID'];
 			}
+			
+			if (count($keys) > 0)
+				$campaignList = $this->getCampaign($keys);
 		}
 		else
 		{
+//			get ALL campaigns, if IDs not set
 			$campaignList = $this->getCampaignList();
-			foreach ($campaignList as $campaignInfo)
-			{
-				$keys[] = $campaignInfo['CampaignID'];
-			}
 		}
 		
-		$campaignList = array();
-		if (count($keys) > 0)
-			$campaignList = $this->getCampaign($keys);
-			
 		$campaignListSorted = array();
 		$campaignListToDelete = array();
 		
@@ -900,14 +903,14 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 					$res['error']++;
 				}
 			}
-//				collect campaigns, then not exist in YD, but exist in table
+//			collect campaigns, then not exist in YD, but exist in table
 			else
 			{
 				$campaignListToDelete[$campaign['ID']] = $campaign['ID'];
 			}
 		}
 
-//			REMOVE from table deleted campaigns
+//		REMOVE from table deleted campaigns
 		if (count($campaignListToDelete) > 0)
 		{
 			foreach ($campaignListToDelete as $campaignId)
@@ -918,7 +921,7 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 			}
 		}
 
-//			ADD in table new campaignt from YD
+//		ADD in table new campaignt from YD
 		foreach ($campaignListSorted as $campaignId => $campaignInfo)
 		{
 			$result = YandexCampaignTable::add(array(
@@ -979,6 +982,7 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 		$bannerList = array();
 		if (is_array($bannerId) && count($bannerId) > 0)
 		{
+//			get banners by ID
 			$dbRes = YandexBannerTable::getList(array(
 				'filter' => array(
 					'=ID' => $bannerId,
@@ -992,7 +996,8 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 				$keys[] = $banner['XML_ID'];
 			}
 			
-			$bannerList = $this->getBanners($keys);
+			if(count($keys) > 0)
+				$bannerList = $this->getBanners($keys);
 		}
 		else
 		{
@@ -1009,10 +1014,9 @@ class YandexDirect extends Engine\YandexBase implements IEngine
 				$campaignIndex[$campaign['XML_ID']] = $campaign['ID'];
 			}
 			
+//			get ALL banners for current campaign
 			if (count($campaignIndex) > 0)
-			{
 				$bannerList = $this->getCampaignBanners(array_keys($campaignIndex));
-			}
 		}
 		
 		$bannerListSorted = array();

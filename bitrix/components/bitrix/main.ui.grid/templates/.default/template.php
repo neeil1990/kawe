@@ -14,7 +14,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
 	die();
 }
 
-CJSCore::Init(array('popup', 'ui', 'resize_observer'));
+CJSCore::Init(array('popup', 'ui', 'resize_observer', 'loader'));
 
 \Bitrix\Main\Page\Asset::getInstance()->addJs('/bitrix/js/main/dd.js');
 
@@ -94,11 +94,7 @@ $displayedCount = count(
 					?><div class="main-grid-ear main-grid-ear-left"></div><?
 					?><div class="main-grid-ear main-grid-ear-right"></div><?
 				endif; ?><?
-				?><div class="main-grid-loader-container"><?
-					?><svg class="main-grid-loader-circular" viewBox="25 25 50 50"><?
-						?><circle class="main-grid-loader-path" cx="50" cy="50" r="20" fill="none" stroke-miterlimit="10"/><?
-					?></svg><?
-				?></div><?
+				?><div class="main-grid-loader-container"></div><?
 				?><div class="main-grid-container"><?
 					?><table class="main-grid-table" id="<?=$arParams["GRID_ID"]?>_table"><?
 						if (!$arResult['BX_isGridAjax']): ?><?
@@ -510,7 +506,8 @@ endif; ?>
 						"SETTINGS_FOR_ALL_CONFIRM_CANCEL" => Loc::getMessage("interface_grid_settings_for_all_cancel"),
 						"CLOSE" => Loc::getMessage("interface_grid_settings_close"),
 						"IS_ADMIN" => $USER->CanDoOperation("edit_other_settings"),
-						"MESSAGES" => $arResult["MESSAGES"]
+						"MESSAGES" => $arResult["MESSAGES"],
+                        "LAZY_LOAD" => $arResult["LAZY_LOAD"]
 					)
 				)?>,
 				<?=CUtil::PhpToJSObject($arResult["OPTIONS"])?>,

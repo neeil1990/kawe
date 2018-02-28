@@ -289,7 +289,7 @@ if (check_bitrix_sessid())
 				else
 				{
 					$arFilter = array('LOGIC' => 'AND');
-					for($i = 1; $i <= 2; $i++)
+					for($i = 0; $i < 2; $i++)
 					{
 						$arFilter["__INNER_FILTER_NAME_{$i}"] = array('%FULL_NAME' => $searchParts[$i]);
 					}

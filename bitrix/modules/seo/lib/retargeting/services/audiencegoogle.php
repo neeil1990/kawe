@@ -45,11 +45,14 @@ class AudienceGoogle extends Audience
 		return true;
 	}
 
-	public function add($data)
+	public function add(array $data)
 	{
 		$response = $this->request->send(array(
 			'methodName' => 'audience.add',
-			'parameters' => array()
+			'parameters' => array(
+				'NAME' => $data['NAME'],
+				'DESCRIPTION' => ''
+			)
 		));
 
 		$responseData = $response->getData();

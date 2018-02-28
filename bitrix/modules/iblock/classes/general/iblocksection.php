@@ -157,9 +157,11 @@ class CAllIBlockSection
 		return CIBlockSection::GetList(Array("left_margin"=>"asc"), $arFilter, false, $arSelect);
 	}
 
-	public static function GetNavChain($IBLOCK_ID, $SECTION_ID, $arSelect = array())
+	public static function GetNavChain($IBLOCK_ID, $SECTION_ID, $arSelect = array(), $arrayResult = false)
 	{
 		global $DB;
+
+		$arrayResult = ($arrayResult === true);
 
 		$IBLOCK_ID = (int)$IBLOCK_ID;
 
@@ -272,8 +274,12 @@ class CAllIBlockSection
 		}
 		while ($SECTION_ID > 0);
 
+		$sectionPath = array_reverse($sectionPath);
+		if ($arrayResult)
+			return $sectionPath;
+
 		$res = new CDBResult;
-		$res->InitFromArray(array_reverse($sectionPath));
+		$res->InitFromArray($sectionPath);
 		$res = new CIBlockResult($res);
 		$res->bIBlockSection = true;
 		return $res;
@@ -2585,8 +2591,8 @@ class CAllIBlockSection
 			$res = CIBlockSection::GetNavChain(0, $sectionId, array("ID", "CODE"));
 			while ($a = $res->Fetch())
 			{
-				self::$arSectionCodeCache[$a["ID"]] = urlencode($a["CODE"]);
-				self::$arSectionPathCache[$sectionId] .= urlencode($a["CODE"])."/";
+				self::$arSectionCodeCache[$a["ID"]] = rawurlencode($a["CODE"]);
+				self::$arSectionPathCache[$sectionId] .= rawurlencode($a["CODE"])."/";
 			}
 			self::$arSectionPathCache[$sectionId] = rtrim(self::$arSectionPathCache[$sectionId], "/");
 
@@ -2605,7 +2611,7 @@ class CAllIBlockSection
 			$res = $DB->Query("SELECT IBLOCK_ID, CODE FROM b_iblock_section WHERE ID = ".$sectionId);
 			while ($a = $res->Fetch())
 			{
-				self::$arSectionCodeCache[$sectionId] = urlencode($a["CODE"]);
+				self::$arSectionCodeCache[$sectionId] = rawurlencode($a["CODE"]);
 			}
 		}
 		return self::$arSectionCodeCache[$sectionId];

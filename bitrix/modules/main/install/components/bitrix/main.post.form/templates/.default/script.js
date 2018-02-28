@@ -975,8 +975,6 @@ var LHEPostForm = function(formID, params)
 			{
 				if (BX('lhe_button_submit_' + formID, true))
 				{
-					BX.bind(BX('lhe_button_submit_' + formID, true), 'mousedown', function(){ BX.addClass(this, 'feed-add-button-press'); });
-					BX.bind(BX('lhe_button_submit_' + formID, true), 'mouseup', function(){ BX.removeClass(this, 'feed-add-button-press'); });
 					BX.bind(BX('lhe_button_submit_' + formID, true), 'click', BX.proxy(function(e){
 						BX.onCustomEvent(this.eventNode, 'OnButtonClick', ['submit']);
 						return BX.PreventDefault(e);
@@ -984,8 +982,6 @@ var LHEPostForm = function(formID, params)
 				}
 				if (BX('lhe_button_cancel_' + formID, true))
 				{
-					BX.bind(BX('lhe_button_cancel_' + formID, true), 'mousedown', function(){ BX.addClass(this, 'feed-add-button-press'); });
-					BX.bind(BX('lhe_button_cancel_' + formID, true), 'mouseup', function(){ BX.removeClass(this, 'feed-add-button-press'); });
 					BX.bind(BX('lhe_button_cancel_' + formID, true), 'click', BX.proxy(function(e){
 						BX.onCustomEvent(this.eventNode, 'OnButtonClick', ['cancel']);
 						return BX.PreventDefault(e);
@@ -1081,6 +1077,13 @@ LHEPostForm.prototype = {
 				obj : null,
 				init : false
 			}
+		};
+		this.monitoring = {
+			interval : null,
+			text : '',
+			savedText : '',
+			files : [],
+			savedFiles : []
 		};
 		if (!params["CID"] || typeof params["CID"] !== "object")
 			return;
@@ -1233,13 +1236,7 @@ LHEPostForm.prototype = {
 		if (save !== false)
 			BX.userOptions.save('main.post.form', 'postEdit', 'showBBCode', show ? "Y" : "N");
 	},
-	monitoring : {
-		interval : null,
-		text : '',
-		savedText : '',
-		files : [],
-		savedFiles : []
-	},
+	monitoring : {},
 	monitoringStart : function()
 	{
 		if (this.monitoring.interval === null)
@@ -1363,10 +1360,28 @@ LHEPostForm.prototype = {
 				setTimeout(BX.delegate(editor.AutoResizeSceleton, editor), 500);
 				setTimeout(BX.delegate(editor.AutoResizeSceleton, editor), 1000);
 			}
-			else if (editorMode == 'code' && editor.bbCode) // BB Codes
+			else if (editorMode == 'code')
 			{
 				editor.textareaView.Focus();
-				editor.textareaView.WrapWith(false, false, res.replacement);
+
+				if (!editor.bbCode)
+				{
+					var editorDoc = editor.GetIframeDoc();
+					var dummy = editorDoc.createElement('DIV');
+					dummy.style.display = 'none';
+					dummy.innerHTML = res.replacement;
+					editorDoc.body.appendChild(dummy);
+
+					res.replacement = editor.Parse(res.replacement, true, false);
+
+					dummy.parentNode.removeChild(dummy);
+				}
+
+				editor.textareaView.WrapWith('', '', res.replacement);
+			}
+			else
+			{
+				return;
 			}
 			res["callback"]();
 		}
@@ -1380,7 +1395,7 @@ LHEPostForm.prototype = {
 				fileID = file['id'],
 				params = '',
 				parser = controller.parser,
-				editorMode = editor.GetViewMode(),
+				editorMode = editor.bbCode ? editor.GetViewMode() : 'wysiwyg',
 				pattern = this.parser[parser.bxTag][editorMode];
 
 			if (file['fileType'] && this.parser[file['fileType']] && editorMode == "wysiwyg")

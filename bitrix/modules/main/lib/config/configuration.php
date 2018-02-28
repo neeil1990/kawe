@@ -7,10 +7,11 @@ final class Configuration
 	implements \ArrayAccess, \Iterator, \Countable
 {
 	/**
-	 * @var Configuration
+	 * @var Configuration[]
 	 */
-	private static $instance;
+	private static $instances;
 
+	private $moduleId = null;
 	private $storedData = null;
 	private $data = array();
 	private $isLoaded = false;
@@ -31,55 +32,91 @@ final class Configuration
 		$configuration->saveConfiguration();
 	}
 
-	private function __construct()
+	private function __construct($moduleId = null)
 	{
+		if($moduleId !== null)
+		{
+			$this->moduleId = preg_replace("/[^a-zA-Z0-9_.]+/i", "", trim($moduleId));
+		}
 	}
 
 	/**
 	 * @static
+	 *
+	 * @param string|null $moduleId
 	 * @return Configuration
 	 */
-	public static function getInstance()
+	public static function getInstance($moduleId = null)
 	{
-		if (!isset(self::$instance))
+		if (!isset(self::$instances[$moduleId]))
 		{
-			$c = __CLASS__;
-			self::$instance = new $c;
+			self::$instances[$moduleId] = new static($moduleId);
 		}
 
-		return self::$instance;
+		return self::$instances[$moduleId];
 	}
 
-	private function getPath($path)
+	private static function getPath($path)
 	{
 		$path = Main\Loader::getDocumentRoot().$path;
 		return preg_replace("'[\\\\/]+'", "/", $path);
+	}
+
+	private static function getPathConfigForModule($moduleId)
+	{
+		if (!$moduleId || !Main\ModuleManager::isModuleInstalled($moduleId))
+		{
+			return false;
+		}
+
+		$moduleConfigPath = getLocalPath("modules/{$moduleId}/.settings.php");
+		if ($moduleConfigPath === false)
+		{
+			return false;
+		}
+
+		return static::getPath($moduleConfigPath);
 	}
 
 	private function loadConfiguration()
 	{
 		$this->isLoaded = false;
 
-		$path = static::getPath(self::CONFIGURATION_FILE_PATH);
-		if (file_exists($path))
+		if ($this->moduleId)
 		{
-			$dataTmp = include($path);
-			if(is_array($dataTmp))
+			$path = static::getPathConfigForModule($this->moduleId);
+			if (file_exists($path))
 			{
-				$this->data = $dataTmp;
+				$dataTmp = include($path);
+				if(is_array($dataTmp))
+				{
+					$this->data = $dataTmp;
+				}
 			}
 		}
-
-		$pathExtra = static::getPath(self::CONFIGURATION_FILE_PATH_EXTRA);
-		if (file_exists($pathExtra))
+		else
 		{
-			$dataTmp = include($pathExtra);
-			if (is_array($dataTmp) && !empty($dataTmp))
+			$path = static::getPath(self::CONFIGURATION_FILE_PATH);
+			if (file_exists($path))
 			{
-				$this->storedData = $this->data;
-				foreach ($dataTmp as $k => $v)
+				$dataTmp = include($path);
+				if(is_array($dataTmp))
 				{
-					$this->data[$k] = $v;
+					$this->data = $dataTmp;
+				}
+			}
+
+			$pathExtra = static::getPath(self::CONFIGURATION_FILE_PATH_EXTRA);
+			if (file_exists($pathExtra))
+			{
+				$dataTmp = include($pathExtra);
+				if (is_array($dataTmp) && !empty($dataTmp))
+				{
+					$this->storedData = $this->data;
+					foreach ($dataTmp as $k => $v)
+					{
+						$this->data[$k] = $v;
+					}
 				}
 			}
 		}
@@ -92,7 +129,14 @@ final class Configuration
 		if (!$this->isLoaded)
 			$this->loadConfiguration();
 
-		$path = static::getPath(self::CONFIGURATION_FILE_PATH);
+		if($this->moduleId)
+		{
+			throw new Main\InvalidOperationException('There is no support to rewrite .settings.php in module');
+		}
+		else
+		{
+			$path = static::getPath(self::CONFIGURATION_FILE_PATH);
+		}
 
 		$data = ($this->storedData !== null) ? $this->storedData : $this->data;
 		$data = var_export($data, true);

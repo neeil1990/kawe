@@ -68,7 +68,7 @@ class CAllSaleDelivery
 
 		if ($service)
 		{
-			$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+			$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 			$arOrderTmpDel = array(
 				"PRICE" => $arOrder["ORDER_PRICE"] + $arOrder["TAX_PRICE"] - $arOrder["DISCOUNT_PRICE"],
@@ -80,7 +80,7 @@ class CAllSaleDelivery
 				"CURRENCY" => $arOrder["CURRENCY"]
 			);
 
-			if ($isOrderConverted == "Y"
+			if ($isOrderConverted != 'N'
 				&& !empty($arOrder['ORDER_PROP']) && is_array($arOrder['ORDER_PROP']))
 			{
 				$arOrderTmpDel['PROPERTIES'] = $arOrder['ORDER_PROP'];

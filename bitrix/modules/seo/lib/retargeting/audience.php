@@ -39,6 +39,7 @@ abstract class Audience extends BaseApiObject
 	protected $isQueueModeEnabled = false;
 	protected $isQueueAutoRemove = true;
 	protected $queueDaysAutoRemove = 7;
+	protected $emptyResponse = null;
 
 	public function __construct($accountId = null)
 	{
@@ -69,6 +70,11 @@ abstract class Audience extends BaseApiObject
 	public static function isSupportAccount()
 	{
 		return true;
+	}
+
+	public static function isAddingRequireContacts()
+	{
+		return false;
 	}
 
 	public static function isSupportRemoveContacts()
@@ -281,9 +287,13 @@ abstract class Audience extends BaseApiObject
 		if ($this->isQueueModeEnabled())
 		{
 			$this->addToQueue($audienceId, $contacts, false);
-			$response = Response::create(static::TYPE_CODE);
-			$response->setData(array());
-			return $response;
+			if ($this->emptyResponse === null)
+			{
+				$this->emptyResponse = Response::create(static::TYPE_CODE);
+				$this->emptyResponse->setData(array());
+			}
+
+			return $this->emptyResponse;
 		}
 		else
 		{
@@ -313,24 +323,38 @@ abstract class Audience extends BaseApiObject
 	}
 
 	/**
+	 * Add.
+	 *
+	 * @param array $data Data.
+	 * @return Response
+	 */
+	abstract public function add(array $data);
+
+	/**
+	 * Get list.
+	 *
 	 * @return Response
 	 */
 	abstract public function getList();
 
 
 	/**
-	 * @param $audienceId
-	 * @param array $contacts
-	 * @param array $options
+	 * Import contacts.
+	 *
+	 * @param string $audienceId Audience ID.
+	 * @param array $contacts Contacts.
+	 * @param array $options Options.
 	 * @return Response
 	 */
 	abstract protected function importContacts($audienceId, array $contacts = array(), array $options);
 
 
 	/**
-	 * @param $audienceId
-	 * @param array $contacts
-	 * @param array $options
+	 * Remove contacts.
+	 *
+	 * @param string $audienceId Audience ID.
+	 * @param array $contacts Contacts.
+	 * @param array $options Options.
 	 * @return Response
 	 */
 	abstract protected function removeContacts($audienceId, array $contacts = array(), array $options);

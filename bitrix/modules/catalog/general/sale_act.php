@@ -506,10 +506,11 @@ class CCatalogGifterProduct extends CGlobalCondCtrlAtoms
 						'id' => 'Value',
 						'name' => 'Value',
 						'type' => 'popup',
-						'popup_url' => '/bitrix/admin/cat_section_search.php',
+						'popup_url' => '/bitrix/admin/iblock_section_search.php',
 						'popup_params' => array(
 							'lang' => LANGUAGE_ID,
-							'discount' => 'Y'
+							'discount' => 'Y',
+							'simplename' => 'Y'
 						),
 						'param_id' => 'n',
 						'show_value' => 'Y',

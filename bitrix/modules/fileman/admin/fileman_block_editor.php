@@ -1,17 +1,21 @@
 <?
+use Bitrix\Main\Loader;
+use Bitrix\Main\Localization\Loc;
+
 define("ADMIN_MODULE_NAME", "fileman");
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 
-if(!\Bitrix\Main\Loader::includeModule("fileman"))
-	ShowError(\Bitrix\Main\Localization\Loc::getMessage("MAIN_MODULE_NOT_INSTALLED"));
+if(!Loader::includeModule("fileman"))
+{
+	ShowError(Loc::getMessage("MAIN_MODULE_NOT_INSTALLED"));
+}
 
-$isAdmin = $USER->CanDoOperation('lpa_template_edit');
-$isUserHavePhpAccess = $USER->CanDoOperation('edit_php');
-$canWorkWithHtml = $isAdmin || $isUserHavePhpAccess;
-
-$POST_RIGHT = $APPLICATION->GetGroupRight("fileman");
-if($POST_RIGHT=="D")
+/** @var CAllMain $APPLICATION Application. */
+$modulePermission = $APPLICATION->GetGroupRight("fileman");
+if($modulePermission == "D")
+{
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_js.php");
 $request = \Bitrix\Main\Context::getCurrent()->getRequest();
@@ -118,40 +122,14 @@ switch($request->get('action'))
 		echo CUtil::PhpToJSObject($result);
 		break;
 
-
-	case 'set':
-
-		if (!$canWorkWithHtml)
-		{
-			$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-		}
-
-		if($request->isPost() && check_bitrix_sessid())
-		{
-			$src = $request->getPost('src');
-			if(\Bitrix\Main\Text\Encoding::detectUtf8($src))
-			{
-				$src = \Bitrix\Main\Text\Encoding::convertEncodingToCurrent($src);
-			}
-
-			// TODO: POST FORM IN IFRAME WITH CONTENT WITHOUT this "set" request
-			$_SESSION['bx_block_editor_temp_template'] = $src;
-		}
-		break;
-
-
 	case 'preview_mail':
-
-		if (!$canWorkWithHtml)
-		{
-			$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-		}
 
 		$request = \Bitrix\Main\Context::getCurrent()->getRequest();
 		$previewParams = array(
 			'CAN_EDIT_PHP' => $GLOBALS["USER"]->CanDoOperation('edit_php'),
+			'CAN_USE_LPA' => $GLOBALS["USER"]->CanDoOperation('lpa_template_edit'),
 			'SITE' => $request->get('site_id'),
-			'HTML' => $_SESSION['bx_block_editor_temp_template'],
+			'HTML' => $request->get('content'),
 			'FIELDS' => array(
 				'SENDER_CHAIN_CODE' => 'sender_chain_item_0',
 			),

@@ -165,8 +165,24 @@ if(empty($arResult["ERRORS"]) && $saleModulePermissions >= "W" && check_bitrix_s
 		case "downloadFile":
 
 			$fileName = isset($_REQUEST['fileName']) ? trim($_REQUEST['fileName']) : '';
+			$fileName = str_replace(array("\r", "\n"), "", $fileName);
 			$filePath = isset($_REQUEST['filePath']) ? trim($_REQUEST['filePath']) : '';
-			$file = new \Bitrix\Main\IO\File(\CTempFile::GetAbsoluteRoot().$filePath.$fileName);
+
+			try
+			{
+				$filePath = \CTempFile::GetAbsoluteRoot().\Bitrix\Main\IO\Path::normalize($filePath.$fileName);
+			}
+			catch(\Bitrix\Main\SystemException $e)
+			{
+				die();
+			}
+
+			if(!\Bitrix\Main\IO\File::isFileExists($filePath))
+			{
+				die();
+			}
+
+			$file = new \Bitrix\Main\IO\File($filePath);
 
 			/** Requests\ResultFile $res */
 			header("Content-Type: application/force-download; name=\"".$fileName."\"");

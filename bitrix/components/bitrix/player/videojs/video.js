@@ -7012,7 +7012,12 @@ var ErrorDisplay = function (_ModalDialog) {
    */
 
 
-  ErrorDisplay.prototype.content = function content() {
+  ErrorDisplay.prototype.content = function content(message) {
+    if(message && this.el_ && this.el_.children && this.el_.children[1])
+    {
+      this.el_.children[1].innerText = message;
+    }
+
     var error = this.player().error();
 
     return error ? this.localize(error.message) : '';
@@ -10072,8 +10077,8 @@ var Player = function (_Component) {
 
   Player.prototype.handleTechWaiting_ = function handleTechWaiting_() {
     var _this3 = this;
+    _this3.addClass('vjs-waiting');
 
-    this.addClass('vjs-waiting');
     /**
      * A readyState change on the DOM element has caused playback to stop.
      *
@@ -11654,6 +11659,13 @@ var Player = function (_Component) {
       return this;
     }
 
+    if(err instanceof _mediaError2['default'] && err.code)
+    {
+      if(this.options_.errorMessages && this.options_.errorMessages[err.code])
+      {
+        err.message = this.options_.errorMessages[err.code];
+      }
+    }
     this.error_ = new _mediaError2['default'](err);
 
     // add the vjs-error classname to the player
@@ -11661,7 +11673,7 @@ var Player = function (_Component) {
 
     // log the name of the error type and any message
     // ie8 just logs "[object object]" if you just log the error object
-    _log2['default'].error('(CODE:' + this.error_.code + ' ' + _mediaError2['default'].errorTypes[this.error_.code] + ')', this.error_.message, this.error_);
+    _log2['default']('(CODE:' + this.error_.code + ' ' + _mediaError2['default'].errorTypes[this.error_.code] + ')', this.error_.message, this.error_);
 
     /**
      * @event Player#error

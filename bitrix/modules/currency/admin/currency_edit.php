@@ -311,7 +311,7 @@ $tabControl->Begin();?>
 		</tr>
 		<tr>
 			<td width="40%"><?echo GetMessage("CURRENCY_DEC_POINT_DESC")?>:</td>
-			<td width="60%"><input title="<?=htmlspecialcharsbx(GetMessage("CURRENCY_DEC_POINT_DESC")); ?>" type="text" maxlength="5" size="5" name="<?=$fieldPrefix; ?>[DEC_POINT]" value="<?=htmlspecialcharsbx($settings['DEC_POINT']); ?>"></td>
+			<td width="60%"><input title="<?=htmlspecialcharsbx(GetMessage("CURRENCY_DEC_POINT_DESC")); ?>" type="text" maxlength="16" size="10" name="<?=$fieldPrefix; ?>[DEC_POINT]" value="<?=htmlspecialcharsbx($settings['DEC_POINT']); ?>"></td>
 		</tr>
 		<tr>
 			<td width="40%"><?echo GetMessage("THOU_SEP_DESC")?>:</td>
@@ -326,9 +326,9 @@ $tabControl->Begin();?>
 				}
 				unset($separatorID, $separatorTitle);
 				?>
-				<option value=""<? echo ($settings['THOUSANDS_SEP'] !== '' ? ' selected' : '');?>><?=htmlspecialcharsbx(GetMessage("CURRENCY_THOUSANDS_VARIANT_O")); ?></option>
+				<option value=""<? echo ($settings['THOUSANDS_VARIANT'] == '' && $settings['THOUSANDS_SEP'] != '' ? ' selected' : '');?>><?=htmlspecialcharsbx(GetMessage("CURRENCY_THOUSANDS_VARIANT_O")); ?></option>
 				</select>
-				<input title="<?=htmlspecialcharsbx(GetMessage("THOU_SEP_DESC")); ?>" type="text" maxlength="5" size="5" name="<?=$fieldPrefix; ?>[THOUSANDS_SEP]" value="<?=htmlspecialcharsbx($settings['THOUSANDS_SEP']);?>">
+				<input title="<?=htmlspecialcharsbx(GetMessage("THOU_SEP_DESC")); ?>" type="text" maxlength="16" size="10" name="<?=$fieldPrefix; ?>[THOUSANDS_SEP]" value="<?=htmlspecialcharsbx($settings['THOUSANDS_SEP']);?>">
 			</td>
 		</tr>
 		<tr>

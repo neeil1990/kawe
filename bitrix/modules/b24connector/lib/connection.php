@@ -115,9 +115,10 @@ class Connection
 	}
 
 	/**
-	 * @param string $title
+	 * @param string $title Button title
 	 * @return string Button HTML.
 	 * @throws \Bitrix\Main\LoaderException
+	 * @throws \Bitrix\Main\ArgumentNullException
 	 */
 	public static function getButtonHtml($title = '')
 	{
@@ -169,9 +170,10 @@ class Connection
 	}
 
 	/**
-	 * @param $title
+	 * @param string $title Button title
 	 * @return string HTML for connect button.
 	 * @throws \Bitrix\Main\LoaderException
+	 * @throws \Bitrix\Main\ArgumentNullException
 	 */
 	public static function getOptionButtonHtml($title)
 	{
@@ -199,7 +201,7 @@ class Connection
 				}
 				else
 				{
-					$onclick = 'alert(\''.Loc::getMessage('B24C_CONN_CONNECT_ERROR').'\');';
+					$onclick = 'alert(\''.\CUtil::JSEscape(Loc::getMessage('B24C_CONN_CONNECT_ERROR')).'\');';
 				}
 			}
 			else
@@ -230,6 +232,10 @@ class Connection
 		return is_array($result) ? $result : array();
 	}
 
+	/**
+	 * @return string Domain.
+	 * @throws \Bitrix\Main\LoaderException
+	 */
 	public static function getDomain()
 	{
 		$fields = self::getFields();

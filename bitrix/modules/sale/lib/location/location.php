@@ -448,12 +448,12 @@ final class LocationTable extends Tree
 			),
 			'SORT' => array(
 				'data_type' => 'integer',
-				'default' => 100,
+				'default_value' => 100,
 				'title' => Loc::getMessage('SALE_LOCATION_LOCATION_ENTITY_SORT_FIELD')
 			),
 			'PARENT_ID' => array(
 				'data_type' => 'integer',
-				'default' => 0,
+				'default_value' => 0,
 				'title' => Loc::getMessage('SALE_LOCATION_LOCATION_ENTITY_PARENT_ID_FIELD')
 			),
 			'TYPE_ID' => array(

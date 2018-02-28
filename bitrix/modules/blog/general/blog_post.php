@@ -653,7 +653,13 @@ class CAllBlogPost
 		$parserBlog = false;
 		$text4mail = $serverName = $AuthorName = "";
 
-		if($arParams["bSoNet"] || ($arBlog["EMAIL_NOTIFY"]=="Y" && $arParams["user_id"] != $arBlog["OWNER_ID"]))
+		if (
+			$arParams["bSoNet"]
+			|| (
+				$arBlog["EMAIL_NOTIFY"] == "Y"
+				&& $arParams["user_id"] != $arBlog["OWNER_ID"]
+			)
+		)
 		{
 			$BlogUser = CBlogUser::GetByID($arParams["user_id"], BLOG_BY_USER_ID);
 			$BlogUser = CBlogTools::htmlspecialcharsExArray($BlogUser);
@@ -679,7 +685,12 @@ class CAllBlogPost
 			$serverName = ((defined("SITE_SERVER_NAME") && strlen(SITE_SERVER_NAME) > 0) ? SITE_SERVER_NAME : COption::GetOptionString("main", "server_name", ""));
 		}
 
-		if (!$arParams["bSoNet"] && $arBlog["EMAIL_NOTIFY"]=="Y" && $arParams["user_id"] != $arBlog["OWNER_ID"] && IntVal($arBlog["OWNER_ID"]) > 0) // Send notification to email
+		if (
+			!$arParams["bSoNet"]
+			&& $arBlog["EMAIL_NOTIFY"] == "Y"
+			&& $arParams["user_id"] != $arBlog["OWNER_ID"]
+			&& IntVal($arBlog["OWNER_ID"]) > 0
+		) // Send notification to email
 		{
 			CEvent::Send(
 				"NEW_BLOG_MESSAGE",
@@ -700,7 +711,8 @@ class CAllBlogPost
 		}
 
 		if(
-			$arParams["bSoNet"] && $arPost["ID"]
+			$arParams["bSoNet"]
+			&& $arPost["ID"]
 			&& CModule::IncludeModule("socialnetwork")
 			&& $parserBlog
 		)
@@ -768,44 +780,54 @@ class CAllBlogPost
 				$arSoFields["USER_ID"] = $arParams["user_id"];
 			}
 
-			$post = \Bitrix\Blog\Item\Post::getById($arPost);
+			$post = \Bitrix\Blog\Item\Post::getById($arPost["ID"]);
 			$arSoFields["TAGS"] = $post->getTags();
 
 			$logID = CSocNetLog::Add($arSoFields, false);
 
 			if (intval($logID) > 0)
 			{
-				$socnetPerms = CBlogPost::GetSocNetPermsCode($arPost["ID"]);
-				if(!in_array("U".$arPost["AUTHOR_ID"], $socnetPerms))
-				{
-					$socnetPerms[] = "U".$arPost["AUTHOR_ID"];
-				}
-				$socnetPerms[] = "SA"; // socnet admin
+				$socnetPerms = \Bitrix\Socialnetwork\ComponentHelper::getBlogPostSocNetPerms(array(
+					'postId' => $arPost["ID"],
+					'authorId' => $arPost["AUTHOR_ID"]
+				));
 
-				if (
-					in_array("AU", $socnetPerms) 
-					|| in_array("G2", $socnetPerms)
-				)
-				{
-					$socnetPermsAdd = array();
+				\Bitrix\Main\FinderDestTable::merge(array(
+					"CONTEXT" => "blog_post",
+					"CODE" => \Bitrix\Main\FinderDestTable::convertRights($socnetPerms, array("U".$arPost["AUTHOR_ID"]))
+				));
 
-					foreach($socnetPerms as $perm_tmp)
+				$postFields = $post->getFields();
+				$inlineAttachedObjectsIdList = array();
+
+				if (preg_match_all('/\[DISK\s+FILE\s+ID\s*=\s*([n]*\d+)\s*\]/is'.BX_UTF_PCRE_MODIFIER, $postFields['DETAIL_TEXT'], $matches))
+				{
+					if (!empty($matches[1]))
 					{
-						if (preg_match('/^SG(\d+)$/', $perm_tmp, $matches))
+						$inlineFileList = $matches[1];
+
+						foreach($inlineFileList as $key => $value)
 						{
 							if (
-								!in_array("SG".$matches[1]."_".SONET_ROLES_USER, $socnetPerms)
-								&& !in_array("SG".$matches[1]."_".SONET_ROLES_MODERATOR, $socnetPerms)
-								&& !in_array("SG".$matches[1]."_".SONET_ROLES_OWNER, $socnetPerms)
+								preg_match('/^n(\d+)/is'.BX_UTF_PCRE_MODIFIER, $value, $matches)
+								&& !empty($matches[1])
+								&& intval($matches[1]) > 0
 							)
 							{
-								$socnetPermsAdd[] = "SG".$matches[1]."_".SONET_ROLES_USER;
+								$res = \Bitrix\Disk\AttachedObject::getList(array(
+									'filter' => array(
+										'=ENTITY_TYPE' => \Bitrix\Disk\Uf\BlogPostConnector::className(),
+										'ENTITY_ID' => $postFields['ID'],
+										'OBJECT_ID' => intval($matches[1])
+									),
+									'select' => array('ID')
+								));
+								foreach ($res as $attachedObjectFields)
+								{
+									$inlineAttachedObjectsIdList[] = $attachedObjectFields['ID'];
+								}
 							}
 						}
-					}
-					if (count($socnetPermsAdd) > 0)
-					{
-						$socnetPerms = array_merge($socnetPerms, $socnetPermsAdd);
 					}
 				}
 
@@ -817,6 +839,18 @@ class CAllBlogPost
 					));
 				}
 
+				$hasVideoTransforming = (
+					!empty($inlineAttachedObjectsIdList)
+					&& Bitrix\Blog\Integration\Disk\Transformation::getStatus(array(
+						'attachedIdList' => $inlineAttachedObjectsIdList
+					))
+				);
+
+				if ($hasVideoTransforming)
+				{
+					$socnetPerms = array("SA", "U".$arPost["AUTHOR_ID"]);
+				}
+
 				CSocNetLogRights::DeleteByLogID($logID);
 				CSocNetLogRights::Add($logID, $socnetPerms);
 
@@ -825,53 +859,21 @@ class CAllBlogPost
 					CCrmLiveFeedComponent::processCrmBlogPostRights($logID, $arSoFields, $arPost, 'new');
 				}
 
-				\Bitrix\Main\FinderDestTable::merge(array(
-					"CONTEXT" => "blog_post",
-					"CODE" => \Bitrix\Main\FinderDestTable::convertRights($socnetPerms, array("U".$arPost["AUTHOR_ID"]))
-				));
-
-				$arUsrId = array();
-				$bForAll = (in_array("AU", $socnetPerms) || in_array("G2", $socnetPerms));
-				if (!$bForAll)
-				{
-					foreach($socnetPerms as $code)
-					{
-
-						if (preg_match('/^U(\d+)$/', $code, $matches))
-						{
-							$arUsrId[] = $matches[1];
-						}
-						elseif (!in_array($code, array("SA")))
-						{
-							$arUsrId = array();
-							break;
-						}
-					}
-				}
-
-				CSocNetLog::CounterIncrement(array(
-					"ENTITY_ID" => $logID,
-					"EVENT_ID" => $arSoFields["EVENT_ID"],
-					"TYPE" => "L",
-					"FOR_ALL_ACCESS" =>  $bForAll,
-					"USERS_TO_PUSH" => (
-						$bForAll
-						|| empty($arUsrId)
-						|| count($arUsrId) > 20
-							? array()
-							: $arUsrId
-					),
-					"SEND_TO_AUTHOR" => (
+				Bitrix\Blog\Integration\Socialnetwork\CounterPost::increment(array(
+					'socnetPerms' => $socnetPerms,
+					'logId' => $logID,
+					'logEventId' => $arSoFields["EVENT_ID"],
+					'sendToAuthor' => (
 						!empty($arParams["SEND_COUNTER_TO_AUTHOR"])
 						&& $arParams["SEND_COUNTER_TO_AUTHOR"] == "Y"
-							? "Y"
-							: "N"
 					)
 				));
 
 				return $logID;
 			}
 		}
+
+		return false;
 	}
 
 	public static function UpdateLog($postID, $arPost, $arBlog, $arParams)
@@ -1159,7 +1161,7 @@ class CAllBlogPost
 			}
 		}
 
-		BXClearCache(true, "/blog/getsocnetperms/".$ID."/");
+		BXClearCache(true, "/blog/getsocnetperms/".$ID);
 		if(defined("BX_COMP_MANAGED_CACHE"))
 		{
 			$CACHE_MANAGER->ClearByTag("blog_post_getsocnetperms_".$ID);

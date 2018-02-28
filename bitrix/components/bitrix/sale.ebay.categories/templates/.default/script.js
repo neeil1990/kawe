@@ -14,6 +14,8 @@
 		variationsBlockId: "",
 		ebayVarSelectName: "",
 		bitrixPropsSelectName: "",
+		bitrixCategoryId: 0,
+		iBlockId: 0,
 		siteId: "",
 
 		init: function(params)
@@ -24,6 +26,8 @@
 			BX.Sale.EbayCategories.ebayVarSelectName = params.ebayVarSelectName;
 			BX.Sale.EbayCategories.bitrixPropsSelectName = params.bitrixPropsSelectName;
 			BX.Sale.EbayCategories.siteId = params.siteId;
+			BX.Sale.EbayCategories.bitrixCategoryId = params.bitrixCategoryId;
+			BX.Sale.EbayCategories.iBlockId = params.iBlockId;
 		},
 
 		addEvent: function(elem, type, handler)
@@ -369,7 +373,7 @@
 		createChildCategorySelect: function(categoryChildren, level)
 		{
 			var	newId = "sale_ebay_category_"+level;
-			var childSelectNode = BX.create('SELECT', {props: {id: newId, name: newId}, attrs: {'onchange': "BX.Sale.EbayCategories.getCategoryChildren(this, "+level+");"}}),
+			var childSelectNode = BX.create('SELECT', {props: {id: newId, name: newId}, attrs: {'onchange': "BX.Sale.EbayCategories.onCategoryChange(this, "+level+");"}}),
 				oOption = BX.create('OPTION');
 
 			childSelectNode.appendChild(oOption);
@@ -383,6 +387,65 @@
 			}
 
 			return childSelectNode;
+		},
+
+		onCategoryChange: function(ebayCategorySelect, level)
+		{
+			var ebayCategoryId = ebayCategorySelect.value,
+				categoryInput = BX("SALE_EBAY_CATEGORY_ID");
+
+			categoryInput.value = ebayCategoryId;
+
+			if(!ebayCategoryId && level == 1)
+			{
+				BX.Sale.EbayCategories.hideVariations();
+				BX.Sale.EbayCategories.deleteCategoryMap();
+			}
+			else
+			{
+				BX.Sale.EbayCategories.getCategoryChildren(ebayCategorySelect, level);
+			}
+		},
+
+		deleteCategoryMap: function()
+		{
+			if(!BX.Sale.EbayCategories.bitrixCategoryId)
+				return;
+
+			var data = {
+				'bitrixCategoryId': BX.Sale.EbayCategories.bitrixCategoryId,
+				'iBlockId': BX.Sale.EbayCategories.iBlockId,
+				'action': 'delete_category_map',
+				'sessid': BX.bitrix_sessid()
+			};
+
+			BX.showWait();
+
+			BX.ajax({
+				data: data,
+				method: 'POST',
+				dataType: 'json',
+				url: BX.Sale.EbayCategories.ajaxUrl,
+				onsuccess: function(result)
+				{
+					if(result)
+					{
+						if(!result.ERROR)
+						{
+							window.location.reload(true);
+						}
+						else
+						{
+							BX.debug(result.ERROR);
+						}
+					}
+					else
+					{
+						BX.debug("Error: deleteCategoryMap");
+					}
+				},
+				onfailure: function() { BX.debug('onfailure: deleteCategoryMap'); }
+			});
 		},
 
 		getCategoryChildren: function(ebayCategorySelect, level)

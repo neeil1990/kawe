@@ -147,6 +147,48 @@ abstract class Application
 	abstract public function start();
 
 	/**
+	 * Runs controller and its action and sends response to the output.
+	 *
+	 * It's a stub method and we can't mark it as abstract because there is compatibility.
+	 * @return void
+	 */
+	public function run()
+	{}
+
+	/**
+	 * Ends work of application.
+	 * Sends response and then terminates execution.
+	 * If there is no $response the method will use Context::$response.
+	 *
+	 * @param int $status
+	 * @param Response|null $response
+	 *
+	 * @return void
+	 * @throws SystemException
+	 */
+	public function end($status = 0, Response $response = null)
+	{
+		$response = $response?: $this->context->getResponse();
+		$response->send();
+
+		$this->terminate($status);
+	}
+
+	/**
+	 * Terminates application by invoking exit().
+	 * It's the right way to finish application @see \CMain::finalActions().
+	 *
+	 * @param int $status
+	 * @return void
+	 */
+	public function terminate($status = 0)
+	{
+		/** @noinspection PhpUndefinedClassInspection */
+		\CMain::finalActions();
+		exit($status);
+	}
+
+	/**
 	 * Exception handler can be initialized through the Config\Configuration (.settings.php file).
 	 *
 	 * 'exception_handling' => array(

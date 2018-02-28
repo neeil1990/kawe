@@ -101,6 +101,8 @@ class CatalogProvider
 			$this->enableCache = false;
 		}
 
+		$outputVariable = static::getOutputVariable($options);
+
 		$productIndex = array();
 		$productGetIdList = array();
 		$correctProductIds = array();
@@ -163,6 +165,10 @@ class CatalogProvider
 			}
 
 			$products = static::removeNotExistsItemFromProducts($products, $correctProductIds);
+			if (empty($products))
+			{
+				return static::getResultProvider($result, $outputVariable);
+			}
 		}
 
 		$iblockList = array();
@@ -200,6 +206,10 @@ class CatalogProvider
 		$correctProductList = static::checkSkuPermission($iblockProductMap);
 
 		$products = static::removeNotExistsItemFromProducts($products, $correctProductList);
+		if (empty($products))
+		{
+			return static::getResultProvider($result, $outputVariable);
+		}
 
 		$products = static::changeSubscribeProductQuantity($products, $iblockProductMap);
 
@@ -230,6 +240,11 @@ class CatalogProvider
 		$catalogProductDataList = static::getCatalogProducts(array_keys($products), $catalogSelect);
 
 		$products = static::removeNotExistsItemFromProducts($products, array_keys($catalogProductDataList));
+
+		if (empty($products))
+		{
+			return static::getResultProvider($result, $outputVariable);
+		}
 
 		$checkQuantityList = array();
 		foreach ($catalogProductDataList as $catalogProductId => $catalogProductData)
@@ -472,18 +487,26 @@ class CatalogProvider
 		$resultList = static::createProductResult($products, $resultData, $priceResultList, $productQuantityList);
 
 		$resultList = $resultList + $resultProductList;
+		return static::getResultProvider($result, $outputVariable, $resultList);
+	}
+
+
+	private static function getOutputVariable(array $options = array())
+	{
 		$outputVariable = static::RESULT_PRODUCT_LIST;
 		if (is_array($options) && in_array('CATALOG_DATA', $options))
 		{
 			$outputVariable = static::RESULT_CATALOG_LIST;
 		}
 
-		$providerName = $this->getProviderName();
+		return $outputVariable;
+	}
+
+	private static function getResultProvider(Sale\Result $result, $outputVariable, array $resultList = array())
+	{
 		$result->setData(
 			array(
-				$outputVariable => array(
-					$providerName => $resultList
-				)
+				$outputVariable => $resultList
 			)
 		);
 
@@ -606,7 +629,7 @@ class CatalogProvider
 			$resultData = $r->getData();
 			if (!empty($resultData[static::RESULT_PRODUCT_LIST]))
 			{
-				$resultDataList = reset($resultData[static::RESULT_PRODUCT_LIST]);
+				$resultDataList = $resultData[static::RESULT_PRODUCT_LIST];
 				foreach ($resultDataList as $itemCode => $itemData)
 				{
 					$item = $bundleChildList[$itemCode];
@@ -1027,8 +1050,6 @@ class CatalogProvider
 			}
 		}
 
-
-
 		return $result;
 	}
 
@@ -1045,30 +1066,91 @@ class CatalogProvider
 		$resultList = array();
 
 		$productOrderList = static::createOrderListFromProducts($products);
+
+		$deliverProductList = array();
 		foreach ($products as $productId => $productData)
 		{
-			if (empty($productOrderList[$productId]))
+			$userId = null;
+			$orderPaid = null;
+			$orderId = null;
+
+			if (isset($productData['USER_ID']))
 			{
-				continue;
+				$userId = $productData['USER_ID'];
 			}
+
+			if (isset($productData['ORDER_ID']))
+			{
+				$orderId = $productData['ORDER_ID'];
+			}
+
+			if (isset($productData['PAID']))
+			{
+				$orderPaid = $productData['PAID'];
+			}
+
 
 			/**
 			 * @var int $orderId
 			 * @var Sale\Order $order
 			 */
-			foreach ($productOrderList[$productId] as $orderId => $order)
+
+			if (isset($productOrderList[$productId]))
 			{
-				if (!isset($resultList[$productId]))
+				foreach ($productOrderList[$productId] as $orderId => $order)
 				{
-					$resultList[$productId] = \CatalogPayOrderCallback(
-						$productId,
-						$order->getUserId(),
-						$order->isPaid()? 'Y' : 'N',
-						$orderId
-					);
+					if (!isset($resultList[$productId]))
+					{
+						$deliverProductList[] = array(
+							'PRODUCT_ID' => $productId,
+							'USER_ID' => $order->getUserId(),
+							'PAID' => $order->isPaid(),
+							'ORDER_ID' => $orderId,
+						);
+					}
 				}
 			}
+			else
+			{
 
+				if (isset($productData['USER_ID']))
+				{
+					$userId = $productData['USER_ID'];
+				}
+
+				if (isset($productData['ORDER_ID']))
+				{
+					$orderId = $productData['ORDER_ID'];
+				}
+
+				if (isset($productData['PAID']))
+				{
+					$orderPaid = $productData['PAID'];
+				}
+
+				$deliverProductList[] = array(
+					'PRODUCT_ID' => $productId,
+					'USER_ID' => $userId,
+					'PAID' => $orderPaid,
+					'ORDER_ID' => $orderId,
+				);
+			}
+
+
+		}
+
+		if (!empty($deliverProductList))
+		{
+			foreach ($deliverProductList as $productData)
+			{
+				$productId = $productData['PRODUCT_ID'];
+				$resultList[$productId] = \CatalogPayOrderCallback(
+					$productId,
+					$productData['USER_ID'],
+					$productData['PAID'],
+					$productData['ORDER_ID']
+				);
+			}
 		}
 
 		if (!empty($resultList))
@@ -1260,7 +1342,7 @@ class CatalogProvider
 			$r = static::shipProduct($productData, $productStoreData);
 			if (!$r->isSuccess())
 			{
-				$result->addErrors($r->getErrors());
+				$result->addWarnings($r->getErrors());
 			}
 
 			$resultList[$productId] = $r->isSuccess();
@@ -1806,7 +1888,7 @@ class CatalogProvider
 			{
 				$productId = $productStoreData['PRODUCT_ID'];
 				$checkProductQuantity = abs($productQuantity);
-				
+
 				if ($isNeedShip && $productStoreData['AMOUNT'] < $checkProductQuantity && isset($needQuantityList[$storeId]))
 				{
 					$result->addError(
@@ -2312,6 +2394,8 @@ class CatalogProvider
 
 		$catalogData = $productData['CATALOG'];
 
+		$isQuantityTrace = ($catalogData["CAN_BUY_ZERO"] != 'Y'  && $catalogData["QUANTITY_TRACE"] == 'Y');
+
 		$productQuantity = 0;
 		if (array_key_exists('QUANTITY', $productData))
 		{
@@ -2338,46 +2422,78 @@ class CatalogProvider
 			}
 		}
 
+		$isUpdated = true;
+
 		$fields = array(
-			'QUANTITY' => $catalogQuantity - $productQuantity
+			'QUANTITY' => $catalogQuantity
 		);
 
-		$isUpdated = \CCatalogProduct::Update($productData['PRODUCT_ID'], $fields);
+		if ($isQuantityTrace)
+		{
+			$fields['QUANTITY'] -= $productQuantity;
+			$isUpdated = \CCatalogProduct::Update($productData['PRODUCT_ID'], $fields);
+		}
 
 		if ($isUpdated)
 		{
-			$result->setData(
-				array(
-					'QUANTITY' => $fields['QUANTITY'],
-				)
-			);
+			$result->setData($fields);
 		}
 
 		return $result;
 	}
 
-
 	/**
-	 * Check exist and activity parent product.
+	 * Checks offers parent products existence and activity.
 	 *
-	 * @param int $productId			Product Id.
-	 * @param int $iblockId				Iblock Id.
-	 * @return bool
+	 * @param     $productIds
+	 * @param int $iblockId
+	 *
+	 * @return array
 	 */
-	private static function checkParentActivity($productId, $iblockId = 0)
+	private static function checkParentActivity($productIds, $iblockId = 0)
 	{
-		$cacheKey = $productId.'|'.$iblockId;
-		if (!static::isExistsHitCache(self::CACHE_PARENT_PRODUCT_ACTIVE, $cacheKey))
+		$resultList = array();
+
+		$productIdsToLoad = array();
+
+		foreach ($productIds as $productId)
 		{
-			$result = 'Y';
-			$parent = \CCatalogSku::GetProductInfo($productId, $iblockId);
-			if (!empty($parent))
+			$cacheKey = $productId.'|'.$iblockId;
+
+			if (static::isExistsHitCache(self::CACHE_PARENT_PRODUCT_ACTIVE, $cacheKey))
 			{
+				if (static::getHitCache(self::CACHE_PARENT_PRODUCT_ACTIVE, $cacheKey) === 'Y')
+				{
+					$resultList[] = $productId;
+				}
+			}
+			else
+			{
+				$productIdsToLoad[] = $productId;
+			}
+		}
+
+		if (!empty($productIdsToLoad))
+		{
+			$productToOfferMap = array();
+			$parentIds = array();
+
+			$cacheResult = array_fill_keys($productIdsToLoad, 'N');
+
+			$productList = \CCatalogSku::getProductList($productIdsToLoad);
+			if (!empty($productList))
+			{
+				foreach ($productList as $offerId => $productInfo)
+				{
+					$productToOfferMap[$productInfo['ID']][] = $offerId;
+					$parentIds[] = $productInfo['ID'];
+				}
+
 				$itemList = \CIBlockElement::GetList(
 					array(),
 					array(
-						'ID' => $parent['ID'],
-						'IBLOCK_ID' => $parent['IBLOCK_ID'],
+						'ID' => array_unique($parentIds),
+						'IBLOCK_ID' => $iblockId,
 						'ACTIVE' => 'Y',
 						'ACTIVE_DATE' => 'Y',
 						'CHECK_PERMISSIONS' => 'N'
@@ -2386,15 +2502,26 @@ class CatalogProvider
 					false,
 					array('ID')
 				);
-				$item = $itemList->Fetch();
-				unset($itemList);
-				if (empty($item))
-					$result = 'N';
+				while ($item = $itemList->Fetch())
+				{
+					if (!empty($productToOfferMap[$item['ID']]))
+					{
+						foreach ($productToOfferMap[$item['ID']] as $productId)
+						{
+							$cacheResult[$productId] = 'Y';
+							$resultList[] = $productId;
+						}
+					}
+				}
 			}
-			static::setHitCache(self::CACHE_PARENT_PRODUCT_ACTIVE, $cacheKey, $result);
-			unset($result);
+
+			foreach ($cacheResult as $productId => $value)
+			{
+				static::setHitCache(self::CACHE_PARENT_PRODUCT_ACTIVE, $productId.'|'.$iblockId, $value);
+			}
 		}
-		return (static::getHitCache(self::CACHE_PARENT_PRODUCT_ACTIVE, $cacheKey) != 'N');
+
+		return $resultList;
 	}
 
 	/**
@@ -2502,13 +2629,10 @@ class CatalogProvider
 	public function isNeedShip(array $products)
 	{
 		$result = new Sale\Result();
-		$providerName = $this->getProviderName();
 
 		$result->setData(
 			array(
-				'IS_NEED_SHIP' => array(
-					$providerName => static::isReservationEnabled()
-				)
+				'IS_NEED_SHIP' => static::isReservationEnabled()
 			)
 		);
 		return $result;
@@ -2698,7 +2822,6 @@ class CatalogProvider
 			return $r;
 		}
 
-		$providerName = $this->getProviderName();
 
 		foreach ($products as $productId => $productData)
 		{
@@ -2741,9 +2864,9 @@ class CatalogProvider
 
 				$availableQuantity = 0;
 
-				if (isset($availableQuantityList[$providerName][$productId]))
+				if (isset($availableQuantityList[$productId]))
 				{
-					$availableQuantity = $availableQuantityList[$providerName][$productId];
+					$availableQuantity = $availableQuantityList[$productId];
 				}
 
 				$availableQuantity += floatval($catalogData['QUANTITY_RESERVED']);
@@ -2794,7 +2917,7 @@ class CatalogProvider
 			$data = $r->getData();
 			if (!empty($data[static::RESULT_CATALOG_LIST]))
 			{
-				$productDataList = reset($data[static::RESULT_CATALOG_LIST]);
+				$productDataList = $data[static::RESULT_CATALOG_LIST];
 			}
 		}
 
@@ -3876,12 +3999,6 @@ class CatalogProvider
 			$catalogAvailableQuantity = QuantityControl::getAvailableQuantity($productId);
 			$catalogQuantity = QuantityControl::getQuantity($productId);
 
-
-			if ($catalogQuantity === null)
-			{
-				continue;
-			}
-
 			$productQuantity = 0;
 			if (array_key_exists('QUANTITY', $productData))
 			{
@@ -3893,6 +4010,11 @@ class CatalogProvider
 				{
 					$productQuantity += $quantity;
 				}
+			}
+
+			if ($catalogQuantity === null || ($catalogAvailableQuantity === null || $catalogAvailableQuantity < $productQuantity))
+			{
+				continue;
 			}
 
 			$isGotQuantityDataList[$productId] = true;
@@ -3975,13 +4097,9 @@ class CatalogProvider
 
 		if (!empty($resultList))
 		{
-			$providerName = $this->getProviderName();
-
 			$result->setData(
 				array(
-					'AVAILABLE_QUANTITY_LIST' => array(
-						$providerName => $resultList
-					)
+					'AVAILABLE_QUANTITY_LIST' => $resultList
 				)
 			);
 		}
@@ -4008,8 +4126,6 @@ class CatalogProvider
 			$items = $this->createProductsListWithCatalogData($products);
 		}
 
-		$providerName = $this->getProviderName();
-
 		$priceDataList = array();
 
 		foreach ($items as $productId => $productData)
@@ -4029,20 +4145,17 @@ class CatalogProvider
 		{
 			$availableQuantityList = $availableQuantityListResult->getData();
 
-			if ($availableQuantityList['AVAILABLE_QUANTITY_LIST'][$providerName])
+			if (isset($availableQuantityList['AVAILABLE_QUANTITY_LIST']))
 			{
-				$availableQuantityData = $availableQuantityList['AVAILABLE_QUANTITY_LIST'][$providerName];
+				$availableQuantityData = $availableQuantityList['AVAILABLE_QUANTITY_LIST'];
 			}
 		}
 
 		$result->setData(
 			array(
 				'PRODUCT_DATA_LIST' => array(
-					$providerName => array(
-						'PRICE_LIST' => $priceDataList,
-						'AVAILABLE_QUANTITY_LIST' => $availableQuantityData
-					)
-
+					'PRICE_LIST' => $priceDataList,
+					'AVAILABLE_QUANTITY_LIST' => $availableQuantityData
 				)
 			)
 		);
@@ -4147,17 +4260,15 @@ class CatalogProvider
 	private function checkSkuPermission(array $iblockProductMap)
 	{
 		$resultList = array();
+
 		foreach ($iblockProductMap as $iblockId => $iblockData)
 		{
 			if ($iblockData['PRODUCT_IBLOCK_ID'] > 0 && !empty($iblockData['PRODUCT_LIST']))
 			{
-				foreach ($iblockData['PRODUCT_LIST'] as $productId)
-				{
-					if (static::checkParentActivity($productId, $iblockId))
-					{
-						$resultList[] = $productId;
-					}
-				}
+				$resultList = array_merge(
+					$resultList,
+					static::checkParentActivity($iblockData['PRODUCT_LIST'], $iblockData['PRODUCT_IBLOCK_ID'])
+				);
 			}
 			else
 			{
@@ -4612,31 +4723,6 @@ class CatalogProvider
 		}
 
 		return $productOrderList;
-	}
-
-	/**
-	 * @param $providerName
-	 *
-	 * @return string
-	 */
-	private function clearProviderName($providerName)
-	{
-		if (substr($providerName, 0, 1) == "\\")
-		{
-			$providerName = substr($providerName, 1);
-		}
-
-		return $providerName;
-	}
-
-	/**
-	 * @return string
-	 */
-	private function getProviderName()
-	{
-		$reflect = new \ReflectionClass($this);
-		$providerName = $reflect->getName();
-		return  $this->clearProviderName($providerName);
 	}
 
 	/**

@@ -229,7 +229,7 @@ if ($USER->IsAuthorized()):
 	if(LANGUAGE_ID == "ru")
 	{
 		CJSCore::Init(array('helper'));
-		$helpUrl = CHTTP::urlAddParams('https://helpdesk.bitrix24.ru/widget/dev/', array(
+		$helpUrl = CHTTP::urlAddParams('https://helpdesk.bitrix24.ru/widget2/dev/', array(
 				"url" => urlencode("https://".$_SERVER["HTTP_HOST"].$APPLICATION->GetCurPageParam()),
 				"user_id" => $USER->GetID(),
 				"is_admin" => $USER->IsAdmin() ? 1 : 0,
@@ -267,11 +267,8 @@ if ($USER->IsAuthorized()):
 			});
 			BX.Helper.init({
 				frameOpenUrl : '<?=$frameOpenUrl?>',
-				frameCloseUrl : '<?=$frameCloseUrl?>',
 				helpBtn : BX('bx_top_panel_button_helper'),
-				topPaddingNode : BX('bx-panel'),
 				langId: '<?=LANGUAGE_ID?>',
-				reloadPath: 'https://helpdesk.bitrix24.ru/widget/dev/',
 				needCheckNotify: 'N',
 				isAdmin: 'Y'
 			});

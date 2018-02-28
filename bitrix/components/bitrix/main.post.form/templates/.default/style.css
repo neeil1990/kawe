@@ -377,8 +377,10 @@
 }
 
 .feed-add-post-form {
+	background-color: #fff;
 	margin-bottom: 12px;
 	position: relative;
+	overflow: hidden;
 	zoom: 1;
 }
 

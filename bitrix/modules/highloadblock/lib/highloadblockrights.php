@@ -69,11 +69,6 @@ class HighloadBlockRightsTable extends Entity\DataManager
 		$operations = array();
 		$uid = $GLOBALS['USER']->getId();//@fixme
 
-		if (!$uid)
-		{
-			return $operations;
-		}
-
 		$res = \Bitrix\HighloadBlock\HighloadBlockRightsTable::getList(array(
 				'select' => array(
 					'HL_ID',

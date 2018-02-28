@@ -9,7 +9,7 @@
 namespace Bitrix\Main\Mail;
 
 use Bitrix\Main\Application;
-use Bitrix\Main\Context;
+use Bitrix\Main\Context as MainContext;
 use Bitrix\Main\EventResult;
 use Bitrix\Main\Security\Sign\BadSignatureException;
 use Bitrix\Main\Security\Sign\Signer;
@@ -314,7 +314,7 @@ class Tracking
 	 */
 	public static function clickFromRequest()
 	{
-		$request = Context::getCurrent()->getRequest();
+		$request = MainContext::getCurrent()->getRequest();
 		$url = $request->get('url');
 		$sign = $request->get('sign');
 		$tag = $request->get('tag');
@@ -346,7 +346,7 @@ class Tracking
 	 */
 	public static function readFromRequest()
 	{
-		$request = Context::getCurrent()->getRequest();
+		$request = MainContext::getCurrent()->getRequest();
 		$tag = $request->get('tag');
 		if (!$tag)
 		{

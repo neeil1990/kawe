@@ -10,8 +10,10 @@ use Bitrix\Main\Localization\Loc;
 /** @var array $arParams */
 /** @var array $arResult */
 
+\Bitrix\Main\UI\Extension::load('ui.buttons');
+\CJSCore::Init();
 ?>
-<div class="main-mail-unsubscribe-box">
+<div id="main-mail-unsubscribe-container" class="main-mail-unsubscribe-box">
 	<div class="main-mail-unsubscribe-main">
 		<?if ($arResult['SITE_NAME']):?>
 			<div class="main-mail-unsubscribe-subtitle">
@@ -71,13 +73,41 @@ use Bitrix\Main\Localization\Loc;
 				<input type="hidden" value="Y" name="MAIN_MAIL_UNSUB_BUTTON">
 				<?=bitrix_sessid_post()?>
 
-				<button class="main-mail-unsubscribe-button">
-					<?=Loc::getMessage('MAIN_MAIL_UNSUBSCRIBE_TEMPL_DEFAULT_BUTTON')?>
-				</button>
+				<?if ($arParams['ABUSE']):?>
+					<div data-role="spam-block" class="main-mail-unsubscribe-spam">
+						<div class="main-mail-unsubscribe-spam-text">
+							<textarea name="ABUSE_TEXT" placeholder="<?=Loc::getMessage('MAIN_MAIL_UNSUBSCRIBE_TEMPL_ABUSE_PLACEHOLDER')?>"></textarea>
+						</div>
+
+						<button name="ABUSE" value="Y" class="ui-btn ui-btn-primary">
+							<?=Loc::getMessage('MAIN_MAIL_UNSUBSCRIBE_TEMPL_SEND')?>
+						</button>
+						<span data-role="unsub-block-btn" class="ui-btn ui-btn-light">
+							<?=Loc::getMessage('MAIN_MAIL_UNSUBSCRIBE_TEMPL_CANCEL')?>
+						</span>
+					</div>
+				<?endif;?>
+
+				<div data-role="unsub-block" class="main-mail-unsubscribe-unsub">
+					<button class="ui-btn ui-btn-primary">
+						<?=Loc::getMessage('MAIN_MAIL_UNSUBSCRIBE_TEMPL_DEFAULT_BUTTON')?>
+					</button>
+
+					<?if ($arParams['ABUSE']):?>
+						<span data-role="spam-block-btn" class="ui-btn ui-btn-light">
+							<?=Loc::getMessage('MAIN_MAIL_UNSUBSCRIBE_TEMPL_SPAM_BUTTON')?>
+						</span>
+					<?endif;?>
+				</div>
 
 				<br><br>
 				<?=htmlspecialcharsbx($arResult['WARNING'])?>
 			<?endif;?>
 		</form>
 	</div>
+	<script type="text/javascript">
+		BX.ready(function () {
+			BX.Main.Mail.Unsubscriber.init({'containerId': 'main-mail-unsubscribe-container'});
+		})
+	</script>
 </div>

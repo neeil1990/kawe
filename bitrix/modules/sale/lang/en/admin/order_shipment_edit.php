@@ -34,4 +34,10 @@ $MESS["SOPE_SHIPMENT_TRANSITION"] = "View order";
 $MESS["SOPE_SHIPMENT_TRANSITION_TITLE"] = "View order";
 $MESS["SOPE_SHIPMENT_ERROR_MESSAGE"] = "Error saving the shipment";
 $MESS["SOPE_SHIPMENT_DELETE_MESSAGE"] = "Are you sure you want to delete this shipment?";
+$MESS["SOPE_DELIVERY_REQUEST_SHIPMENT_DELETE"] = "Delete shipment from transportation order";
+$MESS["SOPE_DELIVERY_REQUEST_SHIPMENT_UPDATE"] = "Update shipment in transportation order";
+$MESS["SOPE_DELIVERY_REQUEST_CREATE"] = "Create new transportation order and add shipment to it";
+$MESS["SOPE_DELIVERY_REQUEST_ADD"] = "Add shipment to existing transportation order";
+$MESS["SOPE_DELIVERY_REQUEST"] = "Transportation order";
+$MESS["SOPE_DELIVERY_REQUEST_TITLE"] = "Transportation order actions";
 ?>

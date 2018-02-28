@@ -22,6 +22,7 @@
 			label = {
 				block: 'main-ui-control-field-label',
 				tag: 'span',
+				attrs: {title: data.label},
 				content: data.label
 			};
 

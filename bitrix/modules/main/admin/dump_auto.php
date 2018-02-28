@@ -168,15 +168,6 @@ if($_REQUEST['save'])
 				);
 				$strMessage .= '<br>'.GetMessage('DUMP_CHECK_BITRIXCLOUD', array('#LINK#' => '/bitrix/admin/bitrixcloud_backup_job.php?lang='.LANGUAGE_ID));
 			}
-
-			$dump_site_id = array();
-			$res = CSite::GetList($by='sort', $order='asc', array('ACTIVE'=>'Y'));
-			while($f = $res->Fetch())
-			{
-				$root = rtrim($f['ABS_DOC_ROOT'],'/');
-				if (is_dir($root))
-					$dump_site_id[] = $f['ID'];
-			}
 		}
 		elseif ($_REQUEST['dump_auto_green_button'])
 			$strError = GetMessage('DUMP_WARN_NO_BITRIXCLOUD');
@@ -380,6 +371,13 @@ function BigGreenButton()
 	{
 		document.fd1.dump_auto_time.value = '<?=sprintf('%02d:%d0', rand(0,5), rand(0,3))?>';
 		document.fd1.dump_auto_interval.value = 7;
+	}
+
+	var i = 0;
+	while(ob = BX('dump_site_id' + i))
+	{
+		ob.checked = true;
+		i++;
 	}
 	document.fd1.dump_auto_green_button.value = 1;
 	SaveSettings();

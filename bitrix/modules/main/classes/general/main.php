@@ -3326,8 +3326,6 @@ abstract class CAllMain
 
 	public function CaptchaGetCode()
 	{
-		include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/captcha.php");
-
 		$cpt = new CCaptcha();
 		$cpt->SetCode();
 
@@ -3336,8 +3334,6 @@ abstract class CAllMain
 
 	public function CaptchaCheckCode($captcha_word, $captcha_sid)
 	{
-		include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/captcha.php");
-
 		$cpt = new CCaptcha();
 		if ($cpt->CheckCode($captcha_word, $captcha_sid))
 			return True;

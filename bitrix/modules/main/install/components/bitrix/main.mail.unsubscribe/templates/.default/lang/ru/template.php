@@ -5,4 +5,8 @@ $MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_DEFAULT_EMPTY'] = "Вы не подписан
 $MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_DEFAULT_BUTTON'] = "Отписаться";
 $MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_DEFAULT_DISCLAIMER'] = "Если Вы больше не хотите получать от нас письма, Вы можете отписаться от рассылки.";
 $MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_DEFAULT_TITLE'] = "Отписка от рассылки";
+$MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_SEND'] = "Отправить";
+$MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_SPAM_BUTTON'] = "пожаловаться на спам";
+$MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_CANCEL'] = "Отменить";
+$MESS['MAIN_MAIL_UNSUBSCRIBE_TEMPL_ABUSE_PLACEHOLDER'] = "Вы можете здесь сообщить подробности..";
 ?>

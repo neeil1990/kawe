@@ -992,7 +992,7 @@ class CCatalogProductProvider implements IBXSaleProductProvider
 			return $arRes;
 		}
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$arParams["QUANTITY"] = doubleval($arParams["QUANTITY"]);
 
@@ -1011,7 +1011,7 @@ class CCatalogProductProvider implements IBXSaleProductProvider
 			$arParams["STORE_DATA"] = array($arParams["STORE_DATA"]);
 
 		$basketItem = null;
-		if (isset($arParams["BASKET_ITEM"]) && $isOrderConverted == "Y")
+		if (isset($arParams["BASKET_ITEM"]) && $isOrderConverted != 'N')
 		{
 			if ($arParams["BASKET_ITEM"] instanceof \Bitrix\Sale\BasketItem)
 			{
@@ -1048,7 +1048,7 @@ class CCatalogProductProvider implements IBXSaleProductProvider
 					if ($strUseStoreControl == "Y")
 					{
 
-						if ($isOrderConverted == "Y" && empty($arParams["STORE_DATA"]) && $basketItem)
+						if ($isOrderConverted != 'N' && empty($arParams["STORE_DATA"]) && $basketItem)
 						{
 							if (static::canProductAutoShip($basketItem))
 							{
@@ -1058,7 +1058,7 @@ class CCatalogProductProvider implements IBXSaleProductProvider
 
 
 						$barcodeMulti = false;
-						if ($isOrderConverted == "Y")
+						if ($isOrderConverted != 'N')
 						{
 							$barcodeMulti = $basketItem->isBarcodeMulti();
 						}
@@ -1378,7 +1378,7 @@ class CCatalogProductProvider implements IBXSaleProductProvider
 				{
 					if ($strUseStoreControl == "Y")
 					{
-						if ($isOrderConverted == "Y" && empty($arParams["STORE_DATA"]) && $basketItem)
+						if ($isOrderConverted != 'N' && empty($arParams["STORE_DATA"]) && $basketItem)
 						{
 							if (static::canProductAutoShip($basketItem))
 							{
@@ -1420,7 +1420,7 @@ class CCatalogProductProvider implements IBXSaleProductProvider
 										$totalAddedAmount += $arRecord["QUANTITY"];
 
 										$barcodeMulti = false;
-										if ($isOrderConverted == "Y")
+										if ($isOrderConverted != 'N')
 										{
 											$barcodeMulti = $basketItem->isBarcodeMulti();
 										}

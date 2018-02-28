@@ -4,30 +4,69 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED!==true) die();
 use Bitrix\Main\Loader;
 use Bitrix\Catalog;
 use Bitrix\Iblock;
+use Bitrix\Main\Web\Json;
+
+CBitrixComponent::includeComponentClass($componentName);
+
+$arTemplateParameters['COLUMNS_LIST_MOBILE'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_COLUMNS_LIST_MOBILE'),
+	'TYPE' => 'LIST',
+	'COLS' => 25,
+	'SIZE' => 7,
+	'MULTIPLE' => 'Y',
+);
 
 $themes = array();
-if (\Bitrix\Main\ModuleManager::isModuleInstalled('bitrix.eshop'))
-	$themes['site'] = GetMessage('CP_SBB_TPL_THEME_SITE');
 
-$themesList = array(
+if ($eshop = \Bitrix\Main\ModuleManager::isModuleInstalled('bitrix.eshop'))
+{
+	$themes['site'] = GetMessage('CP_SBB_TPL_THEME_SITE');
+}
+
+$themeList = array(
 	'blue' => GetMessage('CP_SBB_TPL_THEME_BLUE'),
 	'green' => GetMessage('CP_SBB_TPL_THEME_GREEN'),
 	'red' => GetMessage('CP_SBB_TPL_THEME_RED'),
-	'wood' => GetMessage('CP_SBB_TPL_THEME_WOOD'),
-	'yellow' => GetMessage('CP_SBB_TPL_THEME_YELLOW'),
-	'black' => GetMessage('CP_SBB_TPL_THEME_BLACK')
+	'yellow' => GetMessage('CP_SBB_TPL_THEME_YELLOW')
 );
-$dir = trim(preg_replace("'[\\\\/]+'", "/", dirname(__FILE__)."/themes/"));
+
+$dir = $_SERVER["DOCUMENT_ROOT"]."/bitrix/css/main/themes/";
 if (is_dir($dir))
 {
-	foreach ($themesList as $themeID => $themeName)
+	foreach ($themeList as $themeId => $themeName)
 	{
-		if (!is_file($dir.$themeID.'/style.css'))
+		if (!is_file($dir.$themeId.'/style.css'))
 			continue;
-		$themes[$themeID] = $themeName;
+
+		$themes[$themeId] = $themeName;
 	}
 }
 
+$arTemplateParameters['DEFERRED_REFRESH'] = array(
+	'PARENT' => 'BASE',
+	'NAME' => GetMessage('CP_SBB_TPL_DEFERRED_REFRESH'),
+	'TYPE' => 'CHECKBOX',
+	'DEFAULT' => 'N'
+);
+$arTemplateParameters['USE_DYNAMIC_SCROLL'] = array(
+	'PARENT' => 'BASE',
+	'NAME' => GetMessage('CP_SBB_TPL_USE_DYNAMIC_SCROLL'),
+	'TYPE' => 'CHECKBOX',
+	'DEFAULT' => 'Y'
+);
+$arTemplateParameters['SHOW_FILTER'] = array(
+	'PARENT' => 'BASE',
+	'NAME' => GetMessage('CP_SBB_TPL_SHOW_FILTER'),
+	'TYPE' => 'CHECKBOX',
+	'DEFAULT' => 'Y'
+);
+$arTemplateParameters['SHOW_RESTORE'] = array(
+	'PARENT' => 'BASE',
+	'NAME' => GetMessage('CP_SBB_TPL_SHOW_RESTORE'),
+	'TYPE' => 'CHECKBOX',
+	'DEFAULT' => 'Y'
+);
 $arTemplateParameters['TEMPLATE_THEME'] = array(
 	'PARENT' => 'VISUAL',
 	'NAME' => GetMessage('CP_SBB_TPL_TEMPLATE_THEME'),
@@ -36,6 +75,125 @@ $arTemplateParameters['TEMPLATE_THEME'] = array(
 	'DEFAULT' => 'blue',
 	'ADDITIONAL_VALUES' => 'Y'
 );
+$arTemplateParameters['TOTAL_BLOCK_DISPLAY'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_TOTAL_BLOCK_DISPLAY'),
+	'TYPE' => 'LIST',
+	'VALUES' => array(
+		'top' => GetMessage('CP_SBB_TPL_TOTAL_BLOCK_DISPLAY_TOP'),
+		'bottom' => GetMessage('CP_SBB_TPL_TOTAL_BLOCK_DISPLAY_BOTTOM')
+	),
+	'DEFAULT' => array('top'),
+	'MULTIPLE' => 'Y'
+);
+$arTemplateParameters['DISPLAY_MODE'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_DISPLAY_MODE'),
+	'TYPE' => 'LIST',
+	'VALUES' => array(
+		'extended' => GetMessage('CP_SBB_TPL_DISPLAY_MODE_EXTENDED'),
+		'compact' => GetMessage('CP_SBB_TPL_DISPLAY_MODE_COMPACT')
+	),
+	'DEFAULT' => 'extended'
+);
+$arTemplateParameters['PRICE_DISPLAY_MODE'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_PRICE_DISPLAY_MODE'),
+	'TYPE' => 'CHECKBOX',
+	'DEFAULT' => 'Y'
+);
+$arTemplateParameters['SHOW_DISCOUNT_PERCENT'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_SHOW_DISCOUNT_PERCENT'),
+	'TYPE' => 'CHECKBOX',
+	'REFRESH' => 'Y',
+	'DEFAULT' => 'Y'
+);
+
+if (!isset($arCurrentValues['SHOW_DISCOUNT_PERCENT']) || $arCurrentValues['SHOW_DISCOUNT_PERCENT'] === 'Y')
+{
+	$arTemplateParameters['DISCOUNT_PERCENT_POSITION'] = array(
+		'PARENT' => 'VISUAL',
+		'NAME' => GetMessage('CP_SBB_TPL_DISCOUNT_PERCENT_POSITION'),
+		'TYPE' => 'CUSTOM',
+		'JS_FILE' => CBitrixBasketComponent::getSettingsScript($componentPath, 'position'),
+		'JS_EVENT' => 'initPositionControl',
+		'JS_DATA' => Json::encode(
+			array(
+				'positions' => array(
+					'top-left', 'top-center', 'top-right',
+					'middle-left', 'middle-center', 'middle-right',
+					'bottom-left', 'bottom-center', 'bottom-right'
+				),
+				'className' => 'bx-pos-parameter-block-circle'
+			)
+		),
+		'DEFAULT' => 'bottom-right'
+	);
+}
+
+$arTemplateParameters['PRODUCT_BLOCKS_ORDER'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_PRODUCT_BLOCKS_ORDER'),
+	'TYPE' => 'CUSTOM',
+	'JS_FILE' => CBitrixBasketComponent::getSettingsScript($componentPath, 'dragdrop_order'),
+	'JS_EVENT' => 'initDraggableOrderControl',
+	'JS_DATA' => Json::encode(array(
+		'props' => GetMessage('CP_SBB_TPL_PRODUCT_BLOCK_PROPERTIES'),
+		'sku' => GetMessage('CP_SBB_TPL_PRODUCT_BLOCK_SKU'),
+		'columns' => GetMessage('CP_SBB_TPL_PRODUCT_BLOCK_COLUMNS')
+	)),
+	'DEFAULT' => 'props,sku,columns'
+);
+$arTemplateParameters['USE_PRICE_ANIMATION'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_USE_PRICE_ANIMATION'),
+	'TYPE' => 'CHECKBOX',
+	'DEFAULT' => 'Y'
+);
+$arTemplateParameters['LABEL_PROP'] = array(
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_SBB_TPL_LABEL_PROP'),
+	'TYPE' => 'LIST',
+	'MULTIPLE' => 'Y',
+	'ADDITIONAL_VALUES' => 'N',
+	'COLS' => 25,
+	'SIZE' => 7,
+	'REFRESH' => 'Y'
+);
+
+if (!empty($arCurrentValues['LABEL_PROP']))
+{
+	$arTemplateParameters['LABEL_PROP_MOBILE'] = array(
+		'PARENT' => 'VISUAL',
+		'NAME' => GetMessage('CP_SBB_TPL_LABEL_PROP_MOBILE'),
+		'TYPE' => 'LIST',
+		'MULTIPLE' => 'Y',
+		'ADDITIONAL_VALUES' => 'N',
+		'COLS' => 25,
+		'SIZE' => 7,
+		'REFRESH' => 'N',
+	);
+
+	$arTemplateParameters['LABEL_PROP_POSITION'] = array(
+		'PARENT' => 'VISUAL',
+		'NAME' => GetMessage('CP_SBB_TPL_LABEL_PROP_POSITION'),
+		'TYPE' => 'CUSTOM',
+		'JS_FILE' => CBitrixBasketComponent::getSettingsScript($componentPath, 'position'),
+		'JS_EVENT' => 'initPositionControl',
+		'JS_DATA' => Json::encode(
+			array(
+				'positions' => array(
+					'top-left', 'top-center', 'top-right',
+					'middle-left', 'middle-center', 'middle-right',
+					'bottom-left', 'bottom-center', 'bottom-right'
+				),
+				'className' => ''
+			)
+		),
+		'DEFAULT' => 'top-left'
+	);
+}
 
 if (\Bitrix\Main\Loader::includeModule('catalog'))
 {
@@ -82,7 +240,7 @@ if (\Bitrix\Main\Loader::includeModule('catalog'))
 			if ($arProp['XML_ID'] == 'CML2_LINK')
 				continue;
 
-			$strPropName = '['.$arProp['ID'].'] '.('' != $arProp['CODE'] ? '['.$arProp['CODE'].']' : '').' '.$arProp['NAME'];
+			$strPropName = '['.$arProp['ID'].'] '.('' != $arProp['CODE'] ? '['.$arProp['CODE'].']' : '').' '.$arProp['~NAME'];
 
 			if ($arProp['PROPERTY_TYPE'] != 'F')
 			{
@@ -94,7 +252,7 @@ if (\Bitrix\Main\Loader::includeModule('catalog'))
 		{
 			$arTemplateParameters['OFFERS_PROPS'] = array(
 				'PARENT' => 'OFFERS_PROPS',
-				'NAME' => GetMessage('SALE_PROPERTIES_RECALCULATE_BASKET'),
+				'NAME' => GetMessage('CP_SBB_TPL_PROPERTIES_RECALCULATE_BASKET'),
 				'TYPE' => 'LIST',
 				'MULTIPLE' => 'Y',
 				'SIZE' => '7',

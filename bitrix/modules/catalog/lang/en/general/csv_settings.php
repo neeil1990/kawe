@@ -28,6 +28,7 @@ $MESS["I_PAY_PERIOD_LENGTH"] = "Payment duration length";
 $MESS["I_PAY_PERIOD_TYPE"] = "Time unit of payment duration";
 $MESS["I_TRIAL_FOR"] = "Trial for (ID)";
 $MESS["I_WITHOUT_ORDER"] = "Prolongation without ordering";
+$MESS["I_VAT_ID"] = "Tax rate ID";
 $MESS["I_VAT_INCLUDED"] = "Tax included";
 $MESS["I_NAME_PRICE"] = "Price";
 $MESS["I_NAME_CURRENCY"] = "Currency";

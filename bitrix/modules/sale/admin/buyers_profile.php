@@ -613,7 +613,7 @@ if(!empty($arUser))
 		$dateFrom = MkDateTime(FmtDate($filter_date_order_from,"D.M.Y"),"d.m.Y");
 
 		if ($dateFrom)
-			$arOrderFilter["DATE_FROM"] = Trim($filter_date_order_from);
+			$arOrderFilter[">=DATE_INSERT"] = Trim($filter_date_order_from);
 	}
 
 	if (strlen($filter_date_order_to) > 0)
@@ -628,7 +628,7 @@ if(!empty($arUser))
 			}
 
 			$filter_date_order_to = date($DB->DateFormatToPHP(CSite::GetDateFormat("FULL", SITE_ID)), mktime($arDate["HH"], $arDate["MI"], $arDate["SS"], $arDate["MM"], $arDate["DD"], $arDate["YYYY"]));
-			$arOrderFilter["DATE_TO"] = $filter_date_order_to;
+			$arOrderFilter["<=DATE_INSERT"] = $filter_date_order_to;
 		}
 		else
 			$filter_date_order_to = "";
@@ -645,7 +645,7 @@ if(!empty($arUser))
 		$dateFrom = MkDateTime(FmtDate($filter_order_date_up_from,"D.M.Y"),"d.m.Y");
 
 		if ($dateFrom)
-			$arOrderFilter["DATE_UPDATE_FROM"] = trim($filter_order_date_up_from);
+			$arOrderFilter[">=DATE_UPDATE"] = trim($filter_order_date_up_from);
 	}
 	if (strlen($filter_order_date_up_to) > 0)
 	{
@@ -659,7 +659,7 @@ if(!empty($arUser))
 			}
 
 			$filter_order_date_up_to = date($DB->DateFormatToPHP(CSite::GetDateFormat("FULL", SITE_ID)), mktime($arDate["HH"], $arDate["MI"], $arDate["SS"], $arDate["MM"], $arDate["DD"], $arDate["YYYY"]));
-			$arOrderFilter["DATE_UPDATE_TO"] = $filter_order_date_up_to;
+			$arOrderFilter["<=DATE_UPDATE"] = $filter_order_date_up_to;
 		}
 		else
 			$filter_order_date_up_to = "";

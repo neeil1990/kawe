@@ -4,19 +4,20 @@ $Dict = array("W" => array(), "T" => array());
 function __forum_chapter_menu_gen()
 {
 	$Dict = array("W" => array(), "T" => array());
-	CModule::IncludeModule("forum");
-	
-	$db_res = CFilterDictionary::GetList();
-	while ($res = $db_res->Fetch())
+	if (CModule::IncludeModule("forum"))
 	{
-		$Dict[$res["TYPE"]][] = array(
-			"text" => htmlspecialcharsbx($res["TITLE"]),
-			"url" => "/bitrix/admin/forum_".($res["TYPE"]=="T"?"letter":"words").".php?DICTIONARY_ID=".$res["ID"]."&amp;lang=".LANG,
-			"more_url" => array(
+		$db_res = CFilterDictionary::GetList();
+		while ($res = $db_res->Fetch())
+		{
+			$Dict[$res["TYPE"]][] = array(
+				"text" => htmlspecialcharsbx($res["TITLE"]),
+				"url" => "/bitrix/admin/forum_".($res["TYPE"]=="T"?"letter":"words").".php?DICTIONARY_ID=".$res["ID"]."&amp;lang=".LANG,
+				"more_url" => array(
 					"/bitrix/admin/forum_".($res["TYPE"]=="T"?"letter":"words").".php?DICTIONARY_ID=".$res["ID"]."&lang=".LANG,
 					"/bitrix/admin/forum_dictionary_edit.php?DICTIONARY_ID=".$res["ID"]."&lang=".LANG,
 					"/bitrix/admin/forum_".($res["TYPE"]=="T"?"letter":"words")."_edit.php?DICTIONARY_ID=".$res["ID"]."&lang=".LANG),
-			"title" => htmlspecialcharsbx($res["TITLE"]));
+				"title" => htmlspecialcharsbx($res["TITLE"]));
+		}
 	}
 	return $Dict;
 }
@@ -93,9 +94,10 @@ if($APPLICATION->GetGroupRight("forum") != "D")
 							"/bitrix/admin/forum_dictionary.php?TYPE=W&lang=".LANG,
 							"/bitrix/admin/forum_dictionary_edit.php?TYPE=W&lang=".LANG,
 							"/bitrix/admin/forum_words.php"),
-						"module_id" => "forum", 
+						"module_id" => "forum",
 						"dynamic" => true,
-						"items" => $Dict["W"]),
+						"items" => $Dict["W"]
+					),
 					array(
 						"text" => GetMessage("FORUM_MENU_FILTER_DT"),
 						"title" => GetMessage("FORUM_MENU_FILTER_DT_ALT"),
@@ -105,10 +107,11 @@ if($APPLICATION->GetGroupRight("forum") != "D")
 							"/bitrix/admin/forum_dictionary.php?TYPE=T&lang=".LANG,
 							"/bitrix/admin/forum_dictionary_edit.php?TYPE=T&lang=".LANG,
 							"/bitrix/admin/forum_letter.php"),
-						"module_id" => "forum", 
+						"module_id" => "forum",
 						"dynamic" => true,
-						"items" => $Dict["T"]))
-			),
+						"items" => $Dict["T"])
+				)
+			)
 		)
 	);
 	return $aMenu;

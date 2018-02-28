@@ -2,6 +2,7 @@
 
 namespace Bitrix\Seo\Retargeting\Services;
 
+use Bitrix\Main\NotImplementedException;
 use \Bitrix\Seo\Retargeting\Audience;
 
 class AudienceYandex extends Audience
@@ -43,31 +44,19 @@ class AudienceYandex extends Audience
 		return false;
 	}
 
+	public static function isAddingRequireContacts()
+	{
+		return true;
+	}
+
 	public static function isSupportRemoveContacts()
 	{
 		return true;
 	}
 
-	public function add($data)
+	public function add(array $data)
 	{
-		//https://vk.com/dev/ads.createTargetGroup
-
-		$response = $this->request->send(array(
-			'method' => 'GET',
-			'endpoint' => 'ads.createTargetGroup',
-			'fields' => array(
-				'account_id' => $data['ACCOUNT_ID'],
-				'name' => $data['NAME'],
-			)
-		));
-
-		$responseData = $response->getData();
-		if (isset($responseData['id']))
-		{
-			$response->setId($responseData['id']);
-		}
-
-		return $response;
+		throw new NotImplementedException('Method `AudienceYandex::Add` not implemented.');
 	}
 
 	protected function prepareContacts(array $contacts = array(), $hashed = false, $type)

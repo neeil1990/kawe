@@ -320,7 +320,7 @@ class CAllSaleOrder
 		$orderId = (int)$orderId;
 		$isNew = ($orderId <= 0);
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$arFields = array(
 			"ID" => $arOrder["ID"],
@@ -356,7 +356,7 @@ class CAllSaleOrder
 		unset($arOrder['LOCATION_IN_CODES']);
 
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			$orderFields = array_merge($arOrder, $arFields, $arAdditionalFields);
 			if (isset($orderFields['CUSTOM_DISCOUNT_PRICE']) && $orderFields['CUSTOM_DISCOUNT_PRICE'] === true)
@@ -911,13 +911,13 @@ class CAllSaleOrder
 		if ($ID <= 0)
 			return false;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$arOrder = CSaleOrder::GetByID($ID);
 		if ($arOrder)
 		{
 
-			if ($isOrderConverted == "Y")
+			if ($isOrderConverted != 'N')
 			{
 				$errorMessage = "";
 
@@ -1535,9 +1535,9 @@ class CAllSaleOrder
 		}
 		else
 		{
-			$isOrderConverted = (\Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N') == 'Y');
+			$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
-			if ($isOrderConverted == "Y")
+			if ($isOrderConverted != 'N')
 			{
 				$db_res = \Bitrix\Sale\Compatible\OrderCompatibility::getById($ID);
 			}
@@ -1557,7 +1557,7 @@ class CAllSaleOrder
 
 			if ($res = $db_res->Fetch())
 			{
-				if ($isOrderConverted == "Y")
+				if ($isOrderConverted != 'N')
 				{
 					$dataKeys = array_keys($res);
 					foreach ($dataKeys as $key)
@@ -1672,7 +1672,7 @@ class CAllSaleOrder
 		$bPay = ($bPay ? True : False);
 		$recurringID = IntVal($recurringID);
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 
 		$NO_CHANGE_STATUS = "N";
@@ -1705,7 +1705,7 @@ class CAllSaleOrder
 			if (ExecuteModuleEventEx($arEvent, Array($ID, $val, $bWithdraw, $bPay, $recurringID, $arAdditionalFields))===false)
 				return false;
 
-		if ($isOrderConverted != "Y" && $bWithdraw)
+		if ($isOrderConverted == "N" && $bWithdraw)
 		{
 			if ($val == "Y")
 			{
@@ -1741,7 +1741,7 @@ class CAllSaleOrder
 				}
 			}
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			$errorMessage = "";
 			/** @var \Bitrix\Sale\Result $r */
@@ -1801,7 +1801,7 @@ class CAllSaleOrder
 					$userEMail = $arUser["EMAIL"];
 			}
 
-			if ($isOrderConverted != "Y")
+			if ($isOrderConverted == 'N')
 			{
 				$arFields = Array(
 						"ORDER_ID" => $arOrder["ACCOUNT_NUMBER"],
@@ -1840,7 +1840,7 @@ class CAllSaleOrder
 			}
 		}
 
-		if ($isOrderConverted != "Y")
+		if ($isOrderConverted == 'N')
 		{
 			//reservation
 			if (COption::GetOptionString("sale", "product_reserve_condition", "O") == "P" && $arOrder["RESERVED"] != $val)
@@ -1870,7 +1870,7 @@ class CAllSaleOrder
 		$val = (($val != "Y") ? "N" : "Y");
 		$recurringID = IntVal($recurringID);
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$NO_CHANGE_STATUS = "N";
 		if (is_set($arAdditionalFields["NOT_CHANGE_STATUS"]) && $arAdditionalFields["NOT_CHANGE_STATUS"] == "Y")
@@ -1902,7 +1902,7 @@ class CAllSaleOrder
 			if (ExecuteModuleEventEx($arEvent, Array($ID, $val, $recurringID, $arAdditionalFields))===false)
 				return false;
 
-		if ($isOrderConverted != "Y")
+		if ($isOrderConverted == 'N')
 		{
 			$arFields = array(
 				"ALLOW_DELIVERY" => $val,
@@ -1949,7 +1949,7 @@ class CAllSaleOrder
 
 		CSaleBasket::OrderDelivery($ID, (($val=="Y") ? True : False), $recurringID);
 
-		if ($isOrderConverted != "Y")
+		if ($isOrderConverted == 'N')
 		{
 			foreach(GetModuleEvents("sale", "OnSaleDeliveryOrder", true) as $arEvent)
 				ExecuteModuleEventEx($arEvent, Array($ID, $val));
@@ -1989,7 +1989,7 @@ class CAllSaleOrder
 					$userEMail = $arUser["EMAIL"];
 			}
 
-			if ($isOrderConverted != "Y")
+			if ($isOrderConverted == 'N')
 			{
 				$eventName = "SALE_ORDER_DELIVERY";
 				$arFields = Array(
@@ -2043,7 +2043,7 @@ class CAllSaleOrder
 		$description = Trim($description);
 		$recurringID = IntVal($recurringID);
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		if ($ID <= 0)
 		{
@@ -2080,7 +2080,7 @@ class CAllSaleOrder
 
 		if (array_key_exists("ERROR", $arDeductResult))
 		{
-			if ($isOrderConverted != "Y")
+			if ($isOrderConverted == 'N')
 			{
 				CSaleOrder::SetMark($ID, Loc::getMessage("SKGB_DEDUCT_ERROR", array("#MESSAGE#" => $arDeductResult["ERROR"]["MESSAGE"])));
 			}
@@ -2096,7 +2096,7 @@ class CAllSaleOrder
 			}
 		}
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			if ($arDeductResult["RESULT"])
 			{
@@ -2159,7 +2159,7 @@ class CAllSaleOrder
 		$val = (($val != "Y") ? "N" : "Y");
 		$errorMessage = "";
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		if ($ID <= 0)
 		{
@@ -2186,7 +2186,7 @@ class CAllSaleOrder
 
 		unset($GLOBALS["SALE_ORDER"]["SALE_ORDER_CACHE_".$ID]);
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			/** @var \Bitrix\Sale\Result $r */
 			$r = \Bitrix\Sale\Compatible\OrderCompatibility::reserve($ID, $val);
@@ -2240,7 +2240,7 @@ class CAllSaleOrder
 	{
 		global $DB, $USER, $APPLICATION;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$ID = IntVal($ID);
 		$val = (($val != "Y") ? "N" : "Y");
@@ -2265,7 +2265,7 @@ class CAllSaleOrder
 			return false;
 		}
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			$r = \Bitrix\Sale\Compatible\OrderCompatibility::cancel($ID, $val, $description);
 			if ($r->isSuccess(true))
@@ -2347,7 +2347,7 @@ class CAllSaleOrder
 
 		unset($GLOBALS["SALE_ORDER"]["SALE_ORDER_CACHE_".$ID]);
 
-		if ($isOrderConverted != "Y")
+		if ($isOrderConverted == 'N')
 		{
 			//this method is used only for catalogs without reservation and deduction support
 			CSaleBasket::OrderCanceled($ID, (($val=="Y") ? True : False));
@@ -2386,7 +2386,7 @@ class CAllSaleOrder
 	{
 		global $DB, $USER, $APPLICATION;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$ID = IntVal($ID);
 		$val = trim($val);
@@ -2464,7 +2464,7 @@ class CAllSaleOrder
 			foreach(GetModuleEvents("sale", "OnSaleStatusEMail", true) as $arEvent)
 				$arFields["TEXT"] = ExecuteModuleEventEx($arEvent, Array($ID, $arStatus["ID"]));
 
-			if ($isOrderConverted != "Y")
+			if ($isOrderConverted == 'N')
 			{
 				$eventName = "SALE_STATUS_CHANGED_".$arOrder["STATUS_ID"];
 
@@ -3028,7 +3028,7 @@ class CAllSaleOrder
 		}
 
 		$type = COption::GetOptionString("sale", "account_number_template", "");
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$accountNumber = null;
 		$isCustomAlgorithm = false;
@@ -3053,7 +3053,7 @@ class CAllSaleOrder
 
 		if ($isCustomAlgorithm)
 		{
-			if ($isOrderConverted == "Y")
+			if ($isOrderConverted != 'N')
 			{
 				try
 				{
@@ -3175,7 +3175,7 @@ class CAllSaleOrder
 
 		$type = \Bitrix\Main\Config\Option::get("sale", "account_number_template", "");
 		$param = \Bitrix\Main\Config\Option::get("sale", "account_number_data", "");
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$res = false;
 		$value = null;
@@ -3187,7 +3187,7 @@ class CAllSaleOrder
 
 				if ($value)
 				{
-					if ($isOrderConverted == "Y")
+					if ($isOrderConverted != 'N')
 					{
 						try
 						{
@@ -3236,8 +3236,8 @@ class CAllSaleOrder
 	protected static function setIdAsAccountNumber($id)
 	{
 		$result = new Sale\Result();
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
-		if ($isOrderConverted == "Y")
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
+		if ($isOrderConverted != 'N')
 		{
 			$accountNumber = $id;
 			for ($i = 1; $i <= 10; $i++)
@@ -3455,7 +3455,8 @@ class CAllSaleOrder
 					"SHIPMENT_RESERVED" => "SHIPMENT.RESERVED",
 					"SHIPMENT_DEDUCTED" => "SHIPMENT.DEDUCTED",
 					"DATE_INSERT", "PAYED", "CANCELED", "MARKED"
-				)
+				),
+				'limit' => 100
 			);
 
 			$res = \Bitrix\Sale\Internals\OrderTable::getList($filter);

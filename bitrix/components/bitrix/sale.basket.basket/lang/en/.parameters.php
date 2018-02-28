@@ -60,4 +60,16 @@ $MESS["COLUMNS_LIST_TIP"] = "Selected fields will be used as columns titles in a
 $MESS["SET_TITLE_TIP"] = "Checking this option will set the page title to \"My Shopping Cart\".";
 $MESS["PRICE_VAT_INCLUDE_TIP"] = "Checking this option specifies to include tax in the display prices.";
 $MESS["PRICE_VAT_SHOW_VALUE_TIP"] = "Specifies to show the tax value.";
+$MESS["SBB_PREVIEW_PICTURE"] = "Image";
+$MESS["SBB_DETAIL_PICTURE"] = "Detailed image";
+$MESS["SBB_PREVIEW_TEXT"] = "Short description";
+$MESS["SBB_COMPATIBLE_MODE"] = "Enable compatibility mode";
+$MESS["SBB_IMAGE_SETTINGS"] = "Image settings";
+$MESS["SBB_ADDITIONAL_IMAGE"] = "Additional image";
+$MESS["SBB_BASKET_IMAGES_SCALING"] = "Product image view mode";
+$MESS["SBB_ADAPTIVE"] = "Adaptive";
+$MESS["SBB_STANDARD"] = "Standard";
+$MESS["SBB_NO_SCALE"] = "Don't resize";
+$MESS["SBB_DEFAULT"] = "Default";
+$MESS["SBB_ANALYTICS_SETTINGS"] = "Analytics Preferences";
 ?>

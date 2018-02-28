@@ -22,7 +22,8 @@
 	color: #64B1F5!important;
 }
 .bx-stylist-enter{
-	outline: 1px solid rgb(147, 193, 234);
+	outline: 2px dashed rgb(147, 193, 234);
+	opacity: 0.7;
 }
 
 

@@ -35,6 +35,12 @@ function getValidImageSizes()
 
 function validImageSizes($width, $height, $fileArray)
 {
+//	sizes may be not set
+	if(!intval($width) > 0)
+		$width = $fileArray["WIDTH"];
+	if(!intval($height) > 0)
+		$height = $fileArray["HEIGHT"];
+	
 	$result = array("WIDTH" => "", "HEIGHT" => "");
 	$validSizes = getValidImageSizes();
 	

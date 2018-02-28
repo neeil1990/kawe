@@ -493,7 +493,10 @@ class CAllForumTopic
 					}
 					else
 					{
-						$db_res = CForumMessage::GetList(array("ID" => "ASC"), array("FORUM_ID" => $arFields["FORUM_ID"], "TOPIC_ID" => $ID));
+						$messageFilter = array("FORUM_ID" => $arFields["FORUM_ID"], "TOPIC_ID" => $ID);
+						if ($arFields["MESSAGE_ID"])
+							$messageFilter["ID"] = $arFields["MESSAGE_ID"];
+						$db_res = CForumMessage::GetList(array("ID" => "ASC"), $messageFilter);
 						$arReindex = array_merge($arTopic_prev, $arReindex);
 						while (!!$db_res && ($arMessage = $db_res->Fetch()))
 						{
@@ -1007,7 +1010,9 @@ class CAllForumTopic
 							$ar3[] = $f." = ".$v;
 					}
 					$strSql = "INSERT INTO b_forum_user_topic (".implode(", ", $ar1).") VALUES(".implode(", ", $ar2).") ON DUPLICATE KEY UPDATE ".implode(", ", $ar3);
+					$DB->StartUsingMasterOnly();
 					$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
+					$DB->StopUsingMasterOnly();
 				}
 				else
 				{
@@ -1023,7 +1028,10 @@ class CAllForumTopic
 		elseif ($USER->IsAuthorized())
 		{
 			$Fields = array("LAST_VISIT" => $DB->GetNowFunction());
-			return $DB->Update("b_forum_user_topic", $Fields, "WHERE (FORUM_ID=".$ID." AND USER_ID=".intVal($USER->GetID()).")", "File: ".__FILE__."<br>Line: ".__LINE__);
+			$DB->StartUsingMasterOnly();
+			$result = $DB->Update("b_forum_user_topic", $Fields, "WHERE (FORUM_ID=".$ID." AND USER_ID=".intVal($USER->GetID()).")", "File: ".__FILE__."<br>Line: ".__LINE__);
+			$DB->StopUsingMasterOnly();
+			return $result;
 		}
 		return false;
 	}

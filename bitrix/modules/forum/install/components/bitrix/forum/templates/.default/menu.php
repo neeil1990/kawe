@@ -97,7 +97,7 @@ if ($arParams["SHOW_AUTH_FORM"] == "Y"):
 	else
 	{
 		?><a href="<?
-			?><?=htmlspecialcharsbx($APPLICATION->GetCurPageParam("forum_auth=yes",
+			?><?=htmlspecialcharsbx($APPLICATION->GetCurPageParam("login=yes",
 			array("login", "logout", "register", "forgot_password", "change_password", BX_AJAX_PARAM_ID, "forum_auth")))?><?
 			?>" rel="nofollow"><span><?=GetMessage("AUTH_LOGIN_BUTTON")?></span></a>
 			<?

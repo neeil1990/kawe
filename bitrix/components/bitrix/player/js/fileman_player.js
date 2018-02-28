@@ -300,19 +300,26 @@ BX.Fileman.Player.prototype.play = function()
 BX.Fileman.Player.prototype.setPlayedState = function()
 {
 	var storageHash = this.__getStorageHash();
-	BX.localStorage.set(storageHash, 'played', 1209600);
+	if(BX.localStorage)
+	{
+		BX.localStorage.set(storageHash, 'played', 1209600);
+	}
 };
 
 BX.Fileman.Player.prototype.isPlayed = function()
 {
 	var storageHash = this.__getStorageHash();
-	return (BX.localStorage.get(storageHash) === 'played');
+	if(BX.localStorage)
+	{
+		return (BX.localStorage.get(storageHash) === 'played');
+	}
+	return true;
 };
 
 BX.Fileman.Player.prototype.__getStorageHash = function()
 {
 	var storageHash = this.id;
-	if(this.params.sources[0].src)
+	if(this.params.sources && BX.type.isArray(this.params.sources) && this.params.sources[0].src)
 	{
 		storageHash = this.params.sources[0].src;
 	}
@@ -350,7 +357,8 @@ BX.Fileman.Player.prototype.createElement = function()
 		'id': this.id,
 		'className': className,
 		'width': this.width,
-		'height': this.height
+		'height': this.height,
+		'controls': true
 	};
 	if(this.muted)
 	{
@@ -359,26 +367,26 @@ BX.Fileman.Player.prototype.createElement = function()
 	node = BX.create(tagName, {
 		'attrs': attrs
 	});
-	/*if(this.tracks)
+	if(this.params.sources)
 	{
-		if(BX.type.isArray(this.tracks))
+		if(BX.type.isArray(this.params.sources))
 		{
-			for(var i in this.tracks)
+			for(var i in this.params.sources)
 			{
-				if(!this.tracks[i].path || !this.tracks[i].type)
+				if(!this.params.sources[i].src || !this.params.sources[i].type)
 				{
 					continue;
 				}
 				var source = BX.create('source', {
 					'attrs': {
-						'src': this.tracks[i].path,
-						'type': this.tracks[i].type
+						'src': this.params.sources[i].src,
+						'type': this.params.sources[i].type
 					}
 				});
 				BX.append(source, node);
 			}
 		}
-	}*/
+	}
 	return node;
 };
 
@@ -464,16 +472,27 @@ BX.Fileman.Player.prototype.init = function()
 	this.vjsPlayer.on('error', BX.proxy(function()
 	{
 		this.fireEvent('onError');
+		if(!this.isFlashErrrorShown && this.hasFlash)
+		{
+			this.isFlashErrrorShown = true;
+			var error = this.vjsPlayer.error();
+			if(error && error.code === 4)
+			{
+				error.message = error.message + '. ' + BX.message('PLAYER_FLASH_CHECK');
+				this.vjsPlayer.errorDisplay.content(error.message);
+			}
+		}
 	}, this));
 	if(this.hasFlash)
 	{
-		this.vjsPlayer.setTimeout(function()
+		setTimeout(BX.proxy(function()
 		{
-			if(!this.hasStarted())
+			if(!this.inited)
 			{
-				this.error(BX.message('PLAYER_FLASH_REQUIRED'));
+				this.vjsPlayer.error(BX.message('PLAYER_FLASH_REQUIRED'));
+				this.inited = true;
 			}
-		}, 10000);
+		}, this), 3000);
 	}
 	this.vjsPlayer.ready(BX.proxy(function(){
 		var playButton = BX.findChildByClassName(BX(this.id), 'vjs-play-control');
@@ -528,6 +547,7 @@ BX.Fileman.Player.prototype.init = function()
 			this.onInit(this);
 		}
 		this.fireEvent('onAfterInit');
+		this.proxyEvents();
 	}, this));
 };
 
@@ -542,7 +562,8 @@ BX.Fileman.Player.prototype.getEventList = function()
 		'Player:onPlay',
 		'Player:onPause',
 		'Player:onClick',
-		'Player:onError'
+		'Player:onError',
+		'Player:onEnded',
 	];
 };
 
@@ -568,5 +589,16 @@ BX.Fileman.Player.prototype.disableMute = function()
 		this.mute(false);
 	}, this), 100);
 };
+
+BX.Fileman.Player.prototype.proxyEvents = function()
+{
+	if(!this.inited)
+	{
+		return;
+	}
+	this.vjsPlayer.on('play', BX.proxy(function(){this.fireEvent('onPlay');}, this));
+	this.vjsPlayer.on('pause', BX.proxy(function(){this.fireEvent('onPause');}, this));
+	this.vjsPlayer.on('ended', BX.proxy(function(){this.fireEvent('onEnded');}, this));
+}
 
 })(window);

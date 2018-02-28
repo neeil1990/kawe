@@ -148,7 +148,7 @@ class GroupTable extends Entity\DataManager
 			'SORT' => array(
 				'data_type' => 'integer',
 				'title' => Loc::getMessage('SALE_LOCATION_GROUP_ENTITY_SORT_FIELD'),
-				'default' => '100'
+				'default_value' => '100'
 			),
 
 			// virtual

@@ -59,7 +59,11 @@ class OrderBasket
 		$this->createProductBasement = $createProductBasement;
 		$this->mode = $mode;
 		$this->weightUnit = htmlspecialcharsbx(Option::get('sale', 'weight_unit', "", $this->order->getSiteId()));
-		$this->weightKoef = htmlspecialcharsbx(Option::get('sale', 'weight_koef', 1, $this->order->getSiteId()));
+		$this->weightKoef = floatval(Option::get('sale', 'weight_koef', 1, $this->order->getSiteId()));
+
+		if($this->weightKoef <= 0)
+			$this->weightKoef = 1;
+
 		$this->isShowXmlId = Option::get("sale", "show_order_product_xml_id", "N") == "Y";
 
 		if(strlen($jsObjName)>0 && strlen($idPrefix)>0)

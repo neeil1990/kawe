@@ -34,7 +34,7 @@ class CSaleBasket extends CAllSaleBasket
 	{
 		global $DB, $USER;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		if (!is_array($arOrder) && !is_array($arFilter))
 		{
@@ -56,7 +56,7 @@ class CSaleBasket extends CAllSaleBasket
 			}
 		}
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			$result = \Bitrix\Sale\Compatible\BasketCompatibility::getList($arOrder, $arFilter, $arGroupBy, $arNavStartParams, $arSelectFields);
 			if ($result instanceof \Bitrix\Sale\Compatible\CDBResult)
@@ -435,13 +435,13 @@ class CSaleBasket extends CAllSaleBasket
 		if (isset($arFields["ID"]))
 			unset($arFields["ID"]);
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		CSaleBasket::Init();
 //		if (!CSaleBasket::CheckFields("ADD", $arFields))
 //			return false;
 
-		if ($isOrderConverted != "Y")
+		if ($isOrderConverted == 'N')
 		{
 			foreach(GetModuleEvents("sale", "OnBeforeBasketAdd", true) as $arEvent)
 				if (ExecuteModuleEventEx($arEvent, Array(&$arFields))===false)
@@ -452,7 +452,7 @@ class CSaleBasket extends CAllSaleBasket
 		$bEqAr = false;
 
 		//TODO: is order converted?
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			/** @var \Bitrix\Sale\Result $result */
 			$result = \Bitrix\Sale\Compatible\BasketCompatibility::add($arFields);
@@ -587,7 +587,7 @@ class CSaleBasket extends CAllSaleBasket
 		if (!$bFound)
 		{
 			//TODO: is order converted?
-			if ($isOrderConverted != "Y")
+			if ($isOrderConverted == 'N')
 			{
 				$arInsert = $DB->PrepareInsert("b_sale_basket", $arFields);
 
@@ -672,7 +672,7 @@ class CSaleBasket extends CAllSaleBasket
 			}
 		}
 
-		if ($isOrderConverted != "Y")
+		if ($isOrderConverted == 'N')
 		{
 			foreach(GetModuleEvents("sale", "OnBasketAdd", true) as $arEvent)
 				ExecuteModuleEventEx($arEvent, Array($ID, $arFields));
@@ -685,13 +685,13 @@ class CSaleBasket extends CAllSaleBasket
 	{
 		global $DB, $APPLICATION;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$ID = intval($ID);
 		if (0 >= $ID)
 			return false;
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			/** @var \Bitrix\Sale\Result $r */
 			$r = \Bitrix\Sale\Compatible\BasketCompatibility::delete($ID);
@@ -789,7 +789,7 @@ class CSaleBasket extends CAllSaleBasket
 	{
 		global $DB, $APPLICATION;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$bIncOrdered = ($bIncOrdered ? True : False);
 		$FUSER_ID = intval($FUSER_ID);
@@ -814,7 +814,7 @@ class CSaleBasket extends CAllSaleBasket
 		);
 		while ($arBasket = $dbBasket->Fetch())
 		{
-			if ($isOrderConverted == "Y")
+			if ($isOrderConverted != 'N')
 			{
 				/** @var \Bitrix\Sale\Result $r */
 				$r = \Bitrix\Sale\Compatible\BasketCompatibility::delete($arBasket["ID"]);

@@ -83,13 +83,14 @@ final class Manager
 			return null;
 		}
 
-		$discounts = $this->getDiscounts($basket->copy());
+		$basketCopied = $basket->copy();
+		$discounts = $this->getDiscounts($basketCopied);
 		Discount\Preset\Manager::getInstance()->registerAutoLoader();
 		$predictionDiscount = $this->findFirstPredictionDiscount($discounts, OrderAmount::className());
 
 		if($predictionDiscount)
 		{
-			$text = $this->buildTextByPredictionDiscount($basket, $predictionDiscount);
+			$text = $this->buildTextByPredictionDiscount($basketCopied, $predictionDiscount);
 			if($text)
 			{
 				return $text;
@@ -465,7 +466,7 @@ final class Manager
 		}
 		$calcResults = $discount->getApplyResult(true);
 
-		return $calcResults['FULL_DISCOUNT_LIST'];
+		return $calcResults['FULL_DISCOUNT_LIST']?: array();
 	}
 
 	private function isValidProduct(array $product)

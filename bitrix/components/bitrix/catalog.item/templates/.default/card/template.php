@@ -35,7 +35,7 @@ use \Bitrix\Main\Localization\Loc;
 				{
 					?>
 					<span class="product-item-image-slide item <?=($key == 0 ? 'active' : '')?>"
-						style="background-image: url(<?=$photo['SRC']?>);">
+						style="background-image: url('<?=$photo['SRC']?>');">
 					</span>
 					<?
 				}
@@ -43,7 +43,7 @@ use \Bitrix\Main\Localization\Loc;
 			?>
 		</span>
 		<span class="product-item-image-original" id="<?=$itemIds['PICT']?>"
-			style="background-image: url(<?=$item['PREVIEW_PICTURE']['SRC']?>); display: <?=($showSlider ? 'none' : '')?>;">
+			style="background-image: url('<?=$item['PREVIEW_PICTURE']['SRC']?>'); display: <?=($showSlider ? 'none' : '')?>;">
 		</span>
 		<?
 		if ($item['SECOND_PICT'])
@@ -51,7 +51,7 @@ use \Bitrix\Main\Localization\Loc;
 			$bgImage = !empty($item['PREVIEW_PICTURE_SECOND']) ? $item['PREVIEW_PICTURE_SECOND']['SRC'] : $item['PREVIEW_PICTURE']['SRC'];
 			?>
 			<span class="product-item-image-alternative" id="<?=$itemIds['SECOND_PICT']?>"
-				style="background-image: url(<?=$bgImage?>); display: <?=($showSlider ? 'none' : '')?>;">
+				style="background-image: url('<?=$bgImage?>'); display: <?=($showSlider ? 'none' : '')?>;">
 			</span>
 			<?
 		}
@@ -565,7 +565,7 @@ use \Bitrix\Main\Localization\Loc;
 																data-treevalue="<?=$propertyId?>_<?=$value['ID']?>" data-onevalue="<?=$value['ID']?>">
 																<div class="product-item-scu-item-color-block">
 																	<div class="product-item-scu-item-color" title="<?=$value['NAME']?>"
-																		style="background-image: url(<?=$value['PICT']['SRC']?>);">
+																		style="background-image: url('<?=$value['PICT']['SRC']?>');">
 																	</div>
 																</div>
 															</li>

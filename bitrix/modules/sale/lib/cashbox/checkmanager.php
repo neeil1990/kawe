@@ -67,7 +67,7 @@ final class CheckManager
 			}
 			else
 			{
-				$cashboxList = array_intersect($items, $cashboxList);
+				$cashboxList = array_intersect_assoc($items, $cashboxList);
 			}
 		}
 

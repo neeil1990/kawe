@@ -108,13 +108,6 @@ $arComponentParameters = array(
 			"TYPE" => "STRING",
 			"DEFAULT" => ""
 		),
-		/*"PRODUCT_PROPERTIES" => array(
-			"PARENT" => "BASE",
-			"NAME" => GetMessage("CATALOG_SET_PRODUCT_PROPERTIES"),
-			"TYPE" => "LIST",
-			"MULTIPLE" => "Y",
-			"VALUES" => $arProperty_X,
-		),*/
 		"BASKET_URL" => array(
 			"PARENT" => "URL_TEMPLATES",
 			"NAME" => GetMessage("IBLOCK_BASKET_URL"),
@@ -141,6 +134,12 @@ $arComponentParameters = array(
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => "Y",
 		),
+		"BUNDLE_ITEMS_COUNT" => array(
+			"PARENT" => "VISUAL",
+			"NAME" => GetMessage("CP_CSC_PARAM_TITLE_BUNDLE_ITEMS_COUNT"),
+			"TYPE" => "STRING",
+			"DEFAULT" => "3"
+		)
 	),
 );
 

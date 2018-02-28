@@ -482,37 +482,39 @@ class BasketItem extends BasketItemBase
 	{
 		/** @var BundleCollection $bundleCollection */
 		$bundleCollection = $this->createBundleCollection();
-
-		foreach ($items as $productId => $bundleBasketListDat)
+		foreach ($items as $providerClassName => $products)
 		{
-			foreach ($bundleBasketListDat["ITEMS"] as $bundleDat)
+			foreach ($products as $productId => $bundleBasketListDat)
 			{
-				$bundleFields = $this->clearBundleItemFields($bundleDat);
-				unset($bundleFields['ID']);
-
-				$bundleFields['CURRENCY'] = $this->getCurrency();
-
-				if ($this->getId() > 0)
+				foreach ($bundleBasketListDat["ITEMS"] as $bundleDat)
 				{
-					$bundleFields['SET_PARENT_ID'] = $this->getId();
+					$bundleFields = $this->clearBundleItemFields($bundleDat);
+					unset($bundleFields['ID']);
+
+					$bundleFields['CURRENCY'] = $this->getCurrency();
+
+					if ($this->getId() > 0)
+					{
+						$bundleFields['SET_PARENT_ID'] = $this->getId();
+					}
+
+					/** @var BasketItem $basketItem */
+					$bundleBasketItem = static::create($bundleCollection, $bundleFields['MODULE'], $bundleFields['PRODUCT_ID']);
+
+					if (!empty($bundleDat["PROPS"]) && is_array($bundleDat["PROPS"]))
+					{
+						/** @var BasketPropertiesCollection $property */
+						$property = $bundleBasketItem->getPropertyCollection();
+						$property->setProperty($bundleDat["PROPS"]);
+					}
+
+					$bundleQuantity = $bundleFields['QUANTITY'] * $this->getQuantity();
+					unset($bundleFields['QUANTITY']);
+
+					$bundleBasketItem->setFieldsNoDemand($bundleFields);
+					$bundleBasketItem->setField('QUANTITY', $bundleQuantity);
+					$bundleCollection->addItem($bundleBasketItem);
 				}
-
-				/** @var BasketItem $basketItem */
-				$bundleBasketItem = static::create($bundleCollection, $bundleFields['MODULE'], $bundleFields['PRODUCT_ID']);
-
-				if (!empty($bundleDat["PROPS"]) && is_array($bundleDat["PROPS"]))
-				{
-					/** @var BasketPropertiesCollection $property */
-					$property = $bundleBasketItem->getPropertyCollection();
-					$property->setProperty($bundleDat["PROPS"]);
-				}
-
-				$bundleQuantity = $bundleFields['QUANTITY'] * $this->getQuantity();
-				unset($bundleFields['QUANTITY']);
-
-				$bundleBasketItem->setFieldsNoDemand($bundleFields);
-				$bundleBasketItem->setField('QUANTITY', $bundleQuantity);
-				$bundleCollection->addItem($bundleBasketItem);
 			}
 		}
 

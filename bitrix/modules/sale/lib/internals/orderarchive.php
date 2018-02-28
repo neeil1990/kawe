@@ -62,6 +62,12 @@ class OrderArchiveTable extends Main\Entity\DataManager
 					'required' => true,
 				)
 			),
+			new Main\Entity\ReferenceField(
+				'USER',
+				'\Bitrix\Main\User',
+				array('=this.USER_ID' => 'ref.ID'),
+				array('join_type' => 'INNER')
+			),
 			new Main\Entity\StringField(
 				'PERSON_TYPE_ID',
 				array(

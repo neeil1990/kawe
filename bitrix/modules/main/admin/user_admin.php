@@ -31,6 +31,7 @@ use Bitrix\Main\DB\SqlExpression;
 use Bitrix\Main\Entity\ExpressionField;
 use Bitrix\Main\UI\PageNavigation;
 use Bitrix\Main\Text\HtmlFilter;
+use Bitrix\Main\Type\DateTime;
 
 IncludeModuleLangFile(__FILE__);
 
@@ -173,13 +174,13 @@ $filterFields = array(
 	array(
 		"id" => "LOGIN",
 		"name" => GetMessage("F_LOGIN"),
-		"filterable" => "",
+		"filterable" => "%",
 		"default" => true
 	),
 	array(
 		"id" => "EMAIL",
 		"name" => GetMessage("MAIN_F_EMAIL"),
-		"filterable" => "",
+		"filterable" => "%",
 		"default" => true
 	),
 	array(
@@ -403,45 +404,21 @@ if(($arID = $lAdmin->GroupAction()) && ($USER->CanDoOperation('edit_all_users') 
 	}
 }
 
-$arHeaders = array(
-	array("id"=>"LOGIN", "content"=>GetMessage("LOGIN"), "sort"=>"login", "default"=>true),
-	array("id"=>"ACTIVE", "content"=>GetMessage('ACTIVE'),	"sort"=>"active", "default"=>true, "align" => "center"),
-	array("id"=>"TIMESTAMP_X", "content"=>GetMessage('TIMESTAMP'), "sort"=>"timestamp_x", "default"=>true),
-	array("id"=>"TITLE", "content"=>GetMessage("USER_ADMIN_TITLE"), "sort"=>"title"),
-	array("id"=>"NAME", "content"=>GetMessage("NAME"), "sort"=>"name",	"default"=>true),
-	array("id"=>"LAST_NAME", "content"=>GetMessage("LAST_NAME"), "sort"=>"last_name", "default"=>true),
-	array("id"=>"SECOND_NAME", "content"=>GetMessage("SECOND_NAME"), "sort"=>"second_name"),
-	array("id"=>"EMAIL", "content"=>GetMessage('EMAIL'), "sort"=>"email", "default"=>true),
-	array("id"=>"LAST_LOGIN", "content"=>GetMessage("LAST_LOGIN"), "sort"=>"last_login", "default"=>true),
-	array("id"=>"DATE_REGISTER", "content"=>GetMessage("DATE_REGISTER"), "sort"=>"date_register"),
-	array("id"=>"ID", "content"=>"ID", 	"sort"=>"id", "default"=>true, "align"=>"right"),
-	array("id"=>"PERSONAL_BIRTHDAY", "content"=>GetMessage("PERSONAL_BIRTHDAY"), "sort"=>"personal_birthday"),
-	array("id"=>"PERSONAL_PROFESSION", "content"=>GetMessage("PERSONAL_PROFESSION"), "sort"=>"personal_profession"),
-	array("id"=>"PERSONAL_WWW", "content"=>GetMessage("PERSONAL_WWW"), "sort"=>"personal_www"),
-	array("id"=>"PERSONAL_ICQ", "content"=>GetMessage("PERSONAL_ICQ"), "sort"=>"personal_icq"),
-	array("id"=>"PERSONAL_GENDER", "content"=>GetMessage("PERSONAL_GENDER"), "sort"=>"personal_gender"),
-	array("id"=>"PERSONAL_PHONE", "content"=>GetMessage("PERSONAL_PHONE"), "sort"=>"personal_phone"),
-	array("id"=>"PERSONAL_MOBILE", "content"=>GetMessage("PERSONAL_MOBILE"), "sort"=>"personal_mobile"),
-	array("id"=>"PERSONAL_CITY", "content"=>GetMessage("PERSONAL_CITY"), "sort"=>"personal_city"),
-	array("id"=>"PERSONAL_STREET", "content"=>GetMessage("PERSONAL_STREET"), "sort"=>"personal_street"),
-	array("id"=>"WORK_COMPANY", "content"=>GetMessage("WORK_COMPANY"), "sort"=>"work_company"),
-	array("id"=>"WORK_DEPARTMENT", "content"=>GetMessage("WORK_DEPARTMENT"), "sort"=>"work_department"),
-	array("id"=>"WORK_POSITION", "content"=>GetMessage("WORK_POSITION"), "sort"=>"work_position"),
-	array("id"=>"WORK_WWW", "content"=>GetMessage("WORK_WWW"), "sort"=>"work_www"),
-	array("id"=>"WORK_PHONE", "content"=>GetMessage("WORK_PHONE"), "sort"=>"work_phone"),
-	array("id"=>"WORK_CITY", "content"=>GetMessage("WORK_CITY"), "sort"=>"work_city"),
-	array("id"=>"XML_ID", "content"=>GetMessage("XML_ID"), "sort"=>"xml_id"),
-	array("id"=>"EXTERNAL_AUTH_ID", "content"=>GetMessage("EXTERNAL_AUTH_ID")),
-);
-
-$USER_FIELD_MANAGER->adminListAddHeaders($entity_id, $arHeaders);
-$lAdmin->addHeaders($arHeaders);
+setHeaderColumn($lAdmin);
 
 $nav = new PageNavigation("pages-user-admin");
 $nav->setPageSize($lAdmin->getNavSize());
 $nav->initFromUri();
 $userQuery = new Query(UserTable::getEntity());
-$userQuery->setSelect($lAdmin->getVisibleHeaderColumns());
+$listSelectFields = $lAdmin->getVisibleHeaderColumns();
+if (!in_array("ID", $listSelectFields))
+	$listSelectFields[] = "ID";
+
+$listRatingColumn = preg_grep('/^RATING_(\d+)$/i', $listSelectFields);
+if (!empty($listRatingColumn))
+	$listSelectFields = array_diff($listSelectFields, $listRatingColumn);
+
+$userQuery->setSelect($listSelectFields);
 $sortBy = strtoupper($by);
 if(!UserTable::getEntity()->hasField($sortBy))
 {
@@ -455,7 +432,8 @@ if($sortOrder <> "DESC" && $sortOrder <> "ASC")
 $userQuery->setOrder(array($sortBy => $sortOrder));
 $userQuery->countTotal(true);
 $userQuery->setOffset($nav->getOffset());
-$userQuery->setLimit($nav->getLimit());
+if ($_REQUEST["mode"] !== "excel")
+	$userQuery->setLimit($nav->getLimit());
 
 $filterOption = new Bitrix\Main\UI\Filter\Options($sTableID);
 $filterData = $filterOption->getFilter($filterFields);
@@ -464,28 +442,46 @@ if (!empty($filterData["FIND"]))
 	$userQuery->setFilter(\Bitrix\Main\UserUtils::getAdminSearchFilter(array("FIND" => $filterData["FIND"])));
 }
 
-$rsRatings = CRatings::GetList(array('ID' => 'ASC'), array('ACTIVE' => 'Y', 'ENTITY_ID' => 'USER'));
-while ($arRatingsTmp = $rsRatings->GetNext())
+foreach ($listRatingColumn as $ratingColumn)
 {
-	$ratingId = $arRatingsTmp['ID'];
-	$arHeaders[] = array(
-		"id" => "RATING_".$ratingId,
-		"content" => htmlspecialcharsbx($arRatingsTmp['NAME']),
-		"sort" => "RATING_".$ratingId
-	);
-	$userQuery->registerRuntimeField("RR".$ratingId, array(
-		"data_type" => "Bitrix\Main\Rating\ResultsTable",
-		"reference" => array(
-			"=this.ID" => "ref.ENTITY_ID",
-			"ref.ENTITY_TYPE_ID" => new SqlExpression("'USER'"),
-			"ref.RATING_ID" => new SqlExpression('?i', $ratingId)
-		),
-		"join_type" => "LEFT"
-	));
-	$userQuery->addSelect("RR".$ratingId.".CURRENT_VALUE", "RATING_".$ratingId);
+	if (preg_match('/^RATING_(\d+)$/i', $ratingColumn, $matches))
+	{
+		$ratingId = intval($matches[1]);
+		$userQuery->registerRuntimeField("RR".$ratingId, array(
+			"data_type" => "Bitrix\Main\Rating\ResultsTable",
+			"reference" => array(
+				"=this.ID" => "ref.ENTITY_ID",
+				"ref.ENTITY_TYPE_ID" => new SqlExpression("'USER'"),
+				"ref.RATING_ID" => new SqlExpression('?i', $ratingId)
+			),
+			"join_type" => "LEFT"
+		));
+		$userQuery->addSelect("RR".$ratingId.".CURRENT_VALUE", "RATING_".$ratingId);
+	}
 }
-$lAdmin->addHeaders($arHeaders);
 
+if (isset($arFilter["NAME"]))
+{
+	$listFields = array("NAME", "LAST_NAME", "SECOND_NAME");
+	$nameWords = $arFilter["NAME"];
+	$filterQueryObject = new CFilterQuery("and", "yes", "N", array(), "N", "Y", "N");
+	$nameWords = $filterQueryObject->CutKav($nameWords);
+	$nameWords = $filterQueryObject->ParseQ($nameWords);
+	if (strlen($nameWords) > 0 && $nameWords !== "( )")
+		$parsedNameWords = preg_split('/[&&(||)]/',  $nameWords, -1, PREG_SPLIT_NO_EMPTY);
+
+	$filterOr = Query::filter()->logic("or");
+	foreach ($listFields as $fieldId)
+	{
+		foreach ($parsedNameWords as $nameWord)
+		{
+			$filterOr->where(Query::filter()
+				->whereLike($fieldId, new SqlExpression("'".trim($nameWord)."'"))
+			);
+		}
+	}
+	$userQuery->where($filterOr);
+}
 if (isset($arFilter["CHECK_SUBORDINATE"]) && is_array($arFilter["CHECK_SUBORDINATE"]))
 {
 	$strSubord = "0";
@@ -524,6 +520,22 @@ if ($arFilter["INTRANET_USERS"] === "Y")
 	$userQuery->whereNotNull("LAST_LOGIN");
 	$userQuery->where("UF_DEPARTMENT_SINGLE", ">", "0");
 	$userQuery->disableDataDoubling();
+}
+if (isset($arFilter["TIMESTAMP_1"]))
+{
+	$userQuery->where("TIMESTAMP_X", ">=", new DateTime($arFilter["TIMESTAMP_1"]));
+}
+if (isset($arFilter["TIMESTAMP_2"]))
+{
+	$userQuery->where("TIMESTAMP_X", "<=", new DateTime($arFilter["TIMESTAMP_2"]));
+}
+if (isset($arFilter["LAST_LOGIN_1"]))
+{
+	$userQuery->where("LAST_LOGIN", ">=", new DateTime($arFilter["LAST_LOGIN_1"]));
+}
+if (isset($arFilter["LAST_LOGIN_2"]))
+{
+	$userQuery->where("LAST_LOGIN", "<=", new DateTime($arFilter["LAST_LOGIN_2"]));
 }
 if (isset($arFilter["GROUPS_ID"]))
 {
@@ -582,13 +594,8 @@ if (!empty($arFilter["KEYWORDS"]))
 	$userQuery->where($filterOr);
 }
 
-$ignoreKey = array(
-	"CHECK_SUBORDINATE",
-	"CHECK_SUBORDINATE_AND_OWN",
-	"NOT_ADMIN",
-	"INTRANET_USERS",
-	"GROUPS_ID",
-	"KEYWORDS"
+$ignoreKey = array("NAME", "CHECK_SUBORDINATE", "CHECK_SUBORDINATE_AND_OWN", "NOT_ADMIN", "INTRANET_USERS", "GROUPS_ID",
+	"KEYWORDS", "TIMESTAMP_1", "TIMESTAMP_2", "LAST_LOGIN_1", "LAST_LOGIN_2"
 );
 foreach ($arFilter as $filterKey => $filterValue)
 {
@@ -778,4 +785,63 @@ require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_admin_af
 $lAdmin->DisplayFilter($filterFields);
 $lAdmin->DisplayList();
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
+
+function setHeaderColumn(CAdminUiList $lAdmin)
+{
+	$arHeaders = array(
+		array("id"=>"LOGIN", "content"=>GetMessage("LOGIN"), "sort"=>"login", "default"=>true),
+		array("id"=>"ACTIVE", "content"=>GetMessage('ACTIVE'),	"sort"=>"active", "default"=>true, "align" => "center"),
+		array("id"=>"TIMESTAMP_X", "content"=>GetMessage('TIMESTAMP'), "sort"=>"timestamp_x", "default"=>true),
+		array("id"=>"TITLE", "content"=>GetMessage("USER_ADMIN_TITLE"), "sort"=>"title"),
+		array("id"=>"NAME", "content"=>GetMessage("NAME"), "sort"=>"name",	"default"=>true),
+		array("id"=>"LAST_NAME", "content"=>GetMessage("LAST_NAME"), "sort"=>"last_name", "default"=>true),
+		array("id"=>"SECOND_NAME", "content"=>GetMessage("SECOND_NAME"), "sort"=>"second_name"),
+		array("id"=>"EMAIL", "content"=>GetMessage('EMAIL'), "sort"=>"email", "default"=>true),
+		array("id"=>"LAST_LOGIN", "content"=>GetMessage("LAST_LOGIN"), "sort"=>"last_login", "default"=>true),
+		array("id"=>"DATE_REGISTER", "content"=>GetMessage("DATE_REGISTER"), "sort"=>"date_register"),
+		array("id"=>"ID", "content"=>"ID", 	"sort"=>"id", "default"=>true, "align"=>"right"),
+		array("id"=>"PERSONAL_BIRTHDAY", "content"=>GetMessage("PERSONAL_BIRTHDAY"), "sort"=>"personal_birthday"),
+		array("id"=>"PERSONAL_PROFESSION", "content"=>GetMessage("PERSONAL_PROFESSION"), "sort"=>"personal_profession"),
+		array("id"=>"PERSONAL_WWW", "content"=>GetMessage("PERSONAL_WWW"), "sort"=>"personal_www"),
+		array("id"=>"PERSONAL_ICQ", "content"=>GetMessage("PERSONAL_ICQ"), "sort"=>"personal_icq"),
+		array("id"=>"PERSONAL_GENDER", "content"=>GetMessage("PERSONAL_GENDER"), "sort"=>"personal_gender"),
+		array("id"=>"PERSONAL_PHONE", "content"=>GetMessage("PERSONAL_PHONE"), "sort"=>"personal_phone"),
+		array("id"=>"PERSONAL_MOBILE", "content"=>GetMessage("PERSONAL_MOBILE"), "sort"=>"personal_mobile"),
+		array("id"=>"PERSONAL_CITY", "content"=>GetMessage("PERSONAL_CITY"), "sort"=>"personal_city"),
+		array("id"=>"PERSONAL_STREET", "content"=>GetMessage("PERSONAL_STREET"), "sort"=>"personal_street"),
+		array("id"=>"WORK_COMPANY", "content"=>GetMessage("WORK_COMPANY"), "sort"=>"work_company"),
+		array("id"=>"WORK_DEPARTMENT", "content"=>GetMessage("WORK_DEPARTMENT"), "sort"=>"work_department"),
+		array("id"=>"WORK_POSITION", "content"=>GetMessage("WORK_POSITION"), "sort"=>"work_position"),
+		array("id"=>"WORK_WWW", "content"=>GetMessage("WORK_WWW"), "sort"=>"work_www"),
+		array("id"=>"WORK_PHONE", "content"=>GetMessage("WORK_PHONE"), "sort"=>"work_phone"),
+		array("id"=>"WORK_CITY", "content"=>GetMessage("WORK_CITY"), "sort"=>"work_city"),
+		array("id"=>"XML_ID", "content"=>GetMessage("XML_ID"), "sort"=>"xml_id"),
+		array("id"=>"EXTERNAL_AUTH_ID", "content"=>GetMessage("EXTERNAL_AUTH_ID")),
+	);
+
+	setRatingHeadersColumn($arHeaders);
+	setUFHeadersColumn($arHeaders);
+
+	$lAdmin->addHeaders($arHeaders);
+}
+
+function setRatingHeadersColumn(&$arHeaders)
+{
+	$rsRatings = CRatings::GetList(array('ID' => 'ASC'), array('ACTIVE' => 'Y', 'ENTITY_ID' => 'USER'));
+	while ($arRatingsTmp = $rsRatings->GetNext())
+	{
+		$ratingId = $arRatingsTmp['ID'];
+		$arHeaders[] = array(
+			"id" => "RATING_".$ratingId,
+			"content" => htmlspecialcharsbx($arRatingsTmp['NAME']),
+			"sort" => "RATING_".$ratingId
+		);
+	}
+}
+
+function setUFHeadersColumn(&$arHeaders)
+{
+	global $USER_FIELD_MANAGER;
+	$USER_FIELD_MANAGER->adminListAddHeaders("USER", $arHeaders);
+}
 ?>

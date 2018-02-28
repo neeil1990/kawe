@@ -740,7 +740,7 @@ class CSaleExport
     {
 		if(IntVal($_SESSION["BX_CML2_EXPORT"][self::getOrderPrefix()]) > 0)
 		{
-			$arFilter[">=DATE_UPDATE"] = ConvertTimeStamp($_SESSION["BX_CML2_EXPORT"][self::getOrderPrefix()], "FULL");
+			$arFilter[">DATE_UPDATE"] = ConvertTimeStamp($_SESSION["BX_CML2_EXPORT"][self::getOrderPrefix()], "FULL");
 		}
 		return $arFilter;
     }
@@ -1301,7 +1301,7 @@ class CSaleExport
 						<<?=CSaleExport::getTagName("SALE_EXPORT_VALUE")?>><?=$number?></<?=CSaleExport::getTagName("SALE_EXPORT_VALUE")?>>
 					</<?=CSaleExport::getTagName("SALE_EXPORT_PROPERTY_VALUE")?>>
 					<?
-					$dbProp = CSaleBasket::GetPropsList(Array("SORT" => "ASC", "ID" => "ASC"), Array("BASKET_ID" => $arBasket["ID"]), false, false, array("NAME", "VALUE", "CODE"));
+					$dbProp = CSaleBasket::GetPropsList(Array("SORT" => "ASC", "ID" => "ASC"), Array("BASKET_ID" => $arBasket["ID"]), false, false, array("NAME", "SORT", "VALUE", "CODE"));
 					while($arPropBasket = $dbProp->Fetch())
 					{
 						?>
@@ -1933,12 +1933,12 @@ class CSaleExport
 			<<?=CSaleExport::getTagName("SALE_EXPORT_CONTRAGENT")?>>
 		<?
 		if ($bExportFromCrm): ?>
-				<<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=htmlspecialcharsbx(substr($arProp["CRM"]["CLIENT_ID"]."#".$arProp["CRM"]["CLIENT"]["LOGIN"]."#".$arProp["CRM"]["CLIENT"]["LAST_NAME"]." ".$arProp["CRM"]["CLIENT"]["NAME"]." ".$arProp["CRM"]["CLIENT"]["SECOND_NAME"], 0, 80))?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?
+				<<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=htmlspecialcharsbx(substr($arProp["CRM"]["CLIENT_ID"]."#".$arProp["CRM"]["CLIENT"]["LOGIN"]."#".$arProp["CRM"]["CLIENT"]["LAST_NAME"]." ".$arProp["CRM"]["CLIENT"]["NAME"]." ".$arProp["CRM"]["CLIENT"]["SECOND_NAME"], 0, 40))?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?
 		else: ?>
 				<?if(strlen($arOrder["SALE_INTERNALS_ORDER_USER_XML_ID"])>0):?>
 				    <<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=htmlspecialcharsbx($arOrder["SALE_INTERNALS_ORDER_USER_XML_ID"])?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>>
                 <?else:
-				    $xmlId = htmlspecialcharsbx(substr($arOrder["USER_ID"]."#".$arProp["USER"]["LOGIN"]."#".$arProp["USER"]["LAST_NAME"]." ".$arProp["USER"]["NAME"]." ".$arProp["USER"]["SECOND_NAME"], 0, 80));
+				    $xmlId = htmlspecialcharsbx(substr($arOrder["USER_ID"]."#".$arProp["USER"]["LOGIN"]."#".$arProp["USER"]["LAST_NAME"]." ".$arProp["USER"]["NAME"]." ".$arProp["USER"]["SECOND_NAME"], 0, 40));
                     \Bitrix\Sale\Exchange\Entity\UserImportBase::updateEmptyXmlId($arOrder["USER_ID"], $xmlId);
                 ?>
 				    <<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=$xmlId?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>>

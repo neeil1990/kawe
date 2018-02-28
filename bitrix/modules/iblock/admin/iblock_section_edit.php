@@ -1818,7 +1818,7 @@ if($arIBlock["SECTION_PROPERTY"] === "Y")
 		<?
 		$arCatalog = false;
 		if (CModule::IncludeModule("catalog"))
-			$arCatalog = CCatalog::GetSkuInfoByProductID($IBLOCK_ID);
+			$arCatalog = CCatalogSku::GetInfoByProductIBlock($IBLOCK_ID);
 
 		if (is_array($arCatalog))
 		{
@@ -1982,9 +1982,10 @@ else
 if (!defined('BX_PUBLIC_MODE') || BX_PUBLIC_MODE != 1):
 	$tabControl->Buttons(array(
 		"disabled" => false,
-		"btnSaveAndAdd" => (!$bAutocomplete),
-		"btnApply" => (!$bAutocomplete),
-		"return_url" => $bu,
+		"btnSaveAndAdd" => !$bAutocomplete,
+		"btnApply" => !$bAutocomplete,
+		"btnCancel" => !$bAutocomplete,
+		"back_url" => $bu,
 	));
 elseif($nobuttons !== "Y"):
 	$save_and_add = "{

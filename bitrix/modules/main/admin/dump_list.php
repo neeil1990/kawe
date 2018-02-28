@@ -103,6 +103,8 @@ if ($_REQUEST['action'])
 		$http = new CHTTP;
 		if (!$http->Download('https://www.1c-bitrix.ru/download/files/scripts/restore.php', DOCUMENT_ROOT.'/restore.php'))
 		{
+			if (file_exists(DOCUMENT_ROOT.'/restore.php'))
+				unlink(DOCUMENT_ROOT.'/restore.php');
 			CAdminMessage::ShowMessage(array(
 				"MESSAGE" => GetMessage("MAIN_DUMP_ERROR"),
 				"DETAILS" =>  GetMessage("MAIN_DUMP_ERR_COPY_FILE").' restore.php',

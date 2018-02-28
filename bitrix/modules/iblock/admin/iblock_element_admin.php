@@ -2337,15 +2337,12 @@ if ($bCatalog && !empty($arRows))
 	$arRowKeys = array_keys($arRows);
 	if ($strUseStoreControl == "Y" && in_array("CATALOG_BAR_CODE", $arSelectedFields))
 	{
-		$rsProducts = CCatalogProduct::GetList(
-			array(),
-			array('@ID' => $arRowKeys),
-			false,
-			false,
-			array('ID', 'BARCODE_MULTI')
-		);
 		$productsWithBarCode = array();
-		while ($product = $rsProducts->Fetch())
+		$rsProducts = Catalog\ProductTable::getList(array(
+			'select' => array('ID', 'BARCODE_MULTI'),
+			'filter' => array('@ID' => $arRowKeys)
+		));
+		while ($product = $rsProducts->fetch())
 		{
 			if (isset($arRows[$product["ID"]]))
 			{

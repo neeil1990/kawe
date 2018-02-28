@@ -7,7 +7,7 @@ class CSaleOrder extends CAllSaleOrder
 	{
 		global $DB, $USER_FIELD_MANAGER, $CACHE_MANAGER, $APPLICATION;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 
 		$arFields1 = array();
@@ -50,7 +50,7 @@ class CSaleOrder extends CAllSaleOrder
 			if (ExecuteModuleEventEx($arEvent, Array(&$arFields))===false)
 				return false;
 
-		if ($isOrderConverted == 'Y')
+		if ($isOrderConverted != 'N')
 		{
 			if (!empty($arFields1))
 			{
@@ -118,7 +118,7 @@ class CSaleOrder extends CAllSaleOrder
 
 		$USER_FIELD_MANAGER->Update("ORDER", $ID, $arFields);
 
-		if ($isOrderConverted != 'Y')
+		if ($isOrderConverted == 'N')
 		{
 			foreach (GetModuleEvents("sale", "OnOrderAdd", true) as $arEvent)
 				ExecuteModuleEventEx($arEvent, Array($ID, $arFields));
@@ -137,7 +137,7 @@ class CSaleOrder extends CAllSaleOrder
 	{
 		global $DB, $USER_FIELD_MANAGER, $CACHE_MANAGER, $APPLICATION;
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$ID = IntVal($ID);
 
@@ -159,7 +159,7 @@ class CSaleOrder extends CAllSaleOrder
 				return false;
 
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			if (!empty($arFields1))
 			{
@@ -341,7 +341,7 @@ class CSaleOrder extends CAllSaleOrder
 		if (!is_array($arSelectFields))
 			$arSelectFields = array();
 
-		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		$obUserFieldsSql = new CUserTypeSQL;
 		$obUserFieldsSql->SetEntity("ORDER", "O.ID");
@@ -487,7 +487,7 @@ class CSaleOrder extends CAllSaleOrder
 			unset($arFilter["CUSTOM_SUBQUERY"]);
 		}
 
-		if ($isOrderConverted == "Y")
+		if ($isOrderConverted != 'N')
 		{
 			$result = \Bitrix\Sale\Compatible\OrderCompatibility::getList($arOrder, $arFilter, $arGroupBy, $arNavStartParams, $arSelectFields, $callback);
 			if ($result instanceof \Bitrix\Sale\Compatible\CDBResult)

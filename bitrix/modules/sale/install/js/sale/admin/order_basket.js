@@ -32,6 +32,7 @@ BX.Sale.Admin.OrderBasket = function (params)
 	this.qantityUpdaterTimeout = 0;
 	this.qantityUpdaterDelay = 750;
 	this.canSendUpdateQuantityRequest = true;
+	this.lastChangedQuantity = false;
 
 	if(params.iblocksSkuParams)
 	{
@@ -2213,6 +2214,24 @@ BX.Sale.Admin.OrderBasketEdit.prototype.createFieldQuantity = function(basketCod
 			style: { width: '60px' }
 		}),
 		ratioNode = this.createMeasureRatioNode(basketCode, input, ratio);
+
+	/*
+	 * If we will receive the error during the refreshOrderData error we must restore this value
+	 */
+	BX.bind(
+		input,
+		"focus",
+		function(e){
+			var oldValue = input.value;
+			BX.Sale.Admin.OrderEditPage.addRollbackMethod(
+				function(){
+					var tmp = _this.canSendUpdateQuantityRequest;
+					_this.canSendUpdateQuantityRequest = false;
+					_this.setProductQuantity(basketCode, oldValue);
+					setTimeout(function(){_this.canSendUpdateQuantityRequest = tmp;}, 1);
+			});
+		}
+	);
 
 	BX.bind(
 		input,

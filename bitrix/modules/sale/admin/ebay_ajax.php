@@ -61,13 +61,29 @@ if(isset($arResult["ERROR"]) <= 0 && $APPLICATION->GetGroupRight("sale") >= "W" 
 			break;
 
 		case "refreshCategoriesData":
-			$categories = new \Bitrix\Sale\TradingPlatform\Ebay\Api\Categories($siteId);
-			$arResult["COUNT"] = $categories->refreshTableData();
+			try
+			{
+				$categories = new \Bitrix\Sale\TradingPlatform\Ebay\Api\Categories($siteId);
+				$arResult["COUNT"] = $categories->refreshTableData();
+			}
+			catch(\Bitrix\Main\SystemException $e)
+			{
+				$arResult["ERROR"] = $e->getMessage();
+			}
+
 			break;
 
 		case "refreshCategoriesPropsData":
-			$categoriesProps = new \Bitrix\Sale\TradingPlatform\Ebay\Api\Categories($siteId);
-			$arResult["COUNT"] = $categoriesProps->refreshVariationsTableData();
+			try
+			{
+				$categoriesProps = new \Bitrix\Sale\TradingPlatform\Ebay\Api\Categories($siteId);
+				$arResult["COUNT"] = $categoriesProps->refreshVariationsTableData();
+			}
+			catch(\Bitrix\Main\SystemException$e)
+			{
+				$arResult["ERROR"] = $e->getMessage();
+			}
+
 			break;
 
 		default:

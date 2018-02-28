@@ -198,4 +198,5 @@ $MESS["SALE_PAY_SYS_RETURN_DESCR"] = "Rückgaben konfigurieren";
 $MESS["SALE_MENU_MARKETPLACE_READY_SHOPS"] = "Einen einsatzbereiten Shop aus Marketplace installieren";
 $MESS["SALE_MENU_MARKETING_MARKETPLACE_ADD"] = "Aus dem Marketplace installieren";
 $MESS["SALE_MENU_TRADING_PLATFORMS_MARKETPLACE_ADD"] = "Aus dem Marketplace installieren";
+$MESS["SALE_MENU_DELIVERY_REQUESTS"] = "Transportbestellungen";
 ?>

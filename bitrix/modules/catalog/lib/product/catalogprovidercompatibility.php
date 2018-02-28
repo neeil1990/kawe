@@ -44,7 +44,9 @@ class CatalogProviderCompatibility
 		$products = array(
 			$productId => array(
 				'ITEM_CODE' => $productId,
-				'QUANTITY' => $basketItemData['QUANTITY'],
+				'QUANTITY_LIST' => array(
+					$basketItemData['BASKET_ID'] => $basketItemData['QUANTITY'])
+				,
 			));
 
 		if (!empty($basketItemData['BASKET_ID']))
@@ -59,10 +61,29 @@ class CatalogProviderCompatibility
 			$data = $r->getData();
 			if (!empty($data['PRODUCT_DATA_LIST']))
 			{
-				$productDataList = reset($data['PRODUCT_DATA_LIST']);
+				$productDataList = $data['PRODUCT_DATA_LIST'];
 				if (isset($productDataList[$productId]))
 				{
-					return $productDataList[$productId];
+					$productData = $productDataList[$productId];
+
+					if (!empty($productData['PRICE_LIST']))
+					{
+						$basketItemCode = $basketItemData['BASKET_ID'];
+
+						if (!empty($productData['PRICE_LIST'][$basketItemCode]))
+						{
+							$priceData = $productData['PRICE_LIST'][$basketItemCode];
+
+							if (!isset($priceData['QUANTITY']) && isset($priceData['AVAILABLE_QUANTITY']))
+							{
+								$priceData['QUANTITY'] = $priceData['AVAILABLE_QUANTITY'];
+							}
+
+							$productData = $priceData + $productData;
+						}
+					}
+
+					return $productData;
 				}
 			}
 		}
@@ -361,6 +382,46 @@ class CatalogProviderCompatibility
 			if (isset($data['STORES_COUNT']))
 			{
 				return $data['STORES_COUNT'];
+			}
+		}
+
+		return $result;
+	}
+
+	public static function DeliverProduct(array $values)
+	{
+		$result = false;
+		$providerClass = static::getProviderClass();
+		if (!$providerClass)
+		{
+			return $result;
+		}
+
+		$productId = $values['PRODUCT_ID'];
+		$transfer = Sale\Internals\TransferProvider::create($providerClass, static::getContext());
+
+		if (empty($values['SITE_ID']))
+		{
+			$values['SITE_ID'] = SITE_ID;
+		}
+
+		$products = array(
+			$productId => array(
+				"PRODUCT_ID" => $productId,
+				"USER_ID"    => $values["USER_ID"],
+				"ORDER_ID"    => $values["ORDER_ID"],
+				"PAID"    => $values["PAID"],
+				"BASKET_ID"    => $values["BASKET_ID"],
+			));
+
+		$r = $transfer->deliver($products);
+		if ($r->isSuccess())
+		{
+			$data = $r->getData();
+
+			if (!empty($data['DELIVER_PRODUCTS_LIST']) && array_key_exists($productId, $data['DELIVER_PRODUCTS_LIST']))
+			{
+				return $data['DELIVER_PRODUCTS_LIST'][$productId];
 			}
 		}
 

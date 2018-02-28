@@ -74,6 +74,10 @@ $boolDiscount = (isset($_REQUEST['discount']) && $_REQUEST['discount'] === 'Y');
 if ($boolDiscount)
 	$reloadParams['discount'] = 'Y';
 
+$simpleName = (isset($_REQUEST['simplename']) && $_REQUEST['simplename'] === 'Y');
+if ($simpleName)
+	$reloadParams['simplename'] = 'Y';
+
 $reloadUrl = $APPLICATION->GetCurPage().'?lang='.LANGUAGE_ID;
 foreach ($reloadParams as $key => $value)
 	$reloadUrl .= '&'.$key.'='.$value;
@@ -290,13 +294,15 @@ $lAdmin->NavText($rsData->GetNavPrint($arIBlock["SECTIONS_NAME"]));
 
 $strPath = "";
 $jsPath  = "";
-if(intval($find_section_section) > 0)
+$nameSeparator = "";
+if (!$simpleName && intval($find_section_section) > 0)
 {
+	$nameSeparator = "&nbsp;/&nbsp;";
 	$nav = CIBlockSection::GetNavChain($IBLOCK_ID, $find_section_section);
 	while($ar_nav = $nav->GetNext())
 	{
-		$strPath .= htmlspecialcharsbx($ar_nav["~NAME"], ENT_QUOTES)."&nbsp;/&nbsp;";
-		$jsPath .= htmlspecialcharsbx(CUtil::JSEscape($ar_nav["~NAME"]), ENT_QUOTES)."&nbsp;/&nbsp;";
+		$strPath .= htmlspecialcharsbx($ar_nav["~NAME"], ENT_QUOTES).$nameSeparator;
+		$jsPath .= htmlspecialcharsbx(CUtil::JSEscape($ar_nav["~NAME"]), ENT_QUOTES).$nameSeparator;
 	}
 }
 
@@ -311,7 +317,7 @@ while($arRes = $rsData->NavNext(true, "f_"))
 	if($entity_id)
 		$USER_FIELD_MANAGER->AddUserFields($entity_id, $arRes, $row);
 
-	$row->AddViewField("NAME", '<a href="'.$sec_list_url.'" onclick="'.$lAdmin->ActionRedirect($sec_list_url).'; return false;" title="'.GetMessage("IBLOCK_SECSEARCH_LIST").'">'.$f_NAME.'</a><div style="display:none" id="name_'.$f_ID.'">'.$strPath.$f_NAME.'&nbsp;/&nbsp;'.'</div>');
+	$row->AddViewField("NAME", '<a href="'.$sec_list_url.'" onclick="'.$lAdmin->ActionRedirect($sec_list_url).'; return false;" title="'.GetMessage("IBLOCK_SECSEARCH_LIST").'">'.$f_NAME.'</a><div style="display:none" id="name_'.$f_ID.'">'.$strPath.$f_NAME.$nameSeparator.'</div>');
 
 	$row->AddCheckField("ACTIVE", false);
 
@@ -350,7 +356,7 @@ while($arRes = $rsData->NavNext(true, "f_"))
 		array(
 			"DEFAULT" => "Y",
 			"TEXT" => GetMessage("IBLOCK_SECSEARCH_SELECT"),
-			"ACTION"=>"javascript:SelEl('".($get_xml_id? $f_XML_ID: $f_ID)."', '".htmlspecialcharsbx($jsPath.htmlspecialcharsbx(CUtil::JSEscape($arRes["NAME"]), ENT_QUOTES))."&nbsp;/&nbsp;"."')",
+			"ACTION"=>"javascript:SelEl('".($get_xml_id? $f_XML_ID: $f_ID)."', '".htmlspecialcharsbx($jsPath.htmlspecialcharsbx(CUtil::JSEscape($arRes["NAME"]), ENT_QUOTES)).$nameSeparator."')",
 		),
 	));
 }
@@ -503,6 +509,10 @@ function SelEl(id, name)
 		el = window.opener.document.getElementById('sp_<?echo md5($n)?>_<?echo $k?>');
 		if(!el)
 			el = window.opener.document.getElementById('sp_<?echo $n?>');
+		if (!el)
+			el = window.opener.document.getElementById('<?echo md5($n)?>_<?echo $k?>_link');
+		if(!el)
+			el = window.opener.document.getElementById('<?echo $n?>_link');
 		if(el)
 			el.innerHTML = name;
 		window.close();

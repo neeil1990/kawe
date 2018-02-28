@@ -27,6 +27,9 @@ abstract class BasketBase extends BasketItemCollection
 	/** @var array $basketItemIndexMap */
 	protected $basketItemIndexMap = array();
 
+	/** @var int $maxItemSort */
+	protected $maxItemSort = null;
+
 	/**
 	 * @param $itemCode
 	 * @return BasketItemBase|null
@@ -165,6 +168,7 @@ abstract class BasketBase extends BasketItemCollection
 	{
 		$basket = static::createBasketObject();
 		$basket->setOrder($order);
+		$basket->setSiteId($order->getSiteId());
 
 		return $basket->loadFromDb(array("ORDER_ID" => $order->getId()));
 	}
@@ -209,6 +213,8 @@ abstract class BasketBase extends BasketItemCollection
 
 		$this->basketItemIndexMap[$basketItem->getBasketCode()] = $basketItem->getInternalIndex();
 
+		$this->verifyItemSort($basketItem);
+
 		$basketItem->setCollection($this);
 
 		/** @var OrderBase $order */
@@ -216,6 +222,29 @@ abstract class BasketBase extends BasketItemCollection
 		{
 			$order->onBasketModify(EventActions::ADD, $basketItem);
 		}
+	}
+
+	protected function verifyItemSort(BasketItemBase $item)
+	{
+		$itemSort = (int)$item->getField('SORT') ?: 100;
+
+		if ($this->maxItemSort === null)
+		{
+			$this->maxItemSort = $itemSort;
+		}
+		else
+		{
+			if ($itemSort > $this->maxItemSort)
+			{
+				$this->maxItemSort = $itemSort;
+			}
+			else
+			{
+				$this->maxItemSort += 100 + $this->maxItemSort % 100;
+			}
+		}
+
+		$item->setFieldNoDemand('SORT', $this->maxItemSort);
 	}
 
 	/**
@@ -741,11 +770,6 @@ abstract class BasketBase extends BasketItemCollection
 	{
 		$isStartField = $this->isStartField();
 
-		if ($strategy === null)
-		{
-			$strategy = RefreshFactory::create();
-		}
-
 		/** @var OrderBase $order */
 		$order = $this->getOrder();
 		if ($order)
@@ -755,6 +779,11 @@ abstract class BasketBase extends BasketItemCollection
 			{
 				return $r;
 			}
+		}
+
+		if ($strategy === null)
+		{
+			$strategy = RefreshFactory::create();
 		}
 
 		$result = $strategy->refresh($this);
@@ -831,8 +860,13 @@ abstract class BasketBase extends BasketItemCollection
 			$basket->setOrder($order);
 		}
 
+		$sortedCollection = $this->collection;
+		usort($sortedCollection, function(BasketItemBase $a, BasketItemBase $b){
+			return (int)$a->getField('SORT') - (int)$b->getField('SORT');
+		});
+
 		/** @var BasketItemBase $item */
-		foreach ($this->collection as $item)
+		foreach ($sortedCollection as $item)
 		{
 			if (!$item->canBuy() || $item->isDelay())
 				continue;

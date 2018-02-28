@@ -1000,7 +1000,7 @@ function getRatio($arBasketItems)
 	{
 		static $cacheRatio = array();
 
-		$helperCacheRatio = \Bitrix\Sale\BasketComponentHelper::getRatioCache();
+		$helperCacheRatio = \Bitrix\Sale\BasketComponentHelper::getRatioDataCache();
 		if (is_array($helperCacheRatio) && !empty($helperCacheRatio))
 		{
 			$cacheRatio = array_merge($cacheRatio, $helperCacheRatio);

@@ -81,6 +81,12 @@ $arComponentParameters = array(
 			"PARENT" => "BASE",
 			"DEFAULT" => "N"
 		),
+		"CHECK_DATES" => array(
+			"PARENT" => "BASE",
+			"NAME" => GetMessage("CATALOG_SC_CHECK_DATES"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "Y",
+		),
 		"BLOG_USE" => array(
 			"NAME" => GetMessage("CATALOG_SC_BLOG_USE"),
 			"TYPE" => "CHECKBOX",

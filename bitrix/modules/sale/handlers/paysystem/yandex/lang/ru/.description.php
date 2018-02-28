@@ -1,5 +1,5 @@
 <?php
-$MESS['SALE_HPS_YANDEX'] = 'Яндекс.Касса';
+$MESS['SALE_HPS_YANDEX'] = 'Яндекс.Касса (устаревшая версия)';
 $MESS["SALE_HPS_YANDEX_SHOP_ID"] = "Идентификатор магазина в ЦПП (ShopID)";
 $MESS["SALE_HPS_YANDEX_SHOP_ID_DESC"] = "Код магазина, который получен от Яндекс";
 $MESS["SALE_HPS_YANDEX_SCID"] = "Номер витрины магазина в ЦПП (scid)";

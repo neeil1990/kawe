@@ -166,7 +166,7 @@ class OrderAnalysis
 						?>
 						<tr class="bdb-line">
 							<td class="tac"><?=++$itemNo?></td>
-							<td style="text-align: left;"><a class="fwb" href="<?=$item['EDIT_PAGE_URL']?>"><?=htmlspecialcharsEx($item['NAME']);?></a></td>
+							<td style="text-align: left;"><a class="fwb" href="<?=htmlspecialcharsbx($item['EDIT_PAGE_URL']);?>"><?=htmlspecialcharsEx($item['NAME']);?></a></td>
 							<td class="tac"><?=$properties;?></td>
 							<td class="tac" style="text-align: right !important;"><?=$quantity.' '.htmlspecialcharsEx($item['MEASURE_TEXT'])?></td>
 							<td class="tac" style="text-align: right !important;;"><?=$shippedQuantity.' '.htmlspecialcharsEx($item['MEASURE_TEXT'])?></td>

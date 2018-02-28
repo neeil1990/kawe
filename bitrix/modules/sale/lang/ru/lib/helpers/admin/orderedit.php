@@ -18,4 +18,7 @@ $MESS["SALE_ORDEREDIT_PRODUCT_IS_NOT_AVAILABLE"] = "Товар \"#NAME_ID#\" н�
 $MESS["SALE_ORDEREDIT_PRODUCT_QUANTITY_IS_EMPTY"] = "Недостаточное количество товара \"#NAME#\"";
 $MESS["SALE_ORDEREDIT_CLOSE"] = "Закрыть";
 $MESS["SALE_ORDEREDIT_MESSAGE"] = "Сообщение";
+$MESS["SALE_ORDEREDIT_CONFIRM"] = "Подтверждение";
+$MESS["SALE_ORDEREDIT_CONFIRM_CONTINUE"] = "Продолжить";
+$MESS["SALE_ORDEREDIT_CONFIRM_ABORT"] = "Прервать";
 ?>

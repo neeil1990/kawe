@@ -154,7 +154,8 @@ if (!empty($arElements) && is_array($arElements))
 			'ADD_TO_BASKET_ACTION' => (isset($arParams['ADD_TO_BASKET_ACTION']) ? $arParams['ADD_TO_BASKET_ACTION'] : ''),
 			'SHOW_CLOSE_POPUP' => (isset($arParams['SHOW_CLOSE_POPUP']) ? $arParams['SHOW_CLOSE_POPUP'] : ''),
 			'COMPARE_PATH' => $arParams['COMPARE_PATH'],
-			'COMPARE_NAME' => $arParams['COMPARE_NAME']
+			'COMPARE_NAME' => $arParams['COMPARE_NAME'],
+			'USE_COMPARE_LIST' => $arParams['USE_COMPARE_LIST']
 		),
 		$arResult["THEME_COMPONENT"],
 		array('HIDE_ICONS' => 'Y')

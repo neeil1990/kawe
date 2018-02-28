@@ -238,7 +238,7 @@ BXMailBlockEditorHandler = function()
 					'func': function(node, param, value){
 						if(typeof(value) !== "undefined")
 						{
-							if(value == 'N')
+							if(value === 'N')
 							{
 								node.removeAttribute('width');
 							}
@@ -320,7 +320,7 @@ BXMailBlockEditorHandler = function()
 							var diffLength = value.length - itemList.length;
 							var diffLengthAbs = Math.abs(diffLength);
 							var diffDelete = diffLength < 0;
-							if (diffLength != 0)
+							if (diffLength !== 0)
 							{
 								for (var i = 0; i < diffLengthAbs; i++)
 								{
@@ -397,6 +397,12 @@ BXMailBlockEditorHandler = function()
 						'func': function (node, param, value) {
 							return this.helper.column(node, param, value);
 						}
+					},
+					'paddings': {
+						'className': 'bxBlockContentText',
+						'func': function(node, param, value) {
+							return this.helper.paddings(node, param, value);
+						}
 					}
 				}
 			},
@@ -411,6 +417,12 @@ BXMailBlockEditorHandler = function()
 						'className': 'bxBlockContentText',
 						'func': function (node, param, value) {
 							return this.helper.column(node, param, value);
+						}
+					},
+					'paddings': {
+						'className': 'bxBlockContentEdge',
+						'func': function(node, param, value) {
+							return this.helper.paddings(node.parentNode, param, value);
 						}
 					}
 				}

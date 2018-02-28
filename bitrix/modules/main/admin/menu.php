@@ -196,7 +196,7 @@ if($USER->CanDoOperation('view_other_settings') || $USER->CanDoOperation('manage
 		$aModuleItems = array();
 		if(method_exists($adminMenu, "IsSectionActive"))
 		{
-			if($adminMenu->IsSectionActive("menu_module_settings") || ($APPLICATION->GetCurPage() == "/bitrix/admin/settings.php" && $_REQUEST["mid_menu"]<>"") || BX_SEARCH_ADMIN === true)
+			if($adminMenu->IsSectionActive("menu_module_settings") || ($APPLICATION->GetCurPage() == "/bitrix/admin/settings.php" && $_REQUEST["mid_menu"]<>"") || defined('BX_SEARCH_ADMIN') && BX_SEARCH_ADMIN === true)
 			{
 				$adminPage->Init();
 				foreach($adminPage->aModules as $module)
@@ -399,7 +399,7 @@ if($USER->CanDoOperation('view_other_settings') || $USER->CanDoOperation('manage
 }
 
 //tools menu
-if($USER->CanDoOperation('view_other_settings') || $USER->CanDoOperation('view_event_log'))
+if($USER->CanDoOperation('view_other_settings') || $USER->CanDoOperation('view_event_log') || $USER->CanDoOperation('edit_php'))
 {
 	$toolsItems = array();
 
@@ -429,6 +429,9 @@ if($USER->CanDoOperation('view_other_settings') || $USER->CanDoOperation('view_e
 			"more_url" => array("php_command_line.php"),
 			"title" => GetMessage("MAIN_MENU_PHP_ALT"),
 		);
+	}
+	if($USER->CanDoOperation('edit_php'))
+	{
 		$toolsItems[] = array(
 			"text" => GetMessage("MAIN_MENU_DUMP"),
 			"title" => GetMessage("MAIN_MENU_DUMP_ALT"),
@@ -460,6 +463,9 @@ if($USER->CanDoOperation('view_other_settings') || $USER->CanDoOperation('view_e
 				),
 			),
 		);
+	}
+	if($USER->CanDoOperation('view_other_settings'))
+	{
 		$toolsItems[] = array(
 			"text" => GetMessage("main_menu_diag"),
 			"title" => GetMessage("main_menu_diag_title"),
@@ -757,7 +763,7 @@ if($USER->CanDoOperation('view_other_settings'))
 	);
 }
 
-if ($USER->CanDoOperation("view_other_settings") && \Bitrix\Main\Analytics\SiteSpeed::isLicenseAccepted())
+if ($USER->CanDoOperation("view_other_settings") && \Bitrix\Main\Analytics\SiteSpeed::isRussianSiteManager())
 {
 	AddEventHandler("main", "OnBuildGlobalMenu", array("\\Bitrix\\Main\\Analytics\\SiteSpeed", "onBuildGlobalMenu"));
 }

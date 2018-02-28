@@ -365,22 +365,17 @@ class Broadcast
 					}
 				}
 
-				$CPushManager = new \CPushManager();
-
-				$CPushManager->addQueue(Array(
-					'USER_ID' => $userIdListPush,
-					'MESSAGE' => str_replace("\n", " ", $message),
-					'PARAMS' => array(
-						'ACTION' => 'post',
-						'TAG' => 'BLOG|POST|'.$params["ENTITY_ID"]
-					),
-					'TAG' => 'BLOG|POST|'.$params["ENTITY_ID"],
-					'SEND_IMMEDIATELY' => 'Y',
-				));
-
-				$CPushManager->addQueue(Array(
-					'USER_ID' => $userIdListPush,
-					'SEND_DEFERRED' => 'Y',
+				\Bitrix\Pull\Push::add($userIdListPush, Array(
+					'module_id' => 'blog',
+					'push' => Array(
+						'message' => $message,
+						'params' => array(
+							'ACTION' => 'post',
+							'TAG' => 'BLOG|POST|'.$params["ENTITY_ID"]
+						),
+						'tag' => 'BLOG|POST|'.$params["ENTITY_ID"],
+						'send_immediately' => 'Y',
+					)
 				));
 
 				$offlineUserIdList = array();

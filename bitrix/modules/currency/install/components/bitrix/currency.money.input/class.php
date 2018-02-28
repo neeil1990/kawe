@@ -95,15 +95,9 @@ class CCurrencyMoneyInputComponent extends \CBitrixComponent
 		{
 			if(array_key_exists($currentCurrency, $this->currencyList))
 			{
-				$format = \CCurrencyLang::getCurrencyFormat($currentCurrency);
+				$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
 
-				$separators = \CCurrencyLang::getSeparators();
-				$thousandsSep = $separators[$format['THOUSANDS_VARIANT']];
-				$currentValue = number_format(doubleval($currentValue), $format['DECIMALS'], $format['DEC_POINT'], $thousandsSep);
-				if($format['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE)
-				{
-					$currentValue = str_replace(' ', '&nbsp;', $currentValue);
-				}
+				$currentValue = number_format((float)$currentValue, $format['DECIMALS'], $format['DEC_POINT'], $format['THOUSANDS_SEP']);
 			}
 		}
 

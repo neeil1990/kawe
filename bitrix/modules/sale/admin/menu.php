@@ -43,7 +43,7 @@ if ($APPLICATION->GetGroupRight("sale")!="D")
 {
 
 	/* Converter Begin */
-	if (Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N') != 'Y')
+	if (Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y') == 'N')
 	{
 
 		$aMenu[] = array(
@@ -489,7 +489,7 @@ if ($APPLICATION->GetGroupRight("sale") == "W" ||
 
 	if ($APPLICATION->GetGroupRight("sale") == "W")
 	{
-		if (Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N') == 'Y')
+		if (Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y') != 'N')
 		{
 			if (CModule::IncludeModule("sale"))
 			{
@@ -595,7 +595,7 @@ if ($APPLICATION->GetGroupRight("sale") == "W" ||
 			"more_url" => array("sale_status_edit.php"),
 		);
 
-		if (Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N') == 'Y')
+		if (Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y') != 'N')
 		{
 			$arMenu["items"][] = array(
 				"text" => GetMessage("SALE_BUSINESS_VALUE"),

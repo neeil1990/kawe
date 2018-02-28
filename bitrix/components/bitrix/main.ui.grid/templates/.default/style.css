@@ -633,7 +633,6 @@
 	   -moz-box-sizing:border-box;
 			box-sizing:border-box;
 	overflow:hidden;
-	min-height: 64px;
 	-khtml-user-drag: none;
 	-webkit-user-drag: none;
 }
@@ -2175,6 +2174,8 @@ label.main-grid-checkbox {
 	border-bottom: 1px rgba(0,0,0,.05) solid;
 	padding-top: 8px;
 	padding-bottom: 16px;
+	min-height: 110px;
+	position: relative;
 }
 
 .main-grid-settings-window-list-label {
@@ -2385,7 +2386,7 @@ label.main-grid-checkbox {
 	opacity: .4;
 	text-transform: none;
 	white-space: normal;
-	max-width: 165px;
+	max-width: 180px;
 	text-align: left;
 }
 
@@ -2417,10 +2418,14 @@ label.main-grid-checkbox {
 	border-bottom: 0;
 	text-transform: none;
 	margin-left: 10px;
+	vertical-align: top;
 }
 
 .main-grid-settings-window-for-all .main-grid-settings-window-for-all-label {
 	padding-left: 1px;
+	max-width: 180px;
+	text-align: left;
+	vertical-align: top;
 }
 
 .main-grid-settings-window-for-all .main-grid-settings-window-for-all-checkbox,
@@ -3037,4 +3042,24 @@ label.main-grid-checkbox {
 		-o-transform: translate3d(0,25px,0);
 		transform: translate3d(0,25px,0);
 	}
+}
+
+
+.main-grid-popup-window-buttons-wrapper {
+	background: #ffffff;
+	position: sticky;
+	position: -webkit-sticky;
+	position: -moz-sticky;
+	position: -ms-sticky;
+	position: -o-sticky;
+	bottom: 0;
+	margin-left: -10px;
+	margin-right: -10px;
+	margin-bottom: -10px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-bottom: 10px;
+	box-sizing: border-box;
+	box-shadow: 0 -2px 9px -2px rgba(0,0,0,.5);
+	z-index: 9999;
 }

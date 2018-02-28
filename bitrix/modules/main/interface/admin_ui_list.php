@@ -179,8 +179,14 @@ class CAdminUiList extends CAdminList
 			}
 			$filterable[$filterField["id"]] = $filterField["filterable"];
 		}
+
 		foreach ($filterData as $fieldId => $fieldValue)
 		{
+			if (empty($fieldValue))
+			{
+				continue;
+			}
+
 			if (substr($fieldId, -5) == "_from")
 			{
 				$realFieldId = substr($fieldId, 0, strlen($fieldId)-5);
@@ -421,6 +427,9 @@ class CAdminUiList extends CAdminList
 	{
 		global $APPLICATION;
 		$APPLICATION->SetAdditionalCSS('/bitrix/css/main/grid/webform-button.css');
+
+		foreach(GetModuleEvents("main", "OnAdminListDisplay", true) as $arEvent)
+			ExecuteModuleEventEx($arEvent, array(&$this));
 
 		$this->ShowContext();
 

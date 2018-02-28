@@ -2971,10 +2971,11 @@ class CCatalogCondCtrlIBlockFields extends CCatalogCondCtrlComplex
 				'LOGIC' => static::GetLogic(array(BT_COND_LOGIC_EQ, BT_COND_LOGIC_NOT_EQ)),
 				'JS_VALUE' => array(
 					'type' => 'popup',
-					'popup_url' =>  '/bitrix/admin/cat_section_search.php',
+					'popup_url' =>  '/bitrix/admin/iblock_section_search.php',
 					'popup_params' => array(
 						'lang' => LANGUAGE_ID,
-						'discount' => 'Y'
+						'discount' => 'Y',
+						'simplename' => 'Y'
 					),
 					'param_id' => 'n',
 					'show_value' => 'Y'
@@ -3568,18 +3569,23 @@ class CCatalogCondCtrlIBlockProps extends CCatalogCondCtrlComplex
 									$arPhpValue = array('VALIDATE' => 'element');
 									break;
 								case 'G':
+									$popupParams = array(
+										'lang' => LANGUAGE_ID,
+										'IBLOCK_ID' => $arProp['LINK_IBLOCK_ID'],
+										'discount' => 'Y',
+										'simplename' => 'Y',
+									);
+									if ($arProp['LINK_IBLOCK_ID'] > 0)
+										$popupParams['iblockfix'] = 'y';
 									$strFieldType = 'int';
 									$arLogic = static::GetLogic(array(BT_COND_LOGIC_EQ, BT_COND_LOGIC_NOT_EQ));
 									$arValue = array(
 										'type' => 'popup',
-										'popup_url' =>  '/bitrix/admin/cat_section_search.php',
-										'popup_params' => array(
-											'lang' => LANGUAGE_ID,
-											'IBLOCK_ID' => $arProp['LINK_IBLOCK_ID'],
-											'discount' => 'Y'
-										),
+										'popup_url' =>  '/bitrix/admin/iblock_section_search.php',
+										'popup_params' => $popupParams,
 										'param_id' => 'n'
 									);
+									unset($popupParams);
 									$arPhpValue = array('VALIDATE' => 'section');
 									break;
 							}

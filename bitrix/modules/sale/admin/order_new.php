@@ -216,7 +216,7 @@ if (
 {
 	$ID = intval($ID);
 	$recalcOrder = "N";
-	$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'N');
+	$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 	if (defined("SALE_DEBUG") && SALE_DEBUG)
 		CSaleHelper::WriteToLog("order_new.php", array("POST" => $_POST), "ORNW1");
@@ -690,7 +690,7 @@ if (
 		DiscountCouponsManager::init($couponsMode, $couponsParams, false);
 		unset($couponsParams, $couponsMode);
 
-		if ($isOrderConverted == 'Y')
+		if ($isOrderConverted != 'N')
 		{
 			$discountMode = ($ID > 0 ? Sale\Compatible\DiscountCompatibility::MODE_ORDER : Sale\Compatible\DiscountCompatibility::MODE_MANAGER);
 			$discountParams = array(
@@ -1056,7 +1056,7 @@ if (
 			if ($ID <= 0 || $arOldOrder["STATUS_ID"] == $str_STATUS_ID)
 				$arAdditionalFields["STATUS_ID"] = $str_STATUS_ID;
 
-			if ($isOrderConverted == "Y")
+			if ($isOrderConverted != 'N')
 			{
 				$arAdditionalFields = array_merge($arAdditionalFields, array(
 					'CANCELED' => (!empty($_POST["CANCELED"]) && trim($_POST["CANCELED"]) == "Y") ? "Y" : "N",

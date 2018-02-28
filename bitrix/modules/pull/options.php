@@ -310,7 +310,7 @@ $arExcludeSites = CPullOptions::GetExcludeSites();
 <script language="JavaScript">
 BX.bind(BX('push_enable'), 'change', function(){
 	BX('push_message_per_hit').disabled = !this.checked;
-});	
+});
 BX.bind(BX('config_nginx'), 'change', function(){
 	if (this.checked)
 	{
@@ -329,7 +329,7 @@ BX.bind(BX('config_nginx'), 'change', function(){
 				BX('config_nginx_command_per_hit').disabled = false;
 				BX('config_websocket').disabled = false;
 				BX('config_signature_key').disabled = false;
-				
+
 				if (BX('config_websocket').checked || BX('config_nginx_version_3').checked)
 				{
 					BX('config_path_to_websocket').disabled = false;
@@ -340,7 +340,7 @@ BX.bind(BX('config_nginx'), 'change', function(){
 					BX('config_websocket').disabled = true;
 				}
 			}
-			else 
+			else
 			{
 				BX('config_nginx_command_per_hit').disabled = true;
 				BX('config_websocket').disabled = true;
@@ -378,6 +378,7 @@ BX.bind(BX('config_nginx_version_1'), 'change', function(){
 		BX('config_path_to_websocket').disabled = true;
 		BX('config_path_to_websocket_secure').disabled = true;
 		BX('config_signature_key').disabled = true;
+		BX('config_websocket').checked = false;
 	}
 	else
 	{
@@ -424,6 +425,9 @@ BX.bind(BX('config_nginx_version_3'), 'change', function(){
 		if (BX('config_nginx_version_3').checked)
 		{
 			BX('config_websocket').disabled = true;
+			BX('config_websocket').checked = true;
+			BX('config_path_to_websocket').disabled = false;
+			BX('config_path_to_websocket_secure').disabled = false;
 		}
 	}
 	else

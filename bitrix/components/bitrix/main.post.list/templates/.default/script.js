@@ -262,7 +262,8 @@
 					{
 						author = {
 							id : parseInt(node.getAttribute("bx-mpl-author-id")),
-							name : node.getAttribute("bx-mpl-author-name")
+							name : node.getAttribute("bx-mpl-author-name"),
+							gender : node.getAttribute("bx-mpl-author-gender")
 						};
 					}
 				}
@@ -930,47 +931,6 @@
 		return repo[params["ENTITY_XML_ID"]];
 	};
 
-
-	window["fcExpandComment"] = function(id, source) {
-		if (!BX('record-' + id + '-text')) {
-			return;
-		}
-
-		var el2 = BX('record-' + id + '-text'),
-			el = el2.parentNode,
-			fxStart = 200,
-			fxFinish = parseInt(el2.offsetHeight),
-			start1 = {height:fxStart},
-			finish1 = {height:fxFinish};
-		if (!!source)
-			BX.remove(source);
-
-		var time = (fxFinish - fxStart) / (2000 - fxStart);
-		time = (time < 0.3 ? 0.3 : (time > 0.8 ? 0.8 : time));
-
-		el.style.maxHeight = start1.height+'px';
-		el.style.overflow = 'hidden';
-
-		(new BX["easing"]({
-			duration : time*1000,
-			start : start1,
-			finish : finish1,
-			transition : BX.easing.makeEaseOut(BX.easing.transitions.quart),
-			step : function(state){
-				el.style.maxHeight = state.height + "px";
-				el.style.opacity = state.opacity / 100;
-			},
-			complete : function(){
-				el.style.cssText = '';
-				el.style.maxHeight = 'none';
-				BX.onCustomEvent(window, 'OnUCRecordWasExpanded', [el]);
-				BX.LazyLoad.showImages(true);
-			}
-		})).animate();
-
-		BX.onCustomEvent(window, "OnUCFeedChanged", [id.split('-')]);
-	};
-
 	var lastWaitElement = null;
 	window["fcShowWait"] = function(el) {
 		if (el && !BX.type.isElementNode(el))
@@ -1225,6 +1185,25 @@
 				}
 			);
 		}
+	};
+
+	window["fcCommentExpand"] = function(el) {
+		BX.UI.Animations.expand({
+			moreButtonNode: el,
+			type: 'comment',
+			classBlock: 'feed-com-block',
+			classOuter: 'feed-com-text-inner',
+			classInner: 'feed-com-text-inner-inner',
+			heightLimit: 200,
+			callback: function(el) {
+				BX.onCustomEvent(window, 'OnUCRecordWasExpanded', [el]);
+				var commentContentId = el.getAttribute('bx-content-view-xml-id');
+				if (BX.type.isNotEmptyString(commentContentId))
+				{
+					BX.onCustomEvent(window, "OnUCFeedChanged", [ commentContentId.split('-') ]);
+				}
+			}
+		})
 	};
 
 	/**

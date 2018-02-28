@@ -115,6 +115,8 @@ class catalog extends CModule
 		$eventManager->registerEventHandlerCompatible('catalog', 'onAddContactType', 'catalog', '\Bitrix\Catalog\SubscribeTable', 'onAddContactType');
 		$eventManager->registerEventHandler('sale', 'OnSaleOrderSaved', 'catalog', '\Bitrix\Catalog\SubscribeTable', 'onSaleOrderSaved');
 
+		RegisterModuleDependences("iblock", "OnBeforeIBlockUpdate", "catalog", "CCatalog", "OnBeforeIBlockUpdate");
+		RegisterModuleDependences("iblock", "OnAfterIBlockUpdate", "catalog", "CCatalog", "OnAfterIBlockUpdate");
 		RegisterModuleDependences("iblock", "OnIBlockDelete", "catalog", "CCatalog", "OnIBlockDelete");
 		RegisterModuleDependences("iblock", "OnIBlockElementDelete", "catalog", "CCatalogProduct", "OnIBlockElementDelete");
 		RegisterModuleDependences("iblock", "OnIBlockElementDelete", "catalog", "CPrice", "OnIBlockElementDelete");
@@ -286,6 +288,8 @@ class catalog extends CModule
 			COption::RemoveOption("catalog");
 		}
 
+		UnRegisterModuleDependences("iblock", "OnBeforeIBlockUpdate", "catalog", "CCatalog", "OnBeforeIBlockUpdate");
+		UnRegisterModuleDependences("iblock", "OnAfterIBlockUpdate", "catalog", "CCatalog", "OnAfterIBlockUpdate");
 		UnRegisterModuleDependences("iblock", "OnIBlockDelete", "catalog", "CCatalog", "OnIBlockDelete");
 		UnRegisterModuleDependences("iblock", "OnIBlockElementDelete", "catalog", "CProduct", "OnIBlockElementDelete");
 		UnRegisterModuleDependences("iblock", "OnIBlockElementDelete", "catalog", "CPrice", "OnIBlockElementDelete");

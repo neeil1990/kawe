@@ -150,12 +150,12 @@ class PayPalHandler extends PaySystem\ServiceHandler implements PaySystem\IPrePa
 
 		$serviceResult->setPsData($fields);
 
-		$paymentSum = PriceMaths::roundByFormatCurrency($this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY'), $payment->getField('CURRENCY'));
+		$paymentSum = PriceMaths::roundPrecision($this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY'));
 
 		$payPalSum = (float)$keys["mc_gross"];
 		if ($keys["tax"])
 			$payPalSum -= (float)$keys["tax"];
-		$payPalSum = PriceMaths::roundByFormatCurrency($payPalSum, $payment->getField('CURRENCY'));
+		$payPalSum = PriceMaths::roundPrecision($payPalSum);
 
 		if ($paymentSum == $payPalSum
 			&& ToLower($keys["receiver_email"]) == ToLower($this->getBusinessValue($payment, "PAYPAL_BUSINESS"))
@@ -207,12 +207,12 @@ class PayPalHandler extends PaySystem\ServiceHandler implements PaySystem\IPrePa
 
 		$serviceResult->setPsData($fields);
 
-		$paymentSum = PriceMaths::roundByFormatCurrency($this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY'), $payment->getField('CURRENCY'));
+		$paymentSum = PriceMaths::roundPrecision($this->getBusinessValue($payment, 'PAYMENT_SHOULD_PAY'));
 
 		$payPalSum = (float)$request->get("mc_gross");
 		if ($request->get('tax'))
 			$payPalSum -= (float)$request->get('tax');
-		$payPalSum = PriceMaths::roundByFormatCurrency($payPalSum, $payment->getField('CURRENCY'));
+		$payPalSum = PriceMaths::roundPrecision($payPalSum);
 
 		if ($paymentSum == $payPalSum
 			&& ToLower($request->get("receiver_email")) == ToLower($this->getBusinessValue($payment, "PAYPAL_BUSINESS"))

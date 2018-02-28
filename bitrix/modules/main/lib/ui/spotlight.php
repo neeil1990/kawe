@@ -37,7 +37,7 @@ class Spotlight
 
 		$this->id = $id;
 
-		$this->userTimeSpan = 0;
+		$this->userTimeSpan = 3600 * 24 * 30;
 		$this->userType = static::USER_TYPE_OLD;
 		$this->lifetime = 3600 * 24 * 30;
 	}

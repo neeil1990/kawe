@@ -1400,4 +1400,70 @@ class Options
 		unset($_SESSION["main.ui.filter"][$filterId]);
 		unset($_SESSION["main.ui.filter.presets"][$filterId]);
 	}
+
+
+	public static function getRowsFromFields($fields = array())
+	{
+		$rows = array();
+
+		foreach ($fields as $key => $field)
+		{
+			$rows[] = str_replace(
+				array(
+					"_datesel",
+					"_numsel",
+					"_from",
+					"_to",
+					"_days",
+					"_month",
+					"_quarter",
+					"_id",
+					"_year",
+					"_name",
+					"_label",
+					"_value"
+				),
+				"",
+				$key
+			);
+		}
+
+		return $rows;
+	}
+
+
+	/**
+	 * Gets used fields
+	 * @return array
+	 */
+	public function getUsedFields()
+	{
+		$fields = array();
+
+		// Fetch fields from user presets
+		foreach ($this->getPresets() as $key => $preset)
+		{
+			if (is_string($preset["rows"]))
+			{
+				$presetRows = explode(",", $preset["rows"]);
+			}
+			else
+			{
+				$presetRows = static::getRowsFromFields($preset["fields"]);
+			}
+
+			$fields = array_merge($fields, $presetRows);
+		}
+
+		// Fetch fields from default presets
+		foreach ($this->getDefaultPresets() as $key => $preset)
+		{
+			$presetRows = static::getRowsFromFields($preset["fields"]);
+			$fields = array_merge($fields, $presetRows);
+		}
+
+		$fields = array_unique($fields);
+
+		return $fields;
+	}
 }

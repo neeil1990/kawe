@@ -39,8 +39,8 @@ class YandexBannerTable extends AdvEntity
 {
 	const ENGINE = 'yandex_direct';
 
-	const MAX_TITLE_LENGTH = 33;
-	const MAX_TEXT_LENGTH = 75;
+	const MAX_TITLE_LENGTH = 35;
+	const MAX_TEXT_LENGTH = 81;
 
 	const CACHE_LIFETIME = 3600;
 

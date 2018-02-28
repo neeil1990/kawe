@@ -79,7 +79,8 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 	{
 		if($this->basket === null)
 		{
-			$this->basket = \Bitrix\Sale\Basket::loadItemsForFUser(\Bitrix\Sale\Fuser::getId(), SITE_ID);
+			$basketStorage = \Bitrix\Sale\Basket\Storage::getInstance(\Bitrix\Sale\Fuser::getId(), SITE_ID);
+			$this->basket = $basketStorage->getBasket();
 		}
 
 		return $this->basket;
@@ -541,8 +542,10 @@ class CSaleGiftBasketComponent extends CCatalogViewedProductsComponent
 			(
 				$item->getProvider() &&
 				(
-					$item->getProvider() === "CCatalogProductProvider" ||
-					array_key_exists("CCatalogProductProvider", class_parents($item->getProvider()))
+					$item->getProvider() === "CCatalogProductProvider"
+					|| $item->getProvider() === "\Bitrix\Catalog\Product\CatalogProvider"
+					|| array_key_exists("CCatalogProductProvider", class_parents($item->getProvider()))
+					|| array_key_exists("\Bitrix\Catalog\Product\CatalogProvider", class_parents($item->getProvider()))
 				)
 			);
 	}

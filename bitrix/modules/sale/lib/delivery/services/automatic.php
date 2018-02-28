@@ -802,6 +802,15 @@ class Automatic extends Base
 
 						if(isset($res["TRANSIT"]))
 							$calcRes->setPeriodDescription($res["TRANSIT"]);
+
+						if(isset($res["PERIOD_FROM"]))
+							$calcRes->setPeriodFrom($res["PERIOD_FROM"]);
+
+						if(isset($res["PERIOD_TO"]))
+							$calcRes->setPeriodTo($res["PERIOD_TO"]);
+
+						if(isset($res["PERIOD_TYPE"]))
+							$calcRes->setPeriodType($res["PERIOD_TYPE"]);
 					}
 					else
 					{

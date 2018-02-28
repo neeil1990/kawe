@@ -711,7 +711,8 @@ create table if not exists b_sale_order_rules_descr
 	RULE_ID int not null,
 	DESCR text not null,
 	primary key (ID),
-	index IX_SALE_ORDER_RULES_DS_ORD(ORDER_ID)
+	index IX_SALE_ORDER_RULES_DS_ORD(ORDER_ID),
+	index IX_SALE_ORDER_RULES_DS_RULE(RULE_ID)
 );
 
 create table if not exists b_sale_order_discount_data
@@ -1534,11 +1535,6 @@ create table if not exists b_sale_tp_ebay_cat
 	CATEGORY_ID int NOT NULL,
 	PARENT_ID int NOT NULL,
 	LEVEL int NOT NULL,
-	CONDITION_ID_VALUES varchar(255) NOT NULL,
-	CONDITION_ID_DEFINITION_URL varchar(255) NOT NULL,
-	ITEM_SPECIFIC_ENABLED char(1) NOT NULL,
-	VARIATIONS_ENABLED char(1) NOT NULL,
-	PRODUCT_CREATION_ENABLED char(1) NOT NULL,
 	LAST_UPDATE datetime NOT NULL,
 	PRIMARY KEY (ID)
 );
@@ -1548,14 +1544,12 @@ create table if not exists b_sale_tp_ebay_cat_var
 	ID int NOT NULL AUTO_INCREMENT,
 	CATEGORY_ID int NOT NULL,
 	NAME varchar(255) NOT NULL,
-	VALUE varchar(255) NOT NULL,
+	VALUE text NULL,
 	REQUIRED char(1) NOT NULL,
 	MIN_VALUES int NOT NULL,
 	MAX_VALUES int NOT NULL,
 	SELECTION_MODE varchar (255) NOT NULL,
 	ALLOWED_AS_VARIATION char(1) NOT NULL,
-	DEPENDENCY_NAME varchar(255) NOT NULL,
-	DEPENDENCY_VALUE varchar(255) NOT NULL,
 	HELP_URL varchar(255) NOT NULL,
 	PRIMARY KEY (ID)
 );

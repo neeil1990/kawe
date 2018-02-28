@@ -14,6 +14,18 @@
 			maxTimeForUploadFile : 15 * 60, // in sec
 			maxSize : null
 		};
+
+	BX.UploaderManager = function() {
+
+	};
+	BX.UploaderManager.getById = function(id)
+	{
+		return (
+			typeof repo[id] != 'undefined'
+				? repo[id]
+				: false
+		)
+	};
 	/**
 	 * @params array
 	 * @params[input] - BX(id).

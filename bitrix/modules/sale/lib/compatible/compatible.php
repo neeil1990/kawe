@@ -287,7 +287,7 @@ final class CDBResult extends \CDBResult
 //			return false;
 
 //		$this->result = $res_tmp->result;
-		$this->DB = DB;
+		$this->DB = $DB;
 
 		if($this->SqlTraceIndex)
 			$start_time = microtime(true);

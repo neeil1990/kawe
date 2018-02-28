@@ -86,7 +86,7 @@ class Comment
 	{
 		$message = (
 			isset($params["MESSAGE"])
-			&& trim($params["MESSAGE"])
+			&& strlen(trim($params["MESSAGE"])) > 0
 				? trim($params["MESSAGE"])
 				: ''
 		);
@@ -113,7 +113,7 @@ class Comment
 		);
 
 		if (
-			empty($message)
+			strlen($message) <= 0
 			|| $blogId <= 0
 			|| $postId <= 0
 		)
@@ -211,7 +211,7 @@ class Comment
 		);
 
 		if (
-			empty($message)
+			strlen($message) <= 0
 			|| $blogId <= 0
 			|| $blogOwnerId <= 0
 			|| $postAuthorId <= 0
@@ -293,6 +293,14 @@ class Comment
 				"RATING_TYPE_ID" => "BLOG_COMMENT",
 				"RATING_ENTITY_ID" => $commentId
 			);
+
+			$parser = new \CTextParser();
+			$tagInlineList = $parser->detectTags($message);
+
+			if (!empty($tagInlineList))
+			{
+				$fieldsSocnet["TAG"] = $tagInlineList;
+			}
 
 			$logCommentId = \CSocNetLogComments::add($fieldsSocnet, false, false);
 

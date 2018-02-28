@@ -233,7 +233,7 @@ class Order
 			{
 				if (strval($orderStatus) != '')
 				{
-					$r = $this->setStatus($orderStatus);
+					$r = $this->setField('STATUS_ID', $orderStatus);
 					if (!$r->isSuccess())
 					{
 						$result->addErrors($r->getErrors());
@@ -417,7 +417,7 @@ class Order
 			{
 				if (strval($orderStatus) != '')
 				{
-					$r = $this->setStatus($orderStatus);
+					$r = $this->setField('STATUS_ID', $orderStatus);
 					if (!$r->isSuccess())
 					{
 						$result->addErrors($r->getErrors());
@@ -923,9 +923,7 @@ class Order
 			$result->addWarnings($r->getWarnings());
 		}
 
-
-		$fields = $this->fields->getValues();
-		$fieldsRunning = array();
+		$orderDateList = array();
 
 		if ($id > 0)
 		{
@@ -934,17 +932,16 @@ class Order
 
 			if ($this->isChanged())
 			{
-				if (!array_key_exists('DATE_UPDATE', $fields) || (empty($fields['DATE_UPDATE']) && $fields['DATE_UPDATE'] !== null))
+				if (!array_key_exists('DATE_UPDATE', $fields))
 				{
 					$fields['DATE_UPDATE'] = new Type\DateTime();
-					$this->setFieldNoDemand('DATE_UPDATE', $fields['DATE_UPDATE']);
+					$orderDateList['DATE_UPDATE'] = $fields['DATE_UPDATE'];
+					$this->setField('DATE_UPDATE', $fields['DATE_UPDATE']);
 				}
-				elseif (array_key_exists('DATE_UPDATE', $fields) && $fields['DATE_UPDATE'] === null)
+				elseif ($fields['DATE_UPDATE'] === null)
 				{
 					unset($fields['DATE_UPDATE']);
 				}
-				else
-					$fieldsRunning['DATE_UPDATE'] = $fields['DATE_INSERT'];
 
 				$fields['VERSION'] = intval($this->getField('VERSION')) + 1;
 				$this->setFieldNoDemand('VERSION', $fields['VERSION']);
@@ -981,30 +978,19 @@ class Order
 		}
 		else
 		{
-			$isChanged = true;
-			if (!isset($fields['DATE_INSERT']) || strval($fields['DATE_INSERT']) == '')
-			{
-				$fields['DATE_INSERT'] = new Type\DateTime();
-				$this->setFieldNoDemand('DATE_INSERT', $fields['DATE_INSERT']);
-			}
-			else
-			{
-				$fieldsRunning['DATE_INSERT'] = $fields['DATE_INSERT'];
-			}
+			$currentDateTime = new Type\DateTime();
+			if (!$this->getField('DATE_INSERT'))
+				$this->setField('DATE_INSERT', $currentDateTime);
 
-			if (!array_key_exists('DATE_UPDATE', $fields) || (empty($fields['DATE_UPDATE']) && $fields['DATE_UPDATE'] !== null))
-			{
-				$fields['DATE_UPDATE'] = new Type\DateTime();
-				$this->setFieldNoDemand('DATE_UPDATE', $fields['DATE_UPDATE']);
-			}
-			elseif (array_key_exists('DATE_UPDATE', $fields) && $fields['DATE_UPDATE'] === null)
-			{
-				unset($fields['DATE_UPDATE']);
-			}
-			else
-			{
-				$fieldsRunning['DATE_UPDATE'] = $fields['DATE_UPDATE'];
-			}
+			if (!$this->getField('DATE_UPDATE'))
+				$this->setField('DATE_UPDATE', $currentDateTime);
+
+			$fields = $this->fields->getValues();
+
+			$isChanged = true;
+
+			$orderDateList['DATE_INSERT'] = $fields['DATE_INSERT'];
+			$orderDateList['DATE_UPDATE'] = $fields['DATE_UPDATE'];
 
 			if ($USER->isAuthorized())
 			{
@@ -1113,7 +1099,6 @@ class Order
 			"EXTERNAL_ORDER",
 		);
 
-
 		if ($isChanged)
 		{
 			$logFields = array();
@@ -1217,36 +1202,29 @@ class Order
 			Internals\OrderTable::update($id, array('MARKED' => 'Y'));
 		}
 
+		$currentDateTime = new Type\DateTime();
+		$updateFields = array('RUNNING' => 'N');
+
+		if (array_key_exists('DATE_UPDATE', $orderDateList))
+		{
+			if ($orderDateList['DATE_UPDATE'] !== null)
+				$updateFields['DATE_UPDATE'] = $currentDateTime;
+		}
+
+		if ($this->isNew)
+		{
+			$updateFields['DATE_INSERT'] = $currentDateTime;
+		}
+
+		$this->setFieldsNoDemand($updateFields);
+		Internals\OrderTable::update($id, $updateFields);
 
 		/** @var array $oldEntityValues */
 		$oldEntityValues = $this->fields->getOriginalValues();
 
 		OrderHistory::addLog('ORDER', $this->getId(), 'ORDER_EVENT_ON_ORDER_SAVED', null, null, array(), OrderHistory::SALE_ORDER_HISTORY_LOG_LEVEL_1);
 
-		$isNew = $this->isNew;
 		$isChanged = $this->isChanged();
-
-		$updateFields = array(
-			'RUNNING' => 'N'
-		);
-
-		$now = new Type\DateTime();
-		if(!isset($fieldsRunning['DATE_UPDATE']))
-		{
-			$updateFields['DATE_UPDATE'] = $now;
-			$this->setFieldNoDemand('DATE_UPDATE', $updateFields['DATE_UPDATE']);
-		}
-
-		if($this->isNew && !isset($fieldsRunning['DATE_INSERT']))
-		{
-			$updateFields['DATE_INSERT'] = $now;
-			$updateFields['DATE_STATUS'] = $now;
-			$this->setFieldNoDemand('DATE_INSERT', $updateFields['DATE_INSERT']);
-			$this->setFieldNoDemand('DATE_STATUS', $updateFields['DATE_STATUS']);
-		}
-
-		Internals\OrderTable::update($id, $updateFields);
-
 		static::clearChanged();
 
 		$eventManager = Main\EventManager::getInstance();
@@ -1254,8 +1232,8 @@ class Order
 		{
 			$event = new Main\Event('sale', EventActions::EVENT_ON_ORDER_SAVED, array(
 				'ENTITY' => $this,
-				'IS_NEW' => $isNew,
-			'IS_CHANGED' => $isChanged,
+				'IS_NEW' => $this->isNew,
+				'IS_CHANGED' => $isChanged,
 				'VALUES' => $oldEntityValues,
 			));
 			$event->send();
@@ -2529,7 +2507,7 @@ class Order
 		{
 			if (strval($orderStatus) != '')
 			{
-				$r = $this->setStatus($orderStatus);
+				$r = $this->setField('STATUS_ID', $orderStatus);
 				if (!$r->isSuccess())
 				{
 					$result->addErrors($r->getErrors());
@@ -3556,41 +3534,6 @@ class Order
 	{
 		return $this->isClone;
 	}
-
-	/**
-	 * @param $status
-	 *
-	 * @return Result
-	 */
-	protected function setStatus($status)
-	{
-		global $USER;
-
-		$result = new Result();
-
-		if ($USER && $USER->isAuthorized())
-		{
-			$statusesList = OrderStatus::getAllowedUserStatuses($USER->getID(), $this->getField('STATUS_ID'));
-		}
-		else
-		{
-			$statusesList = OrderStatus::getAllStatusesNames();
-		}
-
-		if($this->getField('STATUS_ID') != $status && array_key_exists($status, $statusesList))
-		{
-			/** @var Result $r */
-			$r = $this->setField('STATUS_ID', $status);
-			if (!$r->isSuccess())
-			{
-				$result->addErrors($r->getErrors());
-				return $result;
-			}
-		}
-
-		return $result;
-	}
-
 
 	public function isAllowPay()
 	{

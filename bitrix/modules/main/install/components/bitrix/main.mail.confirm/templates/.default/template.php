@@ -14,7 +14,7 @@
 						</div>
 						<div class="new-from-email-dialog-cell new-from-email-dialog-full-width-cell">
 							<div class="new-from-email-dialog-string-block">
-								<input type="text" class="new-from-email-dialog-square-string" name="name"
+								<input type="text" class="new-from-email-dialog-square-string" data-name="name"
 									<? if (!empty($arParams['USER_FULL_NAME'])): ?> value="<?=htmlspecialcharsbx($arParams['USER_FULL_NAME']) ?>"<? endif ?>>
 							</div>
 						</div>
@@ -26,7 +26,7 @@
 						</div>
 						<div class="new-from-email-dialog-cell new-from-email-dialog-full-width-cell">
 							<div class="new-from-email-dialog-string-block">
-								<input type="text" class="new-from-email-dialog-square-string" name="email">
+								<input type="text" class="new-from-email-dialog-square-string" data-name="email">
 							</div>
 						</div>
 					</div>
@@ -34,7 +34,7 @@
 						<div class="new-from-email-dialog-text new-from-email-dialog-cell"></div>
 						<div class="new-from-email-dialog-cell new-from-email-dialog-full-width-cell">
 							<label style="display: flex; align-items: center; ">
-								<input type="checkbox" name="public" value="Y" style="margin: 0 5px; "><?=getMessage('MAIN_MAIL_CONFIRM_PUBLIC') ?>
+								<input type="checkbox" data-name="public" value="Y" style="margin: 0 5px; "><?=getMessage('MAIN_MAIL_CONFIRM_PUBLIC') ?>
 								<span class="new-from-email-dialog-hint-icon"
 									title="<?=getMessage('MAIN_MAIL_CONFIRM_PUBLIC_HINT') ?>">?</span>
 							</label>
@@ -51,7 +51,7 @@
 						<div class="new-from-email-dialog-cell new-from-email-dialog-full-width-cell">
 							<div class="new-from-email-dialog-string-block">
 								<input type="text" class="new-from-email-dialog-square-string"
-									name="code" placeholder="<?=getMessage('MAIN_MAIL_CONFIRM_CODE_PLACEHOLDER') ?>">
+									data-name="code" placeholder="<?=getMessage('MAIN_MAIL_CONFIRM_CODE_PLACEHOLDER') ?>">
 							</div>
 						</div>
 					</div>

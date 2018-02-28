@@ -37,20 +37,7 @@ if ($arParams["PRODUCT_ID_VARIABLE"] == '' || !preg_match("/^[A-Za-z_][A-Za-z01-
 
 $arParams['COMPARE_URL'] = (isset($arParams['COMPARE_URL']) ? trim($arParams['COMPARE_URL']) : '');
 if ($arParams['COMPARE_URL'] == '')
-{
-	$comparePath = "compare.php?";
-}
-else
-{
-	$comparePath = CHTTP::urlDeleteParams(
-		$arParams['COMPARE_URL'],
-		array($arParams['PRODUCT_ID_VARIABLE'], $arParams['ACTION_VARIABLE'], ''),
-		array('delete_system_params' => true)
-	);
-	$comparePath .= (stripos($comparePath, '?') === false ? '?' : '&');
-}
-$arParams['COMPARE_URL'] = $comparePath.$arParams['ACTION_VARIABLE'].'=COMPARE';
-unset($comparePath);
+	$arParams['COMPARE_URL'] = "compare.php";
 
 $arParams["NAME"]=trim($arParams["NAME"]);
 if ($arParams["NAME"] == '')

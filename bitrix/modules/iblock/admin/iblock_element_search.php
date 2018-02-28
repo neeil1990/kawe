@@ -353,8 +353,13 @@ if($IBLOCK_ID <= 0)
 	$lAdmin->EndPrologContent();
 }
 
+$elementsName = array();
+
 while($arRes = $rsData->GetNext())
 {
+	$index = ($get_xml_id ? $arRes["XML_ID"]: $arRes["ID"]);
+
+	$elementsName[$index] = $arRes["~NAME"];
 	$arRes["MODIFIED_BY"] = (int)$arRes["MODIFIED_BY"];
 	$arRes["CREATED_BY"] = (int)$arRes["CREATED_BY"];
 	$arRes["WF_LOCKED_BY"] = (int)$arRes["WF_LOCKED_BY"];
@@ -368,7 +373,7 @@ while($arRes = $rsData->GetNext())
 
 	$row =& $lAdmin->AddRow($arRes["ID"], $arRes);
 
-	$row->AddViewField("NAME", $arRes["NAME"].'<input type="hidden" name="n'.$arRes["ID"].'" id="name_'.$arRes["ID"].'" value="'.$arRes["NAME"].'">');
+	$row->AddViewField("NAME", $arRes["NAME"].'<input type="hidden" name="n'.$arRes["ID"].'" id="index_'.$arRes["ID"].'" value="'.$index.'">');
 	if ($arRes["MODIFIED_BY"] > 0)
 		$row->AddViewField("USER_NAME", '[<a target="_blank" href="user_edit.php?lang='.LANGUAGE_ID.'&ID='.$arRes["MODIFIED_BY"].'">'.$arRes["MODIFIED_BY"].'</a>]&nbsp;'.$arRes["USER_NAME"]);
 	else
@@ -501,7 +506,7 @@ while($arRes = $rsData->GetNext())
 		array(
 			"DEFAULT" => "Y",
 			"TEXT" => GetMessage("IBLOCK_ELSEARCH_SELECT"),
-			"ACTION"=>"javascript:SelEl('".CUtil::JSEscape($get_xml_id? $arRes["XML_ID"]: $arRes["ID"])."', '".CUtil::JSEscape($arRes["NAME"])."')",
+			"ACTION"=>"javascript:SelEl('".CUtil::JSEscape($index)."')",
 		),
 	));
 }
@@ -526,6 +531,12 @@ if($m)
 }
 
 $lAdmin->AddAdminContextMenu(array(), false);
+
+?>
+<script type="text/javascript">
+var elementsName = <?=CUtil::PhpToJSObject($elementsName); ?>;
+</script>
+<?
 
 $lAdmin->CheckListMode();
 
@@ -616,26 +627,27 @@ function deleteFilter(el)
 	return false;
 }
 
-function SelEl(id, name)
+function SelEl(id)
 {
-	var el;
+	var el,
+		name;
+
+	name = BX.util.htmlspecialchars(elementsName[id]);
 	<?
 		if ('' != $lookup)
 		{
 			if ('' != $m)
 			{
 				?>window.opener.<? echo $lookup; ?>.AddValue(id);<?
+			}
+			else
+			{
+				?>window.opener.<? echo $lookup; ?>.AddValue(id); window.close();<?
+			}
 		}
 		else
 		{
-			?>
-	window.opener.<? echo $lookup; ?>.AddValue(id);
-	window.close();<?
-		}
-	}
-	else
-	{
-		?><?if($m):?>
+			?><?if($m):?>
 	window.opener.InS<? echo md5($n)?>(id, name);
 	<?else:?>
 	el = window.opener.document.getElementById('<?echo $n?>[<?echo $k?>]');
@@ -674,8 +686,8 @@ function SelAll()
 		if(e && e.nodeName)
 		{
 			v = e.value;
-			n = BX('name_'+v).value;
-			SelEl(v, n);
+			n = BX('index_'+v).value;
+			SelEl(n);
 		}
 		else if(e)
 		{
@@ -684,8 +696,8 @@ function SelAll()
 				if (e[i].checked)
 				{
 					v = e[i].value;
-					n = BX('name_'+v).value;
-					SelEl(v, n);
+					n = BX('index_'+v).value;
+					SelEl(n);
 				}
 			}
 		}

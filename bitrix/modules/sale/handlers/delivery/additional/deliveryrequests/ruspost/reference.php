@@ -36,7 +36,7 @@ class Reference
 			'UNDEF_04' => Loc::getMessage('SALE_DLVRS_ADD_DREQ_REF_QC_U4'),
 			'UNDEF_05' => Loc::getMessage('SALE_DLVRS_ADD_DREQ_REF_QC_U5'),
 			'UNDEF_06' => Loc::getMessage('SALE_DLVRS_ADD_DREQ_REF_QC_U6'),
-			'UNDEF_07' => Loc::getMessage('SALE_DLVRS_ADD_DREQ_REF_QC_U6'),
+			'UNDEF_07' => Loc::getMessage('SALE_DLVRS_ADD_DREQ_REF_QC_U7'),
 		);
 	}
 

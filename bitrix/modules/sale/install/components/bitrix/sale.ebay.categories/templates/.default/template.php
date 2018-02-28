@@ -6,7 +6,7 @@ Loc::loadMessages(__FILE__);
 	<div><b><?=Loc::getMessage("SALE_EBAY_SEC_CATEGORY")?></b></div>
 	<div>
 		<div style="padding-top: 10px;">
-			<select id="sale_ebay_category_1" name="sale_ebay_category_1" onchange="BX.Sale.EbayCategories.getCategoryChildren(this, 1);">
+			<select id="sale_ebay_category_1" name="sale_ebay_category_1" onchange="BX.Sale.EbayCategories.onCategoryChange(this, 1);">
 				<option value=""></option>
 				<?foreach($arResult["TOP_CATEGORIES_LIST"] as $categoryId => $categoryName):?>
 					<option value="<?=htmlspecialcharsbx($categoryId)?>"<?=$categoryId == $arResult["TOP_CATEGORY_ID"] ? " selected" : ""?>><?=htmlspecialcharsbx($categoryName)?></option>
@@ -18,7 +18,7 @@ Loc::loadMessages(__FILE__);
 			<?foreach($arResult["CATEGORY_AND_PARENTS_INFO"] as $categoryLevel => $category):?>
 				<?if(!empty($category["CHILDREN"])):?>
 					<div style="padding-top: 10px;">
-						<select id="sale_ebay_category_<?=$categoryLevel+1?>" name="sale_ebay_category_<?=$categoryLevel+1?>" onchange="BX.Sale.EbayCategories.getCategoryChildren(this, <?=$categoryLevel+1?>);">
+						<select id="sale_ebay_category_<?=$categoryLevel+1?>" name="sale_ebay_category_<?=$categoryLevel+1?>" onchange="BX.Sale.EbayCategories.onCategoryChange(this, <?=$categoryLevel+1?>);">
 							<option value=""></option>
 							<?foreach($category["CHILDREN"] as $childId => $child):	?>
 								<option value="<?=htmlspecialcharsbx($childId)?>"<?=isset($arResult["CATEGORY_AND_PARENTS_INFO"][$categoryLevel+1]["CATEGORY_ID"]) && $arResult["CATEGORY_AND_PARENTS_INFO"][$categoryLevel+1]["CATEGORY_ID"] == $childId ? " selected" : ""?>><?=htmlspecialcharsbx($child["NAME"])?></option>
@@ -84,6 +84,8 @@ Loc::loadMessages(__FILE__);
 				variationsBlockId: "<?=$arResult["VARIATIONS_BLOCK_ID"]?>",
 				ebayVarSelectName: "<?=$arParams["EBAY_CATEGORY_VARIATIONS_SN"]?>",
 				bitrixPropsSelectName: "<?=$arParams["BITRIX_CATEGORY_PROPS_SN"]?>",
+				bitrixCategoryId: "<?=$arResult["BITRIX_CATEGORY_ID"]?>",
+				iBlockId: "<?=$arResult["IBLOCK_ID"]?>",
 				siteId: "<?=$arResult["SITE_ID"]?>"
 			});
 

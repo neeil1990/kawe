@@ -254,6 +254,14 @@ class CPushManager
 		{
 			$arFields['ADVANCED_PARAMS']['id'] = $arFields['SUB_TAG'];
 		}
+		if (!isset($arFields['ADVANCED_PARAMS']['extra']['server_time']))
+		{
+			$arFields['ADVANCED_PARAMS']['extra']['server_time'] = date('c');
+		}
+		if (!isset($arFields['ADVANCED_PARAMS']['extra']['server_time_unix']))
+		{
+			$arFields['ADVANCED_PARAMS']['extra']['server_time_unix'] = microtime(true);
+		}
 
 		$arFields['EXPIRY'] = 0;
 		if (isset($arParams['EXPIRY']) && intval($arParams['EXPIRY']) > 0)
