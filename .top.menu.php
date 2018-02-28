@@ -1,46 +1,20 @@
-<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
-$aMenuLinks = Array(
-	Array(
-		"Как купить", 
-		"about/howto/", 
-		Array(), 
-		Array(), 
-		"" 
+<?
+global $APPLICATION;
+$aMenuLinksExt = $APPLICATION->IncludeComponent(
+	"bitrix:menu.sections",
+	"",
+	array(
+		"CACHE_TIME" => "36000000",
+		"CACHE_TYPE" => "A",
+		"DEPTH_LEVEL" => "2",
+		"IBLOCK_ID" => "4",
+		"IBLOCK_TYPE" => "menu",
+		"ID" => $_REQUEST["ID"],
+		"IS_SEF" => "N",
+		"SECTION_URL" => ""
 	),
-	Array(
-		"Доставка", 
-		"about/delivery/", 
-		Array(), 
-		Array(), 
-		"" 
-	),
-	Array(
-		"О магазине", 
-		"about/", 
-		Array(), 
-		Array(), 
-		"" 
-	),	
-	Array(
-		"Гарантия", 
-		"about/guaranty/", 
-		Array(), 
-		Array(), 
-		"" 
-	),
-	Array(
-		"Контакты",
-		"about/contacts/",
-		Array(),
-		Array(),
-		""
-	),
-	Array(
-		"Мой кабинет",
-		"personal/",
-		Array(),
-		Array(),
-		"CUser::IsAuthorized()"
-	),
+	false
 );
+
+$aMenuLinks = array_merge($aMenuLinks, $aMenuLinksExt);
 ?>

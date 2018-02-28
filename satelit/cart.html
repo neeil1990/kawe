@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+	<meta charset="utf-8">
+	<title>Заголовок</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta property="og:image" content="path/to/image.jpg">
+	<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Roboto:300,400,500,700,900&amp;subset=cyrillic" rel="stylesheet">
+	<link rel="stylesheet" href="css/vendor.css">
+	<link rel="stylesheet" href="css/main.css">
+
+</head>
+
+<body>
+
+<div class="top">
+	<div class="container">
+		<div class="top__wrapper">
+			<a href="#" class="toggle__menu"><span></span></a>
+			<ul class="nav">
+				<li class="nav__item"><a href="#" class="nav__link">О Компании</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">Доставка</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">оплата</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">скидки</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">Новости</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">Контакты</a></li>
+				<li class="nav__item">
+					<a href="#" class="nav__link">
+						Клиентам
+						<i class="icon-arrow_down"></i>
+					</a>
+					<ul class="nav__submenu">
+						<li><a href="#" class="nav__submenu_link">Как заказать?</a></li>
+						<li><a href="#" class="nav__submenu_link">Ответы на вопросы</a></li>
+					</ul>
+				</li>
+				<li class="nav__item"><a href="#" class="nav__link">Бренды</a></li>
+			</ul>
+			<div class="top__account">
+				<svg class="icon icon-user"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="img/sprite.svg#icon-user"></use></svg>
+				<a href="#" class="top__login">Войти</a>
+				<a href="#" class="top__reg">Регистация</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="header">
+	<div class="container">
+		<div class="header__top">
+			<div class="header__head">
+				<a href="/" class="header__logo">
+					<img src="img/logo.png" alt="logo">
+				</a>
+				<div class="header__info">
+					<div class="header__title">Медицинская техника</div>
+					<div class="header__desc">Прямые поставки от производителей</div>
+				</div>
+			</div>
+			<div class="header__contact">
+				<div class="header__title">8-800-100-37-97</div>
+				<div class="header__desc">Бесплатные звонки по РФ</div>
+				<a href="#" class="header__callback">Заказать звонок</a>
+			</div>
+			<a href="#" class="header__basket">
+				<i class="icon-cart" data-count="1"></i>
+				<div class="header__basket_content">
+					<div class="header__basket_price">256 000 Р</div>
+					<div class="header__desc">Мои покупки</div>
+				</div>
+			</a>
+		</div>
+		<div class="header__bottom">
+			<div class="catalog header__catalog">
+				<div class="catalog__head">
+					Каталог товаров
+					<i class="icon-arrow-o"></i>
+				</div>
+				<ul class="catalog__menu">
+					<li class="catalog__item"><a href="#" class="catalog__link">Распродажа</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория два</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+				</ul>
+			</div>
+			<div class="header__contact_mobile icon-phone_2"></div>
+			<a href="#" class="header__basket_mobile">
+				<i class="icon-cart" data-count="1"></i>
+			</a>
+			<form action="#" method="post" class="search">
+				<input type="text" class="search__input" placeholder="Введите слово для поиска, например “Воронка”">
+				<button class="search__btn icon-search" type="submit"></button>
+			</form>
+			<a href="#" class="header__order">Оформить заказ</a>
+		</div>
+	</div>
+</div>
+<div class="breadcrumb">
+	<div class="container">
+		<ol class="breadcrumb__list">
+			<li class="breadcrumb__item"><a href="#" class="icon-home"></a></li>
+			<li class="breadcrumb__item"><a href="#">Каталог товаров</a></li>
+			<li class="breadcrumb__item"><a href="#">Светильники медицинские</a></li>
+			<li class="breadcrumb__item"><span>Люминесцентная лампочка Вуда ОЛДД-01</span></li>
+		</ol>
+	</div>
+</div>
+
+<div class="container">
+	<div class="wrapper">
+		<div class="sidebar">
+			<div class="catalog">
+				<div class="catalog__head">Каталог товаров</div>
+				<ul class="catalog__menu">
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Распродажа</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">Подкатегория с длинным названием</a></li>
+							<li><a href="#" class="catalog__submenu_link">Еще одна подкатегория</a></li>
+						</ul>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Категория два</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+						</ul>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Категория три</a>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Еще одна категория</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+						</ul>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">И еще одна категория</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<a href="#" class="sidebar__ads">
+				<img src="img/baners_1.jpg" alt="">
+			</a>
+			<a href="#" class="sidebar__ads">
+				<img src="img/baners_2.jpg" alt="">
+			</a>
+		</div>
+		<div class="main overflow-hidden">
+			<div class="title">Люминесцентная лампочка Вуда ОЛДД-01</div>
+			<div class="cart">
+				<div class="cart__gallery">
+					<div class="cart__rate">
+						<i class="icon-star"></i>
+						<i class="icon-star"></i>
+						<i class="icon-star"></i>
+						<i class="icon-star"></i>
+						<i class="icon-star-o"></i>
+					</div>
+					<div class="cart__alert">new</div>
+
+					<ul class="cart__slider">
+						<li class="cart__slider_item" data-thumb="img/gallery.jpg">
+							<img src="img/gallery.jpg" alt="">
+						</li>
+						<li class="cart__slider_item" data-thumb="img/gallery.jpg">
+							<img src="img/gallery.jpg" alt="">
+						</li>
+						<li class="cart__slider_item" data-thumb="img/gallery.jpg">
+							<img src="img/gallery.jpg" alt="">
+						</li>
+						<!--<li class="cart__slider_item" data-thumb="img/gallery.jpg">-->
+							<!--<img src="img/gallery.jpg" alt="">-->
+						<!--</li>-->
+					</ul>
+				</div>
+				<div class="cart__content">
+					<p>Арт: 252023а</p>
+					<br>
+					<p>Варианты:</p>
+					<div class="cart__wrapper">
+						<label class="cart__label">
+							<input type="radio" name="color" class="cart__radio" checked><i></i>
+							Черный
+						</label>
+						<label class="cart__label">
+							<input type="radio" name="color" class="cart__radio"><i></i>
+							Темно-серый
+						</label>
+						<label class="cart__label">
+							<input type="radio" name="color" class="cart__radio"><i></i>
+							Серый
+						</label>
+						<label class="cart__label">
+							<input type="radio" name="color" class="cart__radio"><i></i>
+							Белый
+						</label>
+					</div>
+
+					<div class="cart__availability">В наличии</div>
+					<div class="cart__price">17 124  Р</div>
+					<div class="cart__desc">за штуку</div>
+					<div class="cart__actions">
+
+						<div class="cart__counter goods__counter">
+							<div class="goods__counter_subtract">-</div>
+							<input type="text" class="goods__counter_input" value="1" readonly>
+							<div class="goods__counter_add">+</div>
+						</div>
+
+						<a href="#" class="cart__basket">В корзину</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="tabs">
+				<a href="#" class="tabs__nav">Описание</a>
+				<div class="tabs__content text">
+					<p>Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа дальнейших направлений развития. Товарищи! реализация намеченных плановых заданий способствует подготовки и реализации дальнейших  направлений развития. Таким образом реализация намеченных плановых заданий:</p>
+					<ul>
+						<li>в значительной степени обуславливает;</li>
+						<li>создание форм развития. Задача организации, в особенности.</li>
+					</ul>
+					<p>Дальнейшее развитие различных форм деятельности позволяет выполнять важные задания по разработке форм развития. С другой стороны сложившаяся структура организации способствует подготовки и реализации модели развития. Задача организации, в особенности же начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации существенных финансовых и административных условий.</p>
+				</div>
+				<a href="#" class="tabs__nav">Характеристики</a>
+				<div class="tabs__content text">
+					<table>
+						<tr>
+							<td>Бренд</td>
+							<td>KAWE</td>
+						</tr>
+						<tr>
+							<td>Виды апертуры</td>
+							<td>европейская, американская</td>
+						</tr>
+						<tr>
+							<td>Регулировка линз в диапазоне</td>
+							<td>от +2 до -20</td>
+						</tr>
+					</table>
+				</div>
+				<a href="#" class="tabs__nav">Комплектация</a>
+				<div class="tabs__content text">
+					<p>Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа дальнейших направлений развития. Товарищи! реализация намеченных плановых заданий способствует подготовки и реализации дальнейших  направлений развития. Таким образом реализация намеченных плановых заданий:</p>
+				</div>
+
+			</div>
+
+
+
+
+
+
+			<hr class="hr">
+
+			<div class="title">Рекомендуемые товары</div>
+
+			<div class="goods">
+				<ul class="goods__slider">
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-20%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">new</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+
+
+		</div>
+	</div>
+</div>
+
+<div class="footer">
+	<div class="container">
+		<div class="footer__wrapper footer__row">
+			<div class="footer__col">
+				<div class="footer__subscribe">
+					<i class="icon-email_big"></i>
+					<span>Подпишитесь! Новинки, скидки, предложения!</span>
+				</div>
+			</div>
+			<div class="footer__col">
+				<form action="#" class="subscribe__form">
+					<input type="email" class="subscribe__input" placeholder="">
+					<button class="subscribe__btn" type="submit">Подписаться</button>
+					<label class="subscribe__label">
+						<input type="checkbox" class="subscribe__checkbox" checked>
+						<i class="icon-checkbox"></i>
+						<span>Нажимая на эту кнопку, я даю свое согласие на обработку персональных данных и соглашаюсь с условиями политики конфиденциальности</span>
+					</label>
+				</form>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="container">
+		<div class="footer__row">
+			<div class="footer__col">
+				<ul class="footer__nav">
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">О компании</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Доставка</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Оплата</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Распродажа</a></li>
+				</ul>
+				<ul class="footer__nav">
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Клиентам</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Как оформить заказ?</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Часто задаваемые вопросы</a></li>
+				</ul>
+				<ul class="footer__nav">
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Новости</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Бренды</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Контакты</a></li>
+				</ul>
+			</div>
+			<div class="footer__col flex-3">
+				<div class="footer__phone icon-phone">8-800-100-37-97</div>
+				<a href="#" class="footer__callback footer__link">Заказать звонок</a>
+				<div class="footer__email icon-email">
+					<a href="mailto:info@kawerus.ru" class="footer__link">info@kawerus.ru</a>
+					(Для заказов)
+				</div>
+			</div>
+			<div class="footer__col flex-2">
+				<div class="footer__copy icon-copyright">2017 Все права защищены.</div>
+				<a href="#" class="footer__link">Политика конфиденциальности.</a>
+				<a href="#" class="footer__link">Согласие на обработку персональных данных.</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<script src="js/vendor.js"></script>
+	<script src="js/main.js"></script>
+
+</body>
+
+</html>

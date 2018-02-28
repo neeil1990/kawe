@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+	<meta charset="utf-8">
+	<title>Заголовок</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta property="og:image" content="path/to/image.jpg">
+	<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Roboto:300,400,500,700,900&amp;subset=cyrillic" rel="stylesheet">
+	<link rel="stylesheet" href="css/vendor.css">
+	<link rel="stylesheet" href="css/main.css">
+
+</head>
+
+<body>
+
+<div class="top">
+	<div class="container">
+		<div class="top__wrapper">
+			<a href="#" class="toggle__menu"><span></span></a>
+			<ul class="nav">
+				<li class="nav__item"><a href="#" class="nav__link">О Компании</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">Доставка</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">оплата</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">скидки</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">Новости</a></li>
+				<li class="nav__item"><a href="#" class="nav__link">Контакты</a></li>
+				<li class="nav__item">
+					<a href="#" class="nav__link">
+						Клиентам
+						<i class="icon-arrow_down"></i>
+					</a>
+					<ul class="nav__submenu">
+						<li><a href="#" class="nav__submenu_link">Как заказать?</a></li>
+						<li><a href="#" class="nav__submenu_link">Ответы на вопросы</a></li>
+					</ul>
+				</li>
+				<li class="nav__item"><a href="#" class="nav__link">Бренды</a></li>
+			</ul>
+			<div class="top__account">
+				<svg class="icon icon-user"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="img/sprite.svg#icon-user"></use></svg>
+				<a href="#" class="top__login">Войти</a>
+				<a href="#" class="top__reg">Регистация</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="header">
+	<div class="container">
+		<div class="header__top">
+			<div class="header__head">
+				<a href="/" class="header__logo">
+					<img src="img/logo.png" alt="logo">
+				</a>
+				<div class="header__info">
+					<div class="header__title">Медицинская техника</div>
+					<div class="header__desc">Прямые поставки от производителей</div>
+				</div>
+			</div>
+			<div class="header__contact">
+				<div class="header__title">8-800-100-37-97</div>
+				<div class="header__desc">Бесплатные звонки по РФ</div>
+				<a href="#" class="header__callback">Заказать звонок</a>
+			</div>
+			<a href="#" class="header__basket">
+				<i class="icon-cart" data-count="0"></i>
+				<div class="header__basket_content">
+					<div class="header__basket_price">256 000 Р</div>
+					<div class="header__desc">Мои покупки</div>
+				</div>
+			</a>
+		</div>
+		<div class="header__bottom">
+			<div class="catalog header__catalog">
+				<div class="catalog__head">
+					Каталог товаров
+					<i class="icon-arrow-o"></i>
+				</div>
+				<ul class="catalog__menu">
+					<li class="catalog__item"><a href="#" class="catalog__link">Распродажа</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория два</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+					<li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
+				</ul>
+			</div>
+			<div class="header__contact_mobile icon-phone_2"></div>
+			<a href="#" class="header__basket_mobile">
+				<i class="icon-cart" data-count="1"></i>
+			</a>
+			<form action="#" method="post" class="search">
+				<input type="text" class="search__input" placeholder="Введите слово для поиска, например “Воронка”">
+				<button class="search__btn icon-search" type="submit"></button>
+			</form>
+			<a href="#" class="header__order">Оформить заказ</a>
+		</div>
+	</div>
+</div>
+
+<div class="slider">
+	<ul class="slider__wrapper">
+		<li class="slider__item" style="background-image: url(images/bg_slider.jpg)">
+			<div class="container">
+				<div class="slider__title">
+					Постоянным клиентам <br>
+					<span>Скидки</span>
+				</div>
+			</div>
+		</li>
+		<li class="slider__item" style="background-image: url(images/bg_slider.jpg)">
+			<div class="container">
+				<div class="slider__title">
+					Постоянным клиентам 2<br>
+					<span>Скидки</span>
+				</div>
+			</div>
+		</li>
+	</ul>
+</div>
+
+<div class="container">
+	<div class="wrapper">
+		<div class="sidebar">
+			<div class="catalog">
+				<div class="catalog__head">Каталог товаров</div>
+				<ul class="catalog__menu">
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Распродажа</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">Подкатегория с длинным названием</a></li>
+							<li><a href="#" class="catalog__submenu_link">Еще одна подкатегория</a></li>
+						</ul>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Категория два</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+						</ul>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Категория три</a>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">Еще одна категория</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+						</ul>
+					</li>
+					<li class="catalog__item">
+						<a href="#" class="catalog__link">И еще одна категория</a>
+						<i class="catalog__submenu_toggle icon-arrow_down"></i>
+						<ul class="catalog__submenu">
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+							<li><a href="#" class="catalog__submenu_link">подменю</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<a href="#" class="sidebar__ads">
+				<img src="img/baners_1.jpg" alt="">
+			</a>
+			<a href="#" class="sidebar__ads">
+				<img src="img/baners_2.jpg" alt="">
+			</a>
+		</div>
+		<div class="main overflow-hidden">
+			<div class="title">Категории</div>
+			<div class="categories">
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_1.jpg" alt="categories"></span>
+						<span class="categories__title">Диагностические ветеренарные наборы</span>
+					</span>
+				</a>
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_2.jpg" alt="categories"></span>
+						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
+					</span>
+				</a>
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_3.jpg" alt="categories"></span>
+						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
+					</span>
+				</a>
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_4.jpg" alt="categories"></span>
+						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
+					</span>
+				</a>
+			</div>
+
+			<div class="full-slider">
+				<ul class="full-slider__wrapper">
+					<li class="full-slider__item">
+						<div class="full-slider__item_wrapper">
+							<div class="full-slider__alert">new</div>
+							<div class="full-slider__img">
+								<img src="img/goods_1.jpg" alt="goods">
+							</div>
+							<div class="full-slider__content">
+								<div class="full-slider__offer">СПЕЦПРЕДЛОЖЕНИЕ</div>
+								<div class="full-slider__rate">
+									<i class="icon-star"></i>
+									<i class="icon-star"></i>
+									<i class="icon-star"></i>
+									<i class="icon-star"></i>
+									<i class="icon-star-o"></i>
+								</div>
+								<div class="full-slider__prices">
+									<div class="full-slider__price">16 999 Р</div>
+									<div class="full-slider__price-old">17 124 Р</div>
+									<span>за штуку</span>
+								</div>
+								<div class="full-slider__categories">Дерматоскоп</div>
+								<a href="#" class="full-slider__title">KAWE PICCOLIGHT D 2,5 В - ПИККОЛАЙТ 2,5 В</a>
+								<div class="full-slider__article">Арт: 252023а</div>
+								<div class="full-slider__info">
+									<div class="full-slider__availability">В наличии</div>
+									<a href="#" class="full-slider__basket icon-basket"></a>
+								</div>
+							</div>
+						</div>
+					</li>
+					<li class="full-slider__item">
+						<div class="full-slider__item_wrapper">
+							<div class="full-slider__alert">new</div>
+							<div class="full-slider__img">
+								<img src="img/goods_1.jpg" alt="goods">
+							</div>
+							<div class="full-slider__content">
+								<div class="full-slider__offer">СПЕЦПРЕДЛОЖЕНИЕ</div>
+								<div class="full-slider__rate">
+									<i class="icon-star"></i>
+									<i class="icon-star"></i>
+									<i class="icon-star"></i>
+									<i class="icon-star"></i>
+									<i class="icon-star-o"></i>
+								</div>
+								<div class="full-slider__prices">
+									<div class="full-slider__price">16 999 Р</div>
+									<div class="full-slider__price-old">17 124 Р</div>
+									<span>за штуку</span>
+								</div>
+								<div class="full-slider__categories">Дерматоскоп</div>
+								<a href="#" class="full-slider__title">KAWE PICCOLIGHT D 2,5 В - ПИККОЛАЙТ 2,5 В</a>
+								<div class="full-slider__article">Арт: 252023а</div>
+								<div class="full-slider__info">
+									<div class="full-slider__availability">В наличии</div>
+									<a href="#" class="full-slider__basket icon-basket"></a>
+								</div>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<div class="categories">
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_1.jpg" alt="categories"></span>
+						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
+					</span>
+				</a>
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_2.jpg" alt="categories"></span>
+						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
+					</span>
+				</a>
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_3.jpg" alt="categories"></span>
+						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
+					</span>
+				</a>
+				<a href="#" class="categories__item">
+					<span class="categories__item_wrapper">
+						<span class="categories__img"><img src="img/categories_4.jpg" alt="categories"></span>
+						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
+					</span>
+				</a>
+			</div>
+			<hr class="hr">
+
+			<div class="title">Новинки</div>
+
+			<div class="goods">
+				<ul class="goods__slider">
+
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-20%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">new</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+
+
+				</ul>
+			</div>
+
+			<div class="title">Лучшие предложения
+				на 20 октября 2017</div>
+
+			<div class="goods">
+				<ul class="goods__slider">
+
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-20%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">new</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+					<li class="goods__item">
+						<div class="goods__item_wrapper">
+							<div class="goods__alert">-50%</div>
+							<div class="goods__rate">
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star"></i>
+								<i class="icon-star-o"></i>
+							</div>
+							<div class="goods__img">
+								<img src="img/goods_2.jpg" alt="goods">
+							</div>
+							<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
+							<div class="goods__desc">
+								<div class="goods__availability">В наличии</div>
+								<div class="goods__article">Арт: 252023а</div>
+							</div>
+							<div class="goods__info">
+								<div class="goods__prices">
+									<div class="goods__price">17 124 Р</div>
+									<div class="goods__counter">
+										<div class="goods__counter_subtract">-</div>
+										<input type="text" class="goods__counter_input" value="1" readonly>
+										<div class="goods__counter_add">+</div>
+									</div>
+									<span>за штуку</span>
+								</div>
+								<a href="#" class="goods__basket icon-basket"></a>
+							</div>
+						</div>
+					</li>
+
+
+				</ul>
+			</div>
+
+
+
+		</div>
+	</div>
+</div>
+
+
+<div class="features">
+	<div class="container">
+		<div class="features__title"><span><span>НАШИ</span> <span>ПРЕИМУЩЕСТВА</span></span></div>
+		<div class="features__list">
+			<div class="features__item">
+				<div class="features__icon icon-features_1"></div>
+				<span>выгодно</span>
+			</div>
+			<div class="features__item">
+				<div class="features__icon icon-features_2"></div>
+				<span>Лучшие производители</span>
+			</div>
+			<div class="features__item">
+				<div class="features__icon icon-features_3"></div>
+				<span>Ассортимент</span>
+			</div>
+			<div class="features__item">
+				<div class="features__icon icon-features_4"></div>
+				<span>Доставка вовремя</span>
+			</div>
+			<div class="features__item">
+				<div class="features__icon icon-features_5"></div>
+				<span>Надежность</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="info text">
+	<div class="container">
+		<div class="info__title">Ваш шедевр готов!</div>
+		<p>Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа дальнейших направлений развития. Товарищи! реализация намеченных плановых заданий способствует подготовки и реализации дальнейших  направлений развития. Таким образом реализация намеченных плановых заданий:</p>
+		<ul>
+			<li>в значительной степени обуславливает;</li>
+			<li>создание форм развития. Задача организации, в особенности.</li>
+		</ul>
+		<p>Дальнейшее развитие различных форм деятельности позволяет выполнять важные задания по разработке форм развития. С другой стороны сложившаяся структура организации способствует подготовки и реализации модели развития. Задача организации, в особенности же начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации существенных финансовых и административных условий.</p>
+
+		<div class="info__title">Равным образом начало повседневной работы по формированию позиции</div>
+		<p>Представляет собой интересный эксперимент проверки форм развития. Не следует, однако забывать, что укрепление и развитие структуры играет важную роль в формировании существенных финансовых и административных условий. Таким образом постоянный количественный рост и сфера нашей активности позволяет выполнять важные задания по разработке дальнейших направлений развития. Идейные соображения высшего порядка, а также сложившаяся структура организации способствует подготовки и реализации форм развития. Товарищи! консультация с широким активом влечет за собой процесс внедрения и модернизации форм развития.</p>
+		<ul>
+			<li>Задача организации, в особенности же постоянное информационно-пропагандистское обеспечение нашей деятельности представляет собой интересный эксперимент проверки дальнейших направлений развития. Равным образом начало повседневной работы по формированию позиции в значительной степени обуславливает создание модели развития.</li>
+			<li>Товарищи! рамки и место обучения кадров обеспечивает широкому кругу (специалистов) участие в формировании новых предложений. Идейные соображения высшего порядка, а также сложившаяся структура организации позволяет оценить значение направлений прогрессивного развития.количественный рост.</li>
+		</ul>
+	</div>
+</div>
+
+
+<div class="footer">
+	<div class="container">
+		<div class="footer__wrapper footer__row">
+			<div class="footer__col">
+				<div class="footer__subscribe">
+					<i class="icon-email_big"></i>
+					<span>Подпишитесь! Новинки, скидки, предложения!</span>
+				</div>
+			</div>
+			<div class="footer__col">
+				<form action="#" class="subscribe__form">
+					<input type="email" class="subscribe__input" placeholder="">
+					<button class="subscribe__btn" type="submit">Подписаться</button>
+					<label class="subscribe__label">
+						<input type="checkbox" class="subscribe__checkbox" checked>
+						<i class="icon-checkbox"></i>
+						<span>Нажимая на эту кнопку, я даю свое согласие на обработку персональных данных и соглашаюсь с условиями политики конфиденциальности</span>
+					</label>
+				</form>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="container">
+		<div class="footer__row">
+			<div class="footer__col">
+				<ul class="footer__nav">
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">О компании</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Доставка</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Оплата</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Распродажа</a></li>
+				</ul>
+				<ul class="footer__nav">
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Клиентам</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Как оформить заказ?</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Часто задаваемые вопросы</a></li>
+				</ul>
+				<ul class="footer__nav">
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Новости</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Бренды</a></li>
+					<li class="footer__nav_item"><a href="#" class="footer__nav_link">Контакты</a></li>
+				</ul>
+			</div>
+			<div class="footer__col flex-3">
+				<div class="footer__phone icon-phone">8-800-100-37-97</div>
+				<a href="#" class="footer__callback footer__link">Заказать звонок</a>
+				<div class="footer__email icon-email">
+					<a href="mailto:info@kawerus.ru" class="footer__link">info@kawerus.ru</a>
+					(Для заказов)
+				</div>
+			</div>
+			<div class="footer__col flex-2">
+				<div class="footer__copy icon-copyright">2017 Все права защищены.</div>
+				<a href="#" class="footer__link">Политика конфиденциальности.</a>
+				<a href="#" class="footer__link">Согласие на обработку персональных данных.</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<script src="js/vendor.js"></script>
+	<script src="js/main.js"></script>
+
+</body>
+
+</html>
