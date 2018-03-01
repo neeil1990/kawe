@@ -3,26 +3,31 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("АльмаМед - поставки медицинского оборудования по всей России");
 ?>
 
-    <div class="slider">
-        <ul class="slider__wrapper">
-            <li class="slider__item" style="background-image: url(images/bg_slider.jpg)">
-                <div class="container">
-                    <div class="slider__title">
-                        Постоянным клиентам <br>
-                        <span>Скидки</span>
-                    </div>
-                </div>
-            </li>
-            <li class="slider__item" style="background-image: url(images/bg_slider.jpg)">
-                <div class="container">
-                    <div class="slider__title">
-                        Постоянным клиентам 2<br>
-                        <span>Скидки</span>
-                    </div>
-                </div>
-            </li>
-        </ul>
-    </div>
+
+
+    <?$APPLICATION->IncludeComponent("bitrix:news.line", "slider.home", Array(
+        "ACTIVE_DATE_FORMAT" => "d.m.Y",	// Формат показа даты
+        "CACHE_GROUPS" => "Y",	// Учитывать права доступа
+        "CACHE_TIME" => "300",	// Время кеширования (сек.)
+        "CACHE_TYPE" => "A",	// Тип кеширования
+        "DETAIL_URL" => "",	// URL, ведущий на страницу с содержимым элемента раздела
+        "FIELD_CODE" => array(	// Поля
+            0 => "PREVIEW_TEXT",
+            1 => "PREVIEW_PICTURE",
+            2 => "",
+        ),
+        "IBLOCKS" => array(	// Код информационного блока
+            0 => "5",
+        ),
+        "IBLOCK_TYPE" => "sliders",	// Тип информационного блока
+        "NEWS_COUNT" => "20",	// Количество новостей на странице
+        "SORT_BY1" => "ACTIVE_FROM",	// Поле для первой сортировки новостей
+        "SORT_BY2" => "SORT",	// Поле для второй сортировки новостей
+        "SORT_ORDER1" => "DESC",	// Направление для первой сортировки новостей
+        "SORT_ORDER2" => "ASC",	// Направление для второй сортировки новостей
+    ),
+        false
+    );?>
 
     <div class="container">
         <div class="wrapper">
@@ -67,12 +72,34 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
                         </li>
                     </ul>
                 </div>
-                <a href="#" class="sidebar__ads">
-                    <img src="img/baners_1.jpg" alt="">
-                </a>
-                <a href="#" class="sidebar__ads">
-                    <img src="img/baners_2.jpg" alt="">
-                </a>
+
+                <?$APPLICATION->IncludeComponent(
+                "bitrix:news.line",
+                "banners",
+                    array(
+                        "ACTIVE_DATE_FORMAT" => "d.m.Y",
+                        "CACHE_GROUPS" => "Y",
+                        "CACHE_TIME" => "300",
+                        "CACHE_TYPE" => "A",
+                        "DETAIL_URL" => "",
+                        "FIELD_CODE" => array(
+                            0 => "CODE",
+                            1 => "PREVIEW_PICTURE",
+                            2 => "",
+                        ),
+                        "IBLOCKS" => array(
+                            0 => "6",
+                        ),
+                        "IBLOCK_TYPE" => "sliders",
+                        "NEWS_COUNT" => "3",
+                        "SORT_BY1" => "ACTIVE_FROM",
+                        "SORT_BY2" => "SORT",
+                        "SORT_ORDER1" => "DESC",
+                        "SORT_ORDER2" => "ASC",
+                        "COMPONENT_TEMPLATE" => "banners"
+                    ),
+                    false
+                );?>
             </div>
             <div class="main overflow-hidden">
                 <div class="title">Категории</div>
@@ -544,51 +571,45 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
     </div>
 
 
-    <div class="features">
-        <div class="container">
-            <div class="features__title"><span><span>НАШИ</span> <span>ПРЕИМУЩЕСТВА</span></span></div>
-            <div class="features__list">
-                <div class="features__item">
-                    <div class="features__icon icon-features_1"></div>
-                    <span>выгодно</span>
-                </div>
-                <div class="features__item">
-                    <div class="features__icon icon-features_2"></div>
-                    <span>Лучшие производители</span>
-                </div>
-                <div class="features__item">
-                    <div class="features__icon icon-features_3"></div>
-                    <span>Ассортимент</span>
-                </div>
-                <div class="features__item">
-                    <div class="features__icon icon-features_4"></div>
-                    <span>Доставка вовремя</span>
-                </div>
-                <div class="features__item">
-                    <div class="features__icon icon-features_5"></div>
-                    <span>Надежность</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?$APPLICATION->IncludeComponent("bitrix:news.line", "advantage", Array(
+        "ACTIVE_DATE_FORMAT" => "d.m.Y",	// Формат показа даты
+        "CACHE_GROUPS" => "Y",	// Учитывать права доступа
+        "CACHE_TIME" => "300",	// Время кеширования (сек.)
+        "CACHE_TYPE" => "A",	// Тип кеширования
+        "DETAIL_URL" => "",	// URL, ведущий на страницу с содержимым элемента раздела
+        "FIELD_CODE" => array(	// Поля
+            0 => "CODE",
+            1 => "NAME",
+            2 => "",
+        ),
+        "IBLOCKS" => array(	// Код информационного блока
+            0 => "7",
+        ),
+        "IBLOCK_TYPE" => "sliders",	// Тип информационного блока
+        "NEWS_COUNT" => "5",	// Количество новостей на странице
+        "SORT_BY1" => "ACTIVE_FROM",	// Поле для первой сортировки новостей
+        "SORT_BY2" => "SORT",	// Поле для второй сортировки новостей
+        "SORT_ORDER1" => "DESC",	// Направление для первой сортировки новостей
+        "SORT_ORDER2" => "ASC",	// Направление для второй сортировки новостей
+    ),
+        false
+    );?>
+
+
 
 
     <div class="info text">
         <div class="container">
-            <div class="info__title">Ваш шедевр готов!</div>
-            <p>Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа дальнейших направлений развития. Товарищи! реализация намеченных плановых заданий способствует подготовки и реализации дальнейших  направлений развития. Таким образом реализация намеченных плановых заданий:</p>
-            <ul>
-                <li>в значительной степени обуславливает;</li>
-                <li>создание форм развития. Задача организации, в особенности.</li>
-            </ul>
-            <p>Дальнейшее развитие различных форм деятельности позволяет выполнять важные задания по разработке форм развития. С другой стороны сложившаяся структура организации способствует подготовки и реализации модели развития. Задача организации, в особенности же начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации существенных финансовых и административных условий.</p>
-
-            <div class="info__title">Равным образом начало повседневной работы по формированию позиции</div>
-            <p>Представляет собой интересный эксперимент проверки форм развития. Не следует, однако забывать, что укрепление и развитие структуры играет важную роль в формировании существенных финансовых и административных условий. Таким образом постоянный количественный рост и сфера нашей активности позволяет выполнять важные задания по разработке дальнейших направлений развития. Идейные соображения высшего порядка, а также сложившаяся структура организации способствует подготовки и реализации форм развития. Товарищи! консультация с широким активом влечет за собой процесс внедрения и модернизации форм развития.</p>
-            <ul>
-                <li>Задача организации, в особенности же постоянное информационно-пропагандистское обеспечение нашей деятельности представляет собой интересный эксперимент проверки дальнейших направлений развития. Равным образом начало повседневной работы по формированию позиции в значительной степени обуславливает создание модели развития.</li>
-                <li>Товарищи! рамки и место обучения кадров обеспечивает широкому кругу (специалистов) участие в формировании новых предложений. Идейные соображения высшего порядка, а также сложившаяся структура организации позволяет оценить значение направлений прогрессивного развития.количественный рост.</li>
-            </ul>
+            <?$APPLICATION->IncludeComponent(
+                "bitrix:main.include",
+                "",
+                Array(
+                    "AREA_FILE_SHOW" => "file",
+                    "AREA_FILE_SUFFIX" => "inc",
+                    "EDIT_TEMPLATE" => "",
+                    "PATH" => SITE_TEMPLATE_PATH."/include/home-text.php"
+                )
+            );?>
         </div>
     </div>
 

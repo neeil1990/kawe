@@ -22,11 +22,9 @@
 <body>
 <?$APPLICATION->ShowPanel();?>
 
-
 <div class="top">
     <div class="container">
         <div class="top__wrapper">
-
 
             <?$APPLICATION->IncludeComponent("bitrix:menu", "top.menu", Array(
                 "ALLOW_MULTI_SELECT" => "N",	// Разрешить несколько активных пунктов одновременно
@@ -44,8 +42,6 @@
             ),
                 false
             );?>
-
-
 
             <div class="top__account">
                 <svg class="icon icon-user"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH?>/img/sprite.svg#icon-user"></use></svg>

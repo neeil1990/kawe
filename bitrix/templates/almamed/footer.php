@@ -24,22 +24,24 @@
     <div class="container">
         <div class="footer__row">
             <div class="footer__col">
-                <ul class="footer__nav">
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">О компании</a></li>
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Доставка</a></li>
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Оплата</a></li>
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Распродажа</a></li>
-                </ul>
-                <ul class="footer__nav">
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Клиентам</a></li>
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Как оформить заказ?</a></li>
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Часто задаваемые вопросы</a></li>
-                </ul>
-                <ul class="footer__nav">
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Новости</a></li>
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Бренды</a></li>
-                    <li class="footer__nav_item"><a href="#" class="footer__nav_link">Контакты</a></li>
-                </ul>
+
+                <?$APPLICATION->IncludeComponent("bitrix:menu", "bottom.menu", Array(
+                    "ALLOW_MULTI_SELECT" => "N",	// Разрешить несколько активных пунктов одновременно
+                    "CHILD_MENU_TYPE" => "left",	// Тип меню для остальных уровней
+                    "DELAY" => "N",	// Откладывать выполнение шаблона меню
+                    "MAX_LEVEL" => "2",	// Уровень вложенности меню
+                    "MENU_CACHE_GET_VARS" => "",	// Значимые переменные запроса
+                    "MENU_CACHE_TIME" => "3600",	// Время кеширования (сек.)
+                    "MENU_CACHE_TYPE" => "N",	// Тип кеширования
+                    "MENU_CACHE_USE_GROUPS" => "Y",	// Учитывать права доступа
+                    "ROOT_MENU_TYPE" => "top",	// Тип меню для первого уровня
+                    "USE_EXT" => "N",	// Подключать файлы с именами вида .тип_меню.menu_ext.php
+                    "COMPONENT_TEMPLATE" => "catalog_horizontal",
+                    "MENU_THEME" => "site",	// Тема меню
+                ),
+                    false
+                );?>
+
             </div>
             <div class="footer__col flex-3">
                 <div class="footer__phone icon-phone">8-800-100-37-97</div>
