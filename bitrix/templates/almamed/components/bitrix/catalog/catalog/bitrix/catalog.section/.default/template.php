@@ -60,7 +60,9 @@ if(empty($arResult['ITEMS']))
 			<? foreach($arResult['ITEMS'] as $item):?>
 			<div class="goods__item">
 				<div class="goods__item_wrapper">
-					<div class="goods__alert">-20%</div>
+					<?if($item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]):?>
+					<div class="goods__alert">-<?=$item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]?>%</div>
+					<?endif;?>
 					<div class="goods__rate">
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
@@ -74,40 +76,35 @@ if(empty($arResult['ITEMS']))
 					<a href="<?=$item['DETAIL_PAGE_URL'];?>" class="goods__name"><?=$item['NAME']?></a>
 					<div class="goods__desc">
 						<div class="goods__availability">В наличии</div>
-						<div class="goods__article">Арт: <?=$item['PROPERTIES']['ARTNUMBER']['VALUE']?></div>
+						<? if($item['PROPERTIES']['CML2_ARTICLE']['VALUE']): ?>
+						<div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12)?></div>
+						<? endif; ?>
 					</div>
 					<div class="goods__info">
 						<div class="goods__prices">
-							<div class="goods__price">17 124 Р</div>
+							<div class="goods__price"><?=$item["PRICES"]["BASE"]["PRINT_DISCOUNT_VALUE"]?></div>
 							<div class="goods__counter">
 								<div class="goods__counter_subtract">-</div>
-								<input type="text" class="goods__counter_input" value="1" readonly>
+								<input type="text" class="goods__counter_input" id="goods__counter_input_<?=$arResult['ID']?>" value="1" readonly>
 								<div class="goods__counter_add">+</div>
 							</div>
 							<span>за штуку</span>
 						</div>
-						<a href="#" class="goods__basket icon-basket"></a>
+						<a href="javascript:void(0)" class="goods__basket icon-basket" onclick="addToBasket2(<?=$item['ID']?>, $('#goods__counter_input_<?=$item['ID']?>').val(),this);"></a>
 					</div>
 				</div>
 			</div>
 			<? endforeach; ?>
 		</div>
 
-
-		<nav aria-label="Page navigation example">
-			<ul class="pagination">
-				<li class="pagination__item"><span class="pagination__link">1</span></li>
-				<li class="pagination__item"><a class="pagination__link" href="#">2</a></li>
-				<li class="pagination__item"><a class="pagination__link" href="#">3</a></li>
-			</ul>
-		</nav>
+		<?
+		if ($arParams["DISPLAY_BOTTOM_PAGER"])
+		{
+			?><? echo $arResult["NAV_STRING"]; ?><?
+		}
+		?>
 
 
-	</div>
+</div>
 
 
-<?
-	if ($arParams["DISPLAY_BOTTOM_PAGER"])
-	{
-		?><? echo $arResult["NAV_STRING"]; ?><?
-	}

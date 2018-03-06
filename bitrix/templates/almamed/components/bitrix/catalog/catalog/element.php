@@ -152,7 +152,7 @@ unset($basketAction);
 						<i class="icon-star-o"></i>
 					</div>
 					<div class="goods__img">
-						<img src="img/goods_2.jpg" alt="goods">
+						<img src="<?=SITE_TEMPLATE_PATH?>/img/goods_2.jpg" alt="goods">
 					</div>
 					<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
 					<div class="goods__desc">

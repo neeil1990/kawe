@@ -16,7 +16,10 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Roboto:300,400,500,700,900&amp;subset=cyrillic" rel="stylesheet">
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/vendor.css">
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/main.css">
+    <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/alertify.css">
+    <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/default.css">
 
+    <script src="<?=SITE_TEMPLATE_PATH?>/js/vendor.js"></script>
 </head>
 
 <body>
@@ -70,13 +73,25 @@
                 <div class="header__desc">Бесплатные звонки по РФ</div>
                 <a href="#" class="header__callback">Заказать звонок</a>
             </div>
-            <a href="#" class="header__basket">
-                <i class="icon-cart" data-count="0"></i>
-                <div class="header__basket_content">
-                    <div class="header__basket_price">256 000 Р</div>
-                    <div class="header__desc">Мои покупки</div>
-                </div>
-            </a>
+
+            <?$APPLICATION->IncludeComponent("bitrix:sale.basket.basket.line", "basket.small", Array(
+                "HIDE_ON_BASKET_PAGES" => "Y",	// Не показывать на страницах корзины и оформления заказа
+                "PATH_TO_BASKET" => SITE_DIR."personal/cart/",	// Страница корзины
+                "PATH_TO_ORDER" => SITE_DIR."personal/order/",	// Страница оформления заказа
+                "PATH_TO_PERSONAL" => SITE_DIR."personal/",	// Страница персонального раздела
+                "PATH_TO_PROFILE" => SITE_DIR."personal/",	// Страница профиля
+                "PATH_TO_REGISTER" => SITE_DIR."login/",	// Страница регистрации
+                "POSITION_FIXED" => "N",	// Отображать корзину поверх шаблона
+                "SHOW_AUTHOR" => "N",	// Добавить возможность авторизации
+                "SHOW_EMPTY_VALUES" => "Y",	// Выводить нулевые значения в пустой корзине
+                "SHOW_NUM_PRODUCTS" => "Y",	// Показывать количество товаров
+                "SHOW_PERSONAL_LINK" => "Y",	// Отображать персональный раздел
+                "SHOW_PRODUCTS" => "N",	// Показывать список товаров
+                "SHOW_TOTAL_PRICE" => "Y",	// Показывать общую сумму по товарам
+            ),
+                false
+            );?>
+
         </div>
         <div class="header__bottom">
 
@@ -105,7 +120,7 @@
                 <input type="text" class="search__input" placeholder="Введите слово для поиска, например “Воронка”">
                 <button class="search__btn icon-search" type="submit"></button>
             </form>
-            <a href="#" class="header__order">Оформить заказ</a>
+            <a href="/personal/cart/" class="header__order">Оформить заказ</a>
         </div>
     </div>
 </div>

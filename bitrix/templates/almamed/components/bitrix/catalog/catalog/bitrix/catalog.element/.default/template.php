@@ -11,12 +11,11 @@
 /** @var string $componentPath */
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
-
-
 ?>
 
 	<div class="title"><?=$arResult['NAME']?></div>
 	<div class="cart">
+
 		<div class="cart__gallery">
 			<div class="cart__rate">
 				<i class="icon-star"></i>
@@ -25,48 +24,37 @@ $this->setFrameMode(true);
 				<i class="icon-star"></i>
 				<i class="icon-star-o"></i>
 			</div>
+
 			<div class="cart__alert">new</div>
 
 			<ul class="cart__slider">
-
-				<li class="cart__slider_item" data-thumb="<?=SITE_TEMPLATE_PATH?>/img/gallery.jpg">
-					<img src="<?=SITE_TEMPLATE_PATH?>/img/gallery.jpg" alt="">
+				<? foreach($arResult['PHOTO'] as $photo):?>
+				<li class="cart__slider_item" data-thumb="<?=$photo?>">
+					<img src="<?=$photo?>" alt="">
 				</li>
-				<li class="cart__slider_item" data-thumb="<?=SITE_TEMPLATE_PATH?>/img/gallery.jpg">
-					<img src="<?=SITE_TEMPLATE_PATH?>/img/gallery.jpg" alt="">
-				</li>
-				<li class="cart__slider_item" data-thumb="<?=SITE_TEMPLATE_PATH?>/img/gallery.jpg">
-					<img src="<?=SITE_TEMPLATE_PATH?>/img/gallery.jpg" alt="">
-				</li>
-
+				<?endforeach;?>
 			</ul>
-
 		</div>
+
 		<div class="cart__content">
-			<p>Арт: 252023а</p>
+			<? if($arResult['PROPERTIES']['CML2_ARTICLE']['VALUE']): ?>
+			<p>Арт: <?=$arResult['PROPERTIES']['CML2_ARTICLE']['VALUE']?></p>
 			<br>
-			<p>Варианты:</p>
-			<div class="cart__wrapper">
-				<label class="cart__label">
-					<input type="radio" name="color" class="cart__radio" checked><i></i>
-					Черный
-				</label>
-				<label class="cart__label">
-					<input type="radio" name="color" class="cart__radio"><i></i>
-					Темно-серый
-				</label>
-				<label class="cart__label">
-					<input type="radio" name="color" class="cart__radio"><i></i>
-					Серый
-				</label>
-				<label class="cart__label">
-					<input type="radio" name="color" class="cart__radio"><i></i>
-					Белый
-				</label>
-			</div>
+				<?if($arResult['PROPERTIES']['ARTICLS']['DESCRIPTION'][0]):?>
+				<p>Варианты:</p>
+				<div class="cart__wrapper">
+					<?foreach($arResult['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
+					<label class="cart__label">
+						<input type="radio" name="color" class="cart__radio" value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"><i></i>
+						<?=$art?>
+					</label>
+					<?endforeach?>
+				</div>
+				<? endif; ?>
+			<? endif; ?>
 
 			<div class="cart__availability">В наличии</div>
-			<div class="cart__price">17 124  Р</div>
+			<div class="cart__price"><?=$arResult['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
 			<div class="cart__desc">за штуку</div>
 			<div class="cart__actions">
 
@@ -76,42 +64,39 @@ $this->setFrameMode(true);
 					<div class="goods__counter_add">+</div>
 				</div>
 
-				<a href="#" class="cart__basket">В корзину</a>
+				<a href="javascript:void(0)" class="cart__basket" onclick="addToBasket2(<?=$arResult['ID']?>, $('.goods__counter_input').val(),this);">В корзину</a>
 			</div>
 		</div>
 	</div>
 
 	<div class="tabs">
+		<?if($arResult['DETAIL_TEXT']):?>
 		<a href="#" class="tabs__nav">Описание</a>
 		<div class="tabs__content text">
-			<p>Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа дальнейших направлений развития. Товарищи! реализация намеченных плановых заданий способствует подготовки и реализации дальнейших  направлений развития. Таким образом реализация намеченных плановых заданий:</p>
-			<ul>
-				<li>в значительной степени обуславливает;</li>
-				<li>создание форм развития. Задача организации, в особенности.</li>
-			</ul>
-			<p>Дальнейшее развитие различных форм деятельности позволяет выполнять важные задания по разработке форм развития. С другой стороны сложившаяся структура организации способствует подготовки и реализации модели развития. Задача организации, в особенности же начало повседневной работы по формированию позиции влечет за собой процесс внедрения и модернизации существенных финансовых и административных условий.</p>
+			<?=$arResult['DETAIL_TEXT']?>
 		</div>
+		<?endif?>
+
+		<?if($arResult['PROPERTIES']['CML2_ATTRIBUTES']['DESCRIPTION'][0]):?>
 		<a href="#" class="tabs__nav">Характеристики</a>
 		<div class="tabs__content text">
 			<table>
+				<? foreach($arResult['PROPERTIES']['CML2_ATTRIBUTES']['DESCRIPTION'] as $key => $attr): ?>
 				<tr>
-					<td>Бренд</td>
-					<td>KAWE</td>
+					<td><?=$attr?></td>
+					<td><?=$arResult['PROPERTIES']['CML2_ATTRIBUTES']['VALUE'][$key]?></td>
 				</tr>
-				<tr>
-					<td>Виды апертуры</td>
-					<td>европейская, американская</td>
-				</tr>
-				<tr>
-					<td>Регулировка линз в диапазоне</td>
-					<td>от +2 до -20</td>
-				</tr>
+				<?endforeach;?>
 			</table>
 		</div>
+		<?endif?>
+
+		<?if($arResult['PROPERTIES']['CML2_COMPLECT']['VALUE']['TEXT']):?>
 		<a href="#" class="tabs__nav">Комплектация</a>
 		<div class="tabs__content text">
-			<p>Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа дальнейших направлений развития. Товарищи! реализация намеченных плановых заданий способствует подготовки и реализации дальнейших  направлений развития. Таким образом реализация намеченных плановых заданий:</p>
+			<?=$arResult['PROPERTIES']['CML2_COMPLECT']['~VALUE']['TEXT']?>
 		</div>
+		<?endif;?>
 
 	</div>
 
