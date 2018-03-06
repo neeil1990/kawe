@@ -46,10 +46,11 @@ $arCurView = $arViewStyles[$arParams['VIEW_MODE']];
 $strSectionEdit = CIBlock::GetArrayByID($arParams["IBLOCK_ID"], "SECTION_EDIT");
 $strSectionDelete = CIBlock::GetArrayByID($arParams["IBLOCK_ID"], "SECTION_DELETE");
 $arSectionDeleteParams = array("CONFIRM" => GetMessage('CT_BCSL_ELEMENT_DELETE_CONFIRM'));
+
 ?>
 
 		<div class="main overflow-hidden">
-			<div class="title">Каталог товаров</div>
+			<div class="title"><?=$arResult['SECTION']['NAME'];?></div>
 
 			<div class="categories">
 				<? foreach($arResult['SECTIONS'] as $section):?>
