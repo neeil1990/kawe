@@ -1,3 +1,7 @@
+<? if(!CSite::InDir('/index.php')): ?>
+</div>
+<?endif;?>
+
 <div class="footer">
     <div class="container">
         <div class="footer__wrapper footer__row">

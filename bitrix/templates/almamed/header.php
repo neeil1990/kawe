@@ -79,28 +79,24 @@
             </a>
         </div>
         <div class="header__bottom">
-            <div class="catalog header__catalog">
-                <div class="catalog__head">
-                    Каталог товаров
-                    <i class="icon-arrow-o"></i>
-                </div>
-                <ul class="catalog__menu">
-                    <li class="catalog__item"><a href="#" class="catalog__link">Распродажа</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория два</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                    <li class="catalog__item"><a href="#" class="catalog__link">Категория три</a></li>
-                </ul>
-            </div>
+
+            <?$APPLICATION->IncludeComponent("bitrix:menu", "catalog.top.menu", Array(
+                "ALLOW_MULTI_SELECT" => "N",	// Разрешить несколько активных пунктов одновременно
+                "CHILD_MENU_TYPE" => "left",	// Тип меню для остальных уровней
+                "DELAY" => "N",	// Откладывать выполнение шаблона меню
+                "MAX_LEVEL" => "1",	// Уровень вложенности меню
+                "MENU_CACHE_GET_VARS" => "",	// Значимые переменные запроса
+                "MENU_CACHE_TIME" => "3600",	// Время кеширования (сек.)
+                "MENU_CACHE_TYPE" => "N",	// Тип кеширования
+                "MENU_CACHE_USE_GROUPS" => "Y",	// Учитывать права доступа
+                "MENU_THEME" => "site",
+                "ROOT_MENU_TYPE" => "catalog_top",	// Тип меню для первого уровня
+                "USE_EXT" => "N",	// Подключать файлы с именами вида .тип_меню.menu_ext.php
+                "COMPONENT_TEMPLATE" => "tree"
+            ),
+                false
+            );?>
+
             <div class="header__contact_mobile icon-phone_2"></div>
             <a href="#" class="header__basket_mobile">
                 <i class="icon-cart" data-count="1"></i>
@@ -113,3 +109,15 @@
         </div>
     </div>
 </div>
+
+<? if(!CSite::InDir('/index.php')): ?>
+<?$APPLICATION->IncludeComponent("bitrix:breadcrumb", "breadcrumb", Array(
+    "PATH" => "",	// Путь, для которого будет построена навигационная цепочка (по умолчанию, текущий путь)
+    "SITE_ID" => "s1",	// Cайт (устанавливается в случае многосайтовой версии, когда DOCUMENT_ROOT у сайтов разный)
+    "START_FROM" => "0",	// Номер пункта, начиная с которого будет построена навигационная цепочка
+),
+    false
+);?>
+
+<div class="container">
+<? endif; ?>

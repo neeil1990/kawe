@@ -32,46 +32,23 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
     <div class="container">
         <div class="wrapper">
             <div class="sidebar">
-                <div class="catalog">
-                    <div class="catalog__head">Каталог товаров</div>
-                    <ul class="catalog__menu">
-                        <li class="catalog__item">
-                            <a href="#" class="catalog__link">Распродажа</a>
-                            <i class="catalog__submenu_toggle icon-arrow_down"></i>
-                            <ul class="catalog__submenu">
-                                <li><a href="#" class="catalog__submenu_link">Подкатегория с длинным названием</a></li>
-                                <li><a href="#" class="catalog__submenu_link">Еще одна подкатегория</a></li>
-                            </ul>
-                        </li>
-                        <li class="catalog__item">
-                            <a href="#" class="catalog__link">Категория два</a>
-                            <i class="catalog__submenu_toggle icon-arrow_down"></i>
-                            <ul class="catalog__submenu">
-                                <li><a href="#" class="catalog__submenu_link">подменю</a></li>
-                                <li><a href="#" class="catalog__submenu_link">подменю</a></li>
-                            </ul>
-                        </li>
-                        <li class="catalog__item">
-                            <a href="#" class="catalog__link">Категория три</a>
-                        </li>
-                        <li class="catalog__item">
-                            <a href="#" class="catalog__link">Еще одна категория</a>
-                            <i class="catalog__submenu_toggle icon-arrow_down"></i>
-                            <ul class="catalog__submenu">
-                                <li><a href="#" class="catalog__submenu_link">подменю</a></li>
-                                <li><a href="#" class="catalog__submenu_link">подменю</a></li>
-                            </ul>
-                        </li>
-                        <li class="catalog__item">
-                            <a href="#" class="catalog__link">И еще одна категория</a>
-                            <i class="catalog__submenu_toggle icon-arrow_down"></i>
-                            <ul class="catalog__submenu">
-                                <li><a href="#" class="catalog__submenu_link">подменю</a></li>
-                                <li><a href="#" class="catalog__submenu_link">подменю</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
+
+                <?$APPLICATION->IncludeComponent("bitrix:menu", "catalog.menu", Array(
+                    "ALLOW_MULTI_SELECT" => "N",	// Разрешить несколько активных пунктов одновременно
+                    "CHILD_MENU_TYPE" => "left",	// Тип меню для остальных уровней
+                    "DELAY" => "N",	// Откладывать выполнение шаблона меню
+                    "MAX_LEVEL" => "4",	// Уровень вложенности меню
+                    "MENU_CACHE_GET_VARS" => "",	// Значимые переменные запроса
+                    "MENU_CACHE_TIME" => "3600",	// Время кеширования (сек.)
+                    "MENU_CACHE_TYPE" => "N",	// Тип кеширования
+                    "MENU_CACHE_USE_GROUPS" => "Y",	// Учитывать права доступа
+                    "ROOT_MENU_TYPE" => "catalog",	// Тип меню для первого уровня
+                    "USE_EXT" => "N",	// Подключать файлы с именами вида .тип_меню.menu_ext.php
+                    "COMPONENT_TEMPLATE" => "tree",
+                    "MENU_THEME" => "site"
+                ),
+                    false
+                );?>
 
                 <?$APPLICATION->IncludeComponent(
                 "bitrix:news.line",
