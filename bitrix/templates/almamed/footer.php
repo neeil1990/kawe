@@ -18,7 +18,7 @@
                     <label class="subscribe__label">
                         <input type="checkbox" class="subscribe__checkbox" checked>
                         <i class="icon-checkbox"></i>
-                        <span>Нажимая на эту кнопку, я даю свое согласие на обработку персональных данных и соглашаюсь с условиями политики конфиденциальности</span>
+                        <span>Нажимая на эту кнопку, я даю свое <a href="/upload/compliance.pdf" target="_blank" class="footer__link">согласие на обработку персональных данных</a> и соглашаюсь с условиями <a href="/upload/politics.pdf" target="_blank" class="footer__link">политики конфиденциальности</a></span>
                     </label>
                 </form>
             </div>
@@ -56,9 +56,9 @@
                 </div>
             </div>
             <div class="footer__col flex-2">
-                <div class="footer__copy icon-copyright">2017 Все права защищены.</div>
-                <a href="#" class="footer__link">Политика конфиденциальности.</a>
-                <a href="#" class="footer__link">Согласие на обработку персональных данных.</a>
+                <div class="footer__copy icon-copyright">2018 Все права защищены.</div>
+                <a href="/upload/politics.pdf" target="_blank" class="footer__link">Политика конфиденциальности.</a>
+                <a href="/upload/compliance.pdf" target="_blank" class="footer__link">Согласие на обработку персональных данных.</a>
             </div>
         </div>
     </div>
@@ -70,6 +70,38 @@
 <script src="<?=SITE_TEMPLATE_PATH?>/js/main.js"></script>
 <script src="<?=SITE_TEMPLATE_PATH?>/js/alertify.js"></script>
 <script src="<?=SITE_TEMPLATE_PATH?>/js/functions.js"></script>
+
+
+
+<!-- Yandex.Metrika counter от Prime -->
+<script type="text/javascript" >
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter48001034 = new Ya.Metrika({
+                    id:48001034,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true,
+                    webvisor:true
+                });
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+            s = d.createElement("script"),
+            f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/48001034" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 
 </body>
 

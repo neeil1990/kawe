@@ -1,0 +1,5 @@
+User-Agent: *
+Disallow: /
+
+Host: https://kawe.su/
+Sitemap: https://kawe.su/sitemap.xml
