@@ -33,11 +33,11 @@ $this->setFrameMode(true);
 					$arWaterMark = Array(
 						array(
 							"name" => "watermark",
-							"position" => "bottomright",
-							"alpha_level" => "50",
+							"position" => "center",
+							"alpha_level" => "100",
 							"type" => "image",
-							"size" => "real",
-							"file" => $_SERVER["DOCUMENT_ROOT"].'/logo.png',
+							"size" => "big",
+							"file" => $_SERVER["DOCUMENT_ROOT"].'/watermark.png',
 							"fill" => "exact",
 						)
 					);
