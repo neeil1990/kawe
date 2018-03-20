@@ -1,0 +1,943 @@
+2018-03-19 19:36:08 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:36:08 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:08 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:08 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:08 -  - TIME GetUpdatesList(request) 0.37 sec
+2018-03-19 19:36:08 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:19 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:19 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:19 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN&reqm=imyie.morewatermark&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:19 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:19 -  - TIME LoadModulesUpdates(request) 0.286 sec
+2018-03-19 19:36:19 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:19 - S - STEP
+2018-03-19 19:36:19 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:19 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:19 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:19 -  - loadFile
+2018-03-19 19:36:19 - U - RETURN
+2018-03-19 19:36:19 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:19 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:36:20 -  - TIME UpdateStepModules 0.032 sec
+2018-03-19 19:36:20 - UPD_SUCCESS - Updated: imyie.morewatermark
+2018-03-19 19:36:20 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:20 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:20 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.0%2CN&reqm=imyie.morewatermark&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:20 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:20 -  - TIME LoadModulesUpdates(request) 0.269 sec
+2018-03-19 19:36:20 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:20 - S - STEP
+2018-03-19 19:36:20 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:20 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:20 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:20 -  - loadFile
+2018-03-19 19:36:20 - U - RETURN
+2018-03-19 19:36:20 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:20 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:36:20 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477380/imyie.morewatermark/updater1.0.1.php'
+2018-03-19 19:36:20 -  - TIME UpdateStepModules 0.009 sec
+2018-03-19 19:36:20 - UPD_SUCCESS - Updated: imyie.morewatermark (1.0.1)<br>* Исправление мелких ошибок
+2018-03-19 19:36:21 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:21 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:21 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.1%2CN&reqm=imyie.morewatermark&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:21 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:21 -  - TIME LoadModulesUpdates(request) 0.271 sec
+2018-03-19 19:36:21 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:21 - S - STEP
+2018-03-19 19:36:21 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:21 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:21 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:21 -  - loadFile
+2018-03-19 19:36:21 - U - RETURN
+2018-03-19 19:36:21 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:21 -  - TIME UnGzipArchive 0.008 sec
+2018-03-19 19:36:21 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477381/imyie.morewatermark/updater1.0.2.php'
+2018-03-19 19:36:21 -  - TIME UpdateStepModules 0.018 sec
+2018-03-19 19:36:21 - UPD_SUCCESS - Updated: imyie.morewatermark (1.0.2)<br>* Добавлен новый метод наложения водяного знака (для тех, у которого не работает вариант #1), метод наложения меняется в настройках модуля; 
+2018-03-19 19:36:23 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:23 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:23 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN&reqm=imyie.morewatermark&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:23 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:23 -  - TIME LoadModulesUpdates(request) 0.303 sec
+2018-03-19 19:36:23 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:23 - STEP - Finish - NOUPDATES
+2018-03-19 19:36:23 - STEP - Finish - NOUPDATES
+2018-03-19 19:36:25 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:36:25 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:25 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:25 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:25 -  - TIME GetUpdatesList(request) 0.289 sec
+2018-03-19 19:36:25 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:35 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:36:35 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:35 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:35 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:35 -  - TIME GetUpdatesList(request) 0.315 sec
+2018-03-19 19:36:35 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:42 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:42 -  - TIME LoadModulesUpdates(request) 0.283 sec
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:42 - S - STEP
+2018-03-19 19:36:42 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:42 -  - loadFile
+2018-03-19 19:36:42 - U - RETURN
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:42 -  - TIME UnGzipArchive 0.012 sec
+2018-03-19 19:36:42 -  - TIME UpdateStepModules 0.031 sec
+2018-03-19 19:36:42 - UPD_SUCCESS - Updated: asd.iblock
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:42 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:43 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C1.3.1%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:43 -  - TIME LoadModulesUpdates(request) 0.312 sec
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:43 - S - STEP
+2018-03-19 19:36:43 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:43 -  - loadFile
+2018-03-19 19:36:43 - U - RETURN
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:43 -  - TIME UnGzipArchive 0.002 sec
+2018-03-19 19:36:43 -  - TIME UpdateStepModules 0.004 sec
+2018-03-19 19:36:43 - UPD_SUCCESS - Updated: asd.iblock (1.3.2)<br>- Корректировка для обновления 11.0.5 главного модуля.
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:43 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C1.3.2%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:43 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:44 -  - TIME LoadModulesUpdates(request) 0.277 sec
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:44 - S - STEP
+2018-03-19 19:36:44 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:44 -  - loadFile
+2018-03-19 19:36:44 - U - RETURN
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:44 -  - TIME UnGzipArchive 0.002 sec
+2018-03-19 19:36:44 -  - TIME UpdateStepModules 0.004 sec
+2018-03-19 19:36:44 - UPD_SUCCESS - Updated: asd.iblock (1.3.3)<br>- Исправлено копирование свойства типа HTML.
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:44 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C1.3.3%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:44 -  - TIME LoadModulesUpdates(request) 0.276 sec
+2018-03-19 19:36:44 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:44 - S - STEP
+2018-03-19 19:36:44 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:45 -  - loadFile
+2018-03-19 19:36:45 - U - RETURN
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:45 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:36:45 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477405/asd.iblock/updater1.3.5.php'
+2018-03-19 19:36:45 -  - TIME UpdateStepModules 0.006 sec
+2018-03-19 19:36:45 - UPD_SUCCESS - Updated: asd.iblock (1.3.5)<br>- Добавлен вывод ошибок при копировании/перемещении.
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:45 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C1.3.5%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:45 -  - TIME LoadModulesUpdates(request) 0.289 sec
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:45 - S - STEP
+2018-03-19 19:36:45 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:45 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:45 -  - loadFile
+2018-03-19 19:36:46 - U - RETURN
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:46 -  - TIME UnGzipArchive 0.009 sec
+2018-03-19 19:36:46 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477406/asd.iblock/updater2.0.0.php'
+2018-03-19 19:36:46 -  - TIME UpdateStepModules 0.028 sec
+2018-03-19 19:36:46 - UPD_SUCCESS - Updated: asd.iblock (2.0.0)<br>- Добавлена возможность импорта/экспорта свойств инфоблока (кнопка находится на панели инструментов на странице редактирования инфоблока). - Изменена структура классов модуля.
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:46 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C2.0.0%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:46 -  - TIME LoadModulesUpdates(request) 0.281 sec
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:46 - S - STEP
+2018-03-19 19:36:46 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:46 -  - loadFile
+2018-03-19 19:36:46 - U - RETURN
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:46 -  - TIME UnGzipArchive 0.002 sec
+2018-03-19 19:36:46 -  - TIME UpdateStepModules 0.007 sec
+2018-03-19 19:36:46 - UPD_SUCCESS - Updated: asd.iblock (2.0.1)<br>- Обратная интерфейсная совместимость.
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:46 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:47 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C2.0.1%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:47 -  - TIME LoadModulesUpdates(request) 0.279 sec
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:47 - S - STEP
+2018-03-19 19:36:47 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:47 -  - loadFile
+2018-03-19 19:36:47 - U - RETURN
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:47 -  - TIME UnGzipArchive 0.003 sec
+2018-03-19 19:36:47 -  - TIME UpdateStepModules 0.006 sec
+2018-03-19 19:36:47 - UPD_SUCCESS - Updated: asd.iblock (2.0.2)<br>- Исправления для импорта в инфоблок без свойств.
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:47 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C2.0.2%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:47 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:48 -  - TIME LoadModulesUpdates(request) 0.279 sec
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:48 - S - STEP
+2018-03-19 19:36:48 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:48 -  - loadFile
+2018-03-19 19:36:48 - U - RETURN
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:48 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:36:48 -  - TIME UpdateStepModules 0.01 sec
+2018-03-19 19:36:48 - UPD_SUCCESS - Updated: asd.iblock (2.0.4)<br>- Незначительные изменения.
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:48 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C2.0.4%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:48 -  - TIME LoadModulesUpdates(request) 0.285 sec
+2018-03-19 19:36:48 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:48 - S - STEP
+2018-03-19 19:36:48 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:50 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:50 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:50 -  - loadFile
+2018-03-19 19:36:50 - U - RETURN
+2018-03-19 19:36:50 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:50 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:36:50 -  - TIME UpdateStepModules 0.016 sec
+2018-03-19 19:36:51 - UPD_SUCCESS - Updated: asd.iblock (2.0.5)<br>- Исправление для неуникальных кодов вариантов списка в пределах одного инфоблока.
+2018-03-19 19:36:52 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:52 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:52 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C2.0.5%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:52 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:52 -  - TIME LoadModulesUpdates(request) 0.285 sec
+2018-03-19 19:36:52 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:52 - S - STEP
+2018-03-19 19:36:52 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:52 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:52 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:52 -  - loadFile
+2018-03-19 19:36:53 - U - RETURN
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:53 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:36:53 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477413/asd.iblock/updater2.0.7.php'
+2018-03-19 19:36:53 -  - TIME UpdateStepModules 0.011 sec
+2018-03-19 19:36:53 - UPD_SUCCESS - Updated: asd.iblock (2.0.7)<br>- Jquery теперь подключается системно. 
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:53 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C2.0.7%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:53 -  - TIME LoadModulesUpdates(request) 0.27 sec
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:53 - S - STEP
+2018-03-19 19:36:53 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:53 -  - loadFile
+2018-03-19 19:36:53 - U - RETURN
+2018-03-19 19:36:53 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:53 -  - TIME UnGzipArchive 0.018 sec
+2018-03-19 19:36:53 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477413/asd.iblock/updater3.0.0.php'
+2018-03-19 19:36:53 -  - TIME UpdateStepModules 0.056 sec
+2018-03-19 19:36:55 - UPD_SUCCESS - Updated: asd.iblock (3.0.0)<br><ul> <li>Реализована полная поддержка каталога (цены, остатки). За посильную помощь спасибо Василию Бернгардту. </li> <li>Добавлена опция \"Отвязать от текущего раздела\". </li> <li>Добавлена возможность копировать/перемещать в конкретный раздел инфоблока.</li> <li>Добавлен новый тип свойств \"Простой чекбокс\".</li> <li>В карточке товара добавлена кнопка \"посмотреть в публичной части\".</li> <li>Реализован выбор свойств для экспорта, прибран формат XML, файл экспорта теперь сохраняется на диске, перед отдачей.</li> <li>Теперь символьный код проверяется на уникальность, и если таковой нет, создает ее, дополняя случайными числами. Необходимо для инфоблоков, где символьный код является частью URL. </li> <li>Более корректное подключение скриптов и библиотек.</li> <li>Исправлена ошибка с копированием/перемещением элементов (не копировалось свойство типа \"список\").</li> <li>Косметические изменения в коде инсталятора.</li> <li>Подробнее: http://dev.1c-bitrix.ru/community/webdev/user/11948/blog/7272/</li> </ul>
+2018-03-19 19:36:56 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:56 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:56 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C3.0.0%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:56 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:56 -  - TIME LoadModulesUpdates(request) 0.28 sec
+2018-03-19 19:36:56 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:56 - S - STEP
+2018-03-19 19:36:56 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:56 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:56 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:56 -  - loadFile
+2018-03-19 19:36:56 - U - RETURN
+2018-03-19 19:36:56 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:56 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:36:56 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477416/asd.iblock/updater3.0.1.php'
+2018-03-19 19:36:56 -  - TIME UpdateStepModules 0.006 sec
+2018-03-19 19:36:56 - UPD_SUCCESS - Updated: asd.iblock (3.0.1)<br>- Незначительные исправления.
+2018-03-19 19:36:57 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:57 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:57 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C3.0.1%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:57 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:57 -  - TIME LoadModulesUpdates(request) 0.29 sec
+2018-03-19 19:36:57 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:57 - S - STEP
+2018-03-19 19:36:57 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:57 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:57 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:57 -  - loadFile
+2018-03-19 19:36:57 - U - RETURN
+2018-03-19 19:36:57 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:57 -  - TIME UnGzipArchive 0.003 sec
+2018-03-19 19:36:57 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477417/asd.iblock/updater3.0.2.php'
+2018-03-19 19:36:57 -  - TIME UpdateStepModules 0.007 sec
+2018-03-19 19:36:57 - UPD_SUCCESS - Updated: asd.iblock (3.0.2)<br>- Автоматическое создание обработчика типа свойства при установленном модуле.
+2018-03-19 19:36:58 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:58 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:58 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C3.0.2%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:58 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:58 -  - TIME LoadModulesUpdates(request) 0.261 sec
+2018-03-19 19:36:58 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:58 - S - STEP
+2018-03-19 19:36:58 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:58 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:58 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:58 -  - loadFile
+2018-03-19 19:36:58 - U - RETURN
+2018-03-19 19:36:58 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:58 -  - TIME UnGzipArchive 0.008 sec
+2018-03-19 19:36:58 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477418/asd.iblock/updater3.1.0.php'
+2018-03-19 19:36:58 -  - TIME UpdateStepModules 0.022 sec
+2018-03-19 19:36:58 - UPD_SUCCESS - Updated: asd.iblock (3.1.0)<br>- Тип свойства \"Простой чекбокс\" разделен на числовой и строковый типы. - Добавлена возможность настройки принимаемых значений простого чекбокса.
+2018-03-19 19:36:59 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:59 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:36:59 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C3.1.0%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:36:59 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:36:59 -  - TIME LoadModulesUpdates(request) 0.292 sec
+2018-03-19 19:36:59 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:59 - S - STEP
+2018-03-19 19:36:59 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:36:59 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:36:59 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:36:59 -  - loadFile
+2018-03-19 19:36:59 - U - RETURN
+2018-03-19 19:36:59 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:36:59 -  - TIME UnGzipArchive 0.008 sec
+2018-03-19 19:36:59 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477419/asd.iblock/updater3.5.0.php'
+2018-03-19 19:36:59 -  - TIME UpdateStepModules 0.022 sec
+2018-03-19 19:36:59 - UPD_SUCCESS - Updated: asd.iblock (3.5.0)<br>- Добавлены пользовательские свойства инфоблоков: http://dev.1c-bitrix.ru/community/webdev/user/11948/blog/7307/
+2018-03-19 19:37:00 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:00 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:00 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C3.5.0%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:00 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:00 -  - TIME LoadModulesUpdates(request) 0.296 sec
+2018-03-19 19:37:00 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:00 - S - STEP
+2018-03-19 19:37:00 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:01 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:01 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:01 -  - loadFile
+2018-03-19 19:37:01 - U - RETURN
+2018-03-19 19:37:01 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:01 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:37:01 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477421/asd.iblock/updater3.5.1.php'
+2018-03-19 19:37:01 -  - TIME UpdateStepModules 0.012 sec
+2018-03-19 19:37:01 - UPD_SUCCESS - Updated: asd.iblock (3.5.1)<br>- Мелкие изменения.
+2018-03-19 19:37:01 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:01 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:01 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C3.5.1%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:01 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:02 -  - TIME LoadModulesUpdates(request) 0.301 sec
+2018-03-19 19:37:02 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:02 - S - STEP
+2018-03-19 19:37:02 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:02 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:02 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:02 -  - loadFile
+2018-03-19 19:37:02 - U - RETURN
+2018-03-19 19:37:02 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:02 -  - TIME UnGzipArchive 0.009 sec
+2018-03-19 19:37:02 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477422/asd.iblock/updater3.5.2.php'
+2018-03-19 19:37:02 -  - TIME UpdateStepModules 0.022 sec
+2018-03-19 19:37:02 - UPD_SUCCESS - Updated: asd.iblock (3.5.2)<br>- Исправление ошибки копирования в списке при уникальности символьного кода. 
+2018-03-19 19:37:02 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:02 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:02 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C3.5.2%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:02 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:03 -  - TIME LoadModulesUpdates(request) 0.282 sec
+2018-03-19 19:37:03 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:03 - S - STEP
+2018-03-19 19:37:03 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:03 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:03 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:03 -  - loadFile
+2018-03-19 19:37:03 - U - RETURN
+2018-03-19 19:37:03 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:03 -  - TIME UnGzipArchive 0.079 sec
+2018-03-19 19:37:03 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477423/asd.iblock/updater4.0.0.php'
+2018-03-19 19:37:03 -  - TIME UpdateStepModules 0.105 sec
+2018-03-19 19:37:04 - UPD_SUCCESS - Updated: asd.iblock (4.0.0)<br><li> Удобное редактирование с перескакиванием по ячейкам! <li> Добавлен тип свойства \"Палитра\". <li> Реализовано копирование секций (без подсекций и элементов). <li> Свойство \"простой чекбокс\" поддерживает вывод в публичной части. <li> Переработана система прав под новые версии. <li> Разработчикам: добавлен метод CASDiblockTools::SetIBUF($IBLOCK_ID, $arFields) для сохранения пользовательских свойств инфоблока. <li> При переносе/копировании элементов в другой инфоблок списки теперь сохраняются даже при различных XML_ID вариантов, в случае их разности за сравнение берется название вариантов. <li> Исправлена ошибка сохранения пользовательского свойства инфоблока списочного типа. <li> Прочие незначительные улучшения и изменения. <li> Поиск и исправления notice PHP. 
+2018-03-19 19:37:04 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:04 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:04 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.0.0%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:04 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:05 -  - TIME LoadModulesUpdates(request) 0.277 sec
+2018-03-19 19:37:05 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:05 - S - STEP
+2018-03-19 19:37:05 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:05 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:05 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:05 -  - loadFile
+2018-03-19 19:37:05 - U - RETURN
+2018-03-19 19:37:05 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:05 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:05 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477425/asd.iblock/updater4.0.1.php'
+2018-03-19 19:37:05 -  - TIME UpdateStepModules 0.01 sec
+2018-03-19 19:37:06 - UPD_SUCCESS - Updated: asd.iblock (4.0.1)<br>- Мелкие исправления js-скрипта.
+2018-03-19 19:37:06 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:06 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:06 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.0.1%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:06 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:06 -  - TIME LoadModulesUpdates(request) 0.32 sec
+2018-03-19 19:37:06 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:06 - S - STEP
+2018-03-19 19:37:06 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:07 -  - loadFile
+2018-03-19 19:37:07 - U - RETURN
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:07 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:07 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477427/asd.iblock/updater4.0.2.php'
+2018-03-19 19:37:07 -  - TIME UpdateStepModules 0.008 sec
+2018-03-19 19:37:07 - UPD_SUCCESS - Updated: asd.iblock (4.0.2)<br>- Регистрация обработчика Палитры.
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:07 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.0.2%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:07 -  - TIME LoadModulesUpdates(request) 0.271 sec
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:07 - S - STEP
+2018-03-19 19:37:07 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:07 -  - loadFile
+2018-03-19 19:37:07 - U - RETURN
+2018-03-19 19:37:07 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:07 -  - TIME UnGzipArchive 0.011 sec
+2018-03-19 19:37:07 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477427/asd.iblock/updater4.5.0.php'
+2018-03-19 19:37:07 -  - TIME UpdateStepModules 0.03 sec
+2018-03-19 19:37:08 - UPD_SUCCESS - Updated: asd.iblock (4.5.0)<br><li> Добавлен экспорт/импорт форм представления форм секций и элементов. <li> В интерфейсе Эрмитажа добавлена ссылка на элемент в админ.части. <li> В блоке настроек в списке элементов добавлена опция переключения режима представления элементов и секций: совместный/раздельный. <li> Улучшен тип свойства \"Простой чекбокс\", теперь для не установленных галочек стоит пусто. 
+2018-03-19 19:37:09 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:09 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:09 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.0%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:09 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:09 -  - TIME LoadModulesUpdates(request) 0.273 sec
+2018-03-19 19:37:09 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:09 - S - STEP
+2018-03-19 19:37:09 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:09 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:09 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:09 -  - loadFile
+2018-03-19 19:37:10 - U - RETURN
+2018-03-19 19:37:10 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:10 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:37:10 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477430/asd.iblock/updater4.5.1.php'
+2018-03-19 19:37:10 -  - TIME UpdateStepModules 0.012 sec
+2018-03-19 19:37:10 - UPD_SUCCESS - Updated: asd.iblock (4.5.1)<br>- Фикс обновления 4.5.1 под старшие версии PHP.
+2018-03-19 19:37:10 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:10 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:10 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.1%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:10 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:10 -  - TIME LoadModulesUpdates(request) 0.295 sec
+2018-03-19 19:37:10 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:10 - S - STEP
+2018-03-19 19:37:10 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:10 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:10 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:10 -  - loadFile
+2018-03-19 19:37:11 - U - RETURN
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:11 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:11 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477431/asd.iblock/updater4.5.2.php'
+2018-03-19 19:37:11 -  - TIME UpdateStepModules 0.008 sec
+2018-03-19 19:37:11 - UPD_SUCCESS - Updated: asd.iblock (4.5.2)<br>- System update.
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:11 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.2%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:11 -  - TIME LoadModulesUpdates(request) 0.28 sec
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:11 - S - STEP
+2018-03-19 19:37:11 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:11 -  - loadFile
+2018-03-19 19:37:11 - U - RETURN
+2018-03-19 19:37:11 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:11 -  - TIME UnGzipArchive 0.015 sec
+2018-03-19 19:37:11 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477431/asd.iblock/updater4.5.3.php'
+2018-03-19 19:37:12 -  - TIME UpdateStepModules 0.037 sec
+2018-03-19 19:37:12 - UPD_SUCCESS - Updated: asd.iblock (4.5.3)<br>- Совместимость с версией 14.5 Битрикс.
+2018-03-19 19:37:12 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:12 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:12 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.3%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:12 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:12 -  - TIME LoadModulesUpdates(request) 0.288 sec
+2018-03-19 19:37:12 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:12 - S - STEP
+2018-03-19 19:37:12 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:12 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:12 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:12 -  - loadFile
+2018-03-19 19:37:12 - U - RETURN
+2018-03-19 19:37:12 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:12 -  - TIME UnGzipArchive 0.008 sec
+2018-03-19 19:37:12 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477432/asd.iblock/updater4.5.5.php'
+2018-03-19 19:37:12 -  - TIME UpdateStepModules 0.015 sec
+2018-03-19 19:37:12 - UPD_SUCCESS - Updated: asd.iblock (4.5.5)<br>- Окно палитры теперь центрируется по центру экрана.
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:13 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.5%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:13 -  - TIME LoadModulesUpdates(request) 0.278 sec
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:13 - S - STEP
+2018-03-19 19:37:13 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:13 -  - loadFile
+2018-03-19 19:37:13 - U - RETURN
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:13 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:13 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477433/asd.iblock/updater4.5.6.php'
+2018-03-19 19:37:13 -  - TIME UpdateStepModules 0.009 sec
+2018-03-19 19:37:13 - UPD_SUCCESS - Updated: asd.iblock (4.5.6)<br>- Исправлена ошибка для типа свойств \"Простой чекбокс\" для режима \"включен по умолчанию\".
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:13 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.6%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:13 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:14 -  - TIME LoadModulesUpdates(request) 0.282 sec
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:14 - S - STEP
+2018-03-19 19:37:14 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:14 -  - loadFile
+2018-03-19 19:37:14 - U - RETURN
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:14 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:14 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477434/asd.iblock/updater4.5.7.php'
+2018-03-19 19:37:14 -  - TIME UpdateStepModules 0.019 sec
+2018-03-19 19:37:14 - UPD_SUCCESS - Updated: asd.iblock (4.5.7)<br><ul> <li>Поправлена ошибка с правами доступа. <li>Поправлена ошибка, при которой слетали описания свойств при копировании и переносе. </ul>
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:14 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.7%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:14 -  - TIME LoadModulesUpdates(request) 0.29 sec
+2018-03-19 19:37:14 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:14 - S - STEP
+2018-03-19 19:37:14 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:15 -  - loadFile
+2018-03-19 19:37:15 - U - RETURN
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:15 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:37:15 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477435/asd.iblock/updater4.5.8.php'
+2018-03-19 19:37:15 -  - TIME UpdateStepModules 0.009 sec
+2018-03-19 19:37:15 - UPD_SUCCESS - Updated: asd.iblock (4.5.8)<br>Незначительные улучшения.
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:15 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.8%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:15 -  - TIME LoadModulesUpdates(request) 0.29 sec
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:15 - S - STEP
+2018-03-19 19:37:15 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:15 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:15 -  - loadFile
+2018-03-19 19:37:16 - U - RETURN
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:16 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:16 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477436/asd.iblock/updater4.5.9.php'
+2018-03-19 19:37:16 -  - TIME UpdateStepModules 0.009 sec
+2018-03-19 19:37:16 - UPD_SUCCESS - Updated: asd.iblock (4.5.9)<br>Исправление типов \"простые чекбоксы\" для показа в универсальных списках.
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:16 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.9%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:16 -  - TIME LoadModulesUpdates(request) 0.284 sec
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:16 - S - STEP
+2018-03-19 19:37:16 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:16 -  - loadFile
+2018-03-19 19:37:16 - U - RETURN
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:16 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:37:16 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477436/asd.iblock/updater4.5.10.php'
+2018-03-19 19:37:16 -  - TIME UpdateStepModules 0.011 sec
+2018-03-19 19:37:16 - UPD_SUCCESS - Updated: asd.iblock (4.5.10)<br>Исправлено копирование описаний свойств.
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:16 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.10%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:16 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:17 -  - TIME LoadModulesUpdates(request) 0.285 sec
+2018-03-19 19:37:17 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:17 - S - STEP
+2018-03-19 19:37:17 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:17 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:17 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:17 -  - loadFile
+2018-03-19 19:37:17 - U - RETURN
+2018-03-19 19:37:17 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:17 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:17 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477437/asd.iblock/updater4.5.11.php'
+2018-03-19 19:37:17 -  - TIME UpdateStepModules 0.01 sec
+2018-03-19 19:37:17 - UPD_SUCCESS - Updated: asd.iblock (4.5.11)<br>Исправлено поведение свойства типа \"Привязка к собственной секции\" при виде \"Список\". Также свойство добавлено в установку в обновлении.
+2018-03-19 19:37:17 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:17 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:17 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.11%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:17 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:18 -  - TIME LoadModulesUpdates(request) 0.282 sec
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:18 - S - STEP
+2018-03-19 19:37:18 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:18 -  - loadFile
+2018-03-19 19:37:18 - U - RETURN
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:18 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:37:18 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477438/asd.iblock/updater4.5.12.php'
+2018-03-19 19:37:18 -  - TIME UpdateStepModules 0.011 sec
+2018-03-19 19:37:18 - UPD_SUCCESS - Updated: asd.iblock (4.5.12)<br>Поправлена ошибка копирования цен и параметров продукта.
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:18 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.5.12%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:18 -  - TIME LoadModulesUpdates(request) 0.29 sec
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:18 - S - STEP
+2018-03-19 19:37:18 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:18 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:18 -  - loadFile
+2018-03-19 19:37:19 - U - RETURN
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:19 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:19 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477439/asd.iblock/updater4.6.0.php'
+2018-03-19 19:37:19 -  - TIME UpdateStepModules 0.011 sec
+2018-03-19 19:37:19 - UPD_SUCCESS - Updated: asd.iblock (4.6.0)<br>- Незначительные изменения.
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:19 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.0%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:19 -  - TIME LoadModulesUpdates(request) 0.273 sec
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:19 - S - STEP
+2018-03-19 19:37:19 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:19 -  - loadFile
+2018-03-19 19:37:19 - U - RETURN
+2018-03-19 19:37:19 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:19 -  - TIME UnGzipArchive 0.01 sec
+2018-03-19 19:37:20 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477439/asd.iblock/updater4.6.3.php'
+2018-03-19 19:37:20 -  - TIME UpdateStepModules 0.045 sec
+2018-03-19 19:37:20 - UPD_SUCCESS - Updated: asd.iblock (4.6.3)<br><ul> <li>Незначительные интерфейсные улучшения. <li>Исправление незначительных ошибок. </ul>
+2018-03-19 19:37:20 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:20 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:20 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.3%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:20 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:20 -  - TIME LoadModulesUpdates(request) 0.292 sec
+2018-03-19 19:37:20 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:20 - S - STEP
+2018-03-19 19:37:20 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:21 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:21 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:21 -  - loadFile
+2018-03-19 19:37:21 - U - RETURN
+2018-03-19 19:37:21 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:21 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:37:21 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477441/asd.iblock/updater4.6.4.php'
+2018-03-19 19:37:21 -  - TIME UpdateStepModules 0.008 sec
+2018-03-19 19:37:21 - UPD_SUCCESS - Updated: asd.iblock (4.6.4)<br>Мелкие изменения. 
+2018-03-19 19:37:21 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:21 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:21 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.4%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:21 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:21 -  - TIME LoadModulesUpdates(request) 0.3 sec
+2018-03-19 19:37:21 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:21 - S - STEP
+2018-03-19 19:37:21 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:22 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:22 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:22 -  - loadFile
+2018-03-19 19:37:22 - U - RETURN
+2018-03-19 19:37:22 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:22 -  - TIME UnGzipArchive 0.003 sec
+2018-03-19 19:37:22 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477442/asd.iblock/updater4.6.5.php'
+2018-03-19 19:37:22 -  - TIME UpdateStepModules 0.006 sec
+2018-03-19 19:37:22 - UPD_SUCCESS - Updated: asd.iblock (4.6.5)<br>- Изменение в групповых действиях для фасетного индекса.
+2018-03-19 19:37:22 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:22 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:22 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.5%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:22 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:22 -  - TIME LoadModulesUpdates(request) 0.295 sec
+2018-03-19 19:37:22 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:22 - S - STEP
+2018-03-19 19:37:22 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:37:23 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:23 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:23 -  - loadFile
+2018-03-19 19:37:23 - U - RETURN
+2018-03-19 19:37:23 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:37:23 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:37:23 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477443/asd.iblock/updater4.6.6.php'
+2018-03-19 19:37:23 -  - TIME UpdateStepModules 0.011 sec
+2018-03-19 19:37:23 - UPD_SUCCESS - Updated: asd.iblock (4.6.6)<br>Исправление ошибки, иногда возникающей при отвязке элементов от раздела.
+2018-03-19 19:37:23 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:37:23 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:37:23 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=asd.iblock&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:37:23 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:37:23 -  - TIME LoadModulesUpdates(request) 0.293 sec
+2018-03-19 19:37:23 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:37:23 - STEP - Finish - NOUPDATES
+2018-03-19 19:37:23 - STEP - Finish - NOUPDATES
+2018-03-19 19:40:56 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:40:56 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:40:56 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:40:56 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:40:56 -  - TIME GetUpdatesList(request) 0.304 sec
+2018-03-19 19:40:56 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:41:07 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:41:07 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:41:07 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:41:07 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:41:23 -  - TIME GetUpdatesList(request) 16.152 sec
+2018-03-19 19:41:23 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:41:40 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:41:40 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:41:40 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:41:40 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:41:40 -  - TIME GetUpdatesList(request) 0.293 sec
+2018-03-19 19:41:40 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:41:46 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:41:46 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:41:46 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:41:46 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:41:46 -  - TIME GetUpdatesList(request) 0.279 sec
+2018-03-19 19:41:46 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:41:49 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:41:49 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:41:49 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:41:49 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:41:50 -  - TIME GetUpdatesList(request) 0.295 sec
+2018-03-19 19:41:50 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:26 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:45:26 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:26 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock%2Cdev2fun.imagecompress&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:26 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:26 -  - TIME GetUpdatesList(request) 0.298 sec
+2018-03-19 19:45:26 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:32 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:32 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:32 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:32 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:32 -  - TIME LoadModulesUpdates(request) 0.288 sec
+2018-03-19 19:45:32 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:32 - S - STEP
+2018-03-19 19:45:32 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:32 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:32 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:32 -  - loadFile
+2018-03-19 19:45:33 - U - RETURN
+2018-03-19 19:45:33 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:33 -  - TIME UnGzipArchive 0.015 sec
+2018-03-19 19:45:33 -  - TIME UpdateStepModules 0.058 sec
+2018-03-19 19:45:33 - UPD_SUCCESS - Updated: dev2fun.imagecompress
+2018-03-19 19:45:33 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:33 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:33 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.1%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:33 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:33 -  - TIME LoadModulesUpdates(request) 0.283 sec
+2018-03-19 19:45:33 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:33 - S - STEP
+2018-03-19 19:45:33 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:33 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:33 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:33 -  - loadFile
+2018-03-19 19:45:34 - U - RETURN
+2018-03-19 19:45:34 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:34 -  - TIME UnGzipArchive 0.003 sec
+2018-03-19 19:45:34 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477934/dev2fun.imagecompress/updater0.1.2.php'
+2018-03-19 19:45:34 -  - TIME UpdateStepModules 0.007 sec
+2018-03-19 19:45:34 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.2)<br>- убрана поддержка Bitrix\\Main\\Text\\String<br> - улучшена поддержка php5.3
+2018-03-19 19:45:34 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:34 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:34 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.2%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:34 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:35 -  - TIME LoadModulesUpdates(request) 0.371 sec
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:35 - S - STEP
+2018-03-19 19:45:35 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:35 -  - loadFile
+2018-03-19 19:45:35 - U - RETURN
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:35 -  - TIME UnGzipArchive 0.003 sec
+2018-03-19 19:45:35 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477935/dev2fun.imagecompress/updater0.1.3.php'
+2018-03-19 19:45:35 -  - TIME UpdateStepModules 0.007 sec
+2018-03-19 19:45:35 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.3)<br>- убрана константа ADMIN_MODULE_NAME
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:35 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.3%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:35 -  - TIME LoadModulesUpdates(request) 0.293 sec
+2018-03-19 19:45:35 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:35 - S - STEP
+2018-03-19 19:45:35 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:36 -  - loadFile
+2018-03-19 19:45:36 - U - RETURN
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:36 -  - TIME UnGzipArchive 0.002 sec
+2018-03-19 19:45:36 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477936/dev2fun.imagecompress/updater0.1.4.php'
+2018-03-19 19:45:36 -  - TIME UpdateStepModules 0.014 sec
+2018-03-19 19:45:36 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.4)<br>- поправлен баг с правами на картинки после оптимизации<br> - поправлен баг с GetFields<br> - Администраторам: Убедитесь в наличии прав на редактирование и чтение у всех файлов /upload
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:36 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.4%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:36 -  - TIME LoadModulesUpdates(request) 0.296 sec
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:36 - S - STEP
+2018-03-19 19:45:36 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:36 -  - loadFile
+2018-03-19 19:45:36 - U - RETURN
+2018-03-19 19:45:36 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:36 -  - TIME UnGzipArchive 0.006 sec
+2018-03-19 19:45:36 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477936/dev2fun.imagecompress/updater0.1.5.php'
+2018-03-19 19:45:37 -  - TIME UpdateStepModules 0.017 sec
+2018-03-19 19:45:37 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.5)<br>- улучшена поддержка старых версий php<br> - улучшена обработка файлов с не правильными названиями<br> - улучшена обработка уже оптимизированных картинок<br> - улучшена обработка списка картинок
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:37 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.5%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:37 -  - TIME LoadModulesUpdates(request) 0.287 sec
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:37 - S - STEP
+2018-03-19 19:45:37 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:37 -  - loadFile
+2018-03-19 19:45:37 - U - RETURN
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:37 -  - TIME UnGzipArchive 0.003 sec
+2018-03-19 19:45:37 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477937/dev2fun.imagecompress/updater0.1.6.php'
+2018-03-19 19:45:37 -  - TIME UpdateStepModules 0.009 sec
+2018-03-19 19:45:37 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.6)<br>- улучшена поддержка php7
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:37 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.6%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:37 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:38 -  - TIME LoadModulesUpdates(request) 0.288 sec
+2018-03-19 19:45:38 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:38 - S - STEP
+2018-03-19 19:45:38 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:38 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:38 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:38 -  - loadFile
+2018-03-19 19:45:38 - U - RETURN
+2018-03-19 19:45:38 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:38 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:45:38 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477938/dev2fun.imagecompress/updater0.1.7.php'
+2018-03-19 19:45:38 -  - TIME UpdateStepModules 0.008 sec
+2018-03-19 19:45:38 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.7)<br>- улучшена поддержка multiple<br> - добавленна поддержка progressive jpeg<br> - добавленна поддержка запрета уменьшения качества<br>
+2018-03-19 19:45:38 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:38 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:38 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.7%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:38 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:39 -  - TIME LoadModulesUpdates(request) 0.309 sec
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:39 - S - STEP
+2018-03-19 19:45:39 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:39 -  - loadFile
+2018-03-19 19:45:39 - U - RETURN
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:39 -  - TIME UnGzipArchive 0.005 sec
+2018-03-19 19:45:39 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477939/dev2fun.imagecompress/updater0.1.8.php'
+2018-03-19 19:45:39 -  - TIME UpdateStepModules 0.011 sec
+2018-03-19 19:45:39 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.8)<br>- улучшена поддержка php5.3<br> - добавлена проверка на наличие картинке на диске<br> - добавлен запрет сжатия при отсутствии картинки на диске<br> - теперь при установке автоматически включается прогрессивное сжатие<br> - теперь при установке у optipng автоматически устанавливается степень сжатия 5
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:39 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.8%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:39 -  - TIME LoadModulesUpdates(request) 0.306 sec
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:39 - S - STEP
+2018-03-19 19:45:39 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:39 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:39 -  - loadFile
+2018-03-19 19:45:40 - U - RETURN
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:40 -  - TIME UnGzipArchive 0.004 sec
+2018-03-19 19:45:40 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477940/dev2fun.imagecompress/updater0.1.9.php'
+2018-03-19 19:45:40 -  - TIME UpdateStepModules 0.007 sec
+2018-03-19 19:45:40 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.9)<br>- улучшена множественная обработка картинок<br>
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:40 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.9%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:40 -  - TIME LoadModulesUpdates(request) 0.314 sec
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:40 - S - STEP
+2018-03-19 19:45:40 - LMU01 - LoadModulesUpdates-Step
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:40 -  - loadFile
+2018-03-19 19:45:40 - U - RETURN
+2018-03-19 19:45:40 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-03-19 19:45:40 -  - TIME UnGzipArchive 0.003 sec
+2018-03-19 19:45:40 - CSURUS1 - Run updater '/bitrix/updates/update_m1521477940/dev2fun.imagecompress/updater0.1.10.php'
+2018-03-19 19:45:40 -  - TIME UpdateStepModules 0.006 sec
+2018-03-19 19:45:40 - UPD_SUCCESS - Updated: dev2fun.imagecompress (0.1.10)<br>- улучшен вывод счетчика, при множественной обработке
+2018-03-19 19:45:41 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-03-19 19:45:41 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:41 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN&reqm=dev2fun.imagecompress&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:41 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:41 -  - TIME LoadModulesUpdates(request) 0.293 sec
+2018-03-19 19:45:41 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:45:41 - STEP - Finish - NOUPDATES
+2018-03-19 19:45:41 - STEP - Finish - NOUPDATES
+2018-03-19 19:45:43 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:45:43 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:45:43 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock%2Cdev2fun.imagecompress&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:45:43 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:45:43 -  - TIME GetUpdatesList(request) 0.309 sec
+2018-03-19 19:45:43 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:46:34 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:46:34 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:46:34 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock%2Cdev2fun.imagecompress&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:46:34 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:46:34 -  - TIME GetUpdatesList(request) 0.291 sec
+2018-03-19 19:46:34 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:48:08 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:48:08 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:48:08 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock%2Cdev2fun.imagecompress&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:48:08 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:48:08 -  - TIME GetUpdatesList(request) 0.291 sec
+2018-03-19 19:48:08 -  - exec CUpdateClientPartner::ParseServerData
+2018-03-19 19:48:12 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-03-19 19:48:12 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-03-19 19:48:12 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=D&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.10%2CY%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.0.1%2CN%3Bblog%2C17.5.7%2CN%3Bcatalog%2C17.5.11%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.2%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.4%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.2%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.5%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.2%2CN%3Bsocialservices%2C17.5.2%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.4%2CN%3Bvote%2C17.5.0%2CN%3Bimyie.morewatermark%2C1.0.2%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Cimyie.morewatermark%2Casd.iblock%2Cdev2fun.imagecompress&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-03-19 19:48:12 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-03-19 19:48:12 -  - TIME GetUpdatesList(request) 0.286 sec
+2018-03-19 19:48:12 -  - exec CUpdateClientPartner::ParseServerData
