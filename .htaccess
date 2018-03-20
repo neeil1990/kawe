@@ -11,6 +11,12 @@ ErrorDocument 404 /404.php
   Options +FollowSymLinks
   RewriteEngine On
 
+############могут быть проблемы с ajax не забудь что тут писал!!!!
+  RewriteCond %{THE_REQUEST} /(.*)index.php.*$
+  RewriteCond %{THE_REQUEST} !bitrix/admin/
+  RewriteRule .* /%1 [R=301,L]
+############
+
 RewriteCond %{HTTP_HOST} ^www\.(.*) [NC]
 RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
   
