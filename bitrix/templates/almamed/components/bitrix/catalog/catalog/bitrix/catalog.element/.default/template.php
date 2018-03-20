@@ -29,8 +29,23 @@ $this->setFrameMode(true);
 
 			<ul class="cart__slider">
 				<? foreach($arResult['PHOTO'] as $photo):?>
-				<li class="cart__slider_item" data-thumb="<?=$photo?>">
-					<img src="<?=$photo?>" alt="">
+					<?
+					$arWaterMark = Array(
+						array(
+							"name" => "watermark",
+							"position" => "bottomright",
+							"alpha_level" => "50",
+							"type" => "image",
+							"size" => "real",
+							"file" => $_SERVER["DOCUMENT_ROOT"].'/logo.png',
+							"fill" => "exact",
+						)
+					);
+					$arFileTmp = CFile::ResizeImageGet($photo, array("width" => 400, "height" => 400), BX_RESIZE_IMAGE_EXACT, true, $arWaterMark);
+					$arFileThumb = CFile::ResizeImageGet($photo, array("width" => 100, "height" => 100), BX_RESIZE_IMAGE_EXACT, true, false);
+					?>
+				<li class="cart__slider_item" data-thumb="<?=$arFileThumb['src']?>">
+					<img src="<?=$arFileTmp['src']?>" alt="">
 				</li>
 				<?endforeach;?>
 			</ul>

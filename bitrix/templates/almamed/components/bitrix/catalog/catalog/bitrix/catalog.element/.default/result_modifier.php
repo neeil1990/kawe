@@ -585,8 +585,10 @@ if ($arResult['MODULES']['currency'])
 		unset($currencyFormat, $currency, $currencyIterator);
 	}
 }
-$arResult['PHOTO'][] = $arResult['DETAIL_PICTURE']['SRC'];
+
+$arResult['PHOTO'][] = $arResult['DETAIL_PICTURE']['ID'];
 foreach($arResult['PROPERTIES']['MORE_PHOTO']['VALUE'] as $img){
-	$arResult['PHOTO'][] = CFile::GetPath($img);
+	$arResult['PHOTO'][] = $img;
 }
+
 ?>
