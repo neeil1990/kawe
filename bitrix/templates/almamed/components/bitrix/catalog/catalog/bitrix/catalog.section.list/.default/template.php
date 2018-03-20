@@ -49,21 +49,19 @@ $arSectionDeleteParams = array("CONFIRM" => GetMessage('CT_BCSL_ELEMENT_DELETE_C
 
 ?>
 
-		<div class="main overflow-hidden">
-			<div class="title"><?=$arResult['SECTION']['NAME'];?></div>
+<div class="categories">
+	<? foreach($arResult['SECTIONS'] as $section):?>
+	<a href="<?=$section['SECTION_PAGE_URL']?>" class="categories__item">
+		<span class="categories__item_wrapper">
+			<span class="categories__img"><img src="<?=$section['PICTURE']['SRC']?>" alt="categories"></span>
+			<span class="categories__title"><?=$section['NAME']?></span>
+		</span>
+	</a>
+	<?endforeach;?>
+</div>
 
-			<div class="categories">
-				<? foreach($arResult['SECTIONS'] as $section):?>
-				<a href="<?=$section['SECTION_PAGE_URL']?>" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="<?=$section['PICTURE']['SRC']?>" alt="categories"></span>
-						<span class="categories__title"><?=$section['NAME']?></span>
-					</span>
-				</a>
-				<?endforeach;?>
-			</div>
 
-		</div>
+
 
 
 

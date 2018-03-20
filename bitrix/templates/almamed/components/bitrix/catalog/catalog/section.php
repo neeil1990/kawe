@@ -15,7 +15,19 @@ use Bitrix\Main\ModuleManager;
 
 $this->setFrameMode(true);
 
-?><?$APPLICATION->IncludeComponent(
+?>
+
+<div class="main overflow-hidden">
+
+<?
+	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE']));
+	if ($arSection = $rsSections->Fetch()) {
+	?>
+	<div class="title"><?= $arSection['NAME']; ?></div>
+	<?
+	}
+
+$APPLICATION->IncludeComponent(
 	"bitrix:catalog.section.list",
 	"",
 	array(
@@ -36,7 +48,11 @@ $this->setFrameMode(true);
 	),
 	$component,
 	array("HIDE_ICONS" => "Y")
-);?><?
+);?>
+
+
+
+<?
 
 
 
@@ -153,3 +169,4 @@ $GLOBALS['CATALOG_CURRENT_SECTION_ID'] = $intSectionID;
 unset($basketAction);
 
 ?>
+</div>

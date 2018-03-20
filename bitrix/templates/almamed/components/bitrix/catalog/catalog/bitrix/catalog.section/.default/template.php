@@ -18,8 +18,6 @@ if(empty($arResult['ITEMS']))
 
 ?>
 
-	<div class="main">
-		<div class="title"><?=$arResult['NAME'];?></div>
 		<form class="filter">
 			<label class="filter__label filter__sort">
 				Сортировать по:
@@ -105,6 +103,6 @@ if(empty($arResult['ITEMS']))
 		?>
 
 
-</div>
+
 
 
