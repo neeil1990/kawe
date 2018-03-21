@@ -116,10 +116,13 @@
             <a href="#" class="header__basket_mobile">
                 <i class="icon-cart" data-count="1"></i>
             </a>
-            <form action="#" method="post" class="search">
-                <input type="text" class="search__input" placeholder="Введите слово для поиска, например “Воронка”">
-                <button class="search__btn icon-search" type="submit"></button>
-            </form>
+
+            <?$APPLICATION->IncludeComponent("bitrix:search.form", "search", Array(
+                "PAGE" => "#SITE_DIR#search/index.php",	// Страница выдачи результатов поиска (доступен макрос #SITE_DIR#)
+                "USE_SUGGEST" => "Y",	// Показывать подсказку с поисковыми фразами
+            ),
+                false
+            );?>
             <a href="/personal/cart/" class="header__order">Оформить заказ</a>
         </div>
     </div>
