@@ -51,7 +51,7 @@
                 <div class="footer__phone icon-phone"><?=tplvar('phone', true);?></div>
                 <a href="#" class="footer__callback footer__link">Заказать звонок</a>
                 <div class="footer__email icon-email">
-                    <a href="mailto:<?=tplvar('email', true);?>" class="footer__link"><?=tplvar('email', true);?></a>
+                    <a href="mailto:<?=tplvar('email');?>" class="footer__link"><?=tplvar('email', true);?></a>
                     (Для заказов)
                 </div>
             </div>
