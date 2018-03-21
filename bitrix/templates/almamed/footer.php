@@ -38,7 +38,7 @@
                     "MENU_CACHE_TIME" => "3600",	// Время кеширования (сек.)
                     "MENU_CACHE_TYPE" => "N",	// Тип кеширования
                     "MENU_CACHE_USE_GROUPS" => "Y",	// Учитывать права доступа
-                    "ROOT_MENU_TYPE" => "top",	// Тип меню для первого уровня
+                    "ROOT_MENU_TYPE" => "bottom",	// Тип меню для первого уровня
                     "USE_EXT" => "N",	// Подключать файлы с именами вида .тип_меню.menu_ext.php
                     "COMPONENT_TEMPLATE" => "catalog_horizontal",
                     "MENU_THEME" => "site",	// Тема меню

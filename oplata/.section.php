@@ -1,0 +1,6 @@
+<?
+$sSectionName = "оплата							";
+$arDirProperties = Array(
+
+);
+?>
