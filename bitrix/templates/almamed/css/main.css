@@ -53,6 +53,12 @@ ol,ul
     margin: 0;
     padding: 0;
 }
+.catalog-text ul,
+.catalog-text ol{
+    list-style: unset;
+    margin-left: 15px;
+}
+
 .container
 {
     margin: 0 auto;

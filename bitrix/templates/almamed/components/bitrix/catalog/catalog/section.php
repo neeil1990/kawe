@@ -170,9 +170,11 @@ $GLOBALS['CATALOG_CURRENT_SECTION_ID'] = $intSectionID;
 unset($basketAction);
 
 ?>
+	<div class="catalog-text">
 	<?
 	if($arSection['DESCRIPTION']){
 		print $arSection['DESCRIPTION'];
 	}
 	?>
+	</div>
 </div>
