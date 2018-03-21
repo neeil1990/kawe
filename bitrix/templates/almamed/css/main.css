@@ -53,9 +53,12 @@ ol,ul
     margin: 0;
     padding: 0;
 }
-.catalog-text ul,
-.catalog-text ol{
+.catalog-text ul{
     list-style: unset;
+    margin-left: 15px;
+}
+.catalog-text ol{
+    list-style: decimal;
     margin-left: 15px;
 }
 
