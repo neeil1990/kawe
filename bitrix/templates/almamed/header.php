@@ -117,12 +117,39 @@
                 <i class="icon-cart" data-count="1"></i>
             </a>
 
-            <?$APPLICATION->IncludeComponent("bitrix:search.form", "search", Array(
+            <?$APPLICATION->IncludeComponent("bitrix:search.title", "search.live", Array(
+                "CATEGORY_0" => array(	// Ограничение области поиска
+                    0 => "iblock_1c_catalog",
+                ),
+                "CATEGORY_0_TITLE" => "",	// Название категории
+                "CATEGORY_0_iblock_1c_catalog" => array(	// Искать в информационных блоках типа "iblock_1c_catalog"
+                    0 => "all",
+                ),
+                "CHECK_DATES" => "N",	// Искать только в активных по дате документах
+                "CONTAINER_ID" => "title-search",	// ID контейнера, по ширине которого будут выводиться результаты
+                "CONVERT_CURRENCY" => "Y",	// Показывать цены в одной валюте
+                "INPUT_ID" => "title-search-input",	// ID строки ввода поискового запроса
+                "NUM_CATEGORIES" => "1",	// Количество категорий поиска
+                "ORDER" => "rank",	// Сортировка результатов
                 "PAGE" => "#SITE_DIR#search/index.php",	// Страница выдачи результатов поиска (доступен макрос #SITE_DIR#)
-                "USE_SUGGEST" => "Y",	// Показывать подсказку с поисковыми фразами
+                "PREVIEW_TRUNCATE_LEN" => "255",	// Максимальная длина анонса для вывода
+                "PRICE_CODE" => array(	// Тип цены
+                    0 => "BASE",
+                ),
+                "PRICE_VAT_INCLUDE" => "Y",	// Включать НДС в цену
+                "SHOW_INPUT" => "Y",	// Показывать форму ввода поискового запроса
+                "SHOW_OTHERS" => "N",	// Показывать категорию "прочее"
+                "SHOW_PREVIEW" => "Y",	// Показать картинку
+                "TOP_COUNT" => "10",	// Количество результатов в каждой категории
+                "USE_LANGUAGE_GUESS" => "Y",	// Включить автоопределение раскладки клавиатуры
+                "COMPONENT_TEMPLATE" => "visual",
+                "PREVIEW_WIDTH" => "75",	// Ширина картинки
+                "PREVIEW_HEIGHT" => "75",	// Высота картинки
+                "CURRENCY_ID" => "RUB",	// Валюта, в которую будут сконвертированы цены
             ),
                 false
             );?>
+
             <a href="/personal/cart/" class="header__order">Оформить заказ</a>
         </div>
     </div>
