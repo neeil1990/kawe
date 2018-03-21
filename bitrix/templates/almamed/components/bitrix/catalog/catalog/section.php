@@ -21,7 +21,8 @@ $this->setFrameMode(true);
 
 <?
 	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE']));
-	if ($arSection = $rsSections->Fetch()) {
+	$arSection = $rsSections->Fetch();
+	if ($arSection) {
 	?>
 	<div class="title"><?= $arSection['NAME']; ?></div>
 	<?
@@ -169,4 +170,9 @@ $GLOBALS['CATALOG_CURRENT_SECTION_ID'] = $intSectionID;
 unset($basketAction);
 
 ?>
+	<?
+	if($arSection['DESCRIPTION']){
+		print $arSection['DESCRIPTION'];
+	}
+	?>
 </div>
