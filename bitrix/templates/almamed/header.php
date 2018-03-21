@@ -69,7 +69,7 @@
                 </div>
             </div>
             <div class="header__contact">
-                <div class="header__title">8-800-100-37-97</div>
+                <div class="header__title"><?=tplvar('phone', true);?></div>
                 <div class="header__desc">Бесплатные звонки по РФ</div>
                 <a href="#" class="header__callback">Заказать звонок</a>
             </div>
