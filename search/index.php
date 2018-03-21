@@ -7,7 +7,7 @@ $APPLICATION->SetTitle("Поиск");
 	"bitrix:search.page", 
 	"search.page", 
 	array(
-		"RESTART" => "N",
+		"RESTART" => "Y",
 		"CHECK_DATES" => "N",
 		"USE_TITLE_RANK" => "N",
 		"DEFAULT_SORT" => "rank",

@@ -10,8 +10,9 @@
 /** @var string $templateFolder */
 /** @var string $componentPath */
 /** @var CBitrixComponent $component */
-$this->setFrameMode(true);?>
+$this->setFrameMode(true);
+?>
 <form action="<?=$arResult["FORM_ACTION"]?>" class="search">
-	<input type="text" class="search__input" name="q" placeholder="Введите слово для поиска, например “Воронка”">
+	<input type="text" class="search__input" name="q" value="<?=$_REQUEST['q']?>" placeholder="Введите слово для поиска, например “Воронка”">
 	<button class="search__btn icon-search" name="s" type="submit"></button>
 </form>
