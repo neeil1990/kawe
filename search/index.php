@@ -9,7 +9,7 @@ $APPLICATION->SetTitle("Поиск");
 	array(
 		"RESTART" => "Y",
 		"CHECK_DATES" => "N",
-		"USE_TITLE_RANK" => "N",
+		"USE_TITLE_RANK" => "Y",
 		"DEFAULT_SORT" => "rank",
 		"arrFILTER" => array(
 			0 => "iblock_1c_catalog",
@@ -69,7 +69,9 @@ $APPLICATION->SetTitle("Поиск");
 		),
 		"arrFILTER_iblock_1c_catalog" => array(
 			0 => "all",
-		)
+		),
+		"COMPOSITE_FRAME_MODE" => "A",
+		"COMPOSITE_FRAME_TYPE" => "AUTO"
 	),
 	false
 );?>
