@@ -56,7 +56,7 @@ endif;?>
 	<br /><hr />
 	<?foreach($arResult["SEARCH"] as $arItem):?>
 		<a href="<?echo $arItem["URL"]?>" class="title"><?echo $arItem["TITLE_FORMATED"]?></a>
-		<p><?echo $arItem["BODY_FORMATED"]?></p>
+		<p class="text"><?echo $arItem["BODY_FORMATED"]?></p>
 		<?if (
 			$arParams["SHOW_RATING"] == "Y"
 			&& strlen($arItem["RATING_TYPE_ID"]) > 0
