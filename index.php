@@ -80,31 +80,33 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
             </div>
             <div class="main overflow-hidden">
                 <div class="title">Категории</div>
+
+                <?
+                $arHomeSection = array();
+                $arFilter = array('IBLOCK_ID' => IBLOCK_CATALOG, 'ACTIVE' => 'Y', 'UF_SHOW_HOME' => true);
+                $arSelect = array('ID','IBLOCK_ID','IBLOCK_TYPE_ID','IBLOCK_SECTION_ID','CODE', 'NAME','PICTURE','SECTION_PAGE_URL');
+                $rsSection = CIBlockSection::GetTreeList($arFilter, $arSelect);
+                while($arSection = $rsSection->GetNext()) {
+                    $arHomeSection[$arSection[ID]][NAME] = $arSection['NAME'];
+                    $arHomeSection[$arSection[ID]][PICTURE] = CFile::GetPath($arSection['PICTURE']);
+                    $arHomeSection[$arSection[ID]][SECTION_PAGE_URL] = $arSection['SECTION_PAGE_URL'];
+                }
+                if($arHomeSection){
+                    $sectionCount = count($arHomeSection);
+                    $arHomeSection = array_chunk($arHomeSection, ceil($sectionCount/2));
+                }
+                ?>
                 <div class="categories">
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_1.jpg" alt="categories"></span>
-						<span class="categories__title">Диагностические ветеренарные наборы</span>
-					</span>
-                    </a>
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_2.jpg" alt="categories"></span>
-						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
-					</span>
-                    </a>
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_3.jpg" alt="categories"></span>
-						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
-					</span>
-                    </a>
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_4.jpg" alt="categories"></span>
-						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
-					</span>
-                    </a>
+                    <? if(isset($arHomeSection[0])): ?>
+                        <? foreach($arHomeSection[0] as $section): ?>
+                            <a href="<?=$section['SECTION_PAGE_URL']?>" class="categories__item">
+                            <span class="categories__item_wrapper">
+                                <span class="categories__img"><img src="<?=$section['PICTURE']?>" alt="categories"></span>
+                                <span class="categories__title"><?=$section['NAME']?></span>
+                            </span>
+                            </a>
+                        <?endforeach;?>
+                    <? endif; ?>
                 </div>
 
                 <div class="full-slider">
@@ -173,30 +175,16 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
                 </div>
 
                 <div class="categories">
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_1.jpg" alt="categories"></span>
-						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
-					</span>
-                    </a>
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_2.jpg" alt="categories"></span>
-						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
-					</span>
-                    </a>
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_3.jpg" alt="categories"></span>
-						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
-					</span>
-                    </a>
-                    <a href="#" class="categories__item">
-					<span class="categories__item_wrapper">
-						<span class="categories__img"><img src="img/categories_4.jpg" alt="categories"></span>
-						<span class="categories__title">Универсальные аппараты (косметологические комбайны)</span>
-					</span>
-                    </a>
+                    <? if(isset($arHomeSection[1])): ?>
+                        <? foreach($arHomeSection[1] as $section): ?>
+                            <a href="<?=$section['SECTION_PAGE_URL']?>" class="categories__item">
+                            <span class="categories__item_wrapper">
+                                <span class="categories__img"><img src="<?=$section['PICTURE']?>" alt="categories"></span>
+                                <span class="categories__title"><?=$section['NAME']?></span>
+                            </span>
+                            </a>
+                        <?endforeach;?>
+                    <? endif; ?>
                 </div>
                 <hr class="hr">
 
