@@ -69,7 +69,10 @@
                 </div>
             </div>
             <div class="header__contact">
-                <div class="header__title"><?=tplvar('phone', true);?></div>
+                <div class="header__title">
+                    <img src="<?=SITE_TEMPLATE_PATH?>/img/header_phone.jpg">
+                    <span>88005555550</span>
+                </div>
                 <div class="header__desc">Бесплатные звонки по РФ</div>
                 <a href="#" class="header__callback">Заказать звонок</a>
             </div>

@@ -331,11 +331,18 @@ ol,ul
 }
 .header__title
 {
+    position: relative;
     color: #4f4f4f;
     font-family: "Open Sans",sans-serif;
     font-size: 22px;
     line-height: 1;
     margin-bottom: 5px;
+}
+.header__title span{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
 }
 .header .icon-cart:after,.header__desc
 {
@@ -1660,6 +1667,12 @@ ol,ul
     left: 2px;
     position: absolute;
     top: 1px;
+}
+.footer__phone span{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
 }
 .footer__email
 {

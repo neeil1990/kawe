@@ -48,7 +48,10 @@
 
             </div>
             <div class="footer__col flex-3">
-                <div class="footer__phone icon-phone"><?=tplvar('phone', true);?></div>
+                <div class="footer__phone icon-phone">
+                    <img src="<?=SITE_TEMPLATE_PATH?>/img/footer_phone.jpg">
+                    <span>88005555550</span>
+                </div>
                 <a href="#" class="footer__callback footer__link">Заказать звонок</a>
                 <div class="footer__email icon-email">
                     <a href="mailto:<?=tplvar('email');?>" class="footer__link"><?=tplvar('email', true);?></a>
