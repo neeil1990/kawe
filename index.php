@@ -92,13 +92,15 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
                     $arHomeSection[$arSection[ID]][SECTION_PAGE_URL] = $arSection['SECTION_PAGE_URL'];
                 }
                 if($arHomeSection){
-                    $sectionCount = count($arHomeSection);
-                    $arHomeSection = array_chunk($arHomeSection, ceil($sectionCount/2));
+                    $arHomeSectionFour = array_slice($arHomeSection,0,4,true);
                 }
                 ?>
                 <div class="categories">
-                    <? if(isset($arHomeSection[0])): ?>
-                        <? foreach($arHomeSection[0] as $section): ?>
+                    <? if(isset($arHomeSectionFour)): ?>
+                        <?
+                        foreach($arHomeSectionFour as $del => $section):
+                        unset($arHomeSection[$del]);
+                            ?>
                             <a href="<?=$section['SECTION_PAGE_URL']?>" class="categories__item">
                             <span class="categories__item_wrapper">
                                 <span class="categories__img"><img src="<?=$section['PICTURE']?>" alt="categories"></span>
@@ -175,8 +177,8 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
                 </div>
 
                 <div class="categories">
-                    <? if(isset($arHomeSection[1])): ?>
-                        <? foreach($arHomeSection[1] as $section): ?>
+                    <? if(isset($arHomeSection)): ?>
+                        <? foreach($arHomeSection as $section): ?>
                             <a href="<?=$section['SECTION_PAGE_URL']?>" class="categories__item">
                             <span class="categories__item_wrapper">
                                 <span class="categories__img"><img src="<?=$section['PICTURE']?>" alt="categories"></span>
