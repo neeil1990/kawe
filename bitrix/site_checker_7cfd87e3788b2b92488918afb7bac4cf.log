@@ -1,0 +1,19 @@
+2018-Mar-25 22:53:11 Наличие необходимых модулей php (check_php_modules): Ok
+Все необходимые модули установлены
+2018-Mar-25 22:53:11 Обязательные параметры PHP (check_php_settings): Ok
+Настройки правильные
+2018-Mar-25 22:53:11 Модули веб-сервера (check_security): Ok
+Конфликтов не выявлено
+2018-Mar-25 22:53:11 Значения переменных сервера (check_server_vars): Ok
+Корректные
+2018-Mar-25 22:53:11 Сохранение сессии (check_session): Ok
+50% done
+2018-Mar-25 22:53:11 Параметры настройки UTF (mbstring и константа BX_UTF) (check_mbstring): Ok
+Правильные. Сайт работает в UTF кодировке
+2018-Mar-25 22:53:11 Служебные скрипты в корне сайта (check_install_scripts): Ok
+Отсутствуют
+2018-Mar-25 22:53:11 Работа с сокетами (check_socket): Fail
+Connection to ssl://obzor-avtomashin.ru:443	Fail
+Socket error [0]: 
+
+Ошибка! Не работает
