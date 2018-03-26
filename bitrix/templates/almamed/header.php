@@ -23,8 +23,12 @@
 </head>
 
 <body>
+<?
+if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
+    LocalRedirect(str_replace("-r","",$APPLICATION->GetCurPage()));
+}
+?>
 <?$APPLICATION->ShowPanel();?>
-
 <div class="top">
     <div class="container">
         <div class="top__wrapper">
