@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function(event) {
     var primeIncut = document.getElementsByClassName("prime-incut");
-    var primeIncutUrl   = 'http://incut.prime-ltd.su/incut/incut.php';
+    var primeIncutUrl   = 'https://incut.prime-ltd.su/incut/incut.php';
 
     var domainFrom = extractDomain(window.location.href);
-    var mainDomainTo = 'http://prime-ltd.su/?from=' + domainFrom;
+    var mainDomainTo = 'https://prime-ltd.su/?from=' + domainFrom;
     var fullUrlTo = mainDomainTo
 
     function extractDomain(url) {
