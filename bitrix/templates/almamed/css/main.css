@@ -1489,6 +1489,7 @@ ol,ul
 }
 .text a
 {
+    display: contents;
     color: #66b3d4;
 }
 .text p
