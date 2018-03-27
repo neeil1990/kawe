@@ -63,8 +63,8 @@
                 <a href="/upload/politics.pdf" target="_blank" class="footer__link">Политика конфиденциальности.</a>
                 <a href="/upload/compliance.pdf" target="_blank" class="footer__link">Согласие на обработку персональных данных.</a>
 
-                <script type="text/javascript" src="http://incut.prime-ltd.su/incut/incut.js" async></script>
-                <link rel="stylesheet" href="http://incut.prime-ltd.su/incut/incut.css">
+                <script type="text/javascript" src="<?=SITE_TEMPLATE_PATH?>/incut/incut.js"></script>
+                <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/incut/incut.css">
                 <a class="prime-incut white colour marketing-only"></a>
             </div>
         </div>
