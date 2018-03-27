@@ -4,6 +4,7 @@ $(function() {
         adaptiveHeight: !0,
         item: 1,
         slideMargin: 0,
+        enableDrag: false,
         prevHtml: '<i class="icon-arrow_prev"></i>',
         nextHtml: '<i class="icon-arrow_next"></i>'
     }), $(".full-slider__wrapper").lightSlider({

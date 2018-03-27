@@ -605,6 +605,9 @@ ol,ul
     margin-bottom: 30px;
     position: relative;
 }
+.slider a{
+    text-decoration: none;
+}
 .slider__item
 {
     background: #afbccd no-repeat center/cover;
