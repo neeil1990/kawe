@@ -62,6 +62,10 @@
                 <div class="footer__copy icon-copyright">2018 Все права защищены.</div>
                 <a href="/upload/politics.pdf" target="_blank" class="footer__link">Политика конфиденциальности.</a>
                 <a href="/upload/compliance.pdf" target="_blank" class="footer__link">Согласие на обработку персональных данных.</a>
+
+                <script type="text/javascript" src="http://incut.prime-ltd.su/incut/incut.js"></script>
+                <link rel="stylesheet" href="http://incut.prime-ltd.su/incut/incut.css">
+                <a class="prime-incut white colour marketing-only"></a>
             </div>
         </div>
     </div>
