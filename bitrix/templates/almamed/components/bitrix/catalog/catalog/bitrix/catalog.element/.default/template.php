@@ -68,7 +68,7 @@ $this->setFrameMode(true);
 				<? endif; ?>
 			<? endif; ?>
 
-			<div class="cart__availability">В наличии</div>
+<!--			<div class="cart__availability">В наличии</div>-->
 			<div class="cart__price"><?=$arResult['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
 			<div class="cart__desc">за штуку</div>
 			<div class="cart__actions">

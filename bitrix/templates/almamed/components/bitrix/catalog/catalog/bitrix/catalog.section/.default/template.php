@@ -44,10 +44,10 @@ if(empty($arResult['ITEMS']))
 			</div>
 			<div class="filter__view">
 				<a href="#" class="filter__view_link active">
-					<svg class="icon icon-grid"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="img/sprite.svg#icon-grid"></use></svg>
+					<svg class="icon icon-grid"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH;?>/img/sprite.svg#icon-grid"></use></svg>
 				</a>
 				<a href="#" class="filter__view_link">
-					<svg class="icon icon-list"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="img/sprite.svg#icon-list"></use></svg>
+					<svg class="icon icon-list"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH;?>/img/sprite.svg#icon-list"></use></svg>
 				</a>
 			</div>
 		</form>
@@ -69,15 +69,15 @@ if(empty($arResult['ITEMS']))
 						<i class="icon-star-o"></i>
 					</div>
 					<div class="goods__img">
-						<img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>">
+						<a href="<?=$item['DETAIL_PAGE_URL'];?>"><img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>"></a>
 					</div>
 					<a href="<?=$item['DETAIL_PAGE_URL'];?>" class="goods__name"><?=$item['NAME']?></a>
-					<div class="goods__desc">
+					<!--<div class="goods__desc">
 						<div class="goods__availability">В наличии</div>
-						<? if($item['PROPERTIES']['CML2_ARTICLE']['VALUE']): ?>
-						<div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12)?></div>
-						<? endif; ?>
-					</div>
+						<?/* if($item['PROPERTIES']['CML2_ARTICLE']['VALUE']): */?>
+						<div class="goods__article">Арт: <?/*=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12)*/?></div>
+						<?/* endif; */?>
+					</div>-->
 					<div class="goods__info">
 						<div class="goods__prices">
 							<div class="goods__price"><?=$item["PRICES"]["BASE"]["PRINT_DISCOUNT_VALUE"]?></div>
