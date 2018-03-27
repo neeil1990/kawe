@@ -1243,6 +1243,7 @@ ol,ul
 }
 .goods__img
 {
+    overflow: hidden;
     align-items: center;
     border: solid 1px #d8d9d9;
     display: flex;
