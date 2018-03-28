@@ -193,171 +193,36 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
                 <div class="title">Новинки</div>
 
                 <div class="goods">
-                    <ul class="goods__slider">
 
-                        <li class="goods__item">
-                            <div class="goods__item_wrapper">
-                                <div class="goods__alert">-20%</div>
-                                <div class="goods__rate">
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star-o"></i>
-                                </div>
-                                <div class="goods__img">
-                                    <img src="img/goods_2.jpg" alt="goods">
-                                </div>
-                                <a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
-                                <div class="goods__desc">
-                                    <div class="goods__availability">В наличии</div>
-                                    <div class="goods__article">Арт: 252023а</div>
-                                </div>
-                                <div class="goods__info">
-                                    <div class="goods__prices">
-                                        <div class="goods__price">17 124 Р</div>
-                                        <div class="goods__counter">
-                                            <div class="goods__counter_subtract">-</div>
-                                            <input type="text" class="goods__counter_input" value="1" readonly>
-                                            <div class="goods__counter_add">+</div>
-                                        </div>
-                                        <span>за штуку</span>
-                                    </div>
-                                    <a href="#" class="goods__basket icon-basket"></a>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="goods__item">
-                            <div class="goods__item_wrapper">
-                                <div class="goods__alert">new</div>
-                                <div class="goods__rate">
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star-o"></i>
-                                </div>
-                                <div class="goods__img">
-                                    <img src="img/goods_2.jpg" alt="goods">
-                                </div>
-                                <a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
-                                <div class="goods__desc">
-                                    <div class="goods__availability">В наличии</div>
-                                    <div class="goods__article">Арт: 252023а</div>
-                                </div>
-                                <div class="goods__info">
-                                    <div class="goods__prices">
-                                        <div class="goods__price">17 124 Р</div>
-                                        <div class="goods__counter">
-                                            <div class="goods__counter_subtract">-</div>
-                                            <input type="text" class="goods__counter_input" value="1" readonly>
-                                            <div class="goods__counter_add">+</div>
-                                        </div>
-                                        <span>за штуку</span>
-                                    </div>
-                                    <a href="#" class="goods__basket icon-basket"></a>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="goods__item">
-                            <div class="goods__item_wrapper">
-                                <div class="goods__alert">-50%</div>
-                                <div class="goods__rate">
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star-o"></i>
-                                </div>
-                                <div class="goods__img">
-                                    <img src="img/goods_2.jpg" alt="goods">
-                                </div>
-                                <a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
-                                <div class="goods__desc">
-                                    <div class="goods__availability">В наличии</div>
-                                    <div class="goods__article">Арт: 252023а</div>
-                                </div>
-                                <div class="goods__info">
-                                    <div class="goods__prices">
-                                        <div class="goods__price">17 124 Р</div>
-                                        <div class="goods__counter">
-                                            <div class="goods__counter_subtract">-</div>
-                                            <input type="text" class="goods__counter_input" value="1" readonly>
-                                            <div class="goods__counter_add">+</div>
-                                        </div>
-                                        <span>за штуку</span>
-                                    </div>
-                                    <a href="#" class="goods__basket icon-basket"></a>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="goods__item">
-                            <div class="goods__item_wrapper">
-                                <div class="goods__alert">-50%</div>
-                                <div class="goods__rate">
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star-o"></i>
-                                </div>
-                                <div class="goods__img">
-                                    <img src="img/goods_2.jpg" alt="goods">
-                                </div>
-                                <a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
-                                <div class="goods__desc">
-                                    <div class="goods__availability">В наличии</div>
-                                    <div class="goods__article">Арт: 252023а</div>
-                                </div>
-                                <div class="goods__info">
-                                    <div class="goods__prices">
-                                        <div class="goods__price">17 124 Р</div>
-                                        <div class="goods__counter">
-                                            <div class="goods__counter_subtract">-</div>
-                                            <input type="text" class="goods__counter_input" value="1" readonly>
-                                            <div class="goods__counter_add">+</div>
-                                        </div>
-                                        <span>за штуку</span>
-                                    </div>
-                                    <a href="#" class="goods__basket icon-basket"></a>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="goods__item">
-                            <div class="goods__item_wrapper">
-                                <div class="goods__alert">-50%</div>
-                                <div class="goods__rate">
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star"></i>
-                                    <i class="icon-star-o"></i>
-                                </div>
-                                <div class="goods__img">
-                                    <img src="img/goods_2.jpg" alt="goods">
-                                </div>
-                                <a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
-                                <div class="goods__desc">
-                                    <div class="goods__availability">В наличии</div>
-                                    <div class="goods__article">Арт: 252023а</div>
-                                </div>
-                                <div class="goods__info">
-                                    <div class="goods__prices">
-                                        <div class="goods__price">17 124 Р</div>
-                                        <div class="goods__counter">
-                                            <div class="goods__counter_subtract">-</div>
-                                            <input type="text" class="goods__counter_input" value="1" readonly>
-                                            <div class="goods__counter_add">+</div>
-                                        </div>
-                                        <span>за штуку</span>
-                                    </div>
-                                    <a href="#" class="goods__basket icon-basket"></a>
-                                </div>
-                            </div>
-                        </li>
+                    <?$APPLICATION->IncludeComponent(
+	"bitrix:news.line", 
+	"new.product", 
+	array(
+		"ACTIVE_DATE_FORMAT" => "d.m.Y",
+		"CACHE_GROUPS" => "Y",
+		"CACHE_TIME" => "300",
+		"CACHE_TYPE" => "A",
+		"DETAIL_URL" => "",
+		"FIELD_CODE" => array(
+			0 => "ID",
+			1 => "CODE",
+			2 => "NAME",
+			3 => "PREVIEW_PICTURE",
+			4 => "",
+		),
+		"IBLOCKS" => array(
+		),
+		"IBLOCK_TYPE" => "1c_catalog",
+		"NEWS_COUNT" => "12",
+		"SORT_BY1" => "TIMESTAMP_X",
+		"SORT_BY2" => "ACTIVE_FROM",
+		"SORT_ORDER1" => "DESC",
+		"SORT_ORDER2" => "DESC",
+		"COMPONENT_TEMPLATE" => "new.product"
+	),
+	false
+);?>
 
-
-                    </ul>
                 </div>
 
                 <div class="title">Лучшие предложения
