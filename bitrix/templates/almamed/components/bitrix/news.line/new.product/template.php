@@ -39,7 +39,15 @@ $this->setFrameMode(true);
 			<a href="<?echo $arItem["DETAIL_PAGE_URL"]?>" class="goods__name"><?=$arItem['NAME']?></a>
 			<div class="goods__info">
 				<div class="goods__prices">
-					<div class="goods__price"><?=$price['DISCOUNT_PRICE'];?></div>
+
+					<div class="goods__price">
+						<?if($price['DISCOUNT_PRICE']):?>
+							<?=$price['DISCOUNT_PRICE']?>
+						<?else:?>
+							цена по запросу
+						<?endif;?>
+					</div>
+
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
 						<input type="text" class="goods__counter_input" id="goods__counter_input_<?=$arItem['ID']?>" value="1" readonly>

@@ -53,6 +53,15 @@
 						<i class="icon-star"></i>
 						<i class="icon-star-o"></i>
 					</div>-->
+
+					<div class="goods__price">
+						<?if($arItem['PRICE']):?>
+							<?=$arItem['PRICE']?>
+						<?else:?>
+							цена по запросу
+						<?endif;?>
+					</div>
+
 					<div class="goods__price"><?=$arItem['PRICE'];?></div>
 					<span>за штуку</span>
 					<!--<div class="goods__article">Арт: <?/*=$arItem['ARTICLE'];*/?></div>-->
