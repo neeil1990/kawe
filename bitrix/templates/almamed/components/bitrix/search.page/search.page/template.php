@@ -46,16 +46,16 @@
 					<div class="goods__availability">В наличии</div>
 				</div>
 				<div class="goods__main">
-					<div class="goods__rate">
+					<!--<div class="goods__rate">
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star-o"></i>
-					</div>
+					</div>-->
 					<div class="goods__price"><?=$arItem['PRICE'];?></div>
 					<span>за штуку</span>
-					<div class="goods__article">Арт: <?=$arItem['ARTICLE'];?></div>
+					<!--<div class="goods__article">Арт: <?/*=$arItem['ARTICLE'];*/?></div>-->
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
 						<input type="text" class="goods__counter_input" id="goods__counter_input_<?=$arItem['ITEM_ID']?>" value="1" readonly>

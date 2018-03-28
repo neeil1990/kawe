@@ -61,13 +61,13 @@ if(empty($arResult['ITEMS']))
 					<?if($item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]):?>
 					<div class="goods__alert">-<?=$item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]?>%</div>
 					<?endif;?>
-					<div class="goods__rate">
+					<!--<div class="goods__rate">
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star-o"></i>
-					</div>
+					</div>-->
 					<div class="goods__img">
 						<a href="<?=$item['DETAIL_PAGE_URL'];?>"><img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>"></a>
 					</div>

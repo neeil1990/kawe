@@ -25,13 +25,13 @@ $this->setFrameMode(true);
 		<? if($price['DISCOUNT']): ?>
 			<div class="goods__alert"><?=$price['DISCOUNT']?>%</div>
 		<? endif; ?>
-			<div class="goods__rate">
+			<!--<div class="goods__rate">
 				<i class="icon-star"></i>
 				<i class="icon-star"></i>
 				<i class="icon-star"></i>
 				<i class="icon-star"></i>
 				<i class="icon-star-o"></i>
-			</div>
+			</div>-->
 			<div class="goods__img">
 				<a href="<?=$arItem["DETAIL_PAGE_URL"]?>"><img src="<?=$arItem["PREVIEW_PICTURE"]["SRC"]?>" alt="<?=$arItem["PREVIEW_PICTURE"]["ALT"]?>"></a>
 			</div>

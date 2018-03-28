@@ -17,13 +17,13 @@ $this->setFrameMode(true);
 	<div class="cart">
 
 		<div class="cart__gallery">
-			<div class="cart__rate">
+			<!--<div class="cart__rate">
 				<i class="icon-star"></i>
 				<i class="icon-star"></i>
 				<i class="icon-star"></i>
 				<i class="icon-star"></i>
 				<i class="icon-star-o"></i>
-			</div>
+			</div>-->
 
 			<div class="cart__alert">new</div>
 

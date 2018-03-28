@@ -144,20 +144,20 @@ unset($basketAction);
 			<li class="goods__item">
 				<div class="goods__item_wrapper">
 					<div class="goods__alert">-20%</div>
-					<div class="goods__rate">
+					<!--<div class="goods__rate">
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star"></i>
 						<i class="icon-star-o"></i>
-					</div>
+					</div>-->
 					<div class="goods__img">
 						<img src="<?=SITE_TEMPLATE_PATH?>/img/goods_2.jpg" alt="goods">
 					</div>
 					<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
 					<div class="goods__desc">
 						<div class="goods__availability">В наличии</div>
-						<div class="goods__article">Арт: 252023а</div>
+						<!--<div class="goods__article">Арт: 252023а</div>-->
 					</div>
 					<div class="goods__info">
 						<div class="goods__prices">
