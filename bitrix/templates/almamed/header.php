@@ -56,8 +56,19 @@ if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
 
             <div class="top__account">
                 <svg class="icon icon-user"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH?>/img/sprite.svg#icon-user"></use></svg>
-                <a href="#" class="top__login">Войти</a>
-                <a href="#" class="top__reg">Регистация</a>
+                <?if ($USER->IsAuthorized()):
+                    $name = trim($USER->GetFullName());
+                    if (! $name)
+                        $name = trim($USER->GetLogin());
+                    if (strlen($name) > 15)
+                        $name = substr($name, 0, 12).'...';
+                    ?>
+                    <a href="<?=SITE_DIR."personal/"?>" class="top__login"><?=htmlspecialcharsbx($name)?></a>
+                    <a href="?logout=yes" class="top__reg">Выйти</a>
+                <?else:?>
+                    <a href="<?=SITE_DIR."login/"?>?login=yes" class="top__login">Войти</a>
+                    <a href="<?=SITE_DIR."login/"?>?register=yes" class="top__reg">Регистация</a>
+                <?endif?>
             </div>
         </div>
     </div>
