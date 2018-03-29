@@ -1,6 +1,36 @@
 <?php
 //IBlock catalog id
 define("IBLOCK_CATALOG","33");
+AddEventHandler("main", "OnBeforeEndBufferContent", "OnBeforeEndBufferContent", 100500);
+function OnBeforeEndBufferContent()
+{
+            $arPanelButtons = &$GLOBALS['APPLICATION']->arPanelButtons;
+            foreach ($arPanelButtons as &$arItemPanel) {
+                if ($arItemPanel['ICON'] == 'bx-panel-site-template-icon') {
+
+                    if (isset($arItemPanel['MENU']) && is_array($arItemPanel['MENU'])) {
+
+                        $arItemPanel['MENU'][] = array(
+                            'TEXT' => "Цветовые схемы",
+                            'MENU' => array(
+                                array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_1')", 'TEXT' => "schemes_1"),
+                                array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_2')", 'TEXT' => "schemes_2"),
+                                array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_3')", 'TEXT' => "schemes_3"),
+                                array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_4')", 'TEXT' => "schemes_4"),
+                                array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_5')", 'TEXT' => "schemes_5"),
+                            ),
+                        );
+                    }
+                }
+            }
+}
+if($_REQUEST['THEME']){
+    COption::SetOptionString("main","color_theme",$_REQUEST['THEME']);
+}
+
+
+
+
 
 function priceDiscount($id){
     global $USER;

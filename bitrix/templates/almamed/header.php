@@ -26,7 +26,7 @@
     <script src="<?=SITE_TEMPLATE_PATH?>/js/vendor.js"></script>
 </head>
 
-<body>
+<body class="<?=COption::GetOptionString("main", "color_theme", "schemes_1");?>">
 <?
 if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
     LocalRedirect(str_replace("-r","",$APPLICATION->GetCurPage()));
