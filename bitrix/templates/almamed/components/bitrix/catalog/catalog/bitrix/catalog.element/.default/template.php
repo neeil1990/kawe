@@ -73,7 +73,7 @@ $this->setFrameMode(true);
 				<?if($arResult['PRICES']['BASE']['DISCOUNT_VALUE']):?>
 					<?=$arResult['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
 				<?else:?>
-					цена по запросу
+					Цена по запросу
 				<?endif;?>
 			</div>
 

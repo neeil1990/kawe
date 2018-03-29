@@ -85,7 +85,7 @@ if(empty($arResult['ITEMS']))
 								<?if($item['PRICES']['BASE']['DISCOUNT_VALUE']):?>
 									<?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
 								<?else:?>
-									цена по запросу
+									Цена по запросу
 								<?endif;?>
 							</div>
 
