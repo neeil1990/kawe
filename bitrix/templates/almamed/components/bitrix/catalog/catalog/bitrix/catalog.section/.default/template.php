@@ -82,11 +82,7 @@ if(empty($arResult['ITEMS']))
 						<div class="goods__prices">
 
 							<div class="goods__price">
-								<?if($item['PRICES']['BASE']['DISCOUNT_VALUE']):?>
 									<?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
-								<?else:?>
-									Цена по запросу
-								<?endif;?>
 							</div>
 
 							<div class="goods__counter">

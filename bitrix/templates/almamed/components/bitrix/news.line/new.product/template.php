@@ -40,13 +40,7 @@ $this->setFrameMode(true);
 			<div class="goods__info">
 				<div class="goods__prices">
 
-					<div class="goods__price">
-						<?if($price['DISCOUNT_PRICE']):?>
-							<?=$price['DISCOUNT_PRICE']?>
-						<?else:?>
-							Цена по запросу
-						<?endif;?>
-					</div>
+					<div class="goods__price"><?=$price['DISCOUNT_PRICE']?></div>
 
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
