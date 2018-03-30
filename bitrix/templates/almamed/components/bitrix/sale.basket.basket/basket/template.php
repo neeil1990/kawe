@@ -268,5 +268,7 @@ if (empty($arResult['ERROR_MESSAGE']))
 }
 else
 {
+	?><div class="cart-empty" style="height: 30%;"><?
 	ShowError($arResult['ERROR_MESSAGE']);
+	?></div><?
 }
