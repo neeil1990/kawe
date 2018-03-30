@@ -11,6 +11,16 @@ function replaseBasketTop() {
     })
 }
 
+function replaseBasketMobileTop() {
+    $.ajax({
+        url: path + 'basket.mobile.php',
+        type: 'get',
+        success: function (data) {
+            $('.header__basket_mobile').replaceWith(data);
+        }
+    })
+}
+
 
 function addToBasket2(idel, quantity,el) {
     $href = path + "add.php?id="+idel;
@@ -20,6 +30,7 @@ function addToBasket2(idel, quantity,el) {
         success: function (data) {
             if (data == 'Товар успешно добавлен в корзину') {
                 replaseBasketTop();
+                replaseBasketMobileTop();
                 alertify.success(data);
             } else {
                 alertify.error(data);
