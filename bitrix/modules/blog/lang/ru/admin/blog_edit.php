@@ -36,7 +36,7 @@ $MESS ['BLBE_EDITOR_USE_FONT'] = "Разрешить настройки шриф
 $MESS ['BLBE_EDITOR_USE_LINK'] = "Разрешить добавление ссылок";
 $MESS ['BLBE_EDITOR_USE_FORMAT'] = "Включить расширенные настройки форматирование";
 $MESS ['BLBE_EDITOR_USE_FORMAT_HINT'] = "Вставка таблиц, настройка выравнивания и т.п.";
-$MESS ['BLBE_EDITOR_USE_IMAGE'] = "Разрешить вставку изображений";
+$MESS ['BLBE_EDITOR_USE_IMAGE_AND_FILES'] = "Разрешить загрузку изображений и файлов";
 $MESS ['BLBE_EDITOR_USE_VIDEO'] = "Разрешить вставку видео";
 $MESS ['BLBE_EDITOR_USE_VIDEO_HINT'] = "Должна быть включена аналогичная опция в настройках модуля \"Блог\"";
 ?>

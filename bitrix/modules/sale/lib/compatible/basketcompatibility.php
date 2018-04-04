@@ -143,13 +143,16 @@ class BasketCompatibility
 
 		$basketChanged = false;
 
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		$basketItemEntity = $registry->getBasketItemClassName();
+
 		$publicMode = DiscountCompatibility::usedByClient();
 		foreach ($requestBasketItems as $basketIndex => $basketItemData)
 		{
 			if (isset($basketItemData['SET_PARENT_ID']) && strval($basketItemData['SET_PARENT_ID']) != '')
 			{
 				$parentId = intval($basketItemData['SET_PARENT_ID']);
-				if ($basketItemData['TYPE'] != Sale\Basket::TYPE_SET && !array_key_exists($parentId, $basketParentList))
+				if ($basketItemData['TYPE'] != $basketItemEntity::TYPE_SET && !array_key_exists($parentId, $basketParentList))
 				{
 					$basketChildList[intval($basketItemData['SET_PARENT_ID'])] = $basketItemData['SET_PARENT_ID'];
 				}

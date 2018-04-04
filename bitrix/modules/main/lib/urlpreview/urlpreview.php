@@ -22,9 +22,15 @@ class UrlPreview
 	const IFRAME_MAX_WIDTH = 640;
 	const IFRAME_MAX_HEIGHT = 340;
 
-	protected static $trustedHosts = array(
-		'youtube.com', 'youtu.be', 'vimeo.com', 'rutube.ru', 'facebook.com', 'vk.com', 'instagram.com',
-	);
+	protected static $trustedHosts = [
+		'youtube.com' => 'youtube.com',
+		'youtu.be' => 'youtu.be',
+		'vimeo.com' => 'vimeo.com',
+		'rutube.ru' => 'rutube.ru',
+		'facebook.com' => 'facebook.com',
+		'vk.com' => 'vk.com',
+		'instagram.com' => 'instagram.com',
+	];
 
 	/**
 	 * Returns associated metadata for the specified URL
@@ -758,7 +764,7 @@ class UrlPreview
 		if(is_array($domainNameParts) && ($partsCount = count($domainNameParts)) >= 2)
 		{
 			$domainName = $domainNameParts[$partsCount-2] . '.' . $domainNameParts[$partsCount-1];
-			$result = in_array($domainName, static::$trustedHosts);
+			$result = isset(static::$trustedHosts[$domainName]);
 		}
 		return $result;
 	}

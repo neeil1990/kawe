@@ -19,8 +19,10 @@ abstract class EntityImport extends Exchange\ImportBase
     public $collisions = array();
 
     protected $parentEntity = null;
+    /** @var Sale\Internals\Entity $entity*/
     protected $entity = null;
     protected $external = null;
+    protected $marked = false;
 
     public function __construct($parentEntityContext = null)
     {
@@ -153,6 +155,7 @@ abstract class EntityImport extends Exchange\ImportBase
             $result->addWarning(new Sale\ResultError(Exchange\EntityCollisionType::getDescription($collision->getTypeId()).($collision->getMessage() != null ? " ".$collision->getMessage():'' ), $collision->getTypeName()));
 
             $entity->setField('MARKED', 'Y');
+            $this->marked = true;
 
             $collisionEntity = $collision->getEntity();
             if(!empty($collisionEntity))
@@ -165,6 +168,14 @@ abstract class EntityImport extends Exchange\ImportBase
             }
         }
     }
+
+	/**
+	 * @return bool
+	 */
+	public function isMarked()
+	{
+		return $this->marked;
+	}
 
     /**
      * @return null|string

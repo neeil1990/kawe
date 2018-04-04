@@ -66,4 +66,5 @@ $MESS["SOA_SHOW_NOT_CALCULATED_DELIVERIES_Y"] = "Show as usual";
 $MESS["SHOW_NOT_CALCULATED_DELIVERIES_TIP"] = "Enable the \"Pre-calculate deliveries that have external access to services\" option to sort deliveries of this type.";
 $MESS["SBB_SPOT_LOCATION_BY_GEOIP"] = "Determine customer's location by IP address";
 $MESS["SOA_DELIVERY_NO_AJAX2"] = "Pre-calculate deliveries that have external access to services";
+$MESS["SOA_USE_PHONE_NORMALIZATION"] = "Normalize phone number";
 ?>

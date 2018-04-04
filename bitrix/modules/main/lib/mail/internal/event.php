@@ -52,7 +52,7 @@ class EventTable extends Entity\DataManager
 			),
 			'DATE_INSERT' => array(
 				'data_type' => 'datetime',
-				'default_value' => new Type\DateTime(),
+				'default_value' => function(){return new Type\DateTime();},
 			),
 			'DATE_EXEC' => array(
 				'data_type' => 'datetime',

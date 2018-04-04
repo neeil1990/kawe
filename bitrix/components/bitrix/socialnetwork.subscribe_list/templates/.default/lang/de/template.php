@@ -1,0 +1,32 @@
+<?
+$MESS ['SONET_C30_T_ACTIONS'] = "Aktionen";
+$MESS ['SONET_C30_T_SHOW_ALL'] = "alle";
+$MESS ['SONET_C334_SITE'] = "auf der Seite und per E-Mail";
+$MESS ['SONET_C334_MAIL'] = "nur auf der Seite";
+$MESS ['SONET_C30_T_blog'] = "Blog";
+$MESS ['SONET_C30_T_calendar'] = "Kalender";
+$MESS ['SONET_C30_T_calendar1'] = "Kalender";
+$MESS ['SONET_C334_CHANGE'] = "Ändern";
+$MESS ['SONET_C30_T_forum1'] = "Diskussion";
+$MESS ['SONET_C30_T_files'] = "Dateien";
+$MESS ['SONET_C30_T_files1'] = "Dateien";
+$MESS ['SONET_C30_T_forum'] = "Forum";
+$MESS ['SONET_C30_T_system_friends'] = "Freunde";
+$MESS ['SONET_C334_GR'] = "Gruppe #NAME#";
+$MESS ['SONET_C30_T_USER'] = "Gruppe / Nutzer";
+$MESS ['SONET_C30_T_system_groups'] = "Gruppen";
+$MESS ['SONET_C30_T_EMPTY'] = "Keine aktiven Abonnements.<br>Hier werden Ihre Abonnements der Gruppen- und Nutzeraktualisierungen angezeigt";
+$MESS ['SONET_C30_T_SHOW_GROUP'] = "Nur Gruppen";
+$MESS ['SONET_C30_T_SHOW_USER'] = "Nur Nutzer";
+$MESS ['SONET_C30_T_photo'] = "Fotogalerie";
+$MESS ['SONET_C30_T_photo1'] = "Fotogalerie";
+$MESS ['SONET_C30_T_blog1'] = "Berichte";
+$MESS ['SONET_C30_T_SHOW'] = "Abonnements anzeigen";
+$MESS ['SONET_C30_T_TOTAL'] = "Abonniert";
+$MESS ['SONET_C30_T_system'] = "System";
+$MESS ['SONET_C30_T_system1'] = "System";
+$MESS ['SONET_C30_T_tasks'] = "Aufgaben";
+$MESS ['SONET_C30_T_tasks1'] = "Aufgaben";
+$MESS ['SONET_C334_US1'] = "Nutzer";
+$MESS ['SONET_C334_US'] = "Nutzer #NAME#";
+?>

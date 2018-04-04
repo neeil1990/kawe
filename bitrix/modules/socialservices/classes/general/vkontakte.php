@@ -104,8 +104,8 @@ class CSocServVKontakte extends CSocServAuth
 
 		$arFields = array(
 			'EXTERNAL_AUTH_ID' => self::ID,
-			'XML_ID' => $arVkUser['response']['0']['uid'],
-			'LOGIN' => "VKuser" . $arVkUser['response']['0']['uid'],
+			'XML_ID' => $arVkUser['response']['0']['id'],
+			'LOGIN' => "VKuser" . $arVkUser['response']['0']['id'],
 			'EMAIL' => $this->entityOAuth->GetCurrentUserEmail(),
 			'NAME' => $first_name,
 			'LAST_NAME' => $last_name,
@@ -133,7 +133,7 @@ class CSocServVKontakte extends CSocServAuth
 				}
 			}
 
-			$arFields["PERSONAL_WWW"] = self::getProfileUrl($arVkUser['response']['0']['uid']);
+			$arFields["PERSONAL_WWW"] = self::getProfileUrl($arVkUser['response']['0']['id']);
 
 			if (strlen(SITE_ID) > 0)
 			{
@@ -160,7 +160,7 @@ class CSocServVKontakte extends CSocServAuth
 			if ($this->entityOAuth->GetAccessToken($redirect_uri) !== false)
 			{
 				$arVkUser = $this->entityOAuth->GetCurrentUser();
-				if (is_array($arVkUser) && ($arVkUser['response']['0']['uid'] <> ''))
+				if (is_array($arVkUser) && ($arVkUser['response']['0']['id'] <> ''))
 				{
 					$arFields = $this->prepareUser($arVkUser);
 					$bSuccess = $this->AuthorizeUser($arFields);
@@ -241,7 +241,7 @@ window.close();
 				foreach ($res['response'] as $key => $contact)
 				{
 					$res['response'][$key]['name'] = $contact["first_name"];
-					$res['response'][$key]['url'] = "https://vk.com/id" . $contact["uid"];
+					$res['response'][$key]['url'] = "https://vk.com/id" . $contact["id"];
 					$res['response'][$key]['picture'] = $contact['photo_200_orig'];
 				}
 
@@ -384,7 +384,7 @@ class CVKontakteOAuthInterface extends CSocServOAuthTransport
 		));
 
 
-		$result = $h->get(self::CONTACTS_URL . '?fields=uid,first_name,last_name,nickname,screen_name,sex,bdate,city,country,timezone,photo,photo_medium,photo_max_orig,photo_rec,email&access_token=' . urlencode($this->access_token));
+		$result = $h->get(self::CONTACTS_URL . '?v=5.8&fields=uid,first_name,last_name,nickname,screen_name,sex,bdate,city,country,timezone,photo,photo_medium,photo_max_orig,photo_rec,email&access_token=' . urlencode($this->access_token));
 
 		try
 		{
@@ -405,7 +405,7 @@ class CVKontakteOAuthInterface extends CSocServOAuthTransport
 		$h = new \Bitrix\Main\Web\HttpClient();
 		$h->setTimeout($this->httpTimeout);
 
-		$result = $h->get(self::APP_URL . '?fields=id&access_token=' . urlencode($this->access_token));
+		$result = $h->get(self::APP_URL . '?v=5.8&fields=id&access_token=' . urlencode($this->access_token));
 
 		try
 		{
@@ -430,7 +430,7 @@ class CVKontakteOAuthInterface extends CSocServOAuthTransport
 			return false;
 		}
 
-		$url = self::FRIENDS_URL . '?uids=' . $this->userID . '&fields=uid,first_name,last_name,nickname,screen_name,photo_200_orig,contacts,email&access_token=' . urlencode($this->access_token);
+		$url = self::FRIENDS_URL . '?v=5.8&uids=' . $this->userID . '&fields=uid,first_name,last_name,nickname,screen_name,photo_200_orig,contacts,email&access_token=' . urlencode($this->access_token);
 
 		if ($limit > 0)
 		{

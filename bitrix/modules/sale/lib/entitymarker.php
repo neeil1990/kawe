@@ -33,6 +33,17 @@ class EntityMarker
 	 */
 	public static function addMarker(OrderBase $order, Internals\Entity $entity, Result $result)
 	{
+		if (!$result->hasWarnings())
+		{
+			return;
+		}
+
+		$entityType = static::getEntityType($entity);
+		if ($entityType === null)
+		{
+			return;
+		}
+
 		$fields = array(
 			'ENTITY' => $entity,
 			'ORDER' => $order,
@@ -48,30 +59,28 @@ class EntityMarker
 			$fields['ENTITY_ID'] = $entity->getId();
 		}
 
-		$entityType = static::getEntityType($entity);
-
-		if ($entityType !== null)
+		$fields['ENTITY_TYPE'] = $entityType;
+		/** @var ResultError $resultError */
+		foreach ($result->getWarnings() as $resultWarning)
 		{
-			$fields['ENTITY_TYPE'] = $entityType;
-			/** @var ResultError $resultError */
-			foreach ($result->getWarnings() as $resultWarning)
+			$code = $resultWarning->getCode();
+			$message = $resultWarning->getMessage();
+			$isAutoFix = false;
+
+			if ($entity instanceof \IEntityMarker)
 			{
-				$code = $resultWarning->getCode();
-				$message = $resultWarning->getMessage();
-				$isAutoFix = false;
-
-				if ($entity instanceof \IEntityMarker)
-				{
-					$isAutoFix = $entity->canAutoFixError($code);
-				}
-
-				$fields['CODE'] = $code;
-				$fields['MESSAGE'] = $message;
-				$fields['TYPE'] = $isAutoFix ? static::ENTITY_MARKED_TYPE_AUTO : static::ENTITY_MARKED_TYPE_MANUAL;
-				$fields['SUCCESS'] = static::ENTITY_SUCCESS_CODE_FAIL;
-				static::addItem($order, $entityType, $fields);
+				$isAutoFix = $entity->canAutoFixError($code);
 			}
+
+			$fields['CODE'] = $code;
+			$fields['MESSAGE'] = $message;
+			$fields['TYPE'] = $isAutoFix ? static::ENTITY_MARKED_TYPE_AUTO : static::ENTITY_MARKED_TYPE_MANUAL;
+			$fields['SUCCESS'] = static::ENTITY_SUCCESS_CODE_FAIL;
+			static::addItem($order, $entityType, $fields);
 		}
+		$lastWarning = end($result->getWarnings());
+		$order->setField('REASON_MARKED', $lastWarning->getMessage());
+
 	}
 
 	/**
@@ -240,8 +249,8 @@ class EntityMarker
 	protected static function getEntityTypeList()
 	{
 		return array(
-			static::ENTITY_TYPE_ORDER => '\Bitrix\Sale\Order',
-			static::ENTITY_TYPE_BASKET_ITEM => '\Bitrix\Sale\BasketItem',
+			static::ENTITY_TYPE_ORDER => '\Bitrix\Sale\OrderBase',
+			static::ENTITY_TYPE_BASKET_ITEM => '\Bitrix\Sale\BasketItemBase',
 			static::ENTITY_TYPE_SHIPMENT => '\Bitrix\Sale\Shipment',
 			static::ENTITY_TYPE_PAYMENT => '\Bitrix\Sale\Payment',
 			static::ENTITY_TYPE_PROPERTY_VALUE => '\Bitrix\Sale\PropertyValue',
@@ -566,7 +575,8 @@ class EntityMarker
 									"ENTITY_ID" => $oldMarkerDataList[$elementId]['ENTITY_ID'],
 									"MESSAGE" => $oldMarkerDataList[$elementId]['MESSAGE'],
 									"ENTITY_TYPE" => $oldMarkerDataList[$elementId]['ENTITY_TYPE'],
-								)
+								),
+								OrderHistory::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_1
 							);
 
 							$r = Internals\EntityMarkerTable::delete($elementId);

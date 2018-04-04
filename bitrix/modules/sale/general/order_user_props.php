@@ -118,7 +118,6 @@ class CAllSaleOrderUserProps
 			if ($arOrderProperty['UTIL'] == "Y")
 			{
 				$utilPropertyList[] = $arIDs[$arOrderProperty["ID"]];
-				continue;
 			}
 
 			$curVal = $orderProps[$arOrderProperty["ID"]];

@@ -1763,8 +1763,8 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 				if (doubleval($arBasket["DISCOUNT_PRICE"]))
 				{
-					$arBasket["DISCOUNT_PRICE_PERCENT"] = $arBasket["DISCOUNT_PRICE"]*100 / ($arBasket["DISCOUNT_PRICE"] + $arBasket["PRICE"]);
-					$arBasket["DISCOUNT_PRICE_PERCENT_FORMATED"] = Bitrix\Sale\PriceMaths::roundPrecision($arBasket["DISCOUNT_PRICE_PERCENT"])."%";
+					$arBasket["DISCOUNT_PRICE_PERCENT"] = Sale\PriceMaths::roundPrecision($arBasket["DISCOUNT_PRICE"]*100 / ($arBasket["DISCOUNT_PRICE"] + $arBasket["PRICE"]));
+					$arBasket["DISCOUNT_PRICE_PERCENT_FORMATED"] = Sale\BasketItem::formatQuantity($arBasket["DISCOUNT_PRICE_PERCENT"])."%";
 					$arResult['SHOW_DISCOUNT_TAB'] = 'Y';
 				}
 

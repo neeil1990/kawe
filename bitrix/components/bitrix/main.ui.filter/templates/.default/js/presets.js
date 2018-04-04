@@ -127,7 +127,7 @@
 				preset = this.getPresetNodeById(preset);
 			}
 
-			if (!BX.hasClass(preset, this.parent.settings.classPresetCurrent))
+			if (preset && !BX.hasClass(preset, this.parent.settings.classPresetCurrent))
 			{
 				BX.addClass(preset, this.parent.settings.classPresetCurrent);
 			}
@@ -611,6 +611,18 @@
 				}
 			}
 
+			if (field.TYPE === this.parent.types.CUSTOM_DATE)
+			{
+				if (
+					(BX.type.isArray(field.VALUE.days) && field.VALUE.days.length) ||
+					(BX.type.isArray(field.VALUE.months) && field.VALUE.months.length) ||
+					(BX.type.isArray(field.VALUE.years) && field.VALUE.years.length)
+				)
+				{
+					result = false;
+				}
+			}
+
 			if (field.TYPE === this.parent.types.CUSTOM_ENTITY)
 			{
 				if (BX.type.isPlainObject(field.VALUES))
@@ -895,6 +907,11 @@
 					break;
 				}
 
+				case this.parent.types.CUSTOM_DATE : {
+					control = this.parent.getFields().createCustomDate(fieldData);
+					break;
+				}
+
 				case this.parent.types.CUSTOM : {
 					control = this.parent.getFields().createCustom(fieldData);
 					break;
@@ -1113,6 +1130,15 @@
 									'_from': '',
 									'_to': '',
 									'_days': ''
+								};
+								break;
+							}
+
+							case this.parent.types.CUSTOM_DATE : {
+								fieldData.VALUE = {
+									'days': [],
+									'months': [],
+									'years': []
 								};
 								break;
 							}

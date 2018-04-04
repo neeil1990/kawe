@@ -11,7 +11,6 @@ window.FCForm = function(arParams)
 	this.handler = window.LHEPostForm.getHandler(arParams['editorId']);
 	this.editorName = arParams['editorName'];
 	this.editorId = arParams['editorId'];
-	this.fileDialogSwitcherId = arParams['fileDialogSwitcherId'];
 	this.eventNode = this.handler.eventNode;
 
 	if (this.eventNode)
@@ -27,11 +26,6 @@ window.FCForm = function(arParams)
 			if (node)
 			{
 				BX.show(node);
-			}
-//			component main.file.input always hide file dialog switcher. We show them force for every editor showing
-			if (this.fileDialogSwitcherId)
-			{
-				BX.fx.show(BX(this.fileDialogSwitcherId), 'fade', {time:0.2});
 			}
 		}, this));
 	}
@@ -163,117 +157,111 @@ window.FCForm.prototype = {
 		return true;
 	},
 	submit : function() {
-		<?if($arParams["AJAX_POST"] == "Y"): //ajax submit, data will be return from component?>
-			if (this.busy === true)
-				return 'busy';
-			
-			this.clearError();
-			var text = (this.handler.editorIsLoaded ? this.handler.oEditor.GetContent() : '');
-	
-			if (!text)
-			{
-				this.showError(BX.message('BPC_ERROR_NO_TEXT'));
-				return false;
-			}
-			BX.showWait(this.eventNode);
-			this.busy = true;
-	
-			var post_data = {};
-			window.convertFormToArray(this.form, post_data);
-			post_data['REVIEW_TEXT'] = text;
-			post_data['NOREDIRECT'] = "Y";
-			post_data['MODE'] = "RECORD";
-			post_data['AJAX_POST'] = "Y";
-			post_data['id'] = this.id;
-			if (this.jsCommentId !== null)
-				post_data['COMMENT_EXEMPLAR_ID'] = this.jsCommentId;
-			post_data['SITE_ID'] = BX.message("SITE_ID");
-			post_data['LANGUAGE_ID'] = BX.message("LANGUAGE_ID");
-	
-			if (this.editing === true)
-			{
-				post_data['REVIEW_ACTION'] = "EDIT";
-				post_data["FILTER"] = {"ID" : this.id[1]};
-			}
-			BX.onCustomEvent(this.eventNode, 'OnUCFormSubmit', [this, post_data]);
-			BX.onCustomEvent(window, 'OnUCFormSubmit', [this.id[0], this.id[1], this, post_data]);
-			BX.ajax({
-				'method': 'POST',
-				'url': this.form.action,
-				'data': post_data,
-				'dataType' : 'html',
-				'processData' : false,
-				onsuccess: BX.proxy(function(data) {
-					var true_data = data, ENTITY_XML_ID = this.id[0];
-					if (!!data)
+		if (this.busy === true)
+			return 'busy';
+		
+		this.clearError();
+		var text = (this.handler.editorIsLoaded ? this.handler.oEditor.GetContent() : '');
+
+		if (!text)
+		{
+			this.showError(BX.message('BPC_ERROR_NO_TEXT'));
+			return false;
+		}
+		BX.showWait(this.eventNode);
+		this.busy = true;
+
+		var post_data = {};
+		window.convertFormToArray(this.form, post_data);
+		post_data['REVIEW_TEXT'] = text;
+		post_data['NOREDIRECT'] = "Y";
+		post_data['MODE'] = "RECORD";
+		post_data['id'] = this.id;
+		if (this.jsCommentId !== null)
+			post_data['COMMENT_EXEMPLAR_ID'] = this.jsCommentId;
+		post_data['SITE_ID'] = BX.message("SITE_ID");
+		post_data['LANGUAGE_ID'] = BX.message("LANGUAGE_ID");
+
+		if (this.editing === true)
+		{
+			post_data['REVIEW_ACTION'] = "EDIT";
+			post_data["FILTER"] = {"ID" : this.id[1]};
+		}
+		BX.onCustomEvent(this.eventNode, 'OnUCFormSubmit', [this, post_data]);
+		BX.onCustomEvent(window, 'OnUCFormSubmit', [this.id[0], this.id[1], this, post_data]);
+		BX.ajax({
+			'method': 'POST',
+			'url': this.form.action,
+			'data': post_data,
+			'dataType' : 'html',
+			'processData' : false,
+			onsuccess: BX.proxy(function(data) {
+				var true_data = data, ENTITY_XML_ID = this.id[0];
+				if (!!data)
+				{
+					var dataProcessed = BX.processHTML(data, true);
+					
+//					run scripts to reinit comments data
+					scripts = dataProcessed.SCRIPT;
+					for(var s in scripts)
 					{
-						var dataProcessed = BX.processHTML(data, true);
-						
-	//					run scripts to reinit comments data
-						scripts = dataProcessed.SCRIPT;
-						for(var s in scripts)
+						if (scripts.hasOwnProperty(s) && scripts[s].isInternal)
 						{
-							if (scripts.hasOwnProperty(s) && scripts[s].isInternal)
-							{
-								eval(scripts[s].JS);
-							}
+							eval(scripts[s].JS);
 						}
-						
-						BX.ajax.processScripts(scripts, true);
-	//					commentEr object may be set in template
-						if(window.commentEr && window.commentEr == "Y")
+					}
+					
+					BX.ajax.processScripts(scripts, true);
+//					commentEr object may be set in template
+					if(window.commentEr && window.commentEr == "Y")
+					{
+						BX('err_comment_'+this.id[1]).innerHTML = data;
+					}
+					else
+					{
+						if(BX('edit_id').value > 0)
 						{
-							BX('err_comment_'+this.id[1]).innerHTML = data;
-						}
-						else
-						{
-							if(BX('edit_id').value > 0)
+							var commentId = 'blg-comment-'+this.id[1];
+							if(BX(commentId))
 							{
-								var commentId = 'blg-comment-'+this.id[1];
-								if(BX(commentId))
-								{
-									var newComment = BX.create('div',{'html':data});	// tmp container for data
-	//								paste response data from tmp container
-									BX(commentId).innerHTML = BX.findChild(newComment, {"attribute" : {"id": commentId}}, true).innerHTML;
-									BX.cleanNode(newComment, true);
-	//								if(BX.browser.IsIE()) //for IE, numbered list not rendering well
-	//									setTimeout(function (){BX('blg-comment-'+id).innerHTML = BX('blg-comment-'+id).innerHTML}, 10);
-								}
-								else
-								{
-									BX('blg-comment-'+this.id[1]+'old').innerHTML = data;
-									if(BX.browser.IsIE()) //for IE, numbered list not rendering well
-										setTimeout(function (){BX('blg-comment-'+id+'old').innerHTML = BX('blg-comment-'+id+'old').innerHTML}, 10);
-								}
+								var newComment = BX.create('div',{'html':data});	// tmp container for data
+//								paste response data from tmp container
+								BX(commentId).innerHTML = BX.findChild(newComment, {"attribute" : {"id": commentId}}, true).innerHTML;
+								BX.cleanNode(newComment, true);
+//								if(BX.browser.IsIE()) //for IE, numbered list not rendering well
+//									setTimeout(function (){BX('blg-comment-'+id).innerHTML = BX('blg-comment-'+id).innerHTML}, 10);
 							}
 							else
 							{
-								BX('new_comment_cont_'+this.id[1]).innerHTML += data;
+								BX('blg-comment-'+this.id[1]+'old').innerHTML = data;
 								if(BX.browser.IsIE()) //for IE, numbered list not rendering well
-									setTimeout(function (){BX('new_comment_cont_'+this.id[1]).innerHTML = BX('new_comment_cont_'+this.id[1]).innerHTML}, 10);
+									setTimeout(function (){BX('blg-comment-'+id+'old').innerHTML = BX('blg-comment-'+id+'old').innerHTML}, 10);
 							}
-	//						todo: what is it?
-							BX('form_c_del').style.display = "none";
 						}
-						window.commentEr = false;
+						else
+						{
+							BX('new_comment_cont_'+this.id[1]).innerHTML += data;
+							if(BX.browser.IsIE()) //for IE, numbered list not rendering well
+								setTimeout(function (){BX('new_comment_cont_'+this.id[1]).innerHTML = BX('new_comment_cont_'+this.id[1]).innerHTML}, 10);
+						}
+//						todo: what is it?
+						BX('form_c_del').style.display = "none";
 					}
-					BX.closeWait(this.eventNode);
-					this.hide(true);
-					this.id = null;	// after closing form we must unattach them from comment entity
-	//				disable button before?
-					BX('post-button').disabled = false;
-					this.busy = false;
-				}, this),
-				
-				onfailure: BX.delegate(function() {
-					BX.closeWait(this.eventNode);
-					this.busy = false;
-				}, this)
-			});
+					window.commentEr = false;
+				}
+				BX.closeWait(this.eventNode);
+				this.hide(true);
+				this.id = null;	// after closing form we must unattach them from comment entity
+//				disable button before?
+				BX('post-button').disabled = false;
+				this.busy = false;
+			}, this),
 			
-		<?else:	//ajax - not need JS, just submit to component?>
-			BX.submit(this.form);
-		<?endif;?>
+			onfailure: BX.delegate(function() {
+				BX.closeWait(this.eventNode);
+				this.busy = false;
+			}, this)
+		});
 	},
 	checkConsent: function() {
 //		consent was set previously
@@ -469,7 +457,6 @@ window.__blogOnUCFormAfterShow = function(obj, text, data) {
 		obj.form[ii].value = post_data[ii];
 	}
 
-//	todo: captcha ?
 	onLightEditorShow(text, data);
 };
 
@@ -521,9 +508,6 @@ window.onLightEditorShow = function(content, data){
 			handler = LHEPostForm.getHandler("<?=$component->createEditorId()?>"), controllerId = '',
 			controller = null;
 		
-		
-		
-		
 		for (id in handler['controllers'])
 		{
 			if (handler['controllers'].hasOwnProperty(id))
@@ -535,8 +519,6 @@ window.onLightEditorShow = function(content, data){
 				}
 			}
 		}
-		
-		
 		
 		for (var ii in data["arImages"])
 		{

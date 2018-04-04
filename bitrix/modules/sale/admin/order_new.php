@@ -719,9 +719,22 @@ if (
 			{
 				if (empty($arItem['BASKET_ID']) && empty($arItem['ID']))
 				{
+					$module = trim($arItem['MODULE']);
+					if (strval($module) != '')
+					{
+						Loader::includeModule($module);
+					}
+					
 					foreach ($callbackList as $callbackName)
 					{
-						$arItem[$callbackName] = '';
+						$callbackFieldName = (isset($arItem[$callbackName]) ? $arItem[$callbackName] : '');
+						if ((!isset($callbackFieldName) && strval($callbackFieldName) == "")
+								|| (!class_exists($callbackFieldName) && !function_exists($callbackFieldName)))
+						{
+							$arItem[$callbackName] = '';
+						}
+
+
 					}
 				}
 			}

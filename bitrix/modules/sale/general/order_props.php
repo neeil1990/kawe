@@ -365,13 +365,50 @@ class CSaleOrderProps
 			$arSelectFields = array();
 		}
 
+		$defaultSelectFields = array(
+			"ID",
+			"PERSON_TYPE_ID",
+			"NAME",
+			"TYPE",
+			"REQUIED",
+			"DEFAULT_VALUE",
+			"DEFAULT_VALUE_ORIG",
+			"SORT",
+			"USER_PROPS",
+			"IS_LOCATION",
+			"PROPS_GROUP_ID",
+			"SIZE1",
+			"SIZE2",
+			"DESCRIPTION",
+			"IS_EMAIL",
+			"IS_PROFILE_NAME",
+			"IS_PAYER",
+			"IS_LOCATION4TAX",
+			"IS_ZIP",
+			"CODE",
+			"IS_FILTERED",
+			"ACTIVE",
+			"UTIL",
+			"INPUT_FIELD_LOCATION",
+			"MULTIPLE",
+			"PAYSYSTEM_ID",
+			"DELIVERY_ID"
+		);
+
 		if (! $arSelectFields)
-			$arSelectFields = array(
-				"ID", "PERSON_TYPE_ID", "NAME", "TYPE", "REQUIED", "DEFAULT_VALUE", "DEFAULT_VALUE_ORIG", "SORT", "USER_PROPS",
-				"IS_LOCATION", "PROPS_GROUP_ID", "SIZE1", "SIZE2", "DESCRIPTION", "IS_EMAIL", "IS_PROFILE_NAME",
-				"IS_PAYER", "IS_LOCATION4TAX", "IS_ZIP", "CODE", "IS_FILTERED", "ACTIVE", "UTIL",
-				"INPUT_FIELD_LOCATION", "MULTIPLE", "PAYSYSTEM_ID", "DELIVERY_ID"
-			);
+		{
+			$arSelectFields = $defaultSelectFields;
+		}
+
+		if (is_array($arSelectFields) && in_array("*", $arSelectFields))
+		{
+			$key = array_search('*', $arSelectFields);
+			unset($arSelectFields[$key]);
+
+			$arSelectFields = $arSelectFields + $defaultSelectFields;
+
+			$arSelectFields = array_unique($arSelectFields);
+		}
 
 		// add aliases
 
@@ -584,7 +621,10 @@ class CSaleOrderProps
 		if (! self::CheckFields('UPDATE', $arFields, $ID))
 			return false;
 
-		$newProperty = CSaleOrderPropsAdapter::convertOldToNew($arFields + self::GetByID($ID));
+		$oldFields = self::GetList(array(), array('ID' => $ID), false, false, array('SETTINGS', '*' ))->Fetch();
+		$propertyFields = $arFields + $oldFields;
+
+		$newProperty = CSaleOrderPropsAdapter::convertOldToNew($propertyFields);
 		OrderPropsTable::update($ID, array_intersect_key($newProperty, CSaleOrderPropsAdapter::$allFields));
 
 		foreach(GetModuleEvents('sale', 'OnOrderPropsUpdate', true) as $arEvent)
@@ -1049,7 +1089,13 @@ final class CSaleOrderPropsAdapter implements FetchAdapter
 				break;
 		}
 
-		$property['SETTINGS'] = $settings;
+		$propertySettings = array();
+		if (isset($property['SETTINGS']) && is_array($property['SETTINGS']))
+		{
+			$propertySettings = $property['SETTINGS'];
+		}
+
+		$property['SETTINGS'] = $propertySettings + $settings;
 
 		return $property;
 	}

@@ -26,13 +26,13 @@ if ($saleModulePermissions == "D")
 
 /** @var \Bitrix\Sale\Order $order */
 if(!isset($_REQUEST["ID"]) || intval($_REQUEST["ID"]) <= 0)
-	LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+	LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID);
 
 $ID = intval($_REQUEST["ID"]);
 $boolLocked = \Bitrix\Sale\Order::isLocked($ID);
 
 if($boolLocked)
-	LocalRedirect("sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+	LocalRedirect("sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID);
 
 //Unlocking if we leave this page
 if(isset($_REQUEST['unlock']) && 'Y' == $_REQUEST['unlock'])
@@ -56,9 +56,9 @@ if(isset($_REQUEST['unlock']) && 'Y' == $_REQUEST['unlock'])
 	}
 
 	if(isset($_REQUEST['target']) && 'list' == $_REQUEST['target'])
-		LocalRedirect("sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		LocalRedirect("sale_order.php?lang=".LANGUAGE_ID);
 	else
-		LocalRedirect("sale_order_edit.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		LocalRedirect("sale_order_edit.php?ID=".$ID."&lang=".LANGUAGE_ID);
 }
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/helpers/admin/orderedit.php");
@@ -78,12 +78,12 @@ if ($boolLocked)
 
 $order = Bitrix\Sale\Order::load($_REQUEST["ID"]);
 if(!$order)
-	LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+	LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID);
 
 $allowedStatusesUpdate = \Bitrix\Sale\OrderStatus::getStatusesUserCanDoOperations($USER->GetID(), array('update'));
 
 if(!in_array($order->getField("STATUS_ID"), $allowedStatusesUpdate))
-	LocalRedirect("/bitrix/admin/sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_"));
+	LocalRedirect("/bitrix/admin/sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID);
 
 $isUserResponsible = false;
 $isAllowCompany = false;
@@ -107,7 +107,7 @@ if ($saleModulePermissions == 'P')
 
 	if (!$isUserResponsible && !$isAllowCompany)
 	{
-		LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID);
 	}
 }
 
@@ -257,10 +257,10 @@ if (($isSavingOperation || $isNeedFieldsRestore || $isRefreshDataAndSaveOperatio
 						if (\Bitrix\Sale\Order::isLocked($ID))
 							\Bitrix\Sale\Order::unlock($ID);
 
-						LocalRedirect("/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&unlock=Y&target=list&ID=".$ID.GetFilterParams("filter_", false));
+						LocalRedirect("/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&unlock=Y&target=list&ID=".$ID);
 					}
 					else
-						LocalRedirect("/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&ID=".$order->getId().GetFilterParams("filter_", false));
+						LocalRedirect("/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&ID=".$order->getId());
 				}
 			}
 		}
@@ -294,22 +294,21 @@ $aMenu[] = array(
 	"ICON" => "btn_list",
 	"TEXT" => Loc::getMessage("SOE_TO_LIST"),
 	"TITLE"=> Loc::getMessage("SOE_TO_LIST_TITLE"),
-	"LINK" => "/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&unlock=Y&target=list&ID=".$ID.GetFilterParams("filter_")
+	"LINK" => "/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&unlock=Y&target=list&ID=".$ID
 );
 
 if ($boolLocked && $saleModulePermissions >= 'W')
 {
 	$aMenu[] = array(
 			"TEXT" => GetMessage("SOE_TO_UNLOCK"),
-			"LINK" => "/bitrix/admin/sale_order_edit.php?ID=".$ID."&unlock=Y&lang=".LANGUAGE_ID.GetFilterParams("filter_"),
+			"LINK" => "/bitrix/admin/sale_order_edit.php?ID=".$ID."&unlock=Y&lang=".LANGUAGE_ID,
 	);
 }
 
 $aMenu[] = array(
 	"TEXT" => Loc::getMessage("SOE_ORDER_VIEW"),
 	"TITLE"=> Loc::getMessage("SOE_ORDER_VIEW_TITLE"),
-	"LINK" => "/bitrix/admin/sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_")
-);
+	"LINK" => "/bitrix/admin/sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID);
 
 $arSysLangs = array();
 $db_lang = CLangAdmin::GetList(($b="sort"), ($o="asc"), array("ACTIVE" => "Y"));
@@ -384,7 +383,7 @@ foreach ($dirs as $dir)
 $aMenu[] = array(
 	"TEXT" => Loc::getMessage("NEWO_TO_PRINT"),
 	"TITLE"=> Loc::getMessage("NEWO_TO_PRINT_TITLE"),
-	"LINK" => "/bitrix/admin/sale_order_print.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_"),
+	"LINK" => "/bitrix/admin/sale_order_print.php?ID=".$ID."&lang=".LANGUAGE_ID,
 	"MENU" => $arReports
 );
 
@@ -413,7 +412,7 @@ if (!$disabledRefresh)
 $actionMenu[] = array(
 	"TEXT" => Loc::getMessage("NEWO_ORDER_DELETE"),
 	"TITLE"=> Loc::getMessage("NEWO_ORDER_DELETE_TITLE"),
-	"LINK" => "javascript:if(confirm('".GetMessageJS("NEWO_CONFIRM_DEL_MESSAGE")."')) window.location='sale_order.php?ID=".$ID."&action=delete&lang=".LANGUAGE_ID."&".bitrix_sessid_get().urlencode(GetFilterParams("filter_"))."'"
+	"LINK" => "javascript:if(confirm('".GetMessageJS("NEWO_CONFIRM_DEL_MESSAGE")."')) window.location='sale_order.php?ID=".$ID."&action=delete&lang=".LANGUAGE_ID."&".bitrix_sessid_get()."'"
 );
 
 if(!empty($actionMenu))
@@ -504,7 +503,7 @@ $aTabs = array(
 	array("DIV" => "tab_analysis", "TAB" => Loc::getMessage("SALE_TAB_ANALYSIS"), "TITLE" => Loc::getMessage("SALE_TAB_ANALYSIS"))
 );
 
-?><form method="POST" action="<?=$APPLICATION->GetCurPage()."?lang=".LANGUAGE_ID."&ID=".$ID."&".$urlForm.GetFilterParams("filter_", false)?>" name="sale_order_edit_form" id="sale_order_edit_form" enctype="multipart/form-data"><?
+?><form method="POST" action="<?=$APPLICATION->GetCurPage()."?lang=".LANGUAGE_ID."&ID=".$ID."&".$urlForm?>" name="sale_order_edit_form" id="sale_order_edit_form" enctype="multipart/form-data"><?
 
 $tabControl = new CAdminTabControlDrag($formId, $aTabs, $moduleId, false, true);
 $tabControl->AddTabs($customTabber);
@@ -636,7 +635,8 @@ $tabControl->EndTab();
 $tabControl->Buttons(
 	array(
 		"disabled" => true, //while tails are not loaded.
-		"back_url" => "/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&unlock=Y&target=list&ID=".$ID.GetFilterParams("filter_"))
+		"back_url" => "/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&unlock=Y&target=list&ID=".$ID
+	)
 );
 
 $tabControl->End();

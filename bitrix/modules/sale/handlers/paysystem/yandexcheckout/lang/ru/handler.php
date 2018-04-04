@@ -17,3 +17,4 @@ $MESS["SALE_HPS_YANDEX_CHECKOUT_TRANSACTION"] = "Транзакция ";
 $MESS["SALE_HPS_YANDEX_CHECKOUT_ERROR_QUERY"] = "Некорректный или пустой ответ сервера";
 $MESS["SALE_HPS_YANDEX_CHECKOUT_ERROR_STATUS"] = "Некорректный статус платежа";
 $MESS["SALE_HPS_YANDEX_CHECKOUT_ERROR_EXTERNAL_PAYMENT"] = "Ошибка при выставлении счета";
+$MESS["SALE_HPS_YANDEX_CHECKOUT_ERROR_PAYMENT_CANCELED"] = "Платеж отменен";

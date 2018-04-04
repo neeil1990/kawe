@@ -25,7 +25,7 @@ class CAllPullStack
 				'server_time' => date('c'),
 				'server_time_unix' => microtime(true),
 				'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
-				'revision' => PULL_REVISION,
+				'revision_web' => PULL_REVISION_WEB,
 				'revision_mobile' => PULL_REVISION_MOBILE,
 			);
 
@@ -57,7 +57,7 @@ class CAllPullStack
 		$extra = is_array($params['extra'])? $params['extra']: Array();
 		$extra = array_merge($extra, Array(
 			'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
-			'revision' => PULL_REVISION,
+			'revision_web' => PULL_REVISION_WEB,
 			'revision_mobile' => PULL_REVISION_MOBILE,
 		));
 

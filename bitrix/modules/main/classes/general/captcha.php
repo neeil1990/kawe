@@ -6,6 +6,9 @@
 # mailto:admin@bitrixsoft.com                #
 ##############################################
 
+//Some marketplace modules define the same class
+if (!class_exists("CCaptcha")):
+
 class CCaptcha
 {
 	var $imageWidth = 180;
@@ -1102,3 +1105,5 @@ class CCaptcha
 
 	}
 }
+
+endif;

@@ -980,8 +980,8 @@ abstract class Element extends Base
 
 		$params['USE_COMMENTS'] = $params['USE_COMMENTS'] === 'Y' ? 'Y' : 'N';
 		$params['BLOG_USE'] = $params['BLOG_USE'] === 'Y' ? 'Y' : 'N';
-		$params['VK_USE'] = $params['VK_USE'] === 'Y' ? 'Y' : 'N';
-		$params['FB_USE'] = $params['FB_USE'] === 'Y' ? 'Y' : 'N';
+		$params['VK_USE'] = $params['VK_USE'] === 'Y' && !empty($params['VK_API_ID']) ? 'Y' : 'N';
+		$params['FB_USE'] = $params['FB_USE'] === 'Y' && !empty($params['FB_APP_ID']) ? 'Y' : 'N';
 
 		if ($params['USE_COMMENTS'] === 'Y')
 		{
@@ -1015,7 +1015,7 @@ abstract class Element extends Base
 
 		if (empty($params['PRODUCT_PAY_BLOCK_ORDER']))
 		{
-			$params['PRODUCT_PAY_BLOCK_ORDER'] = 'rating,price,quantityLimit,quantity,buttons,compare';
+			$params['PRODUCT_PAY_BLOCK_ORDER'] = 'rating,price,quantityLimit,quantity,buttons';
 		}
 
 		if (is_string($params['PRODUCT_PAY_BLOCK_ORDER']))

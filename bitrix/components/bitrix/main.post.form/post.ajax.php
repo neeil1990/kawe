@@ -335,14 +335,20 @@ if (check_bitrix_sessid())
 				|| in_array("CRMCOMPANY", $arCrmAllowedTypes)
 			)
 			{
+				$arFilter = array('%TITLE' => $search);
+				if(isset($_POST['CRMCOMPANYMY']) && $_POST['CRMCOMPANYMY'] == 'Y')
+				{
+					$arFilter['=IS_MY_COMPANY'] = 'Y';
+				}
+
 				$arCompanyTypeList = CCrmStatus::GetStatusListEx('COMPANY_TYPE');
 				$arCompanyIndustryList = CCrmStatus::GetStatusListEx('INDUSTRY');
 				$dbCompanies = CCrmCompany::GetListEx(
-					$arOrder = array(),
-					$arFilter = array('%TITLE' => $search),
-					$arGroupBy = false,
-					$arNavStartParams = array('nTopCount' => 20),
-					$arSelectFields = array('ID', 'TITLE', 'COMPANY_TYPE', 'INDUSTRY',  'LOGO')
+					array(),
+					$arFilter,
+					false,
+					array('nTopCount' => 20),
+					array('ID', 'TITLE', 'COMPANY_TYPE', 'INDUSTRY',  'LOGO')
 				);
 
 				while ($dbCompanies && ($arCompany = $dbCompanies->fetch()))

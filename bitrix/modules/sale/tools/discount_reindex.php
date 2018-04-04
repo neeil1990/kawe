@@ -6,7 +6,8 @@ define('PUBLIC_AJAX_MODE', true);
 
 use Bitrix\Main,
 	Bitrix\Main\Localization\Loc,
-	Bitrix\Main\Loader;
+	Bitrix\Main\Loader,
+	Bitrix\Sale;
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
 
@@ -72,6 +73,19 @@ if (
 	$discountReindex->initStep($params['counter'], $params['operationCounter'], $params['lastID']);
 	$discountReindex->run();
 	$result = $discountReindex->saveStep();
+
+	if ($result['finishOperation'])
+	{
+		$iterator = \CAdminNotify::GetList(
+			array(),
+			array('MODULE_ID' => 'sale', 'TAG' => Sale\Discount::ERROR_ID)
+		);
+		$notify = $iterator->Fetch();
+		unset($iterator);
+		if (!empty($notify))
+			\CAdminNotify::Delete($notify['ID']);
+		unset($notify);
+	}
 
 	header('Content-Type: application/x-javascript; charset='.LANG_CHARSET);
 	echo CUtil::PhpToJSObject($result, false, true);

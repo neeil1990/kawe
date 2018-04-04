@@ -25,7 +25,7 @@ class CArchiver implements IBXArchive
 	private $remove_path = "";
 
 	private $startFile = "";
-	private $lastFile = "";
+	private $lastFile = array();
 	private $step_time = 30;
 	private $tempres = false;
 	private $ReplaceExistentFiles = false;

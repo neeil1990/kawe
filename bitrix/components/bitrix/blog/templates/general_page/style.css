@@ -67,7 +67,7 @@ div.blog-buttons {padding-top: 1em;}
 .blog-comment-meta a:hover {text-decoration: underline !important;}
 .blog-comment-link, .blog-comment-delete, .blog-comment-parent, .blog-comment-answer, .blog-comment-edit, .blog-comment-show, .blog-comment-hide {display:inline-block;}
 .blog-add-comment {text-align:center; padding-top: 0em; padding-bottom: 1.5em;}
-.blog-comment-nav {padding-bottom: 0.6em; padding-left: 0.7em;}
+.blog-comment-nav {padding-bottom: 0.6em; /*padding-left: 0.7em;*/}
 
 /*comment-form*/
 div.blog-comment-form { margin-bottom:0.7em; margin-top:0.7em; width:80%;}

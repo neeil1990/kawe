@@ -1,8 +1,9 @@
 <?php
 namespace Bitrix\Sale\Exchange;
-
+/** @depricate */
 
 use Bitrix\Main\ArgumentOutOfRangeException;
+use Bitrix\Sale\Exchange\Internals\LoggerDiag;
 use Bitrix\Sale\Exchange\OneC\ImportCollision;
 use Bitrix\Sale\Exchange\OneC\ImportCriterionBase;
 
@@ -15,6 +16,8 @@ final class Manager
     protected $collision = null;
     /** @var ICriterion $criterion */
     protected $criterion = null;
+    /** @var LoggerDiag $logger */
+    protected $logger = null;
 
     /**
      * @return static
@@ -41,6 +44,7 @@ final class Manager
         $import->loadSettings($config->settings);
         $import->loadCollision($config->collision);
         $import->loadCriterion($config->criterion);
+        $import->loadLogger($config->logger);
 
         return $import;
     }
@@ -73,6 +77,7 @@ final class Manager
             $manager->settings = $settings;
 			$manager->collision = $collision !== null ? $collision : new ImportCollision();
 			$manager->criterion = $criterion !== null ? $criterion : new ImportCriterionBase();
+			$manager->logger = new LoggerDiag();
 
             self::$instance[$typeId] = $manager;
         }

@@ -1115,79 +1115,18 @@ abstract class CAllMain
 
 	public static function OnChangeFileComponent($path, $site)
 	{
-		/** @global CMain $APPLICATION */
-		global $APPLICATION;
-
 		// kind of optimization
-		if(!HasScriptExtension($path))
-			return;
-
-		$docRoot = CSite::GetSiteDocRoot($site);
-
-		CUrlRewriter::Delete(
-			array("SITE_ID" => $site, "PATH" => $path, "ID" => "NULL")
-		);
-
-		if (class_exists("\\Bitrix\\Main\\Application", false))
+		if(HasScriptExtension($path))
 		{
-			\Bitrix\Main\Component\ParametersTable::deleteByFilter(
-				array("SITE_ID" => $site, "REAL_PATH" => $path)
-			);
-		}
-
-		$fileSrc = $APPLICATION->GetFileContent($docRoot.$path);
-		$arComponents = PHPParser::ParseScript($fileSrc);
-		for ($i = 0, $cnt = count($arComponents); $i < $cnt; $i++)
-		{
-			if (class_exists("\\Bitrix\\Main\\Application", false))
+			if($site === false)
 			{
-				$isSEF = (is_array($arComponents[$i]["DATA"]["PARAMS"]) && $arComponents[$i]["DATA"]["PARAMS"]["SEF_MODE"] == "Y");
-				\Bitrix\Main\Component\ParametersTable::add(
-					array(
-						'SITE_ID' => $site,
-						'COMPONENT_NAME' => $arComponents[$i]["DATA"]["COMPONENT_NAME"],
-						'TEMPLATE_NAME' => $arComponents[$i]["DATA"]["TEMPLATE_NAME"],
-						'REAL_PATH' => $path,
-						'SEF_MODE' => ($isSEF? \Bitrix\Main\Component\ParametersTable::SEF_MODE : \Bitrix\Main\Component\ParametersTable::NOT_SEF_MODE),
-						'SEF_FOLDER' => ($isSEF? $arComponents[$i]["DATA"]["PARAMS"]["SEF_FOLDER"] : null),
-						'START_CHAR' => $arComponents[$i]["START"],
-						'END_CHAR' => $arComponents[$i]["END"],
-						'PARAMETERS' => serialize($arComponents[$i]["DATA"]["PARAMS"]),
-					)
-				);
+				$site = SITE_ID;
 			}
+			$docRoot = CSite::GetSiteDocRoot($site);
 
-			if (isset($arComponents[$i]["DATA"]["PARAMS"]) && is_array($arComponents[$i]["DATA"]["PARAMS"]))
-			{
-				if (
-					array_key_exists("SEF_MODE", $arComponents[$i]["DATA"]["PARAMS"])
-					&& $arComponents[$i]["DATA"]["PARAMS"]["SEF_MODE"] == "Y"
-				)
-				{
-					if (array_key_exists("SEF_RULE", $arComponents[$i]["DATA"]["PARAMS"]))
-					{
-						$ruleMaker = new \Bitrix\Main\UrlRewriterRuleMaker;
-						$ruleMaker->process($arComponents[$i]["DATA"]["PARAMS"]["SEF_RULE"]);
-
-						CUrlRewriter::Add(array(
-							"SITE_ID" => $site,
-							"CONDITION" => $ruleMaker->getCondition(),
-							"RULE" => $ruleMaker->getRule(),
-							"ID" => $arComponents[$i]["DATA"]["COMPONENT_NAME"],
-							"PATH" => $path
-						));
-					}
-					else
-					{
-						CUrlRewriter::Add(array(
-							"SITE_ID" => $site,
-							"CONDITION" => "#^".$arComponents[$i]["DATA"]["PARAMS"]["SEF_FOLDER"]."#",
-							"ID" => $arComponents[$i]["DATA"]["COMPONENT_NAME"],
-							"PATH" => $path
-						));
-					}
-				}
-			}
+			Main\UrlRewriter::delete($site, array("PATH" => $path, "!ID" => ''));
+			Main\Component\ParametersTable::deleteByFilter(array("SITE_ID" => $site, "REAL_PATH" => $path));
+			Main\UrlRewriter::reindexFile($site, $docRoot, $path);
 		}
 	}
 	// <<<<< COMPONENTS 2.0
@@ -3892,20 +3831,25 @@ class CAllSite
 		{
 			$isOK = false;
 			$check_templ = array();
+			$dupError = "";
 			foreach($arFields["TEMPLATE"] as $val)
 			{
 				if($val["TEMPLATE"] <> '' && getLocalPath("templates/".$val["TEMPLATE"], BX_PERSONAL_ROOT) !== false)
 				{
 					if(in_array($val["TEMPLATE"].", ".$val["CONDITION"], $check_templ))
-						$this->LAST_ERROR = GetMessage("MAIN_BAD_TEMPLATE_DUP");
+					{
+						$dupError = " ".GetMessage("MAIN_BAD_TEMPLATE_DUP");
+						$isOK = false;
+						break;
+					}
 					$check_templ[] = $val["TEMPLATE"].", ".$val["CONDITION"];
 					$isOK = true;
 				}
 			}
 			if(!$isOK)
 			{
-				$this->LAST_ERROR .= GetMessage("MAIN_BAD_TEMPLATE");
-				$arMsg[] = array("id"=>"SITE_TEMPLATE", "text"=> GetMessage("MAIN_BAD_TEMPLATE"));
+				$this->LAST_ERROR .= GetMessage("MAIN_BAD_TEMPLATE").$dupError;
+				$arMsg[] = array("id"=>"SITE_TEMPLATE", "text"=> GetMessage("MAIN_BAD_TEMPLATE").$dupError);
 			}
 		}
 

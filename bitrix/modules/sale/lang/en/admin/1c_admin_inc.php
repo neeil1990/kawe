@@ -27,4 +27,6 @@ $MESS["SALE_1C_IMPORT_NEW_PAYMENT"] = "Create new payment docs in 1C";
 $MESS["SALE_1C_IMPORT_NEW_SHIPMENT"] = "Create new delivery docs in 1C";
 $MESS["SALE_1C_IMPORT_NEW_ORDER_NEW_SHIPMENT"] = "Create new order (if it does not exist) on receiving a new delivery from 1C";
 $MESS["SALE_1C_SALE_ACCOUNT_NUMBER_SHOP_PREFIX_NOTE"] = "Prefix is part of a unique ID. If the parameter is changed, it will be updated for every exported document which will change the document's unique ID when exporting. <br>Set this parameter only once before using data exchange for the first time.";
+$MESS["SALE_EXCHANGE_DEBUG_END_TIME"] = "Query and response text logging duration (seconds)";
+$MESS["SALE_EXCHANGE_DEBUG_INTERVAL_DAY"] = "Time to keep logs (days)";
 ?>

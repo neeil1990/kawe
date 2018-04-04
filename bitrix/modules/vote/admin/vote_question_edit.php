@@ -117,7 +117,8 @@ else
 		"TEMPLATE_NEW"	=> $_REQUEST["TEMPLATE_NEW"]);
 	foreach ($_REQUEST["ANSWER"] as $pid)
 	{
-		if (intval($pid) <= 0) 
+		$pid = intval($pid);
+		if ($pid <= 0)
 			continue;
 		$arAnswer = array(
 			"ID" => intval($_REQUEST["ANSWER_ID_".$pid]),
@@ -537,7 +538,7 @@ $tabControl->BeginNextTab();
 						?><?=($arAnswer["FIELD_TYPE"]!=4 && $arAnswer["FIELD_TYPE"]!=5 ? "disabled='disabled'" : "")?> /></td>
 					<td><input type="text" name="FIELD_PARAM_<?=$i?>" value="<?=htmlspecialcharsbx($arAnswer["FIELD_PARAM"])?>" size="10" /></td>
 					<td><input type="text" name="C_SORT_<?=$i?>" value="<?=htmlspecialcharsbx($arAnswer["C_SORT"])?>" size="3" /></td>
-					<td id="COLB<?=$i?>" style="background:<?=$arAnswer["COLOR"]?>;">
+					<td id="COLB<?=$i?>" style="background:<?=htmlspecialcharsbx($arAnswer["COLOR"])?>;">
 						<input id="COLOR_<?=$i?>" name="COLOR_<?=$i?>" onchange="col_set(this.value, this)" onclick="ColorPicker(this);" <?
 							?>type="text" value="<?=htmlspecialcharsbx($arAnswer["COLOR"])?>" size="7" />
 					</td>

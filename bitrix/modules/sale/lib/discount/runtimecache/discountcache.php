@@ -216,7 +216,6 @@ final class DiscountCache
 			while($discount = $discountIterator->fetch())
 			{
 				$discount['ID'] = (int)$discount['ID'];
-				$discountApply[$discount['ID']] = true;
 				if($discount['USE_COUPONS'] == 'Y')
 				{
 					$discount['COUPON'] = $couponList[$couponsDiscount[$discount['ID']]];

@@ -33,6 +33,11 @@ class QueryChain
 		$this->chain = array();
 	}
 
+	/**
+	 * @param QueryChainElement $element
+	 *
+	 * @throws SystemException
+	 */
 	public function addElement(QueryChainElement $element)
 	{
 		if (empty($this->chain) && !($element->getValue() instanceof Base))
@@ -161,6 +166,14 @@ class QueryChain
 		$this->custom_alias = $alias;
 	}
 
+	/**
+	 * @param Base $init_entity
+	 * @param      $definition
+	 *
+	 * @return QueryChain
+	 * @throws Main\ArgumentException
+	 * @throws SystemException
+	 */
 	public static function getChainByDefinition(Base $init_entity, $definition)
 	{
 		if (!is_string($definition))
@@ -362,7 +375,7 @@ class QueryChain
 
 		foreach ($elements  as $element)
 		{
-			if ($element->getValue() instanceof ExpressionField && $element !== end($elements))
+			//if ($element->getValue() instanceof ExpressionField && $element !== end($elements))
 			{
 				// skip non-last expressions
 				//continue;
@@ -403,11 +416,23 @@ class QueryChain
 		return join('_', $alias);
 	}
 
+	/**
+	 * @param Base $entity
+	 * @param      $definition
+	 *
+	 * @return string
+	 * @throws Main\ArgumentException
+	 * @throws SystemException
+	 */
 	public static function getAliasByDefinition(Base $entity, $definition)
 	{
 		return self::getChainByDefinition($entity, $definition)->getAlias();
 	}
 
+	/**
+	 * @return bool
+	 * @throws SystemException
+	 */
 	public function hasAggregation()
 	{
 		$elements = array_reverse($this->chain);
@@ -426,6 +451,10 @@ class QueryChain
 		return false;
 	}
 
+	/**
+	 * @return bool
+	 * @throws SystemException
+	 */
 	public function hasSubquery()
 	{
 		$elements = array_reverse($this->chain);
@@ -460,6 +489,12 @@ class QueryChain
 		return $this->forcesDataDoulingOff;
 	}
 
+	/**
+	 * @param bool $with_alias
+	 *
+	 * @return mixed|string
+	 * @throws SystemException
+	 */
 	public function getSqlDefinition($with_alias = false)
 	{
 		$sql_def = $this->getLastElement()->getSqlDefinition();

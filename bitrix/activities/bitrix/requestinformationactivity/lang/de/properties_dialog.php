@@ -1,0 +1,33 @@
+<?
+$MESS ['BPSFA_PD_F_ADD'] = "Neues Feld...";
+$MESS ['BPRIA_PD_TYPE_ALL'] = "Alle Mitarbeiter";
+$MESS ['BPRIA_PD_TYPE_ANY'] = "Beliebiger Mitarbeiter";
+$MESS ['BPSFA_PD_CANCEL'] = "Abbrechen";
+$MESS ['BPSFA_PD_F_DEF'] = "Standardwert";
+$MESS ['BPSFA_PD_DELETE'] = "Löschen";
+$MESS ['BPSFA_PD_CHANGE'] = "Bearbeiten";
+$MESS ['BPSFA_PD_CANCEL_HINT'] = "Beenden ohne Abspeichern";
+$MESS ['BPSFA_PD_FIELD'] = "Feld";
+$MESS ['BPSFA_PD_FIELDS'] = "Felder";
+$MESS ['BPSFA_PD_F_NAME'] = "ID";
+$MESS ['BPRIA_PD_PERCENT'] = "Mindestprozentsatz der Stimmen, die für die Entscheidung erforderlich sind";
+$MESS ['BPSFA_PD_F_MULT'] = "Mehrfach";
+$MESS ['BPSFA_PD_F_TITLE'] = "Name";
+$MESS ['BPSFA_PD_NO'] = "Nein";
+$MESS ['BPSFA_PD_F_REQ'] = "Erforderlich";
+$MESS ['BPSFA_PD_SAVE'] = "Speichern";
+$MESS ['BPSFA_PD_SAVE_HINT'] = "Feld speichern";
+$MESS ['BPRIA_PD_DESCR'] = "Aufgabenbeschreibung";
+$MESS ['BPRIA_PD_NAME'] = "Aufgabenname";
+$MESS ['BPSFA_PD_WRONG_NAME'] = "Das Feldcode kann nur lateinischen Buchstaben und Zahlen enthalten.";
+$MESS ['BPSFA_PD_EMPTY_NAME'] = "Das Feldcode ist nicht vorhanden";
+$MESS ['BPSFA_PD_EMPTY_TITLE'] = "Der Feldname ist nicht vorhanden";
+$MESS ['BPSFA_PD_F_TYPE'] = "Typ";
+$MESS ['BPRIA_PD_TYPE'] = "Genehmigungstyp";
+$MESS ['BPSFA_PD_F_VLIST'] = "Werte";
+$MESS ['BPRIA_PD_TYPE_VOTE'] = "Abstimmen";
+$MESS ['BPSFA_PD_YES'] = "Ja";
+$MESS ['BPSFA_PD_F_VLIST_HINT'] = "(jede Variante in der neuen Zeile. Wenn der Variantenwert sich von dem Namen unterscheidet, geben Sie ihn in den eckigen Klammern an, z.B. [v1]Variante1)";
+$MESS ['BPRIA_PD_APPROVERS'] = "Wird von den Mitarbeitern ausgefüllt";
+$MESS ['BPRIA_PD_WAIT'] = "Auf die Abstimmung von allen erforderlichen Mitarbeitern warten";
+?>

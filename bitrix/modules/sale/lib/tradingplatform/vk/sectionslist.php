@@ -278,14 +278,11 @@ class SectionsList
 
 //				alias get from settings. If not set - do nothing (will be used default name)
 				if ($parentParams["TO_ALBUM_ALIAS"])
-					$result[$mappedSection["BX_ID"]] = $parentParams["TO_ALBUM_ALIAS"];
+					$result[$mappedSection["BX_ID"]]["TO_ALBUM_ALIAS"] = $parentParams["TO_ALBUM_ALIAS"];
 			}
 		}
 		
 		return $result;
-//		todo: чтото не так в getSectionsToAlbumsExport. ѕосмотри, правильно ли отрабатываетс€ ситуаци€:
-//		todo: у раздела указан ту_албум другой раздел, который не активен. Ќадо, по идее, на его основе создавать альбом,
-//		todo: но не трогать товары, кажетс€, у мен€ не так
 	}
 	
 	
@@ -437,8 +434,8 @@ class SectionsList
 			$currSection = $sections[$sectionUnformatted["IBLOCK"]][$sectionUnformatted["BX_ID"]];
 
 //			processing only not empty sections
-			if ($currSection["ELEMENT_CNT"] <= 0)
-				continue;
+//			if ($currSection["ELEMENT_CNT"] <= 0)
+//				continue;
 
 //			if first item to this vk-album
 			if (!array_key_exists($sectionUnformatted["TO_ALBUM"], $sectionsFormatted))
@@ -459,9 +456,11 @@ class SectionsList
 			
 //			create toAlbum name only from section, then root for this album. Take alias if exist, or just name
 			if($sectionUnformatted["TO_ALBUM"] == $sectionUnformatted["BX_ID"])
+			{
 				$sectionsFormatted[$sectionUnformatted["TO_ALBUM"]]["TO_ALBUM_NAME"] = $sectionUnformatted["TO_ALBUM_ALIAS"] ?
 					$sectionUnformatted["TO_ALBUM_ALIAS"] :
 					trim($currSection["NAME"]);
+			}
 
 //			format current item
 			$vkCategoryName = $vkCategoriesList[$sectionUnformatted["VK_CATEGORY"]]['NAME'];

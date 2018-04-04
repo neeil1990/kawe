@@ -67,6 +67,7 @@
 		init: function(parameters)
 		{
 			this.params = parameters.params || {};
+			this.template = parameters.template || '';
 			this.signedParamsString = parameters.signedParamsString || '';
 			this.siteId = parameters.siteId || '';
 			this.ajaxUrl = parameters.ajaxUrl || '';
@@ -272,7 +273,7 @@
 					{
 						position = BX.pos(totalBlockNode);
 
-						if (scrollTop >= position.top && !basketScrolledToEnd)
+						if (scrollTop >= position.top)
 						{
 							offset += node.clientHeight;
 
@@ -282,6 +283,18 @@
 
 								node.style.width = node.clientWidth + border + 'px';
 								BX.addClass(node, 'basket-checkout-container-fixed');
+							}
+
+							if (basketScrolledToEnd)
+							{
+								if (!BX.hasClass(node, 'basket-checkout-container-fixed-hide'))
+								{
+									BX.addClass(node, 'basket-checkout-container-fixed-hide');
+								}
+							}
+							else if (BX.hasClass(node, 'basket-checkout-container-fixed-hide'))
+							{
+								BX.removeClass(node, 'basket-checkout-container-fixed-hide');
 							}
 						}
 						else if (BX.hasClass(node, 'basket-checkout-container-fixed'))
@@ -945,8 +958,9 @@
 
 			data[this.params.ACTION_VARIABLE] = this.lastAction;
 			data.via_ajax = 'Y';
-			data.SITE_ID = this.siteId;
+			data.site_id = this.siteId;
 			data.sessid = BX.bitrix_sessid();
+			data.template = this.template;
 			data.signedParamsString = this.signedParamsString;
 
 			return data;

@@ -44,12 +44,7 @@
 
 		isMultiple: function()
 		{
-			if (this.multiple === null)
-			{
-				this.multiple = BX.Main.ui.CustomEntity.isMultiple(this.getField());
-			}
-
-			return this.multiple;
+			return BX.Main.ui.CustomEntity.isMultiple(this.getField());
 		},
 
 		reset: function()
@@ -98,7 +93,7 @@
 
 		getSquareByValue: function(value)
 		{
-			return BX.Filter.Utils.getBySelector(this.getField(), '[data-item*=":'+value+'}"]');
+			return BX.Filter.Utils.getBySelector(this.getField(), '[data-item*=":'+BX.util.jsencode(value)+'}"]');
 		},
 
 		getSquares: function()

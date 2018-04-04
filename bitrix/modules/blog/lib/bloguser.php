@@ -13,6 +13,7 @@ use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Data\Cache;
 use Bitrix\Main\SystemException;
 use Bitrix\Main\UserConsent\Internals\ConsentTable;
+use Bitrix\Main\Application;
 use Bitrix\Main\Type\DateTime;
 
 Loc::loadMessages(__FILE__);
@@ -23,12 +24,22 @@ class BlogUser
 	private $blogId = NULL;
 
 //	this values was be hardcoded in components. If we want customization - need add settings and remake
-	private static $avatarSizes = array(
+	private $avatarSizes = array(
 		'COMMENT' => array('WIDTH' => 30, 'HEIGHT' => 30),
 		'POST' => array('WIDTH' => 100, 'HEIGHT' => 100),
 	);
 	
 	private $cacheTime = 0;
+	
+	public function addAvatarSize($width, $height, $key = "")
+	{
+		$width = intval($width);
+		$height = intval($height);
+
+//		overwrite params if key exist or create new
+		$key = strlen($key) > 0 ? $key : "IMG_" . (count($this->avatarSizes) + 1);
+		$this->avatarSizes[$key] = array('WIDTH' => $width, 'HEIGHT' => $height);
+	}
 	
 	
 	/**
@@ -67,7 +78,7 @@ class BlogUser
 	 */
 	public function getUsers($ids = array())
 	{
-		if(empty($ids))
+		if (empty($ids))
 			return array();
 		
 		if ($this->cacheTime > 0)
@@ -141,6 +152,7 @@ class BlogUser
 	{
 		$ids = array_unique($ids);
 		asort($ids);
+		
 		return self::CACHE_ID . '_' . implode('_', $ids);
 	}
 	
@@ -196,7 +208,7 @@ class BlogUser
 				\CFile::GetFileArray($row["BLOG_INTERNALS_BLOG_USER_USER_PERSONAL_PHOTO"]);
 			if ($row["BlogUser"]["AVATAR_file"] !== false)
 			{
-				foreach (self::$avatarSizes as $key => $avatarSize)
+				foreach ($this->avatarSizes as $key => $avatarSize)
 				{
 					$row["BlogUser"]["Avatar_resized"][$avatarSize['WIDTH'] . '_' . $avatarSize['HEIGHT']] = \CFile::ResizeImageGet(
 						$row["BlogUser"]["AVATAR_file"],
@@ -420,28 +432,27 @@ class BlogUser
 	 */
 	public static function isUserGivenConsent($userId, $agreementId)
 	{
-		if(!$userId || $userId <= 0)
+		if (!$userId || $userId <= 0)
 			throw new ArgumentNullException('User ID');
-		if(!$agreementId || $agreementId <= 0)
+		if (!$agreementId || $agreementId <= 0)
 			throw new ArgumentNullException('Agreement ID');
-		
+
 //		Find root URL for current component. We will check this URL in consents table.
 //		URL will be common for any constnt in this component
-		$url = \CMain::IsHTTPS() ? 'https://' : 'http://';
-		$url.= $_SERVER["SERVER_NAME"];
-		$url.= (isset($_SERVER["REAL_FILE_PATH"]) ? $_SERVER["REAL_FILE_PATH"] : $_SERVER["SCRIPT_NAME"]);
+		$request = Application::getInstance()->getContext()->getRequest();
+		$url = $request->getHttpHost() . $request->getScriptFile();
 		$urlDir = pathinfo($url);
 		$urlDir = $urlDir['dirname'];
 		
 		$filter = array(
 			"=USER_ID" => $userId,
 			"%=URL" => "%$urlDir%",
-			"=AGREEMENT_ID" => $agreementId
+			"=AGREEMENT_ID" => $agreementId,
 		);
 		
 		$isGivenAgreement = false;
 		$consents = ConsentTable::getList(array('filter' => $filter));
-		if($consents->fetch())
+		if ($consents->fetch())
 			$isGivenAgreement = true;
 		
 		return $isGivenAgreement;

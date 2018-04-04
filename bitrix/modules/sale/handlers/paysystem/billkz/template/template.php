@@ -647,7 +647,7 @@ for ($n = 1; $n <= $rowsCnt; $n++):
 	<b>
 	<?
 
-	if (in_array($params['CURRENCY'], array("RUR", "RUB", "UAH", "KZT", "BYN")))
+	if (in_array($params['CURRENCY'], array("RUR", "RUB", "UAH", "KZT", "BYR", "BYN")))
 	{
 		echo Number2Word_Rus($params['SUM'], "Y", $params['CURRENCY']);
 	}

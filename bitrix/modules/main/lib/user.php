@@ -10,7 +10,7 @@ namespace Bitrix\Main;
 use Bitrix\Main\DB\SqlExpression;
 use Bitrix\Main\Entity;
 use Bitrix\Main\Localization\Loc;
-use \Bitrix\Main\Search\MapBuilder;
+use Bitrix\Main\Search\MapBuilder;
 
 Loc::loadMessages(__FILE__);
 
@@ -237,6 +237,11 @@ class UserTable extends Entity\DataManager
 				'reference' => array('=this.ID' => 'ref.USER_ID'),
 				'join_type' => 'INNER',
 			),
+			(new Entity\ReferenceField(
+				'COUNTER',
+				\Bitrix\Main\UserCounterTable::class,
+				Entity\Query\Join::on('this.ID', 'ref.USER_ID')->where('ref.CODE', 'tasks_effective')
+			))
 		);
 	}
 
@@ -351,7 +356,8 @@ class UserTable extends Entity\DataManager
 
 	public static function getExternalUserTypes()
 	{
-		return array("bot", "email", "controller", "replica", "imconnector", "sale");
+		static $types = array("bot", "email", "controller", "replica", "imconnector", "sale");
+		return $types;
 	}
 
 	public static function indexRecord($id)
@@ -362,17 +368,17 @@ class UserTable extends Entity\DataManager
 			return false;
 		}
 
-		$intranetInstalled = \Bitrix\Main\ModuleManager::isModuleInstalled('intranet');
+		$intranetInstalled = ModuleManager::isModuleInstalled('intranet');
 
-		$select = Array('ID', 'NAME', 'SECOND_NAME', 'LAST_NAME', 'WORK_POSITION', 'LOGIN', 'EMAIL');
+		$select = array('ID', 'NAME', 'SECOND_NAME', 'LAST_NAME', 'WORK_POSITION', 'LOGIN', 'EMAIL');
 		if ($intranetInstalled)
 		{
 			$select[] = 'UF_DEPARTMENT';
 		}
 
-		$record = parent::getList(Array(
+		$record = parent::getList(array(
 			'select' => $select,
-			'filter' => Array('=ID' => $id)
+			'filter' => array('=ID' => $id)
 		))->fetch();
 
 		if(!is_array($record))
@@ -380,10 +386,10 @@ class UserTable extends Entity\DataManager
 			return false;
 		}
 
-		$record['UF_DEPARTMENT_NAMES'] = Array();
+		$record['UF_DEPARTMENT_NAMES'] = array();
 		if ($intranetInstalled)
 		{
-			$departmentNames = \Bitrix\Main\UserUtils::getDepartmentNames($record['UF_DEPARTMENT']);
+			$departmentNames = UserUtils::getDepartmentNames($record['UF_DEPARTMENT']);
 			foreach ($departmentNames as $departmentName)
 			{
 				$record['UF_DEPARTMENT_NAMES'][] = $departmentName['NAME'];

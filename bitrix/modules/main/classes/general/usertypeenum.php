@@ -43,6 +43,7 @@ class CUserTypeEnum extends \Bitrix\Main\UserField\TypeBase
 		$height = intval($arUserField["SETTINGS"]["LIST_HEIGHT"]);
 		$disp = $arUserField["SETTINGS"]["DISPLAY"];
 		$caption_no_value = trim($arUserField["SETTINGS"]["CAPTION_NO_VALUE"]);
+		$show_no_value = $arUserField["SETTINGS"]["SHOW_NO_VALUE"] === 'N' ? 'N' : 'Y';
 
 		if($disp !== "CHECKBOX" && $disp !== "LIST" && $disp !== 'UI')
 		{
@@ -52,7 +53,8 @@ class CUserTypeEnum extends \Bitrix\Main\UserField\TypeBase
 		return array(
 			"DISPLAY" => $disp,
 			"LIST_HEIGHT" => ($height < 1? 1: $height),
-			"CAPTION_NO_VALUE" => $caption_no_value // no default value - only in output
+			"CAPTION_NO_VALUE" => $caption_no_value, // no default value - only in output
+			"SHOW_NO_VALUE" => $show_no_value, // no default value - only in output
 		);
 	}
 
@@ -101,6 +103,22 @@ class CUserTypeEnum extends \Bitrix\Main\UserField\TypeBase
 			<td>'.GetMessage("USER_TYPE_ENUM_CAPTION_NO_VALUE").':</td>
 			<td>
 				<input type="text" name="'.$arHtmlControl["NAME"].'[CAPTION_NO_VALUE]" size="10" value="'.htmlspecialcharsbx($value).'">
+			</td>
+		</tr>
+		';
+
+		if($bVarsFromForm)
+			$value = trim($GLOBALS[$arHtmlControl["NAME"]]["SHOW_NO_VALUE"]);
+		elseif(is_array($arUserField))
+			$value = trim($arUserField["SETTINGS"]["SHOW_NO_VALUE"]);
+		else
+			$value = '';
+		$result .= '
+		<tr>
+			<td>'.GetMessage("USER_TYPE_ENUM_SHOW_NO_VALUE").':</td>
+			<td>
+				<input type="hidden" name="'.$arHtmlControl["NAME"].'[SHOW_NO_VALUE]" value="N" />
+				<label><input type="checkbox" name="'.$arHtmlControl["NAME"].'[SHOW_NO_VALUE]" value="Y" '.($value === 'N' ? '' : ' checked="checked"').' /> '.GetMessage('MAIN_YES').'</label>
 			</td>
 		</tr>
 		';
@@ -655,6 +673,7 @@ EOT;
 		$enum = array();
 
 		$showNoValue = $arUserField["MANDATORY"] != "Y"
+			|| $arUserField['SETTINGS']['SHOW_NO_VALUE'] != 'N'
 			|| (isset($arParams["SHOW_NO_VALUE"]) && $arParams["SHOW_NO_VALUE"] == true);
 
 		if($showNoValue
@@ -731,6 +750,37 @@ EOT;
 		static::initDisplay();
 
 		return static::getHelper()->wrapDisplayResult($html);
+	}
+
+	public static function getPublicText($userField)
+	{
+		static::getEnumList($userField);
+
+		$value = static::normalizeFieldValue($userField['VALUE']);
+
+		$text = '';
+		$first = true;
+		$empty = true;
+
+		foreach ($value as $res)
+		{
+			if (array_key_exists($res, $userField['USER_TYPE']['FIELDS']))
+			{
+				if (!$first)
+					$text .= ', ';
+				$first = false;
+
+				$text .= $userField['USER_TYPE']['FIELDS'][$res];
+				$empty = false;
+			}
+		}
+
+		if ($empty)
+		{
+			$text = static::getEmptyCaption($userField);
+		}
+
+		return $text;
 	}
 
 	public function getPublicEdit($arUserField, $arAdditionalParameters = array())

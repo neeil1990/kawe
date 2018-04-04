@@ -12,7 +12,7 @@ use Bitrix\Main\Entity;
 use Bitrix\Main\Type;
 
 /**
- * Class description
+ * Entity representation of UserFields.
  * @package bitrix
  * @subpackage main
  */
@@ -76,21 +76,46 @@ class UserFieldTable extends Entity\DataManager
 		);
 	}
 
+	/**
+	 * @param array $data
+	 *
+	 * @return Entity\AddResult|void
+	 * @throws NotImplementedException
+	 */
 	public static function add(array $data)
 	{
 		throw new NotImplementedException('Use \CUserTypeEntity API instead.');
 	}
 
+	/**
+	 * @param mixed $primary
+	 * @param array $data
+	 *
+	 * @return Entity\UpdateResult|void
+	 * @throws NotImplementedException
+	 */
 	public static function update($primary, array $data)
 	{
 		throw new NotImplementedException('Use \CUserTypeEntity API instead.');
 	}
 
+	/**
+	 * @param mixed $primary
+	 *
+	 * @return Entity\DeleteResult|void
+	 * @throws NotImplementedException
+	 */
 	public static function delete($primary)
 	{
 		throw new NotImplementedException('Use \CUserTypeEntity API instead.');
 	}
 
+	/**
+	 * @param Entity\Base $entity
+	 * @param             $ufId
+	 *
+	 * @throws ArgumentException
+	 */
 	public static function attachFields(Entity\Base $entity, $ufId)
 	{
 		global $USER_FIELD_MANAGER;
@@ -157,6 +182,7 @@ class UserFieldTable extends Entity\DataManager
 			{
 				foreach ($utsFields as $utsField)
 				{
+					/** @var Entity\ScalarField $utsEntityField */
 					$utsEntityField = $utsEntity->getField($utsField['FIELD_NAME']);
 
 					foreach ($USER_FIELD_MANAGER->getEntityReferences($utsField, $utsEntityField) as $reference)
@@ -199,6 +225,14 @@ class UserFieldTable extends Entity\DataManager
 		}
 	}
 
+	/**
+	 * @param Entity\Base $srcEntity
+	 * @param array       $utsFields
+	 * @param array       $utmFields
+	 *
+	 * @return Entity\Base
+	 * @throws ArgumentException
+	 */
 	protected static function createUtsEntity(Entity\Base $srcEntity, array $utsFields, array $utmFields)
 	{
 		global $USER_FIELD_MANAGER;
@@ -259,7 +293,7 @@ class UserFieldTable extends Entity\DataManager
 
 		foreach ($utmFields as $utmField)
 		{
-			// add seriazed utm cache-fields
+			// add serialized utm cache-fields
 			$cacheField = new Entity\TextField($utmField['FIELD_NAME']);
 			static::setMultipleFieldSerialization($cacheField, $utmField);
 			$entity->addField($cacheField);
@@ -271,6 +305,8 @@ class UserFieldTable extends Entity\DataManager
 	/**
 	 * @param Entity\Field       $entityField
 	 * @param Entity\Field|array $fieldAsType
+	 *
+	 * @throws ArgumentException
 	 */
 	public static function setMultipleFieldSerialization(Entity\Field $entityField, $fieldAsType)
 	{
@@ -327,6 +363,13 @@ class UserFieldTable extends Entity\DataManager
 		return 'b_uts_'.strtolower($srcEntity->getUfId());
 	}
 
+	/**
+	 * @param Entity\Base $srcEntity
+	 * @param array       $utmFields
+	 *
+	 * @return Entity\Base
+	 * @throws ArgumentException
+	 */
 	protected static function createUtmEntity(Entity\Base $srcEntity, array $utmFields)
 	{
 		global $USER_FIELD_MANAGER;
@@ -476,6 +519,7 @@ class UserFieldTable extends Entity\DataManager
 	 * @param string $value
 	 *
 	 * @return array
+	 * @throws ObjectException
 	 */
 	public static function unserializeMultipleDatetime($value)
 	{
@@ -528,6 +572,7 @@ class UserFieldTable extends Entity\DataManager
 	 * @param string $value
 	 *
 	 * @return array
+	 * @throws ObjectException
 	 */
 	public static function unserializeMultipleDate($value)
 	{

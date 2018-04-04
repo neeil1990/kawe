@@ -158,6 +158,15 @@ abstract class CAllBitrixCloudOption
 	}
 	/**
 	 *
+	 * @return boolean
+	 *
+	 */
+	public function isExists()
+	{
+		return (count($this->_read_db()) > 0);
+	}
+	/**
+	 *
 	 * @return array[string]string
 	 *
 	 */

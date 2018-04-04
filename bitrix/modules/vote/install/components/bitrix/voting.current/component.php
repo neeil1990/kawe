@@ -82,7 +82,7 @@ elseif ($GLOBALS["VOTING_OK"] == "Y" && $GLOBALS["VOTING_ID"] == $arParams["VOTE
 	elseif (($token = substr($url, (strpos($url, "?") + 1))) && !empty($token) &&
 		preg_match_all("/(?<=^|\&)\w+(?=$|\=)/is", $token, $matches))
 	{
-		$var = array_merge($var, $matches);
+		$var = array_merge($var, $matches[0]);
 	}
 	$strNavQueryString = DeleteParam($var);
 	LocalRedirect($url."&VOTE_SUCCESSFULL=Y&VOTE_ID=".intval($_REQUEST["VOTE_ID"]).($strNavQueryString <> "" ? "&" : "").$strNavQueryString);

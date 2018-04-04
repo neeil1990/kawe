@@ -57,4 +57,5 @@ $MESS ['SI_ITEMS_ORD'] = "Заказанные позиции";
 $MESS ['SALE_INCLUDE_CURRENCY'] = "Модуль Интернет-магазин не может работать без модуля Валют.";
 $MESS ['SALE_FEATURE_NOT_ALLOW'] = "Данный функционал не входит в Вашу редакцию продукта.";
 $MESS ['SALE_PAYSYSTEM_CONVERT_ERROR'] = "Внимание, что-то пошло не так: платежные системы не перешли на новую версию. Для конвертации нажмите <a href='/bitrix/admin/sale_pay_system_convert.php?lang=#LANG#'>сюда</a>";
+$MESS ['SI_AFFILIATE'] = "Аффилиат";
 ?>

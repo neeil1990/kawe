@@ -252,6 +252,11 @@
 		}
 		this.id = null;
 		this.jsCommentId = null;
+
+		// Lock the submit button when inserting an image.
+		BX.addCustomEvent(window, 'OnImageDataUriHandle', BX.delegate(this.showWait, this));
+		BX.addCustomEvent(window, 'OnImageDataUriCaughtUploaded', BX.delegate(this.closeWait, this));
+		BX.addCustomEvent(window, 'OnImageDataUriCaughtFailed', BX.delegate(this.closeWait, this));
 	};
 	window.FCForm.prototype = {
 		linkEntity : function(Ent) {

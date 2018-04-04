@@ -1,14 +1,28 @@
 .bx-calendar * {
 	box-sizing: content-box; 
-	-moz-box-sizing: content-box;
-	-webkit-box-sizing: content-box; 
 }
 
 span.date-interval-hellip { width:20px; display:inline-block; text-align:center;}
-img.calendar-icon {border:0px; width:19px; height:19px; vertical-align:top; margin:1px; margin-left:2px; cursor: pointer;}
-img.calendar-icon-hover {border:1px solid #AEB6C2; background-color:#DBE3F2; margin:0px; margin-left:1px}
 
-.bx-calendar {font-family:Arial, sans-serif; color:#000; width:200px;}
+img.calendar-icon {
+	vertical-align: top;
+	cursor: pointer;
+	width: 17px;
+	height: 18px;
+	margin: 0 0 0 1px;
+	box-sizing: content-box;
+	border: 1px solid transparent;
+	position: relative;
+}
+
+img.calendar-icon-hover {
+	margin: 0;
+	margin-left: 1px;
+	border: 1px solid #aeb6c2;
+	background-color: #dbe3f2
+}
+
+.bx-calendar {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color:#000; width:200px;}
 .bx-calendar-header {margin-top:-2px; padding-bottom:5px;}
 .bx-calendar-left-arrow,
 .bx-calendar-right-arrow {background:url("/bitrix/js/main/core/images/calendar-sprite.png") no-repeat; border-radius:4px; display:inline-block; font-size:1px; height:28px; vertical-align:top; width:19px;cursor:pointer;}
@@ -31,7 +45,7 @@ img.calendar-icon-hover {border:1px solid #AEB6C2; background-color:#DBE3F2; mar
 .bx-calendar-cell {display:inline-block; font-size:12px; line-height:15px; height:19px; margin:0 3px 0 2px; padding-top:4px; text-align:center; text-decoration:none; vertical-align:top; width:23px; cursor: pointer;}
 .bx-calendar-cell {line-height:16px\9}
 .bx-calendar-cell, .bx-calendar-cell:link, .bx-calendar-cell:active, .bx-calendar-cell:visited {color:#000; }
-.bx-calendar-cell:hover {background-color:#eeeeee; color:#000; text-decoration:none;}
+.bx-calendar-cell:hover {background-color:#eee; color:#000; text-decoration:none;}
 .bx-calendar-name-day {display:inline-block; color:#a9a9a9; font-size:10px; height:13px; margin:0 3px 0 2px; padding-top:0; text-align:center; vertical-align:top; width:23px;}
 .bx-calendar-range {border-bottom:1px solid #f3f2ed; margin:0 -5px 0 -7px; padding:1px 7px 1px 8px; position:relative; z-index:5;}
 .bx-calendar-weekend, .bx-calendar-weekend:link, .bx-calendar-weekend:active, .bx-calendar-weekend:visited {color:#d25050; }
@@ -39,7 +53,7 @@ img.calendar-icon-hover {border:1px solid #AEB6C2; background-color:#DBE3F2; mar
 .bx-calendar-date-hidden, .bx-calendar-date-hidden:link, .bx-calendar-date-hidden:active, .bx-calendar-date-hidden:visited {color:#ccc;}
 .bx-calendar-active {background-color:#dce3ea;}
 .bx-calendar-active:hover {background-color:#dce3ea;}
-.bx-calendar-name-day-wrap {background-color:#eeeeee; height:12px; line-height:12px; padding:1px 7px 0 8px; position:relative; margin:0 -5px 3px -7px; z-index:5;}
+.bx-calendar-name-day-wrap {background-color:#eee; height:12px; line-height:12px; padding:1px 7px 0 8px; position:relative; margin:0 -5px 3px -7px; z-index:5;}
 .bx-calendar-range-noline {border:none;}
 
 .bx-calendar-set-time-wrap {border-top:1px solid #f2f2f2; border-bottom:1px solid #f2f2f2; margin:-5px 3px 0 0; position:relative; text-decoration:none;}
@@ -88,8 +102,6 @@ img.calendar-icon-hover {border:1px solid #AEB6C2; background-color:#DBE3F2; mar
 .bx-calendar-form-input {
 	background:#fff;
 	border:1px solid #d1d1d1;
-	-moz-box-shadow:inset 1px 1px 0 #f7f7f7;
-	-webkit-box-shadow:inset 1px 1px 0 #f7f7f7;
 	box-shadow:inset 1px 1px 0 #f7f7f7;
 	display:inline-block;
 	height:21px;
@@ -103,15 +115,15 @@ img.calendar-icon-hover {border:1px solid #AEB6C2; background-color:#DBE3F2; mar
 
 .bx-calendar-form-separator {background:url("/bitrix/js/main/core/images/calendar-sprite.png") no-repeat 0 -246px; color:#aaa; display:inline-block; height:23px; font-size:14px; font-weight:bold; text-align:center; padding-top:7px; vertical-align:top; width:8px;}
 .bx-calendar-form-close {display:block; font-size:1px; right:-8px; top:0; height:35px; position:absolute; width:20px;}
-.bx-calendar-form-close i {background:url("/bitrix/js/main/core/images/calendar-sprite.png") no-repeat 4px -151px; display:block; height:15px; margin:10px 0 0 0; width:15px;}
+.bx-calendar-form-close i {background:url("/bitrix/js/main/core/images/calendar-sprite.png") no-repeat 4px -151px; display:block; height:15px; margin:10px 0 0; width:15px;}
 .bx-calendar-form-close:hover i {background-position:4px -169px; background-color:#e8e8e8;}
 
 .bx-calendar-AM-PM-block {cursor:pointer; display:inline-block; margin-left:-4px; vertical-align:top;}
-.bx-calendar-AM-PM-text {display:inline-block; color:#333; margin-top:11px; vertical-align:top; font-family:Arial, sans-serif; font-size:13px; line-height:15px; text-transform:uppercase;}
+.bx-calendar-AM-PM-text {display:inline-block; color:#333; margin-top:11px; vertical-align:top; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size:13px; line-height:15px; text-transform:uppercase;}
 .bx-calendar-AM-PM-block .bx-calendar-form-arrow-r {width:19px;}
 
-.bx-calendar-year-popup {font-family:arial, sans-serif; margin-top:-2px; padding-bottom:7px; width:45px;}
-.bx-calendar-month-popup {font-family:arial, sans-serif; margin-top:-2px; padding-bottom:7px; width:85px;}
+.bx-calendar-year-popup { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; margin-top:-2px; padding-bottom:7px; width:45px;}
+.bx-calendar-month-popup{ font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; margin-top:-2px; padding-bottom:7px; width:85px;}
 .bx-calendar-year-title,
 .bx-calendar-month-title {color:#000; font-size:16px; line-height:20px; padding-bottom:5px;}
 .bx-calendar-year-content,
@@ -120,8 +132,16 @@ img.calendar-icon-hover {border:1px solid #AEB6C2; background-color:#DBE3F2; mar
 .bx-calendar-month {display:block; border-radius:3px; cursor:pointer; margin:0 0 2px -5px; text-decoration:none!important; padding:2px 0 2px 4px;}
 .bx-calendar-month, .bx-calendar-month:link, .bx-calendar-month:active, .bx-calendar-month:visited, .bx-calendar-year-number, .bx-calendar-year-number:link, .bx-calendar-year-number:active, .bx-calendar-year-number:visited {color: #000}
 .bx-calendar-month:hover, .bx-calendar-year-number:hover {background-color:#ededed; text-decoration:none;}
-.bx-calendar-month-active, .bx-calendar-month-active:link, .bx-calendar-month-active:active, .bx-calendar-month-active:visited {color:#ca0707;}
-.bx-calendar-year-active, .bx-calendar-year-active:link, .bx-calendar-year-active:active, .bx-calendar-year-active:visited {color:#ca0707;}
+
+.bx-calendar-month-active,
+.bx-calendar-month-active:link,
+.bx-calendar-month-active:active,
+.bx-calendar-month-active:visited,
+.bx-calendar-year-active,
+.bx-calendar-year-active:link,
+.bx-calendar-year-active:active,
+.bx-calendar-year-active:visited { color: #ca0707; }
+
 .bx-calendar-year-input,
 .bx-calendar-month-input {
 	background:#fff;

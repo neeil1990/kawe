@@ -98,7 +98,7 @@ class Operator
 		return "{$columnSql} LIKE {$valueSql}";
 	}
 
-	public static function exists($columnSql, $valueSql)
+	public static function exists(/** @noinspection PhpUnusedParameterInspection */ $columnSql, $valueSql)
 	{
 		return "EXISTS ({$valueSql})";
 	}

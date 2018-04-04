@@ -228,8 +228,16 @@ if (
 			if (isset($_POST['COUPON']))
 			{
 				$couponsFields['TYPE'] = (isset($_POST['COUPON']['TYPE']) ? (int)$_POST['COUPON']['TYPE'] : 0);
-				$couponsFields['ACTIVE_FROM'] = (!empty($_POST['COUPON']['ACTIVE_FROM']) ? new Main\Type\DateTime($_POST['COUPON']['ACTIVE_FROM']) : null);
-				$couponsFields['ACTIVE_TO'] = (!empty($_POST['COUPON']['ACTIVE_TO']) ? new Main\Type\DateTime($_POST['COUPON']['ACTIVE_TO']) : null);
+				$couponsFields['ACTIVE_FROM'] = (
+					!empty($_POST['COUPON']['ACTIVE_FROM'])
+					? Main\Type\DateTime::createFromUserTime($_POST['COUPON']['ACTIVE_FROM'])
+					: null
+				);
+				$couponsFields['ACTIVE_TO'] = (
+					!empty($_POST['COUPON']['ACTIVE_TO'])
+					? Main\Type\DateTime::createFromUserTime($_POST['COUPON']['ACTIVE_TO'])
+					: null
+				);
 				$couponsFields['MAX_USE'] = (isset($_POST['COUPON']['MAX_USE']) ? (int)$_POST['COUPON']['MAX_USE'] : 0);
 			}
 			$couponsResult = Internals\DiscountCouponTable::checkPacket($couponsFields, ($discountID <= 0));
@@ -565,16 +573,12 @@ $control->BeginNextFormTab();
 	$control->BeginCustomField("ACTIONS", GetMessage('BT_SALE_DISCOUNT_EDIT_FIELDS_APP').":",false);
 	?><tr id="ACTIONS">
 		<td valign="top" colspan="2"><div id="tree_actions" style="position: relative; z-index: 1;"></div><?
-			if (!is_array($arDiscount['APPICATIONS']))
+			if (!is_array($arDiscount['ACTIONS']))
 			{
-				if (CheckSerializedData($arDiscount['APPICATIONS']))
-				{
-					$arDiscount['APPICATIONS'] = unserialize($arDiscount['APPICATIONS']);
-				}
+				if (CheckSerializedData($arDiscount['ACTIONS']))
+					$arDiscount['ACTIONS'] = unserialize($arDiscount['ACTIONS']);
 				else
-				{
-					$arDiscount['APPICATIONS'] = '';
-				}
+					$arDiscount['ACTIONS'] = '';
 			}
 			$arCondParams = array(
 				'FORM_NAME' => 'sale_discount_form',
@@ -617,13 +621,9 @@ $control->BeginNextFormTab();
 			if (!is_array($arDiscount['CONDITIONS']))
 			{
 				if (CheckSerializedData($arDiscount['CONDITIONS']))
-				{
 					$arDiscount['CONDITIONS'] = unserialize($arDiscount['CONDITIONS']);
-				}
 				else
-				{
 					$arDiscount['CONDITIONS'] = '';
-				}
 			}
 			$arCondParams = array(
 				'FORM_NAME' => 'sale_discount_form',

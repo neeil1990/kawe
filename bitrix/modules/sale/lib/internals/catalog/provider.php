@@ -22,6 +22,8 @@ final class Provider
 	const SALE_TRANSFER_PROVIDER_SHIPMENT_NEED_NOT_SHIP = false;
 	const SALE_TRANSFER_PROVIDER_SHIPMENT_NEED_EMPTY = null;
 
+	private static $ignoreErrors = false;
+
 
 	/**
 	 * @param $basketList
@@ -264,7 +266,6 @@ final class Provider
 		$r = $creator->getAvailableQuantityAndPrice();
 		if ($r->isSuccess())
 		{
-			$providerName = null;
 			$providerName = $basketItem->getProviderName();
 
 			if (strval($providerName) == '')
@@ -802,21 +803,56 @@ final class Provider
 
 		$tryShipProductList = array();
 
+		$isIgnoreErrors = false;
+
 		$r = $creator->tryShip();
+
+		$needSetAfterResult = false;
 		if ($r->isSuccess())
 		{
-			$data = $r->getData();
-			if (array_key_exists('TRY_SHIP_PRODUCTS_LIST', $data))
+			if ($r->hasWarnings())
 			{
-				$tryShipProductList = $data['TRY_SHIP_PRODUCTS_LIST'] + $tryShipProductList;
-
-				$creator->setItemsResultAfterTryShip($pool, $tryShipProductList);
-
+				$result->addWarnings($r->getWarnings());
+			}
+			else
+			{
+				$needSetAfterResult = true;
 			}
 		}
 		else
 		{
-			$result->addErrors($r->getErrors());
+			$result->addWarnings($r->getErrors());
+
+			if (static::isIgnoreErrors())
+			{
+				$isIgnoreErrors = true;
+				$needSetAfterResult = true;
+			}
+			else
+			{
+				$result->addErrors($r->getErrors());
+			}
+
+		}
+
+		$data = $r->getData();
+		if (array_key_exists('TRY_SHIP_PRODUCTS_LIST', $data))
+		{
+			$tryShipProductList = $data['TRY_SHIP_PRODUCTS_LIST'] + $tryShipProductList;
+		}
+
+		if ($needSetAfterResult && !empty($tryShipProductList))
+		{
+
+			if ($isIgnoreErrors)
+			{
+				foreach ($tryShipProductList as $providerName => &$productList)
+				{
+					$productList = array_fill_keys(array_keys($productList), true);
+				}
+			}
+
+			$creator->setItemsResultAfterTryShip($pool, $tryShipProductList);
 		}
 
 		return $result;
@@ -1083,6 +1119,11 @@ final class Provider
 			$result->addErrors($r->getErrors());
 		}
 
+		if ($r->hasWarnings())
+		{
+			$result->addWarnings($r->getWarnings());
+		}
+
 		$pool->reset(PoolQuantity::POOL_QUANTITY_TYPE);
 		$pool->reset(PoolQuantity::POOL_RESERVE_TYPE);
 
@@ -1301,6 +1342,24 @@ final class Provider
 		}
 
 		return trim($providerName);
+	}
+
+	/**
+	 * @internal
+	 * @param $value
+	 */
+	public static function setIgnoreErrors($value)
+	{
+		static::$ignoreErrors = ($value === true);
+	}
+
+	/**
+	 * @internal
+	 * @return bool
+	 */
+	public static function isIgnoreErrors()
+	{
+		return static::$ignoreErrors;
 	}
 
 }

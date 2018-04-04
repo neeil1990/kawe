@@ -109,33 +109,8 @@
 		init: function(containerId, arParams, userOptions, userOptionsActions, userOptionsHandlerUrl, panelActions, panelTypes, editorTypes, messageTypes)
 		{
 			this.baseUrl = window.location.pathname + window.location.search;
-			this.initArguments = [].slice.call(arguments);
 			this.container = BX(containerId);
 
-			var isSafari = BX.browser.IsSafari() && !BX.browser.IsChrome();
-			var resourcesIsLoaded = !!BX.Main.gridManager && BX.Main.gridManager.data.length > 0;
-
-			if (!isSafari && !resourcesIsLoaded && BX.Main.grid.isNeedResourcesReady(this.container))
-			{
-				BX.bind(this.container, 'animationend', BX.proxy(this._onResourcesReady, this));
-			}
-			else
-			{
-				this.initAfterResourcesReady.apply(this, this.initArguments);
-			}
-		},
-
-		_onResourcesReady: function(event)
-		{
-			if (event.animationName === 'main-grid-load')
-			{
-				this.initAfterResourcesReady.apply(this, this.initArguments);
-				BX.unbind(this.container, 'animationend', BX.proxy(this._onResourcesReady, this));
-			}
-		},
-
-		initAfterResourcesReady: function(containerId, arParams, userOptions, userOptionsActions, userOptionsHandlerUrl, panelActions, panelTypes, editorTypes, messageTypes)
-		{
 			if (!BX.type.isNotEmptyString(containerId))
 			{
 				throw 'BX.Main.grid.init: parameter containerId is empty';
@@ -574,43 +549,49 @@
 
 		adjustEmptyTable: function(rows)
 		{
-			function adjustEmptyBlockPosition(event) {
-				var target = event.currentTarget;
-				BX.Grid.Utils.requestAnimationFrame(function() {
-					BX.style(emptyBlock, 'transform', 'translate3d(' + BX.scrollLeft(target) + 'px, 0px, 0');
-				});
-			}
+			requestAnimationFrame(function() {
+				function adjustEmptyBlockPosition(event) {
+					var target = event.currentTarget;
+					BX.Grid.Utils.requestAnimationFrame(function() {
+						BX.style(emptyBlock, 'transform', 'translate3d(' + BX.scrollLeft(target) + 'px, 0px, 0');
+					});
+				}
 
-			if (!BX.hasClass(document.documentElement, 'bx-ie') &&
-				BX.type.isArray(rows) && rows.length === 1 &&
-				BX.hasClass(rows[0], this.settings.get('classEmptyRows')))
-			{
-				var gridRect = BX.pos(this.getContainer());
-				var scrollBottom = BX.scrollTop(window) + BX.height(window);
-				var diff = gridRect.bottom - scrollBottom;
-				var panelsHeight = BX.height(this.getPanels());
-				var emptyBlock = this.getEmptyBlock();
-				var containerWidth = BX.width(this.getContainer());
-
-				BX.width(emptyBlock, containerWidth);
-				BX.style(emptyBlock, 'transform', 'translate3d(' + BX.scrollLeft(this.getScrollContainer()) + 'px, 0px, 0');
-
-				BX.unbind(this.getScrollContainer(), 'scroll', adjustEmptyBlockPosition);
-				BX.bind(this.getScrollContainer(), 'scroll', adjustEmptyBlockPosition);
-
-				if (diff > 0)
+				if (!BX.hasClass(document.documentElement, 'bx-ie') &&
+					BX.type.isArray(rows) && rows.length === 1 &&
+					BX.hasClass(rows[0], this.settings.get('classEmptyRows')))
 				{
-					BX.style(this.getTable(), 'min-height', (gridRect.height - diff - panelsHeight) + 'px');
+					var gridRect = BX.pos(this.getContainer());
+					var scrollBottom = BX.scrollTop(window) + BX.height(window);
+					var diff = gridRect.bottom - scrollBottom;
+					var panelsHeight = BX.height(this.getPanels());
+					var emptyBlock = this.getEmptyBlock();
+					var containerWidth = BX.width(this.getContainer());
+
+					if (containerWidth)
+					{
+						BX.width(emptyBlock, containerWidth);
+					}
+
+					BX.style(emptyBlock, 'transform', 'translate3d(' + BX.scrollLeft(this.getScrollContainer()) + 'px, 0px, 0');
+
+					BX.unbind(this.getScrollContainer(), 'scroll', adjustEmptyBlockPosition);
+					BX.bind(this.getScrollContainer(), 'scroll', adjustEmptyBlockPosition);
+
+					if (diff > 0)
+					{
+						BX.style(this.getTable(), 'min-height', (gridRect.height - diff - panelsHeight) + 'px');
+					}
+					else
+					{
+						BX.style(this.getTable(), 'min-height', (gridRect.height + Math.abs(diff) - panelsHeight) + 'px');
+					}
 				}
 				else
 				{
-					BX.style(this.getTable(), 'min-height', (gridRect.height + Math.abs(diff) - panelsHeight) + 'px');
+					BX.style(this.getTable(), 'min-height', '');
 				}
-			}
-			else
-			{
-				BX.style(this.getTable(), 'min-height', '');
-			}
+			}.bind(this));
 		},
 
 		reloadTable: function(method, data, callback, url)
@@ -1170,7 +1151,15 @@
 						{
 							rows = [];
 
-							this.currentIndex = row.getIndex();
+							this.currentIndex = 0;
+
+							this.getRows().getRows().forEach(function(currentRow, index) {
+								if (currentRow === row)
+								{
+									this.currentIndex = index;
+								}
+							}, this);
+
 							this.lastIndex = this.lastIndex || this.currentIndex;
 
 							if (!event.shiftKey)
@@ -1193,7 +1182,7 @@
 
 								while (min <= max)
 								{
-									rows.push(this.getRows().getByIndex(min));
+									rows.push(this.getRows().getRows()[min]);
 									min++;
 								}
 

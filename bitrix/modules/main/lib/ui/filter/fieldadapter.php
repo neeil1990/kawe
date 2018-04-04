@@ -151,6 +151,10 @@ class FieldAdapter
 
 				break;
 
+			case "custom_date" :
+				$field = Field::customDate($sourceField);
+				break;
+
 			default :
 				$field = Field::string(
 					$sourceField["id"],
@@ -159,6 +163,11 @@ class FieldAdapter
 					$sourceField["placeholder"]
 				);
 				break;
+		}
+
+		if (!empty($sourceField["html"]))
+		{
+			$field["HTML"] = $sourceField["html"];
 		}
 
 		return $field;

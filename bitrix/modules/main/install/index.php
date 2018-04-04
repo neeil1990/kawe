@@ -82,17 +82,13 @@ class main extends CModule
 
 		if (strtolower($DB->type) == 'mysql')
 		{
-			if($DB->Query("CREATE fulltext index IXF_B_USER_INDEX_1 on b_user_index (SEARCH_USER_CONTENT)", true))
+			$errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/install/".$DBType."/install_ft.sql");
+			if ($errors === false)
 			{
-				\Bitrix\Main\UserTable::getEntity()->enableFullTextIndex("SEARCH_USER_CONTENT");
-			}
-			if($DB->Query("CREATE fulltext index IXF_B_USER_INDEX_2 on b_user_index (SEARCH_DEPARTMENT_CONTENT)", true))
-			{
-				\Bitrix\Main\UserTable::getEntity()->enableFullTextIndex("SEARCH_DEPARTMENT_CONTENT");
-			}
-			if($DB->Query("CREATE fulltext index IXF_B_USER_INDEX_3 on b_user_index (SEARCH_ADMIN_CONTENT)", true))
-			{
-				\Bitrix\Main\UserTable::getEntity()->enableFullTextIndex("SEARCH_ADMIN_CONTENT");
+				$entity = \Bitrix\Main\UserTable::getEntity();
+				$entity->enableFullTextIndex("SEARCH_USER_CONTENT");
+				$entity->enableFullTextIndex("SEARCH_DEPARTMENT_CONTENT");
+				$entity->enableFullTextIndex("SEARCH_ADMIN_CONTENT");
 			}
 		}
 
@@ -425,6 +421,7 @@ class main extends CModule
 		$eventManager->registerEventHandler("sale", "OnSaleBasketItemSaved", "main", "\\Bitrix\\Main\\Analytics\\Catalog", "catchCatalogBasket");
 		$eventManager->registerEventHandler("sale", "OnSaleOrderSaved", "main", "\\Bitrix\\Main\\Analytics\\Catalog", "catchCatalogOrder");
 		$eventManager->registerEventHandler("sale", "OnSaleOrderPaid", "main", "\\Bitrix\\Main\\Analytics\\Catalog", "catchCatalogOrderPayment");
+		$eventManager->registerEventHandlerCompatible("sale", "onBuildDiscountConditionInterfaceControls", "main", "\\Bitrix\\Main\\Discount\\UserConditionControl", "onBuildDiscountConditionInterfaceControls", 1000);
 
 		self::InstallDesktop();
 

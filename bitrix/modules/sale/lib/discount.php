@@ -2720,11 +2720,28 @@ class Discount
 		if (!array_key_exists($executeKey, $discountLink))
 		{
 			$checkOrder = null;
-			eval('$checkOrder='.$discountLink[$key].';');
+
+			$evalCode = '$checkOrder='.$discountLink[$key].';';
+			if (version_compare(PHP_VERSION, '7.0.0', '>='))
+			{
+				try
+				{
+					eval($evalCode);
+				}
+				catch (\ParseError $e)
+				{
+					$this->showAdminError();
+				}
+			}
+			else
+			{
+				eval($evalCode);
+			}
+			unset($evalCode);
+
 			if (!is_callable($checkOrder))
 				return false;
 			$result = $checkOrder($this->orderData);
-			//$discountLink[$executeKey] = $checkOrder;
 			unset($checkOrder);
 		}
 		else
@@ -2768,12 +2785,27 @@ class Discount
 
 		if (!empty($discount['APPLICATION']))
 		{
-			$updateApplicationExecute = false;
 			if (!array_key_exists('APPLICATION_EXECUTE', $discount))
 			{
 				$discount['APPLICATION_EXECUTE'] = null;
-				eval('$discount["APPLICATION_EXECUTE"]='.$discount['APPLICATION'].';');
-				$updateApplicationExecute = true;
+
+				$evalCode = '$discount["APPLICATION_EXECUTE"]='.$discount['APPLICATION'].';';
+				if (version_compare(PHP_VERSION, '7.0.0', '>='))
+				{
+					try
+					{
+						eval($evalCode);
+					}
+					catch (\ParseError $e)
+					{
+						$this->showAdminError();
+					}
+				}
+				else
+				{
+					eval($evalCode);
+				}
+				unset($evalCode);
 			}
 			if (is_callable($discount['APPLICATION_EXECUTE']))
 			{
@@ -5109,6 +5141,7 @@ class Discount
 
 			if (!empty($currentList))
 			{
+				$evalCode = '';
 				foreach (array_keys($currentList) as $index)
 				{
 					$discount = $currentList[$index];
@@ -5122,8 +5155,40 @@ class Discount
 					{
 						$currentList[$index]['MODULES'] = $this->cacheDiscountModules[$code];
 					}
+					if (!$this->enableCheckingPrediction)
+					{
+						if ($discount['UNPACK'] !== null)
+							$evalCode .= '$currentList['.$index.'][\'UNPACK_EXECUTE\'] = '.$discount['UNPACK'].";\n";
+					}
+					else
+					{
+						if ($discount['PREDICTIONS_APP'] !== null && $discount['PREDICTIONS_APP'] !== '')
+							$evalCode .= '$currentList['.$index.'][\'PREDICTIONS_APP_EXECUTE\'] = '.$discount['PREDICTIONS_APP'].";\n";
+					}
+					if ($discount['APPLICATION'] !== null)
+						$evalCode .= '$currentList['.$index.'][\'APPLICATION_EXECUTE\'] = '.$discount['APPLICATION'].";\n";
 				}
 				unset($code, $discount, $index);
+
+				if ($evalCode !== '')
+				{
+					if (version_compare(PHP_VERSION, '7.0.0', '>='))
+					{
+						try
+						{
+							eval($evalCode);
+						}
+						catch (\ParseError $e)
+						{
+							$this->showAdminError();
+						}
+					}
+					else
+					{
+						eval($evalCode);
+					}
+				}
+				unset($evalCode);
 			}
 
 			$this->saleDiscountCache[$this->saleDiscountCacheKey] = $currentList;
@@ -5837,5 +5902,51 @@ class Discount
 		}
 
 		return $result;
+	}
+
+	private function showAdminError()
+	{
+		$iterator = \CAdminNotify::GetList(
+			array(),
+			array('MODULE_ID' => 'sale', 'TAG' => self::ERROR_ID)
+		);
+		$notify = $iterator->Fetch();
+		unset($iterator);
+		if (empty($notify))
+		{
+			$defaultLang = '';
+			$messages = array();
+			$languages = Main\Localization\LanguageTable::getList(array(
+				'select' => array('ID', 'DEF'),
+				'filter' => array('=ACTIVE' => 'Y')
+			));
+			while ($row = $languages->fetch())
+			{
+				if ($row['DEF'] == 'Y')
+					$defaultLang = $row['ID'];
+				$languageId = $row['ID'];
+				Main\Localization\Loc::loadLanguageFile(
+					__FILE__,
+					$languageId
+				);
+				$messages[$languageId] = Main\Localization\Loc::getMessage(
+					'BX_SALE_DISCOUNT_ERR_PARSE_ERROR',
+					array('#LINK#' => '/bitrix/admin/settings.php?lang='.$languageId.'&mid=sale'),
+					$languageId
+				);
+			}
+			unset($row, $languages);
+
+			\CAdminNotify::Add(array(
+				'MODULE_ID' => 'sale',
+				'TAG' => self::ERROR_ID,
+				'ENABLE_CLOSE' => 'N',
+				'NOTIFY_TYPE' => \CAdminNotify::TYPE_ERROR,
+				'MESSAGE' => $messages[$defaultLang],
+				'LANG' => $messages
+			));
+			unset($messages, $defaultLang);
+		}
+		unset($notify);
 	}
 }

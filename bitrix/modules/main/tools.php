@@ -4213,7 +4213,10 @@ function bitrix_sess_sign()
 
 function check_bitrix_sessid($varname='sessid')
 {
-	return $_REQUEST[$varname] == bitrix_sessid();
+	return
+		$_REQUEST[$varname] === bitrix_sessid() ||
+		\Bitrix\Main\Context::getCurrent()->getRequest()->getHeader('X-Bitrix-Csrf-Token') === bitrix_sessid()
+	;
 }
 
 function bitrix_sessid_get($varname='sessid')
@@ -4570,7 +4573,7 @@ JS;
 	{
 		$ret = '';
 
-		$ext = preg_replace('/[^a-z0-9_\.]/i', '', $ext);
+		$ext = preg_replace('/[^a-z0-9_\.\-]/i', '', $ext);
 
 		if (!self::IsExtRegistered($ext))
 		{
@@ -4689,7 +4692,7 @@ JS;
 
 	public static function IsExtRegistered($ext)
 	{
-		$ext = preg_replace('/[^a-z0-9_\.]/i', '', $ext);
+		$ext = preg_replace('/[^a-z0-9_\.\-]/i', '', $ext);
 		return is_array(self::$arRegisteredExt[$ext]);
 	}
 
@@ -4910,9 +4913,14 @@ class CUtil
 							$res .= 'false';
 						break;
 					case "integer":
-					case "double":
 						if ($bExtType)
 							$res .= $value;
+						else
+							$res .= "'".$value."'";
+						break;
+					case "double":
+						if ($bExtType)
+							$res .= is_finite($value) ? $value : "Infinity";
 						else
 							$res .= "'".$value."'";
 						break;
@@ -4964,9 +4972,14 @@ class CUtil
 						$res .= 'false';
 					break;
 				case "integer":
-				case "double":
 					if ($bExtType)
 						$res .= $value;
+					else
+						$res .= "'".$value."'";
+					break;
+				case "double":
+					if ($bExtType)
+						$res .= is_finite($value) ? $value : "Infinity";
 					else
 						$res .= "'".$value."'";
 					break;
@@ -4986,9 +4999,13 @@ class CUtil
 			else
 				return 'false';
 		case "integer":
-		case "double":
 			if ($bExtType)
 				return $arData;
+			else
+				return "'".$arData."'";
+		case "double":
+			if ($bExtType)
+				return is_finite($arData) ? $arData : "Infinity";
 			else
 				return "'".$arData."'";
 		default:
@@ -6472,7 +6489,7 @@ function NormalizePhone($number, $minLength = 10)
 		$number = '00'.substr($number, 1);
 	}
 
-	$number = preg_replace("/[^0-9\#\*]/i", "", $number);
+	$number = preg_replace("/[^0-9\#\*,;]/i", "", $number);
 	if (strlen($number) >= 10)
 	{
 		if (substr($number, 0, 2) == '80' || substr($number, 0, 2) == '81' || substr($number, 0, 2) == '82')

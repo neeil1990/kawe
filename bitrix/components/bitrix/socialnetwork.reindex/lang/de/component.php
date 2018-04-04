@@ -1,0 +1,35 @@
+<?
+$MESS ['CC_BSR_BTN_CONTINUE'] = "Fortsetzen";
+$MESS ['CC_BSR_STEP_INIT'] = "Erster Schritt";
+$MESS ['CC_BSR_WARN_REINDEX'] = "Nachdem Sie die Konfiguration vorgenommen haben, vergessen Sie bitte nicht <a href=\"#href#\">die Site im Suchmodul zu indexieren</a>. ";
+$MESS ['CC_BSR_STEP_FINISH'] = "Letzter Schritt";
+$MESS ['CC_BSR_BTN_PAUSE'] = "Pause";
+$MESS ['CC_BSR_MESS_PROGRESS'] = "#cnt# Objekte wiederindexiert";
+$MESS ['CC_BSR_MESS_DONE'] = "Wiederindexierung abgeschlossen";
+$MESS ['CC_BSR_TITLE'] = "Indexierung des Sozialen Netzwerks.";
+$MESS ['CC_BSR_BTN_START'] = "Start";
+$MESS ['CC_BSR_WARN_FILES_FORUM'] = "Die Kommentare zu den Dateien werden  von dem Suchmodul nicht gecrawlt. Sie müssen die Indexierung auf der <a href=\"#href#\">Einstellungsseite des Forums</a> erlauben.";
+$MESS ['CC_BSR_WARN_PHOTO_FORUM'] = "Die Kommentare zu den Bildern werden  von dem Suchmodul nicht gecrawlt. Sie müssen die Indexierung auf der <a href=\"#href#\">Einstellungsseite des Forums</a> erlauben.";
+$MESS ['CC_BSR_WARN_TASK_FORUM'] = "Die Kommentare zur Aufgabe werden  von dem Suchmodul nicht gecrawlt. Sie müssen die Indexierung auf der <a href=\"#href#\">Einstellungsseite des Forums</a> erlauben.";
+$MESS ['CC_BSR_WARN_FORUM'] = "Die Foren des soziallen Netzwerks werden  von dem Suchmodul nicht gecrawlt. Sie müssen die Indexierung auf der <a href=\"#href#\">Einstellungsseite des Forums</a> erlauben.";
+$MESS ['CC_BSR_WARN_TASK_IBLOCK'] = "Der Informationsblock für Aufgaben wird von dem Suchmodul indexiert. Sie können die Indexierung verbieten auf der <a href=\"#href#\">Parameterseite des Informationsblocks</a>.";
+$MESS ['CC_BSR_WARN_CALENDAR_USER_IBLOCK'] = "Der Informationsblock für Benutzerkalender wird von dem Suchmodul indexiert. Sie können die Indexierung verbieten auf der <a href=\"#href#\">Parameterseite des Informationsblocks</a>.";
+$MESS ['CC_BSR_WARN_FILE_USER_IBLOCK'] = "Der Informationsblock für Benutzerdateien wird von dem Suchmodul indexiert. Sie können die Indexierung verbieten auf der <a href=\"#href#\">Parameterseite des Informationsblocks</a>.";
+$MESS ['CC_BSR_WARN_PHOTO_USER_IBLOCK'] = "Der Informationsblock für Bildergalerie des Benutzers wird von dem Suchmodul indexiert. Sie können die Indexierung verbieten auf der <a href=\"#href#\">Parameterseite des Informationsblocks</a>.";
+$MESS ['CC_BSR_WARN_CALENDAR_GROUP_IBLOCK'] = "Der Informationsblock für Arbeitsgruppenkalender wird von dem Suchmodul indexiert. Sie können die Indexierung verbieten auf der <a href=\"#href#\">Parameterseite des Informationsblocks</a>.";
+$MESS ['CC_BSR_WARN_FILE_GROUP_IBLOCK'] = "Der Informationsblock für Arbeitsgruppendateien wird von dem Suchmodul indexiert. Sie können die Indexierung verbieten auf der <a href=\"#href#\">Parameterseite des Informationsblocks</a>.";
+$MESS ['CC_BSR_WARN_PHOTO_GROUP_IBLOCK'] = "Der Informationsblock für Bildergalerie der Arbeitsgruppe wird von dem Suchmodul indexiert. Sie können die Indexierung verbieten auf der <a href=\"#href#\">Parameterseite des Informationsblocks</a>.";
+$MESS ['CC_BSR_STEP_USERS_BLOGS'] = "Benutzerblogs";
+$MESS ['CC_BSR_STEP_USERS_FILES'] = "Benutzerdateien";
+$MESS ['CC_BSR_STEP_USERS_FORUMS'] = "Benutzerforen";
+$MESS ['CC_BSR_STEP_USERS_PHOTOS'] = "Benutzerbildergalerien";
+$MESS ['CC_BSR_STEP_USERS_TASKS'] = "Benutzeraufgaben";
+$MESS ['CC_BSR_STEP_GROUPS_BLOGS'] = "Arbeitsgruppenblogs";
+$MESS ['CC_BSR_STEP_GROUPS_CALENDARS'] = "Kalender der Arbeitsguppe";
+$MESS ['CC_BSR_STEP_GROUPS_FILES'] = "Dateien der Arbeitsgruppe";
+$MESS ['CC_BSR_STEP_GROUPS_FORUMS'] = "Foren der Arbeitsgruppe";
+$MESS ['CC_BSR_STEP_GROUPS_PHOTOS'] = "Bildgalerien der Arbeitsgruppe";
+$MESS ['CC_BSR_STEP_GROUPS_TASKS'] = "Aufgaben der Arbeitsgruppe";
+$MESS ['CC_BSR_STEP_GROUPS'] = "Arbeitsguppen";
+$MESS ['CC_BSR_WRONG_RIGHTS'] = "Sie haben nicht genpgeng Rechte um die Indexierung des Sozialen Netzweks auszuführen.";
+?>

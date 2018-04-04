@@ -940,20 +940,22 @@ if ($_REQUEST['GET_CONTENT'] == 'Y')
 else if ($_REQUEST['DOWNLOAD'] == 'Y')
 	$dest = 'D';
 
-return $pdf->Output(
-	sprintf(
-		'Invoice # %s (Issue Date %s).pdf',
-		str_replace(
-			array(
-				chr(0), chr(1), chr(2), chr(3), chr(4), chr(5), chr(6), chr(7), chr(8), chr(9), chr(10), chr(11),
-				chr(12), chr(13), chr(14), chr(15), chr(16), chr(17), chr(18), chr(19), chr(20), chr(21), chr(22),
-				chr(23), chr(24), chr(25), chr(26), chr(27), chr(28), chr(29), chr(30), chr(31),
-				'"', '*', '/', ':', '<', '>', '?', '\\', '|'
-			),
-			'_',
-			strval($params["ACCOUNT_NUMBER"])
+$fileName = sprintf(
+	'Invoice # %s (Issue Date %s).pdf',
+	str_replace(
+		array(
+			chr(0), chr(1), chr(2), chr(3), chr(4), chr(5), chr(6), chr(7), chr(8), chr(9), chr(10), chr(11),
+			chr(12), chr(13), chr(14), chr(15), chr(16), chr(17), chr(18), chr(19), chr(20), chr(21), chr(22),
+			chr(23), chr(24), chr(25), chr(26), chr(27), chr(28), chr(29), chr(30), chr(31),
+			'"', '*', '/', ':', '<', '>', '?', '\\', '|'
 		),
-		ConvertDateTime($params["DATE_BILL"], 'YYYY-MM-DD')
-	), $dest
+		'_',
+		strval($params["ACCOUNT_NUMBER"])
+	),
+	ConvertDateTime($params["DATE_BILL"], 'YYYY-MM-DD')
 );
+
+$trFileName = CUtil::translit($fileName, 'br', array('max_len' => 1024, 'safe_chars' => '.', 'replace_space' => '-'));
+
+return $pdf->Output($trFileName, $dest, $fileName);
 ?>

@@ -1159,7 +1159,7 @@ abstract class ElementList extends Base
 
 		if (empty($params['PRODUCT_BLOCKS_ORDER']))
 		{
-			$params['PRODUCT_BLOCKS_ORDER'] = 'price,props,sku,quantity,buttons';
+			$params['PRODUCT_BLOCKS_ORDER'] = 'price,props,sku,quantityLimit,quantity,buttons';
 		}
 
 		if (is_string($params['PRODUCT_BLOCKS_ORDER']))

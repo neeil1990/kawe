@@ -34,6 +34,7 @@ class ProviderBuilderCompatibility extends ProviderBuilderBase
 			'IS_BUNDLE_PARENT' => false,
 			'IS_BUNDLE_CHILD' => false,
 			'IS_NEW' => ($basketItem->getId() == 0),
+			'SUBSCRIBE' => ($basketItem->getField('SUBSCRIBE') == 'Y'),
 		);
 
 		if ($basketItem instanceof Sale\BasketItem)
@@ -138,16 +139,6 @@ class ProviderBuilderCompatibility extends ProviderBuilderBase
 	 * @return Sale\Result
 	 */
 	public function setItemsResultAfterTryShip(PoolQuantity $pool, array $productTryShipList)
-	{
-		return new Sale\Result();
-	}
-
-	/**
-	 * @param Sale\Result $resultAfterDeliver
-	 *
-	 * @return Sale\Result
-	 */
-	public function createItemsResultAfterDeliver(Sale\Result $resultAfterDeliver)
 	{
 		return new Sale\Result();
 	}

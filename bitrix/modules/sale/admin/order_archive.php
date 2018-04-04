@@ -1004,7 +1004,7 @@ $oFilter->Begin();
 		</td>
 	</tr>
 	<tr>
-		<td valign="top"><?echo Loc::getMessage("SALE_F_STATUS")?>:<br /><img src="/bitrix/images/sale/mouse.gif" width="44" height="21" border="0" alt=""></td>
+		<td valign="top"><?echo Loc::getMessage("SALE_F_STATUS")?>:</td>
 		<td valign="top">
 			<select name="filter_status[]" multiple size="3">
 				<?

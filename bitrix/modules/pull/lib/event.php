@@ -5,6 +5,8 @@ use Bitrix\Main\Localization\Loc;
 
 class Event
 {
+	const SHARED_CHANNEL = 0;
+
 	private static $messages = array();
 	private static $push = array();
 	private static $error = false;
@@ -323,13 +325,52 @@ class Event
 
 	public static function send()
 	{
+		$hitCount = 0;
+		$channelCount = 0;
+		$messagesCount = count(self::$messages);
+		$messagesBytes = 0;
+		$logs = Array();
+
 		foreach (self::$messages as $eventCode => $event)
 		{
+			if (\Bitrix\Pull\Log::isEnabled())
+			{
+				// TODO change code after release - $parameters['hasCallback']
+				$currentHits = ceil(count($event['channels'])/\CPullOptions::GetCommandPerHit());
+				$hitCount += $currentHits;
+
+				$currentChannelCount = count($event['channels']);
+				$channelCount += $currentChannelCount;
+
+				$currentMessagesBytes = self::getBytes($event['event'])+self::getBytes($event['channels']);
+				$messagesBytes += $currentMessagesBytes;
+				$logs[] = 'Command: '.$event['event']['module_id'].'/'.$event['event']['command'].'; Hits: '.$currentHits.'; Channel: '.$currentChannelCount.'; Bytes: '.$currentMessagesBytes.'';
+			}
+
 			$result = self::executeEvent($event);
 			if (!is_null($result))
 			{
 				unset(self::$messages[$eventCode]);
 			}
+		}
+
+		if ($logs && \Bitrix\Pull\Log::isEnabled())
+		{
+			if (count($logs) > 1)
+			{
+				$logs[] = 'Total - Hits: '.$hitCount.'; Channel: '.$channelCount.'; Messages: '.$messagesCount.'; Bytes: '.$messagesBytes.'';
+			}
+
+			if (count($logs) > 1 || $hitCount > 1 || $channelCount > 1 || $messagesBytes > 1000)
+			{
+				$logTitle = '!! Pull messages stats - important !!';
+			}
+			else
+			{
+				$logTitle = '-- Pull messages stats --';
+			}
+
+			\Bitrix\Pull\Log::write(implode("\n", $logs), $logTitle);
 		}
 
 		foreach (self::$push as $pushCode => $event)
@@ -371,6 +412,11 @@ class Event
 		$result = Array();
 		foreach ($users as $userId)
 		{
+			if ($userId === 0 && $type == \CPullChannel::TYPE_PRIVATE)
+			{
+				$channelType = \CPullChannel::TYPE_SHARED;
+			}
+
 			$data = \CPullChannel::Get($userId, true, false, $type);
 			if ($data)
 			{
@@ -397,7 +443,7 @@ class Event
 		));
 		while ($row = $orm->fetch())
 		{
-			if ($row['USER_ACTIVE'] == 'N')
+			if ($row['USER_ID'] > 0 && $row['USER_ACTIVE'] == 'N')
 			{
 				continue;
 			}
@@ -582,16 +628,35 @@ class Event
 			}
 			else
 			{
-				$entity = intval($entity);
-				if ($entity > 0)
-				{
-					$result['users'][] = $entity;
-					$result['count']++;
-				}
+				$result['users'][] = intval($entity);
+				$result['count']++;
 			}
 		}
 
 		return $result['count'] > 0? $result: false;
+	}
+
+	private static function getBytes($variable)
+	{
+		$bytes = 0;
+
+		if (is_string($variable))
+		{
+			$bytes += strlen($variable);
+		}
+		else if (is_array($variable))
+		{
+			foreach ($variable as $value)
+			{
+				$bytes += self::getBytes($value);
+			}
+		}
+		else
+		{
+			$bytes += strlen((string)$variable);
+		}
+
+		return $bytes;
 	}
 
 	private static function isChannelEntity($entity)

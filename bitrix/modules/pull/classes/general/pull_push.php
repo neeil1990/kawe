@@ -545,7 +545,8 @@ class CPushManager
 
 			if (!\Bitrix\Pull\Push::getStatus($user['ID']))
 			{
-				$result[$user['ID']]['mode'] = self::SEND_SKIP;
+				$result[$user['ID']]['mode'] = self::RECORD_NOT_FOUND;
+				$result[$user['ID']]['device'] = Array();
 				continue;
 			}
 

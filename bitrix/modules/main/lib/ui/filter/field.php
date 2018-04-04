@@ -330,4 +330,92 @@ class Field
 
 		return $field;
 	}
+
+
+	public static function customDate($options = array())
+	{
+		$defaultValues = array(
+			"days" => array(),
+			"months" => array(),
+			"years" => array()
+		);
+
+		return array(
+			"ID" => "field_".$options["id"],
+			"TYPE" => Type::CUSTOM_DATE,
+			"NAME" => $options["id"],
+			"VALUE" => $defaultValues,
+			"LABEL" => $options["name"],
+			"DAYS" => static::getDaysList(),
+			"MONTHS" => static::getMonthsList(),
+			"YEARS" => static::getYearsList(),
+			"DAYS_PLACEHOLDER" => Loc::getMessage("MAIN_UI_FILTER_FIELD_DAYS"),
+			"MONTHS_PLACEHOLDER" => Loc::getMessage("MAIN_UI_FILTER_FIELD_MONTHS"),
+			"YEARS_PLACEHOLDER" => Loc::getMessage("MAIN_UI_FILTER_FIELD_YEARS")
+ 		);
+	}
+
+
+	/**
+	 * Gets months list
+	 * @return array
+	 */
+	protected static function getMonthsList()
+	{
+		$months = array();
+
+		foreach(range(1, 12) as $key => $month)
+		{
+			$months[] = array(
+				"VALUE" => $month,
+				"NAME" => (string) Loc::getMessage("MAIN_UI_FILTER_FIELD_MONTH_".$month)
+			);
+		}
+
+		return $months;
+	}
+
+
+	/**
+	 * Gets years list
+	 * @return array
+	 * @throws \Bitrix\Main\ObjectException
+	 */
+	protected static function getYearsList()
+	{
+		$date = new Date();
+		$currentYear = (int) $date->format("Y");
+		$sourceYears = range(($currentYear+5), ($currentYear-20));
+		$years = array();
+
+		foreach ($sourceYears as $key => $year)
+		{
+			$years[] = array(
+				"NAME" => (string) $year,
+				"VALUE" => $year
+			);
+		}
+
+		return $years;
+	}
+
+
+	/**
+	 * Gets days list
+	 * @return array
+	 */
+	protected static function getDaysList()
+	{
+		$days = array();
+
+		foreach(range(1, 31) as $key => $day)
+		{
+			$days[] = array(
+				"VALUE" => $day,
+				"NAME" => (string) $day
+			);
+		}
+
+		return $days;
+	}
 }

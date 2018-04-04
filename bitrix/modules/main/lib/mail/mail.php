@@ -27,7 +27,8 @@ class Mail
 	protected $settingMailEncodeBase64;
 
 	protected $eol;
-	protected $boundary;
+	protected $attachment;
+	protected $generateTextVersion;
 	protected $charset;
 	protected $contentType;
 	protected $messageId;
@@ -46,6 +47,8 @@ class Mail
 	protected $additionalParameters;
 	/** @var  Context */
 	protected $context;
+	/** @var  Multipart */
+	protected $multipart;
 
 	public function __construct(array $mailParams)
 	{
@@ -88,10 +91,16 @@ class Mail
 		$this->contentType = $mailParams['CONTENT_TYPE'];
 		$this->messageId = $mailParams['MESSAGE_ID'];
 		$this->eol = $this->getMailEol();
-		$this->boundary = "----------".uniqid("");
+
 		$this->attachment = (isset($mailParams['ATTACHMENT']) ? $mailParams['ATTACHMENT'] : array());
 
 		$this->initSettings();
+
+		if (isset($mailParams['GENERATE_TEXT_VERSION']))
+		{
+			$this->generateTextVersion = (bool) $mailParams['GENERATE_TEXT_VERSION'];
+		}
+		$this->multipart = (new Multipart())->setContentType(Multipart::MIXED);
 
 		$this->setTo($mailParams['TO']);
 		$this->setSubject($mailParams['SUBJECT']);
@@ -187,11 +196,13 @@ class Mail
 			$this->settingServerName = Config\Option::get("main", "server_name", "");
 		}
 
+		$this->generateTextVersion = Config\Option::get("main", "mail_gen_text_version", "Y") === 'Y';
+
 		$this->settingMaxFileSize = intval(Config\Option::get("main", "max_file_size"));
 
 		$this->settingMailAdditionalParameters = Config\Option::get("main", "mail_additional_parameters", "");
 
-		$this->bitrixDirectory = \Bitrix\Main\Application::getInstance()->getPersonalRoot();
+		$this->bitrixDirectory = Application::getInstance()->getPersonalRoot();
 	}
 
 	/**
@@ -204,82 +215,74 @@ class Mail
 
 
 	/**
+	 * Set body.
 	 * @param string $bodyPart
-	 * @param array $files
+	 * @return void
 	 */
 	public function setBody($bodyPart)
 	{
-		$eol = $this->eol;
 		$charset = $this->charset;
 		$messageId = $this->messageId;
 
-		$body = "";
-		$contentType = "text/plain";
+		$htmlPart = null;
+		$plainPart = new Part();
+		$plainPart->addHeader('Content-Type', 'text/plain; charset=' . $charset);
+
 		if($this->contentType == "html")
 		{
-			$contentType = "text/html";
 			$bodyPart = $this->replaceImages($bodyPart);
 			$bodyPart = $this->replaceHrefs($bodyPart);
 			$bodyPart = $this->trackRead($bodyPart);
-		}
 
-		if($this->settingMailAddMessageId && !empty($messageId))
-		{
-			$bodyPart .= ($this->contentType == "html" ? "<br><br>" : "\n\n" );
-			$bodyPart .= "MID #".$messageId."\r\n";
-		}
-
-		if($this->hasAttachment())
-		{
-			$body = "--" . $this->boundary . $eol;
-			$body .= "Content-Type: " . $contentType . "; charset=" . $charset . $eol;
-
-			// If it has attachment, message is multipart.
-			// By default for message part uses encoding of all mail.
-			$bodyPartCTE = $this->contentTransferEncoding;
-			if($this->settingMailEncodeBase64)
-			{
-				// Set base64 encoding of part
-				$bodyPartCTE = 'base64';
-			}
-			$body .= "Content-Transfer-Encoding: " . $bodyPartCTE . $eol . $eol;
-		}
-		elseif($this->settingMailEncodeBase64)
-		{
-			// Message is non multipart, change encoding of all mail.
-			$this->contentTransferEncoding = 'base64';
-		}
-
-		if($this->settingMailEncodeBase64)
-		{
-			// Line length is 70 chars. As a recommended in mail() php documentation.
-			$bodyPart = chunk_split(base64_encode($bodyPart), 70);
+			$htmlPart = new Part();
+			$htmlPart->addHeader('Content-Type', 'text/html; charset=' . $charset);
+			$htmlPart->setBody($bodyPart);
+			$plainPart->setBody($this->convertBodyHtmlToText($bodyPart));
 		}
 		else
 		{
-			//Some MTA has 4K limit for fgets function. So we have to split the message body.
-			$bodyPart = implode(
-				"\n",
-				array_filter(
-					preg_split("/(.{512}[^ ]*[ ])/", $bodyPart . " ", -1, PREG_SPLIT_DELIM_CAPTURE)
-				)
-			);
+			$bodyPart = $this->addMessageIdToBody($bodyPart, false, $messageId);
+			$plainPart->setBody($bodyPart);
 		}
 
-		$body .= $bodyPart;
-		$body = str_replace("\r\n", "\n", $body);
-		if($this->settingConvertNewLineUnixToWindows)
-			$body = str_replace("\n", "\r\n", $body);
+		$cteName = 'Content-Transfer-Encoding';
+		$cteValue = $this->settingMailEncodeBase64 ? 'base64' : $this->contentTransferEncoding;
+		$this->multipart->addHeader($cteName, $cteValue);
+		$plainPart->addHeader($cteName, $cteValue);
+		if ($htmlPart)
+		{
+			$htmlPart->addHeader($cteName, $cteValue);
+		}
 
-		$this->body = $body.$eol;
 
+		if ($htmlPart)
+		{
+			if ($this->generateTextVersion)
+			{
+				$alternative = (new Multipart())->setContentType(Multipart::ALTERNATIVE);
+				$alternative->addPart($plainPart);
+				$alternative->addPart($htmlPart);
+				$this->multipart->addPart($alternative);
+			}
+			else
+			{
+				$this->multipart->addPart($htmlPart);
+			}
+		}
+		else
+		{
+			$this->multipart->addPart($plainPart);
+		}
 
 		$this->setAttachment();
 
-		if($this->hasAttachment())
+		$body = $this->multipart->toStringBody();
+		$body = str_replace("\r\n", "\n", $body);
+		if($this->settingConvertNewLineUnixToWindows)
 		{
-			$this->body .= "--" . $this->boundary.'--'.$eol;
+			$body = str_replace("\n", "\r\n", $body);
 		}
+		$this->body = $body;
 	}
 
 	/**
@@ -297,14 +300,12 @@ class Mail
 	{
 		$files = $this->attachment;
 		if(is_array($this->filesReplacedFromBody))
+		{
 			$files = array_merge($files, array_values($this->filesReplacedFromBody));
+		}
 
 		if(count($files)>0)
 		{
-			$eol = $this->eol;
-			$charset = $this->charset;
-
-			$bodyPart = '';
 			foreach($files as $attachment)
 			{
 				try
@@ -316,19 +317,14 @@ class Mail
 					$fileContent = '';
 				}
 
-				$attachment_name = $this->encodeSubject($attachment["NAME"], $charset);
-				$bodyPart .= $eol."--".$this->boundary.$eol;
-				$bodyPart .= "Content-Type: ".$attachment["CONTENT_TYPE"]."; name=\"".$attachment_name."\"".$eol;
-				$bodyPart .= "Content-Transfer-Encoding: base64".$eol;
-				$bodyPart .= "Content-ID: <".$attachment["ID"].">".$eol.$eol;
-				$bodyPart .= chunk_split(
-					base64_encode(
-						$fileContent
-					), 72, $eol
-				);
+				$name = $this->encodeSubject($attachment["NAME"], $this->charset);
+				$part = (new Part())
+					->addHeader('Content-Type', $attachment['CONTENT_TYPE'] . "; name=\"$name\"")
+					->addHeader('Content-Transfer-Encoding', 'base64')
+					->addHeader('Content-ID', "<{$attachment['ID']}>")
+					->setBody($fileContent);
+				$this->multipart->addPart($part);
 			}
-
-			$this->body .= $bodyPart;
 		}
 	}
 
@@ -404,28 +400,16 @@ class Mail
 			$headers['X-MID'] = $this->messageId;
 		}
 
-		if($this->hasAttachment())
-		{
-			$headers['Content-Type'] = 'multipart/mixed; boundary="' . $this->boundary . '"';
-		}
-		else
-		{
-			$contentType = "text/plain";
-			if($this->contentType == "html")
-			{
-				$contentType = "text/html";
-			}
-			$headers['Content-Type'] = $contentType . "; charset=" . $this->charset;
-		}
 
-		$header = "";
+		$headerString = "";
 		foreach($headers as $k=>$v)
 		{
-			$header .= $k.': '.$v.$this->eol;
+			$headerString .= $k . ': ' . $v . $this->eol;
 		}
-		$header .= "Content-Transfer-Encoding: " . $this->contentTransferEncoding;
+		// Content-Transfer-Encoding & Content-Type add from Multipart
+		$headerString .= rtrim($this->multipart->toStringHeaders());
 
-		$this->headers = $header;
+		$this->headers = $headerString;
 	}
 
 	/**
@@ -699,7 +683,9 @@ class Mail
 	{
 		$src = $matches[3];
 		if($src == "")
+		{
 			return $matches[0];
+		}
 
 		$srcTrimmed = trim($src);
 		if(substr($srcTrimmed,0, 2) == "//")
@@ -712,7 +698,7 @@ class Mail
 			if(count($this->attachment)>0)
 			{
 				$io = \CBXVirtualIo::GetInstance();
-				$filePath = $io->GetPhysicalName(\Bitrix\Main\Application::getDocumentRoot().$srcTrimmed);
+				$filePath = $io->GetPhysicalName(Application::getDocumentRoot().$srcTrimmed);
 				foreach($this->attachment as $attach)
 				{
 					if($filePath == $attach['PATH'])
@@ -730,7 +716,13 @@ class Mail
 			}
 		}
 
-		return $matches[1].$matches[2].$src.$matches[4].$matches[5];
+		$add = '';
+		if (stripos($matches[0], '<img') === 0 && !preg_match("/<img[^>]*?\\s+alt\\s*=[^>]+>/is", $matches[0]))
+		{
+			$add = ' alt="" ';
+		}
+
+		return $matches[1] . $matches[2] . $src . $matches[4] . $add . $matches[5];
 	}
 
 	/**
@@ -776,25 +768,6 @@ class Mail
 	}
 
 	/**
-	 * @param $text
-	 * @return mixed
-	 */
-	public function replaceHrefs($text)
-	{
-		if($this->settingServerName != '')
-		{
-			$pcre_pattern = "/(<a\\s[^>]*?(?<=\\s)href\\s*=\\s*)([\"'])(\\/.*?|http:\\/\\/.*?|https:\\/\\/.*?)(\\2)(\\s.+?>|\\s*>)/is";
-			$text = preg_replace_callback(
-				$pcre_pattern,
-				array($this, 'trackClick'),
-				$text
-			);
-		}
-
-		return $text;
-	}
-
-	/**
 	 * @param $html
 	 * @return string
 	 */
@@ -814,6 +787,27 @@ class Mail
 		$html .= '<img src="' . $url . '" border="0" height="1" width="1" alt="" />';
 
 		return $html;
+	}
+
+	/**
+	 * Replace href attribute in links.
+	 *
+	 * @param string $text Text.
+	 * @return mixed
+	 */
+	public function replaceHrefs($text)
+	{
+		if($this->settingServerName != '')
+		{
+			$pcre_pattern = "/(<a\\s[^>]*?(?<=\\s)href\\s*=\\s*)([\"'])(\\/.*?|http:\\/\\/.*?|https:\\/\\/.*?)(\\2)(\\s.+?>|\\s*>)/is";
+			$text = preg_replace_callback(
+				$pcre_pattern,
+				array($this, 'trackClick'),
+				$text
+			);
+		}
+
+		return $text;
 	}
 
 	/**
@@ -889,5 +883,62 @@ class Mail
 			return $aTypes[$type];
 		else
 			return "application/octet-stream";
+	}
+
+	protected function addMessageIdToBody($body, $isHtml, $messageId)
+	{
+		if($this->settingMailAddMessageId && !empty($messageId))
+		{
+			$body .= $isHtml ? "<br><br>" : "\n\n";
+			$body .= "MID #" . $messageId . "\r\n";
+		}
+
+		return $body;
+	}
+
+	protected function convertBodyHtmlToText($body)
+	{
+		// get <body> inner html if exists
+		$innerBody = trim(preg_replace('/(.*?<body[^>]*>)(.*?)(<\/body>.*)/is', '$2', $body));
+		$body = $innerBody ?: $body;
+
+		// modify links to text version
+		$body = preg_replace_callback(
+			"/<a\\s[^>]*?href=['|\\\"](.*?)['|\\\"][^>]*?>([^>]*?)<\\/a>/i",
+			function ($matches)
+			{
+				$href = $matches[1];
+				$text = trim($matches[2]);
+				if (!$href)
+				{
+					return $matches[0];
+				}
+
+				return ($text ? "$text:" : '') ."\n$href\n";
+			},
+			$body
+		);
+
+		// change <br> to new line
+		$body = preg_replace('/\<br(\s*)?\/?\>/i', "\n", $body);
+
+		// remove tags
+		$body = strip_tags($body);
+
+		// format text to the left side
+		$lines = [];
+		foreach (explode("\n", trim($body)) as $line)
+		{
+			$lines[] = trim($line);
+		}
+
+		// remove redundant new lines
+		$body = preg_replace("/[\\n]{2,}/", "\n\n", implode("\n", $lines));
+
+		// remove redundant spaces
+		$body = preg_replace("/[ \\t]{2,}/", "  ", $body);
+
+		// decode html-entities
+		return html_entity_decode($body);
 	}
 }

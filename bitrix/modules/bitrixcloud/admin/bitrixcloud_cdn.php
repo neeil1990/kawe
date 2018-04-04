@@ -148,6 +148,7 @@ if ($bVarsFromForm)
 		);
 	$server_name = $_POST["server_name"];
 	$https = $_POST["https"]==="y";
+	$savedOnce = true;
 }
 else
 {
@@ -167,6 +168,7 @@ else
 	$sites = $cdn_config->getSites();
 	$server_name = $cdn_config->getDomain();
 	$https = $cdn_config->isHttpsEnabled();
+	$savedOnce = CBitrixCloudOption::getOption("cdn_config_active")->isExists();
 }
 ?>
 <form method="POST" action="bitrixcloud_cdn.php?lang=<?echo LANGUAGE_ID ?><?echo $_GET["return_url"] ? "&amp;return_url=".urlencode($_GET["return_url"]) : "" ?>" enctype="multipart/form-data" name="editform">
@@ -223,7 +225,7 @@ $tabControl->BeginNextTab();
 			<label for="site_admin"><?echo GetMessage("BCL_ADMIN_PANEL"); ?>:</label>
 		</td>
 		<td width="60%">
-			<input type="checkbox" id="site_admin" name="site[admin]" value="y" <?echo (empty($sites) || isset($sites["admin"])) ? 'checked="checked"' : '' ?>>
+			<input type="checkbox" id="site_admin" name="site[admin]" value="y" <?echo (!$savedOnce || isset($sites["admin"])) ? 'checked="checked"' : '' ?>>
 		</td>
 	</tr>
 <?
@@ -238,7 +240,7 @@ while ($arSite = $rsSites->Fetch())
 			<label for="site_<?echo htmlspecialcharsbx($arSite["LID"]); ?>"><?echo htmlspecialcharsEx($arSite["NAME"]." [".$arSite["LID"]."]"); ?>:</label>
 		</td>
 		<td>
-			<input type="checkbox" id="site_<?echo htmlspecialcharsbx($arSite["LID"]); ?>" name="site[<?echo htmlspecialcharsbx($arSite["LID"]); ?>]" value="y" <?echo (empty($sites) || isset($sites[$arSite["LID"]])) ? 'checked="checked"' : '' ?>>
+			<input type="checkbox" id="site_<?echo htmlspecialcharsbx($arSite["LID"]); ?>" name="site[<?echo htmlspecialcharsbx($arSite["LID"]); ?>]" value="y" <?echo (!$savedOnce || isset($sites[$arSite["LID"]])) ? 'checked="checked"' : '' ?>>
 		</td>
 	</tr>
 <?

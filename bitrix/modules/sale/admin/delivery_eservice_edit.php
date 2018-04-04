@@ -129,8 +129,10 @@ if($DELIVERY_ID > 0)
 
 	if($deliveryService && \Bitrix\Main\Loader::includeModule('currency'))
 	{
-		$curFormat = \CCurrencyLang::getCurrencyFormat($deliveryService->getCurrency());
-		$currencyLang = trim(str_replace("#", '', $curFormat["FORMAT_STRING"]));
+		$parsedCurrencyFormat = \CCurrencyLang::getParsedCurrencyFormat($deliveryService->getCurrency());
+		$key = array_search('#', $parsedCurrencyFormat);
+		$parsedCurrencyFormat[$key] = '';
+		$currencyLang = implode('', $parsedCurrencyFormat);
 	}
 	else
 	{

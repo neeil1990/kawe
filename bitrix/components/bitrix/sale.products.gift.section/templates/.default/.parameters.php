@@ -178,10 +178,9 @@ if (isset($arCurrentValues['IBLOCK_ID']) && intval($arCurrentValues['IBLOCK_ID']
 			'quantity' => GetMessage('CP_SPGS_TPL_PRODUCT_BLOCK_QUANTITY'),
 			'buttons' => GetMessage('CP_SPGS_TPL_PRODUCT_BLOCK_BUTTONS'),
 			'props' => GetMessage('CP_SPGS_TPL_PRODUCT_BLOCK_PROPS'),
-			'sku' => GetMessage('CP_SPGS_TPL_PRODUCT_BLOCK_SKU'),
-			'compare' => GetMessage('CP_SPGS_TPL_PRODUCT_BLOCK_COMPARE')
+			'sku' => GetMessage('CP_SPGS_TPL_PRODUCT_BLOCK_SKU')
 		)),
-		'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons,compare'
+		'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons'
 	);
 
 	if ($boolSKU)

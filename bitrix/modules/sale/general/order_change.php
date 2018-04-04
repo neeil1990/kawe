@@ -178,8 +178,16 @@ class CAllSaleOrderChange
 				$arRecord = CSaleOrderChange::MakeRecordFromField($key, $arNewFields, $entityName, $entity);
 				if ($arRecord)
 				{
-					$data = array_merge($data, $arRecord["DATA"]);
-					CSaleOrderChange::AddRecord($orderId, $arRecord["TYPE"], $data, $entityName, $entityId);
+					$result = $arRecord["DATA"];
+					foreach ($arRecord["DATA"] as $fieldKey => $fieldValue)
+					{
+						if (!isset($result['OLD_'.$fieldKey]) && isset($data['OLD_'.$fieldKey]))
+						{
+							$result['OLD_'.$fieldKey] = TruncateText($data['OLD_'.$key], 128);
+						}
+					}
+
+					CSaleOrderChange::AddRecord($orderId, $arRecord["TYPE"], $result, $entityName, $entityId);
 				}
 			}
 		}
@@ -373,7 +381,7 @@ class CSaleOrderChangeFormat
 		"ORDER_COMMENTED" => array(
 			"TRIGGER_FIELDS" => array("COMMENTS"),
 			"FUNCTION" => "FormatOrderCommented",
-			"DATA_FIELDS" => array("COMMENTS"),
+			"DATA_FIELDS" => array("COMMENTS", 'OLD_COMMENTS'),
 			"ENTITY" => 'ORDER',
 		),
 		"ORDER_STATUS_CHANGED" => array(
@@ -433,7 +441,7 @@ class CSaleOrderChangeFormat
 		"ORDER_USER_DESCRIPTION_CHANGED" => array(
 			"TRIGGER_FIELDS" => array("USER_DESCRIPTION"),
 			"FUNCTION" => "FormatOrderUserDescriptionChanged",
-			"DATA_FIELDS" => array("USER_DESCRIPTION"),
+			"DATA_FIELDS" => array("USER_DESCRIPTION", "OLD_USER_DESCRIPTION"),
 			"ENTITY" => 'ORDER',
 		),
 		"ORDER_PRICE_DELIVERY_CHANGED" => array(

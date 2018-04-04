@@ -99,6 +99,8 @@ class Push
 			return self::$config[$userId];
 		}
 
+		$pushDisabled = !\Bitrix\Pull\Push::getStatus($userId);
+
 		$userOptions = \CUserOptions::GetOption('im', 'notify', Array(), $userId);
 
 		$result = Array();
@@ -119,6 +121,12 @@ class Push
 		{
 			foreach ($module['NOTIFY'] as $notifyType => $notifyConfig)
 			{
+				if ($pushDisabled)
+				{
+					$result[$moduleId][$notifyType] = false;
+					continue;
+				}
+
 				if (!$notifyConfig['PUSH'] && $notifyConfig['DISABLED']['PUSH'])
 				{
 					continue;

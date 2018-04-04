@@ -646,7 +646,8 @@ class ShipmentItemCollection
 
 	/**
 	 * @param array $filter
-	 * @return \Bitrix\Main\DB\Result
+	 * @return Main\DB\Result
+	 * @throws Main\ArgumentException
 	 */
 	public static function getList(array $filter = array())
 	{

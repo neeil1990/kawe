@@ -79,6 +79,8 @@ class ExpressionField extends Field implements IReadable
 	 * @param string            $expression
 	 * @param array|string|null $buildFrom
 	 * @param array             $parameters
+	 *
+	 * @throws SystemException
 	 */
 	public function __construct($name, $expression, $buildFrom = null, $parameters = array())
 	{
@@ -108,6 +110,12 @@ class ExpressionField extends Field implements IReadable
 		return call_user_func_array(array($this->valueField, $name), $arguments);
 	}
 
+	/**
+	 * @param Base $entity
+	 *
+	 * @throws SystemException
+	 * @throws \Bitrix\Main\ArgumentException
+	 */
 	public function setEntity(Base $entity)
 	{
 		parent::setEntity($entity);
@@ -128,6 +136,10 @@ class ExpressionField extends Field implements IReadable
 		return $this->expression;
 	}
 
+	/**
+	 * @return mixed|string
+	 * @throws SystemException
+	 */
 	public function getFullExpression()
 	{
 		if (!isset($this->fullExpression))
@@ -152,6 +164,10 @@ class ExpressionField extends Field implements IReadable
 		return $this->fullExpression;
 	}
 
+	/**
+	 * @return bool
+	 * @throws SystemException
+	 */
 	public function isAggregated()
 	{
 		if (!isset($this->isAggregated))
@@ -162,6 +178,10 @@ class ExpressionField extends Field implements IReadable
 		return $this->isAggregated;
 	}
 
+	/**
+	 * @return bool
+	 * @throws SystemException
+	 */
 	public function hasSubquery()
 	{
 		if (!isset($this->hasSubquery))
@@ -177,6 +197,11 @@ class ExpressionField extends Field implements IReadable
 		return empty($this->buildFrom);
 	}
 
+	/**
+	 * @return array|QueryChain[]
+	 * @throws SystemException
+	 * @throws \Bitrix\Main\ArgumentException
+	 */
 	public function getBuildFromChains()
 	{
 		if (is_null($this->buildFromChains))

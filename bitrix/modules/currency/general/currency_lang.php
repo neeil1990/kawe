@@ -402,7 +402,7 @@ class CAllCurrencyLang
 
 	public static function GetFormatTemplates()
 	{
-		$installCurrencies = CCurrency::getInstalledCurrencies();
+		$installCurrencies = Currency\CurrencyManager::getInstalledCurrencies();
 		$templates = array();
 		$templates[] = array(
 			'TEXT' => '$1.234,10',
@@ -493,6 +493,7 @@ class CAllCurrencyLang
 			if ($arCurFormat === false)
 			{
 				$arCurFormat = self::$arDefaultValues;
+				$arCurFormat['FULL_NAME'] = $currency;
 			}
 			else
 			{

@@ -7,6 +7,7 @@
  */
 namespace Bitrix\Sale;
 
+use Bitrix\Currency;
 use Bitrix\Main;
 use Bitrix\Main\Entity;
 use Bitrix\Main\Localization\Loc;
@@ -150,7 +151,14 @@ abstract class OrderBase
 			$order->setFieldNoDemand('USER_ID', $userId);
 
 		if ($currency == null)
+		{
 			$currency = Internals\SiteCurrencyTable::getSiteCurrency($siteId);
+		}
+
+		if ($currency == null)
+		{
+			$currency = Currency\CurrencyManager::getBaseCurrency();
+		}
 
 		$order->setFieldNoDemand('CURRENCY', $currency);
 

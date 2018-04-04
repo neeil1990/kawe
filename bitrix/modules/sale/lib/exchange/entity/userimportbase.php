@@ -9,6 +9,25 @@ abstract class UserImportBase extends ImportBase
 {
 	const EXTERNAL_AUTH_ID = 'sale';
 
+	/** @var  ImportBase */
+	protected $entity;
+
+	/**
+	 * @param ImportBase $entity
+	 */
+	public function setEntity(ImportBase $entity)
+	{
+		$this->entity = $entity;
+	}
+
+	/**
+	 * @return ImportBase
+	 */
+	public function getEntity()
+	{
+		return $this->entity;
+	}
+
 	/**
 	 * @param $personalTypeId
 	 * @param $profile

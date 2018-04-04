@@ -214,12 +214,19 @@ class Notify
 			"ORDER_ID" => $entity->getField("ACCOUNT_NUMBER"),
 			"ORDER_REAL_ID" => $entity->getField("ID"),
 			"ORDER_ACCOUNT_NUMBER_ENCODE" => urlencode(urlencode($entity->getField("ACCOUNT_NUMBER"))),
-			"ORDER_DATE" => $entity->getDateInsert()->toString(),
+			"ORDER_DATE" => '',
 			"EMAIL" => static::getUserEmail($entity),
 			"ORDER_CANCEL_DESCRIPTION" => $entity->getField('REASON_CANCELED'),
 			"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
 			"ORDER_PUBLIC_URL" => Helpers\Order::isAllowGuestView($entity) ? Helpers\Order::getPublicLink($entity) : ""
 		);
+
+		$dateInsert = $entity->getDateInsert();
+		if (isset($dateInsert) && $dateInsert instanceof Main\Type\Date)
+		{
+			$fields['ORDER_DATE'] = $dateInsert->toString();
+		}
+
 
 		$eventName = static::EVENT_ORDER_CANCEL_SEND_EMAIL_EVENT_NAME;
 		$send = true;
@@ -276,15 +283,22 @@ class Notify
 			return $result;
 		}
 
+
+
 		$fields = Array(
 			"ORDER_ID" => $entity->getField("ACCOUNT_NUMBER"),
 			"ORDER_REAL_ID" => $entity->getField("ID"),
 			"ORDER_ACCOUNT_NUMBER_ENCODE" => urlencode(urlencode($entity->getField("ACCOUNT_NUMBER"))),
-			"ORDER_DATE" => $entity->getDateInsert()->toString(),
+			"ORDER_DATE" => '',
 			"EMAIL" => static::getUserEmail($entity),
 			"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
 			"ORDER_PUBLIC_URL" => Helpers\Order::isAllowGuestView($entity) ? Helpers\Order::getPublicLink($entity) : ""
 		);
+		$dateInsert = $entity->getDateInsert();
+		if (isset($dateInsert) && $dateInsert instanceof Main\Type\Date)
+		{
+			$fields['ORDER_DATE'] = $dateInsert->toString();
+		}
 
 		$eventName = static::EVENT_ORDER_PAID_SEND_EMAIL_EVENT_NAME;
 		$send = true;

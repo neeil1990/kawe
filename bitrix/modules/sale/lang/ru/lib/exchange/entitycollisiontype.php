@@ -1,7 +1,7 @@
 <?
 $MESS["SALE_COLLISION_TYPE_ORDER_IS_PAYED"] = "Заказ оплачен полностью. Изменения заказа не возможны.";
 $MESS["SALE_COLLISION_TYPE_ORDER_IS_SHIPPED"] = "Заказ отгружен полностью. Изменения заказа не возможны.";
-$MESS["SALE_COLLISION_TYPE_ORDER_FINAL_STATUS"] = "Заказ находиться в финальном статусе. Изменения заказа не возможны.";
+$MESS["SALE_COLLISION_TYPE_ORDER_FINAL_STATUS"] = "Заказ находится в финальном статусе. Изменения заказа невозможны.";
 $MESS["SALE_COLLISION_TYPE_SHIPMENT_IS_SHIPPED"] = "Отгрузка отгружена полностью. Изменения отгрузки не возможны.";
 $MESS["SALE_COLLISION_TYPE_PAYMENT_IS_PAYED"] = "Оплата оплачена полностью. Изменения оплаты не возможны.";
 $MESS["SALE_COLLISION_TYPE_SHIPMENT_BASKET_ITEMS_MODIFY"] = "В процессе обновления отгрузки часть отгрузок была изменена.";

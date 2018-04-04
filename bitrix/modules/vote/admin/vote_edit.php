@@ -15,6 +15,7 @@
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/vote/prolog.php");
 CModule::IncludeModule("vote");
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/vote/include.php");
 IncludeModuleLangFile(__FILE__);
 
 $err_mess = "File: ".__FILE__."<br>Line: ";

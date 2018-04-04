@@ -276,6 +276,22 @@ abstract class Result implements \IteratorAggregate
 	}
 
 	/**
+	 * @return callable[]
+	 */
+	public function getConverters()
+	{
+		return $this->converters;
+	}
+
+	/**
+	 * @param callable[] $converters
+	 */
+	public function setConverters($converters)
+	{
+		$this->converters = $converters;
+	}
+
+	/**
 	 * Sets record count.
 	 * @param int $n
 	 */

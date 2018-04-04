@@ -69,14 +69,14 @@ class Basket
 		$context = array(
 			'SITE_ID' => $siteId,
 		);
+
 		$basket = Sale\Basket::loadItemsForFUser(Sale\Fuser::getId(), $siteId);
 
 		$options['CHECK_PERMISSIONS'] = 'Y';
 		$options['USE_MERGE'] = (isset($options['USE_MERGE']) && $options['USE_MERGE'] == 'N' ? 'N' : 'Y');
 		$options['CHECK_CRAWLERS'] = 'Y';
 
-		$result = static::add($basket, $product, $context);
-
+		$result = static::add($basket, $product, $context, $options);
 		if ($result->isSuccess())
 		{
 			$saveResult = $basket->save();
@@ -159,7 +159,8 @@ class Basket
 		$options = array(
 			'CHECK_PERMISSIONS' => 'Y',
 			'USE_MERGE' => $useMerge ? 'Y' : 'N',
-			'CHECK_CRAWLERS' => 'Y'
+			'CHECK_CRAWLERS' => 'Y',
+			'MODULE' => 'catalog'
 		);
 		return static::add($basket, $fields, $context, $options);
 	}
@@ -257,6 +258,12 @@ class Basket
 		}
 		unset($fields['PAY_CALLBACK_FUNC']);
 
+		if (isset($fields['SUBSCRIBE']))
+		{
+			$presets['SUBSCRIBE'] = $fields['SUBSCRIBE'];
+		}
+		unset($fields['SUBSCRIBE']);
+
 		$propertyList = array();
 		if (!empty($fields['PROPS']) && is_array($fields['PROPS']))
 		{
@@ -281,7 +288,7 @@ class Basket
 					$elementFilter['PERMISSIONS_BY'] = $context['USER_ID'];
 			}
 
-			$resItems = \CIBlockElement::GetList(
+			$iterator = \CIBlockElement::GetList(
 				array(),
 				$elementFilter,
 				false,
@@ -294,7 +301,7 @@ class Basket
 					"DETAIL_PAGE_URL",
 				)
 			);
-			if (!($productData = $resItems->GetNext()))
+			if (!($elementFields = $iterator->GetNext()))
 			{
 				$result->addError(new Main\Error(Loc::getMessage('BX_CATALOG_PRODUCT_BASKET_ERR_NO_IBLOCK_ELEMENT')));
 				return $result;
@@ -308,30 +315,30 @@ class Basket
 				),
 				'filter' => array('=ID' => $productId)
 			));
-			$row = $iterator->fetch();
+			$productFields = $iterator->fetch();
 			unset($iterator);
-			if (empty($row))
+			if (empty($productFields))
 			{
 				$result->addError(new Main\Error(Loc::getMessage('BX_CATALOG_PRODUCT_BASKET_ERR_NO_PRODUCT')));
 				return $result;
 			}
 
 			if (
-				($row['TYPE'] == Catalog\ProductTable::TYPE_SKU || $row['TYPE'] == Catalog\ProductTable::TYPE_EMPTY_SKU)
+				($productFields['TYPE'] == Catalog\ProductTable::TYPE_SKU || $productFields['TYPE'] == Catalog\ProductTable::TYPE_EMPTY_SKU)
 				&& (string)Main\Config\Option::get('catalog', 'show_catalog_tab_with_offers') != 'Y'
 			)
 			{
 				$result->addError(new Main\Error(Loc::getMessage('BX_CATALOG_PRODUCT_BASKET_ERR_CANNOT_ADD_SKU')));
 				return $result;
 			}
-			if ($row['AVAILABLE'] != Catalog\ProductTable::STATUS_YES)
+			if ($productFields['AVAILABLE'] != Catalog\ProductTable::STATUS_YES)
 			{
 				$result->addError(new Main\Error(Loc::getMessage('BX_CATALOG_PRODUCT_BASKET_ERR_PRODUCT_RUN_OUT')));
 				return $result;
 			}
-			if ($row['TYPE'] == Catalog\ProductTable::TYPE_OFFER)
+			if ($productFields['TYPE'] == Catalog\ProductTable::TYPE_OFFER)
 			{
-				$skuInfo = \CCatalogSku::GetProductInfo($productId, $productData['IBLOCK_ID']);
+				$skuInfo = \CCatalogSku::GetProductInfo($productId, $elementFields['IBLOCK_ID']);
 				if (empty($skuInfo))
 				{
 					$result->addError(new Main\Error(Loc::getMessage('BX_CATALOG_PRODUCT_BASKET_ERR_PRODUCT_BAD_TYPE')));
@@ -358,15 +365,15 @@ class Basket
 						$result->addError(new Main\Error(Loc::getMessage('BX_CATALOG_PRODUCT_BASKET_ERR_NO_PRODUCT')));
 						return $result;
 					}
-					elseif (strpos($productData["~XML_ID"], '#') === false)
+					elseif (strpos($elementFields["~XML_ID"], '#') === false)
 					{
-						$productData["~XML_ID"] = $parent['XML_ID'].'#'.$productData["~XML_ID"];
+						$elementFields["~XML_ID"] = $parent['XML_ID'].'#'.$elementFields["~XML_ID"];
 					}
 					unset($parent, $parentIterator);
 				}
 			}
 
-			if ($row['TYPE'] == Catalog\ProductTable::TYPE_SET)
+			if ($productFields['TYPE'] == Catalog\ProductTable::TYPE_SET)
 			{
 				$allSets = \CCatalogProductSet::getAllSetsByProduct($productId, \CCatalogProductSet::TYPE_SET);
 				if (empty($allSets))
@@ -425,7 +432,7 @@ class Basket
 			$propertyIndex = self::getPropertyIndex('CATALOG.XML_ID', $propertyList);
 			if (!isset($fields['CATALOG_XML_ID']) || $propertyIndex === null)
 			{
-				$iBlockXmlID = (string)\CIBlock::GetArrayByID($productData['IBLOCK_ID'], 'XML_ID');
+				$iBlockXmlID = (string)\CIBlock::GetArrayByID($elementFields['IBLOCK_ID'], 'XML_ID');
 				if ($iBlockXmlID !== '')
 				{
 					$fields['CATALOG_XML_ID'] = $iBlockXmlID;
@@ -446,11 +453,11 @@ class Basket
 			$propertyIndex = self::getPropertyIndex('PRODUCT.XML_ID', $propertyList);
 			if (!isset($fields['PRODUCT_XML_ID']) || $propertyIndex === null)
 			{
-				$fields['PRODUCT_XML_ID'] = $productData['~XML_ID'];
+				$fields['PRODUCT_XML_ID'] = $elementFields['~XML_ID'];
 				$propertyData = array(
 					'NAME' => 'Product XML_ID',
 					'CODE' => 'PRODUCT.XML_ID',
-					'VALUE' => $productData['~XML_ID']
+					'VALUE' => $elementFields['~XML_ID']
 				);
 				if ($propertyIndex !== null)
 					$propertyList[$propertyIndex] = $propertyData;
@@ -474,19 +481,18 @@ class Basket
 				return $result;
 			}
 
-			foreach ($fields as $key => $value)
+			foreach ($eventResult as $key => $value)
 			{
-				if ($eventResult[$key] !== $value)
+				if (isset($presets[$key]))
 				{
-					$fields[$key] = $eventResult[$key];
+					if ($presets[$key] !== $value)
+					{
+						$presets[$key] = $value;
+					}
 				}
-			}
-
-			foreach ($presets as $key => $value)
-			{
-				if ($eventResult[$key] !== $value)
+				elseif (!isset($fields[$key]) || $fields[$key] !== $value)
 				{
-					$presets[$key] = $eventResult[$key];
+					$fields[$key] = $value;
 				}
 			}
 

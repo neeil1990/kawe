@@ -1459,7 +1459,7 @@ class CBitrixComponent
 	public function __showError($errorMessage, $errorCode = "")
 	{
 		if ($errorMessage <> '')
-			echo "<font color=\"#FF0000\">".$errorMessage.($errorCode <> '' ? " [".$errorCode."]" : "")."</font>";
+			echo "<font color=\"#FF0000\">".htmlspecialcharsbx($errorMessage.($errorCode <> '' ? " [".$errorCode."]" : ""))."</font>";
 	}
 	/**
 	 * Function registers children css file for cache.

@@ -15,7 +15,7 @@ class UpdateResult extends Result
 	/** @var int */
 	protected $affectedRowsCount;
 
-	/** @var array */
+	/** @var array|int */
 	protected $primary;
 
 	public function __construct()

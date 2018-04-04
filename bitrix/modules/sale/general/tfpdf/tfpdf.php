@@ -1203,7 +1203,7 @@ function SetXY($x, $y)
 	$this->SetX($x);
 }
 
-function Output($name='', $dest='')
+function Output($name='', $dest='', $utfName  = '')
 {
 	// Output PDF to some destination
 	if($this->state<3)
@@ -1228,7 +1228,15 @@ function Output($name='', $dest='')
 			{
 				// We send to a browser
 				header('Content-Type: application/pdf');
-				header('Content-Disposition: inline; filename="'.$name.'"');
+				if (is_string($utfName) && !empty($utfName))
+				{
+					$utfName = CHTTP::urnEncode($utfName, 'UTF-8');
+					header("Content-Disposition: attachment; filename=\"".$name."\"; filename*=utf-8''".$utfName);
+				}
+				else
+				{
+					header('Content-Disposition: inline; filename="'.$name.'"');
+				}
 				header('Cache-Control: private, max-age=0, must-revalidate');
 				header('Pragma: public');
 			}
@@ -1238,7 +1246,15 @@ function Output($name='', $dest='')
 			// Download file
 			$this->_checkoutput();
 			header('Content-Type: application/x-download');
-			header('Content-Disposition: attachment; filename="'.$name.'"');
+			if (is_string($utfName) && !empty($utfName))
+			{
+				$utfName = CHTTP::urnEncode($utfName, 'UTF-8');
+				header("Content-Disposition: attachment; filename=\"".$name."\"; filename*=utf-8''".$utfName);
+			}
+			else
+			{
+				header('Content-Disposition: inline; filename="'.$name.'"');
+			}
 			header('Cache-Control: private, max-age=0, must-revalidate');
 			header('Pragma: public');
 			echo $this->buffer;

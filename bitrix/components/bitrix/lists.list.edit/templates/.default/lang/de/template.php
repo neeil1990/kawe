@@ -1,0 +1,31 @@
+<?
+$MESS["CT_BLLE_TOOLBAR_LIST_TITLE"] = "Listenelemente ansehen und bearbeiten";
+$MESS["CT_BLLE_TOOLBAR_FIELDS"] = "Listenfelder";
+$MESS["CT_BLLE_TOOLBAR_FIELDS_TITLE"] = "Listenfelder konfigurieren";
+$MESS["CT_BLLE_TAB_EDIT"] = "Einstellungen";
+$MESS["CT_BLLE_TAB_EDIT_TITLE"] = "Allgemeine Listenparameter";
+$MESS["CT_BLLE_FIELD_NAME"] = "Listenname";
+$MESS["CT_BLLE_FIELD_SORT"] = "Sortieren";
+$MESS["CT_BLLE_FIELD_PICTURE"] = "Bild";
+$MESS["CT_BLLE_TAB_MESSAGES"] = "Bezeichnungen";
+$MESS["CT_BLLE_TAB_MESSAGES_TITLE"] = "Bezeichnungen der Listenbereiche und Elemente";
+$MESS["CT_BLLE_FIELD_ELEMENTS_NAME"] = "Elemente";
+$MESS["CT_BLLE_FIELD_ELEMENT_NAME"] = "Elemente";
+$MESS["CT_BLLE_FIELD_ELEMENT_ADD"] = "Neues Element";
+$MESS["CT_BLLE_FIELD_ELEMENT_EDIT"] = "Element wird bearbeitet";
+$MESS["CT_BLLE_FIELD_ELEMENT_DELETE"] = "Element löschen ";
+$MESS["CT_BLLE_FIELD_SECTIONS_NAME"] = "Bereiche";
+$MESS["CT_BLLE_FIELD_SECTION_NAME"] = "Bereich";
+$MESS["CT_BLLE_FIELD_SECTION_ADD"] = "Neuer Bereich";
+$MESS["CT_BLLE_FIELD_SECTION_EDIT"] = "Bereich bearbeiten";
+$MESS["CT_BLLE_FIELD_SECTION_DELETE"] = "Bereich löschen";
+$MESS["CT_BLLE_TAB_ACCESS"] = "Zugriff";
+$MESS["CT_BLLE_TAB_ACCESS_TITLE"] = "Zugriffsrechte für LIsten und Elemente verwalten";
+$MESS["CT_BLLE_ACCESS_RIGHTS"] = "Nutzergruppen mit Zugriffsberechtigungen für die Listen";
+$MESS["CT_BLLE_ADD_BUTTON"] = "Neu";
+$MESS["CT_BLLE_NO_VALUE"] = "(nicht gewählt)";
+$MESS["CT_BLLE_TOOLBAR_DELETE"] = "Liste löschen";
+$MESS["CT_BLLE_TOOLBAR_DELETE_TITLE"] = "Löscht die Liste und alle zusammenhängenden Informationen";
+$MESS["CT_BLLE_TOOLBAR_DELETE_WARNING"] = "Sind Sie sicher, dass Sie diese Liste löschen wollen?";
+$MESS["CT_BLLE_FIELD_BIZPROC"] = "Geschäftsprozesse aktivieren";
+?>

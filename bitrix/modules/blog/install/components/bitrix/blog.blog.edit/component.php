@@ -302,7 +302,7 @@ else
 			$arResult["BLOG_POST_PERMS"] = $GLOBALS["AR_BLOG_POST_PERMS"];
 			$arResult["BLOG_COMMENT_PERMS"] = $GLOBALS["AR_BLOG_COMMENT_PERMS"];
 			
-			if(!$USER->IsAdmin() &&  $blogModulePermissions < "W")
+			if(!$USER->IsAdmin() && $blogModulePermissions < "W")
 			{
 				$arResult["post_everyone_max_rights"] = COption::GetOptionString("blog", "post_everyone_max_rights", "");
 				$arResult["comment_everyone_max_rights"] = COption::GetOptionString("blog", "comment_everyone_max_rights", "");

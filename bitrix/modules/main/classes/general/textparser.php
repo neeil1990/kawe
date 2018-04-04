@@ -1198,6 +1198,11 @@ class CTextParser
 		return $this->convert_font_attr('color', $matches[1], $matches[2]);
 	}
 
+	public function stripAllTags($text)
+	{
+		return preg_replace('|[[\\/\\!]*?[^\\[\\]]*?]|si', '', $text);
+	}
+
 	function convert_font_attr($attr, $value = "", $text = "")
 	{
 		if (strlen($text)<=0)

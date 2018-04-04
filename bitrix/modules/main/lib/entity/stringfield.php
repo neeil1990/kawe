@@ -24,6 +24,14 @@ class StringField extends ScalarField
 	/** @var int|null  */
 	protected $size = null;
 
+	/**
+	 * StringField constructor.
+	 *
+	 * @param       $name
+	 * @param array $parameters
+	 *
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	function __construct($name, $parameters = array())
 	{
 		parent::__construct($name, $parameters);
@@ -47,6 +55,11 @@ class StringField extends ScalarField
 		return $this->format;
 	}
 
+	/**
+	 * @return array|Validator\Base[]|callback[]
+	 * @throws \Bitrix\Main\ArgumentTypeException
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function getValidators()
 	{
 		$validators = parent::getValidators();
@@ -68,6 +81,12 @@ class StringField extends ScalarField
 		return $this->size;
 	}
 
+	/**
+	 * @param string $value
+	 *
+	 * @return string
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbString($value);

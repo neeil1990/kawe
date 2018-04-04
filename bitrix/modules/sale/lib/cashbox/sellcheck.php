@@ -45,4 +45,12 @@ class SellCheck extends Check
 	{
 		return static::SUPPORTED_ENTITY_TYPE_ALL;
 	}
+
+	/**
+	 * @return string
+	 */
+	public static function getSupportedRelatedEntityType()
+	{
+		return static::SUPPORTED_ENTITY_TYPE_ALL;
+	}
 }

@@ -271,8 +271,8 @@ class Option
 		$strSqlWhere = sprintf(
 			"SITE_ID %s AND MODULE_ID = '%s' AND NAME = '%s'",
 			($siteId == "") ? "IS NULL" : "= '".$sqlHelper->forSql($siteId, 2)."'",
-			$sqlHelper->forSql($moduleId),
-			$sqlHelper->forSql($name)
+			$sqlHelper->forSql($moduleId, 50),
+			$sqlHelper->forSql($name, 50)
 		);
 
 		$res = $con->queryScalar(

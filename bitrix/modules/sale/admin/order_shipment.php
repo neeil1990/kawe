@@ -128,11 +128,11 @@ if (strlen($filter_date_deducted_to) > 0)
 
 if (isset($filter_status) && is_array($filter_status) && count($filter_status) > 0)
 {
-	for ($i = 0, $cnt = count($filter_status); $i < $cnt; $i++)
+	foreach ($filter_status as $key => $status)
 	{
-		$filter_status[$i] = trim($filter_status[$i]);
-		if (strlen($filter_status[$i]) > 0)
-			$arFilter["=STATUS_ID"][] = $filter_status[$i];
+		$filter_status[$key] = trim($status);
+		if (strlen($filter_status[$key]) > 0)
+			$arFilter["=STATUS_ID"][] = $filter_status[$key];
 	}
 }
 

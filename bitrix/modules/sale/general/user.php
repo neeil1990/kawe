@@ -120,7 +120,7 @@ class CAllSaleUserAccount
 			CSaleUserTransact::Delete($arTrans["ID"]);
 
 		unset($GLOBALS["SALE_USER_ACCOUNT"]["SALE_USER_ACCOUNT_CACHE_".$ID]);
-		unset($GLOBALS["SALE_USER_ACCOUNT"]["SALE_USER_ACCOUNT_CACHE1_".$arOldUserAccount["USER_ID"]."_".$arOldUserAccount["CURRENCY"]]);
+		unset($GLOBALS["SALE_USER_ACCOUNT"]["SALE_USER_ACCOUNT_CACHE_".$arOldUserAccount["USER_ID"]."_".$arOldUserAccount["CURRENCY"]]);
 
 		$res = $DB->Query("DELETE FROM b_sale_user_account WHERE ID = ".$ID." ", true);
 
@@ -627,6 +627,12 @@ class CAllSaleUserAccount
 			$arFields = array(
 					"CURRENT_BUDGET" => $arUserAccount["CURRENT_BUDGET"] + $sum
 				);
+
+			if (!empty($notes))
+			{
+				$arFields['CHANGE_REASON'] = $notes;
+			}
+
 			$result = CSaleUserAccount::Update($arUserAccount["ID"], $arFields);
 		}
 		else
@@ -639,6 +645,11 @@ class CAllSaleUserAccount
 					"LOCKED" => "Y",
 					"=DATE_LOCKED" => $DB->GetNowFunction()
 				);
+
+			if (!empty($notes))
+			{
+				$arFields['CHANGE_REASON'] = $notes;
+			}
 			$result = CSaleUserAccount::Add($arFields);
 		}
 

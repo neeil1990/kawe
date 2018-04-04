@@ -1,0 +1,32 @@
+<?
+$MESS ['SONET_C30_T_USER'] = "Группа / Пользователь";
+$MESS ['SONET_C30_T_TOTAL'] = "Что подписано";
+$MESS ['SONET_C30_T_ACTIONS'] = "Действия";
+$MESS ['SONET_C30_T_system'] = "Системные";
+$MESS ['SONET_C30_T_system_groups'] = "Группы";
+$MESS ['SONET_C30_T_system_friends'] = "Друзья";
+$MESS ['SONET_C30_T_forum'] = "Форум";
+$MESS ['SONET_C30_T_blog'] = "Блог";
+$MESS ['SONET_C30_T_photo'] = "Фотогалерея";
+$MESS ['SONET_C30_T_calendar'] = "Календарь";
+$MESS ['SONET_C30_T_files'] = "Файлы";
+$MESS ['SONET_C30_T_tasks'] = "Задачи";
+$MESS ['SONET_C30_T_tasks1'] = "Задачи";
+$MESS ['SONET_C30_T_system1'] = "Системные";
+$MESS ['SONET_C30_T_forum1'] = "Обсуждения";
+$MESS ['SONET_C30_T_blog1'] = "Отчеты";
+$MESS ['SONET_C30_T_photo1'] = "Фотогалерея";
+$MESS ['SONET_C30_T_calendar1'] = "Календарь";
+$MESS ['SONET_C30_T_files1'] = "Файлы";
+$MESS ['SONET_C30_T_EMPTY'] = "Нет активных подписок.<br>Здесь показываются Ваши подписки на обновления групп и пользователей.";
+$MESS ['SONET_C30_T_SHOW'] = "Показать подписки";
+$MESS ['SONET_C30_T_SHOW_ALL'] = "все";
+$MESS ['SONET_C30_T_SHOW_GROUP'] = "только групп";
+$MESS ['SONET_C30_T_SHOW_USER'] = "только пользователей";
+$MESS ['SONET_C334_GR'] = "Группа #NAME#";
+$MESS ['SONET_C334_US'] = "Пользователь #NAME#";
+$MESS ['SONET_C334_US1'] = "Пользователь ";
+$MESS ['SONET_C334_SITE'] = "на сайте и по почте";
+$MESS ['SONET_C334_MAIL'] = "только на сайте";
+$MESS ['SONET_C334_CHANGE'] = "Изменить";
+?>

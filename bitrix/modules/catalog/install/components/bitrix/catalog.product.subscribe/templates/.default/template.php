@@ -28,7 +28,6 @@ $paramsForJs = array(
 	'urlListSubscriptions' => '/',
 );
 
-$templateData = $paramsForJs;
 $showSubscribe = true;
 
 /* Compatibility with the sale subscribe option */
@@ -41,11 +40,12 @@ foreach($saleNotifyOption as $siteId => $data)
 	if($siteId == SITE_ID && $data['use'] != 'Y')
 		$showSubscribe = false;
 }
+$templateData = $paramsForJs;
+$templateData['showSubscribe'] = $showSubscribe;
 
 $subscribeBtnName = !empty($arParams['MESS_BTN_SUBSCRIBE']) ? $arParams['MESS_BTN_SUBSCRIBE'] : Loc::getMessage('CPST_SUBSCRIBE_BUTTON_NAME');
-?>
 
-<?if($showSubscribe):?>
+if($showSubscribe):?>
 	<span id="<?=htmlspecialcharsbx($arResult['BUTTON_ID'])?>"
 			class="<?=htmlspecialcharsbx($arResult['BUTTON_CLASS'])?>"
 			data-item="<?=htmlspecialcharsbx($arResult['PRODUCT_ID'])?>"
@@ -77,5 +77,4 @@ $subscribeBtnName = !empty($arParams['MESS_BTN_SUBSCRIBE']) ? $arParams['MESS_BT
 
 		var <?=$jsObject?> = new JCCatalogProductSubscribe(<?=CUtil::phpToJSObject($paramsForJs, false, true)?>);
 	</script>
-<?else:?>
-<?endif?>
+<?endif;

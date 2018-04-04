@@ -13,6 +13,7 @@ use Bitrix\Main\Entity\QueryChain;
 use Bitrix\Main\Entity\Field\IReadable;
 use Bitrix\Main\DB\SqlExpression;
 use Bitrix\Main\ArgumentException;
+use Bitrix\Main\SystemException;
 
 /**
  * Handles filtering conditions for Query and join conditions for Entity References.
@@ -424,6 +425,8 @@ class ConditionTree
 	 * @param QueryChain[] $chains
 	 *
 	 * @return string
+	 * @throws ArgumentException
+	 * @throws SystemException
 	 */
 	public function getSql($chains)
 	{
@@ -545,6 +548,8 @@ class ConditionTree
 	 * @param IReadable $field
 	 *
 	 * @return mixed|null|string
+	 * @throws ArgumentException
+	 * @throws SystemException
 	 */
 	protected function convertValue($value, IReadable $field = null)
 	{
@@ -590,6 +595,8 @@ class ConditionTree
 	 * @param \Bitrix\Main\Entity\Field\IReadable|null $field
 	 *
 	 * @return array
+	 * @throws ArgumentException
+	 * @throws SystemException
 	 */
 	protected function convertValues($values, IReadable $field = null)
 	{

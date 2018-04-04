@@ -68,11 +68,12 @@ class Product
 	 * @param array $productsData
 	 * @param string $siteId
 	 * @param int $userId
+	 * @param array $errors
 	 * @return array
 	 * @throws \Bitrix\Main\NotSupportedException
 	 * @throws \Bitrix\Main\ObjectNotFoundException
 	 */
-	public static function getProviderData(array $productsData, $siteId, $userId = null)
+	public static function getProviderData(array $productsData, $siteId, $userId = null, array &$errors = array())
 	{
 		if(empty($productsData))
 			return array();
@@ -111,6 +112,7 @@ class Product
 			$r = Catalog\Product\Basket::addProductToBasket($basket, $productFields, $context);
 			if (!$r->isSuccess())
 			{
+				$errors = $r->getErrorMessages();
 				return null;
 			}
 		}

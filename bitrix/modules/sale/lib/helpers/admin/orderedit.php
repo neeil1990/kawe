@@ -2,6 +2,7 @@
 namespace Bitrix\Sale\Helpers\Admin;
 
 use Bitrix\Main\Error;
+use Bitrix\Sale\BasketItemBase;
 use Bitrix\Sale\Fuser;
 use Bitrix\Sale\Order;
 use Bitrix\Main\Loader;
@@ -552,7 +553,13 @@ class OrderEdit
 					else
 						$setBasketCode = null;
 
-					$item = $basket->createItem($productData["MODULE"],	$productData["OFFER_ID"], $setBasketCode);
+					$productId = $productData["PRODUCT_ID"];
+					if (isset($productData["OFFER_ID"]) && !empty($productData["OFFER_ID"]))
+					{
+						$productId = $productData["OFFER_ID"];
+					}
+
+					$item = $basket->createItem($productData["MODULE"],	$productId, $setBasketCode);
 
 					if ($basketCode != $productData["BASKET_CODE"])
 						$productData["BASKET_CODE"] = $item->getBasketCode();
@@ -1141,7 +1148,9 @@ class OrderEdit
 			$isDataNeedUpdate = in_array($basketCode, $needDataUpdate);
 
 			if(isset($productData["PRODUCT_PROVIDER_CLASS"]) && strlen($productData["PRODUCT_PROVIDER_CLASS"]) > 0)
+			{
 				$item->setField("PRODUCT_PROVIDER_CLASS", trim($productData["PRODUCT_PROVIDER_CLASS"]));
+			}
 
 			/*
 			 * Let's extract cached provider product data from field
@@ -1177,7 +1186,19 @@ class OrderEdit
 			}
 
 			if(isset($productData["MODULE"]) && $productData["MODULE"] == "catalog")
+			{
 				$catalogProductsIds[] = $item->getField('PRODUCT_ID');
+			}
+			elseif(empty($productData["PRODUCT_PROVIDER_CLASS"]))
+			{
+				$availableFields = BasketItemBase::getAvailableFields();
+				$availableFields = array_fill_keys($availableFields, true);
+				$fillFields = array_intersect_key($productData, $availableFields);
+				if (!empty($fillFields))
+				{
+					$r = $item->setFields($fillFields);
+				}
+			}
 		}
 
 		$catalogData = array();
@@ -1327,7 +1348,7 @@ class OrderEdit
 				$product = array_merge($product, $productData);
 			}
 
-			if(isset($product["OFFER_ID"]) || intval($product["OFFER_ID"]) >= 0)
+			if(isset($product["OFFER_ID"]) && intval($product["OFFER_ID"]) > 0)
 				$product["PRODUCT_ID"] = $product["OFFER_ID"];
 
 			$product = array_intersect_key($product, array_flip($item::getAvailableFields()));

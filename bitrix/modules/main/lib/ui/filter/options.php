@@ -82,6 +82,19 @@ class Options
 			$this->options["filters"] = $this->options["default_presets"];
 		}
 
+		// Move additional fields from options to session
+		if (is_array($this->options["filters"]))
+		{
+			foreach ($this->options["filters"] as $presetId => $options)
+			{
+				if (is_array($options["additional"]))
+				{
+					$this->setAdditionalPresetFields($presetId, $options["additional"]);
+					unset($this->options["filters"][$presetId]["additional"]);
+				}
+			}
+		}
+
 		if (isset($this->options["update_default_presets"]) &&
 			$this->options["update_default_presets"] == true &&
 			!empty($filterPresets) &&
@@ -453,6 +466,29 @@ class Options
 
 
 	/**
+	 * Gets additional preset fields
+	 * @param string $presetId
+	 * @return array
+	 */
+	public function getAdditionalPresetFields($presetId)
+	{
+		$additional = $_SESSION["main.ui.filter"][$this->getId()]["filters"][$presetId]["additional"];
+		return is_array($additional) ? $additional : array();
+	}
+
+
+	/**
+	 * Sets additional fields
+	 * @param string $presetId
+	 * @param array $additional
+	 */
+	public function setAdditionalPresetFields($presetId, $additional = array())
+	{
+		$_SESSION["main.ui.filter"][$this->getId()]["filters"][$presetId]["additional"] = $additional;
+	}
+
+
+	/**
 	 * Gets default filter
 	 * @return mixed
 	 */
@@ -503,9 +539,10 @@ class Options
 	/**
 	 * Fetches filter fields from filter settings
 	 * @param array $filterSettings
+	 * @param array $additionalFields
 	 * @return array
 	 */
-	protected static function fetchFieldsFromFilterSettings($filterSettings = array())
+	protected static function fetchFieldsFromFilterSettings($filterSettings = array(), $additionalFields = array())
 	{
 		$filterFields = array();
 
@@ -516,9 +553,9 @@ class Options
 				$filterFields = $filterSettings["fields"];
 			}
 
-			if (is_array($filterSettings["additional"]))
+			if (is_array($additionalFields))
 			{
-				$filterFields = array_merge($filterFields, $filterSettings["additional"]);
+				$filterFields = array_merge($filterFields, $additionalFields);
 			}
 		}
 
@@ -602,9 +639,9 @@ class Options
 	}
 
 
-	public static function fetchFieldValuesFromFilterSettings($filterSettings = array())
+	public static function fetchFieldValuesFromFilterSettings($filterSettings = array(), $additionalFields = array())
 	{
-		$filterFields = self::fetchFieldsFromFilterSettings($filterSettings);
+		$filterFields = self::fetchFieldsFromFilterSettings($filterSettings, $additionalFields);
 		$resultFields = array();
 
 		foreach ($filterFields as $key => $field)
@@ -658,7 +695,8 @@ class Options
 		if (!self::isDefaultFilter($currentPresetId))
 		{
 			$filterSettings = $this->getFilterSettings($currentPresetId);
-			$fieldsValues = self::fetchFieldValuesFromFilterSettings($filterSettings);
+			$additionalFields = $this->getAdditionalPresetFields($currentPresetId);
+			$fieldsValues = self::fetchFieldValuesFromFilterSettings($filterSettings, $additionalFields);
 
 			$result = $fieldsValues;
 			$searchString = $this->getSearchString();
@@ -755,11 +793,22 @@ class Options
 			$allUserOptions = $this->getAllUserOptions();
 			$currentOptions = $this->options;
 
+			$forAllPresets = array();
+
+			foreach ($currentOptions["filters"] as $key => $preset)
+			{
+				if ($preset["for_all"])
+				{
+					$forAllPresets[$key] = $preset;
+				}
+			}
+
 			while ($allUserOptions && $userOptions = $allUserOptions->fetch())
 			{
 				if (!self::isCommon($userOptions))
 				{
-					$currentOptions["default_presets"] = $currentOptions["filters"];
+					$currentOptions["default_presets"] = $forAllPresets;
+					$currentOptions["filters"] = $forAllPresets;
 				}
 
 				$this->saveOptionsForUser($currentOptions, $userOptions["USER_ID"]);
@@ -798,6 +847,8 @@ class Options
 			\CUserOptions::SetOption("main.ui.filter.presets", $this->getCommonPresetsId(), $presets, null, $userId);
 		}
 
+		$userOptions = \CUserOptions::GetOption("main.ui.filter", $this->getId(), array("filters" => array(), "default_presets" => array()), $userId);
+		$options["filters"] = array_merge($userOptions["filters"], $options["filters"]);
 		\CUserOptions::SetOption("main.ui.filter", $this->getId(), $options, null, $userId);
 	}
 
@@ -807,7 +858,20 @@ class Options
 	 */
 	public function saveCommon()
 	{
-		\CUserOptions::setOption("main.ui.filter.common", $this->id, $this->options, true);
+		$presets = array();
+		$options = $this->getOptions();
+
+		foreach ($options["filters"] as $key => $preset)
+		{
+			if ($preset["for_all"])
+			{
+				$presets[$key] = $preset;
+			}
+		}
+
+		$options["filters"] = $presets;
+
+		\CUserOptions::setOption("main.ui.filter.common", $this->id, $options, true);
 	}
 
 
@@ -914,6 +978,11 @@ class Options
 				$this->options["filters"][$presetId]["name"] = $settings["name"];
 			}
 
+			if (isset($settings["for_all"]))
+			{
+				$this->options["filters"][$presetId]["for_all"] = $settings["for_all"] === "true";
+			}
+
 			if (isset($settings["sort"]) && is_numeric($settings["sort"]))
 			{
 				$this->options["filters"][$presetId]["sort"] = $settings["sort"];
@@ -934,8 +1003,9 @@ class Options
 				else
 				{
 					$this->options["filters"][$presetId]["fields"] = $settings["fields"];
-					$this->options["filters"][$presetId]["additional"] = is_array($settings["additional"]) ?
-						$settings["additional"] : array();
+
+					$additionalFields = is_array($settings["additional"]) ? $settings["additional"] : array();
+					$this->setAdditionalPresetFields($presetId, $additionalFields);
 				}
 			}
 
@@ -1421,14 +1491,34 @@ class Options
 					"_year",
 					"_name",
 					"_label",
-					"_value"
+					"_value",
+					"_days",
+					"_months",
+					"_years"
 				),
 				"",
 				$key
 			);
 		}
 
-		return $rows;
+		return array_unique($rows);
+	}
+
+
+	/**
+	 * Fetches preset fields list
+	 * @param array $preset
+	 * @return array
+	 */
+	public static function fetchPresetFields($preset)
+	{
+		if (is_string($preset["filter_rows"]))
+		{
+			$fields = explode(",", $preset["filter_rows"]);
+			return array_unique($fields);
+		}
+
+		return static::getRowsFromFields($preset["fields"]);
 	}
 
 
@@ -1443,23 +1533,15 @@ class Options
 		// Fetch fields from user presets
 		foreach ($this->getPresets() as $key => $preset)
 		{
-			if (is_string($preset["rows"]))
-			{
-				$presetRows = explode(",", $preset["rows"]);
-			}
-			else
-			{
-				$presetRows = static::getRowsFromFields($preset["fields"]);
-			}
-
-			$fields = array_merge($fields, $presetRows);
+			$presetFields = static::fetchPresetFields($preset);
+			$fields = array_merge($fields, $presetFields);
 		}
 
 		// Fetch fields from default presets
 		foreach ($this->getDefaultPresets() as $key => $preset)
 		{
-			$presetRows = static::getRowsFromFields($preset["fields"]);
-			$fields = array_merge($fields, $presetRows);
+			$presetFields = static::fetchPresetFields($preset);
+			$fields = array_merge($fields, $presetFields);
 		}
 
 		$fields = array_unique($fields);

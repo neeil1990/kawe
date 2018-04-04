@@ -161,8 +161,15 @@ BX.Sale.Admin.OrderPayment.prototype.sendAjaxChangeStatus = function(params)
 		'orderId' : orderId,
 		'paymentId' : paymentId,
 		'data' : formData.data,
-		'callback' : params.callback
+		'callback' : BX.proxy(function(result){
+			params.callback(result, params)
+		}, this)
 	};
+
+	if (params.strict && params.strict === true)
+	{
+		request['strict'] = params.strict;
+	}
 
 	BX.Sale.Admin.OrderAjaxer.sendRequest(request);
 };
@@ -613,29 +620,8 @@ BX.Sale.Admin.OrderPayment.prototype.showWindowPaidPayment = function()
 							'index' : this.index,
 							'action' : 'save',
 							'form_name' : 'payment_voucher_form_'+this.index,
-							'callback' : BX.proxy(function(result) {
-								if (result.ERROR && result.ERROR.length > 0)
-								{
-									BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
-								}
-								else
-								{
-									this.changePaidStatus('YES');
-									this.initPaidPopup();
-									BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.RESULT);
-
-									if(typeof result.MARKERS != 'undefined')
-									{
-										var node = BX('sale-adm-order-problem-block');
-										if(node)
-											node.innerHTML = result.MARKERS;
-									}
-
-									if (result.WARNING && result.WARNING.length > 0)
-									{
-										BX.Sale.Admin.OrderEditPage.showDialog(result.WARNING);
-									}
-								}
+							'callback' : BX.proxy(function(result, params) {
+								this.callbackUpdatePaymentStatus(result, 'YES', params);
 							}, this)
 						};
 						this.sendAjaxChangeStatus(params);
@@ -649,6 +635,73 @@ BX.Sale.Admin.OrderPayment.prototype.showWindowPaidPayment = function()
 	}
 	this.pdWindow.Show();
 };
+
+
+BX.Sale.Admin.OrderPayment.prototype.callbackUpdatePaymentStatus = function(result, status, params)
+{
+	if (result.ERROR && result.ERROR.length > 0)
+	{
+		BX.Sale.Admin.OrderEditPage.showDialog(result.ERROR);
+	}
+	else if (result.NEED_CONFIRM && result.NEED_CONFIRM === true)
+	{
+		var confirmTitle = false;
+		var confirmMessage = false;
+
+		if (result.WARNING && result.WARNING.length > 0)
+		{
+			confirmMessage = result.WARNING;
+		}
+
+		if (result.CONFIRM_TITLE && result.CONFIRM_TITLE.length > 0)
+		{
+			confirmTitle = result.CONFIRM_TITLE ;
+		}
+
+		if (result.CONFIRM_MESSAGE && result.CONFIRM_MESSAGE.length > 0)
+		{
+			confirmMessage = confirmMessage + "<br/>" + result.CONFIRM_MESSAGE;
+		}
+
+
+		BX.Sale.Admin.OrderEditPage.showConfirmDialog(
+			confirmMessage,
+			confirmTitle,
+			BX.proxy(function(){
+				this.sendStrictUpdatePaymentStatus(status, params)
+			}, this),
+			function () {
+				return;
+			}
+		);
+	}
+	else
+	{
+		this.changePaidStatus(status);
+		this.initPaidPopup();
+		BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.RESULT);
+
+		if(typeof result.MARKERS != 'undefined')
+		{
+			var node = BX('sale-adm-order-problem-block');
+			if(node)
+				node.innerHTML = result.MARKERS;
+		}
+
+		if (result.WARNING && result.WARNING.length > 0)
+		{
+			BX.Sale.Admin.OrderEditPage.showDialog(result.WARNING);
+		}
+	}
+
+};
+
+BX.Sale.Admin.OrderPayment.prototype.sendStrictUpdatePaymentStatus = function(status, params)
+{
+	params['strict'] = true;
+	this.sendAjaxChangeStatus(params);
+};
+
 
 BX.Sale.Admin.OrderPayment.prototype.changeNotPaidStatus = function(status)
 {
@@ -970,6 +1023,16 @@ BX.Sale.Admin.OrderPayment.prototype.showCreateCheckWindow = function(paymentId)
 					{
 						if (checkboxList.hasOwnProperty(i))
 						{
+							var sibling = checkboxList[i].nextElementSibling;
+							if (disabled)
+							{
+								BX.addClass(sibling, "bx-admin-service-restricted");
+							}
+							else
+							{
+								BX.removeClass(sibling, "bx-admin-service-restricted");
+							}
+
 							if (checkboxList[i].checked)
 								checkboxList[i].click();
 							checkboxList[i].disabled = disabled;
@@ -1039,11 +1102,6 @@ BX.Sale.Admin.OrderPayment.prototype.showCreateCheckWindow = function(paymentId)
 BX.Sale.Admin.OrderPayment.prototype.onCheckEntityChoose = function (currentElement, multiSelect)
 {
 	var checked = currentElement.checked;
-	var sibling = currentElement.nextElementSibling;
-	if (checked)
-		BX.removeClass(sibling, "bx-admin-service-restricted");
-	else
-		BX.addClass(sibling, "bx-admin-service-restricted");
 
 	var paymentType = BX(currentElement.id+"_type");
 	if (paymentType)

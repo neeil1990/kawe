@@ -126,6 +126,6 @@ class BaseObject
 	public static function loadFromId($id)
 	{
 		$c = get_called_class();
-		return new $c($id);
+		return new $c(intval($id));
 	}
 }

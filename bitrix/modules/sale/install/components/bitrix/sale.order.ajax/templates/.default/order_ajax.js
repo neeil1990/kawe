@@ -1654,7 +1654,13 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 			}
 
 			if (this.firstLoad && this.result.IS_AUTHORIZED && typeof this.result.LAST_ORDER_DATA.FAIL === 'undefined')
+			{
 				this.showActualBlock();
+			}
+			else if (!this.result.SHOW_AUTH)
+			{
+				this.changeVisibleContent();
+			}
 
 			this.checkNotifications();
 
@@ -1761,7 +1767,7 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 
 			this.fade(actionSection);
 			this.show(section.next);
-			this.animateScrollTo(section.next, 500);
+			this.animateScrollTo(section.next, 800);
 			return BX.PreventDefault(event);
 		},
 
@@ -2023,7 +2029,7 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 			}
 
 			new BX.easing({
-				duration: nextSection ? 1000 : 600,
+				duration: nextSection ? 800 : 600,
 				start: {height: objHeightOrig, scrollTop: windowScrollTop},
 				finish: {height: objHeight, scrollTop: scrollTo},
 				transition: BX.easing.makeEaseOut(BX.easing.transitions.quad),
@@ -2299,7 +2305,7 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 		 */
 		changeVisibleContent: function()
 		{
-			var sections = this.orderBlockNode.querySelectorAll('.bx-soa-section[data-visited]'),
+			var sections = this.orderBlockNode.querySelectorAll('.bx-soa-section.bx-active'),
 				i, state;
 
 			var orderDataLoaded = !!this.result.IS_AUTHORIZED && this.params.USE_PRELOAD === 'Y' && this.result.LAST_ORDER_DATA.FAIL !== true,
@@ -2399,11 +2405,6 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 
 			this.editTotalBlock();
 			this.totalBlockFixFont();
-
-			if (!this.result.SHOW_AUTH)
-			{
-				this.changeVisibleContent();
-			}
 
 			this.showErrors(this.result.ERROR, false);
 			this.showWarnings();
@@ -3868,13 +3869,12 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 							children: [
 								BX.create('INPUT', {
 									props: {
-										id: 'coupon',
 										className: 'form-control bx-ios-fix',
 										type: 'text'
 									},
 									events: {
-										change: BX.delegate(function(){
-											var newCoupon = BX('coupon');
+										change: BX.delegate(function(event){
+											var newCoupon = BX.getEventTarget(event);
 											if (newCoupon && newCoupon.value)
 											{
 												this.sendRequest('enterCoupon', newCoupon.value);
@@ -7495,7 +7495,14 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 
 				if (value.length > 0 && arProperty.PATTERN && arProperty.PATTERN.length)
 				{
-					re = new RegExp(arProperty.PATTERN);
+					var pattern = arProperty.PATTERN;
+					var clearPattern = pattern.substr(1, pattern.lastIndexOf(pattern[0]) - 1);
+					if (clearPattern && clearPattern.length)
+					{
+						pattern = clearPattern;
+					}
+
+					re = new RegExp(pattern);
 					if (!re.test(value))
 						errors.push(field + ' ' + BX.message('SOA_INVALID_PATTERN'));
 				}
@@ -7636,8 +7643,13 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 			if (arProperty.MULTIPLE == 'Y')
 				return errors;
 
-			if (arProperty.REQUIRED == 'Y' && files.length == 0 && defaultValue == '' && !arProperty.DEFAULT_VALUE.length)
+			if (
+				arProperty.REQUIRED == 'Y' && files.length == 0 && defaultValue == ''
+				&& (!arProperty.DEFAULT_VALUE || !arProperty.DEFAULT_VALUE.length)
+			)
+			{
 				errors.push(field + ' ' + BX.message('SOA_REQUIRED'));
+			}
 			else
 			{
 				for (i = 0; i < files.length; i++)

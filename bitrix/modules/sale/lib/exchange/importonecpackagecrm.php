@@ -118,7 +118,7 @@ class ImportOneCPackageCRM extends ImportOneCPackage
 
 			if($documentShipment !== null)
 			{
-				$settings = Manager::getSettingsByType($documentShipment->getOwnerEntityTypeId());
+				$settings = ManagerImport::getSettingsByType($documentShipment->getOwnerEntityTypeId());
 
 				$convertor = OneC\Converter::getInstance($documentShipment->getOwnerEntityTypeId());
 				$convertor->loadSettings($settings);

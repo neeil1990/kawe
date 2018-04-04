@@ -62,13 +62,6 @@ if ($server->getRequestMethod() == "POST"
 		}
 	}
 
-	$checkResult = $handler::checkMinimalRequirements();
-	if (!$checkResult->isSuccess())
-	{
-		foreach ($checkResult->getErrors() as $error)
-			$errorMessage .= $error->getMessage()."<br>\n";
-	}
-
 	$cashbox['SETTINGS'] = $handler::extractSettingsFromRequest($request);
 
 	$result = $handler::validateFields($cashbox);

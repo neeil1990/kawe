@@ -708,16 +708,16 @@ foreach ($arBasketOrder as $arBasket):
 	<td class=xl40>---</td>
 	<td class=xl40 width=40 style='border-top:none;border-left:none;width:30pt'><?=$arBasket['MEASURE_TEXT']?></td>
 	<td class=xl41 style='border-top:none;border-left:none'><?echo Bitrix\Sale\BasketItem::formatQuantity($arQuantities[$mi]);?></td>
-	<td align="right" class=xl42 style='border-top:none;border-left:none'><?=SaleFormatCurrency($item_price, $arOrder["CURRENCY"], false, true);?></td>
-	<td class=xl42 align=right style='border-top:none;border-left:none' x:num><?=SaleFormatCurrency($item_price * $arQuantities[$mi], $arOrder["CURRENCY"], false, true); $total_price += ($item_price*$arQuantities[$mi]);?></td>
+	<td align="right" class=xl42 style='border-top:none;border-left:none'><?=CCurrencyLang::CurrencyFormat($item_price, $arOrder["CURRENCY"], false);?></td>
+	<td class=xl42 align=right style='border-top:none;border-left:none' x:num><?=CCurrencyLang::CurrencyFormat($item_price * $arQuantities[$mi], $arOrder["CURRENCY"], false); $total_price += ($item_price*$arQuantities[$mi]);?></td>
 	<td class=xl43 style='border-top:none;border-left:none'>&nbsp;</td>
 	<td class=xl44 align=right width=43 style='border-top:none;border-left:none;
 	width:32pt'><?=($taxRate > 0 || count($arTaxList) > 0) ? $taxRate."%" : "Без НДС";?></td>
 	<td class=xl45 align=right width=78 style='border-top:none;border-left:none;
-	width:59pt' x:num><?=SaleFormatCurrency($nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false, true); $total_nds += $nds_val*$arQuantities[$mi];?></td>
+	width:59pt' x:num><?=CCurrencyLang::CurrencyFormat($nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false); $total_nds += $nds_val*$arQuantities[$mi];?></td>
 
 	<td class=xl45 align=right width=83 style='border-top:none;border-left:none;
-	width:62pt' x:num><?=SaleFormatCurrency($item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false, true);	$total_sum += $item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi]?></td>
+	width:62pt' x:num><?=CCurrencyLang::CurrencyFormat($item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false);	$total_sum += $item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi]?></td>
 
 	<td class=xl46 ><input size="5" style="border:0px solid #000000;font-size:14px;font-style:bold;text-align:center;" type="text" value="---"></td>
 	<td class=xl46 ><input size="5" style="border:0px solid #000000;font-size:14px;font-style:bold;text-align:center;" type="text" value="---"></td>
@@ -740,15 +740,15 @@ if ($arOrder["DELIVERY_ID"]):
 	<td class=xl40>---</td>
 	<td class=xl40 width=40 style='border-top:none;border-left:none;width:30pt'></td>
 	<td class=xl41 style='border-top:none;border-left:none'>1</td>
-	<td align="right" class=xl42 style='border-top:none;border-left:none'><?=SaleFormatCurrency($item_price, $arOrder["CURRENCY"], false, true);?></td>
-	<td class=xl42 align=right style='border-top:none;border-left:none' x:num><?=SaleFormatCurrency($item_price, $arOrder["CURRENCY"], false, true); $total_price += $item_price;?></td>
+	<td align="right" class=xl42 style='border-top:none;border-left:none'><?=CCurrencyLang::CurrencyFormat($item_price, $arOrder["CURRENCY"], false);?></td>
+	<td class=xl42 align=right style='border-top:none;border-left:none' x:num><?=CCurrencyLang::CurrencyFormat($item_price, $arOrder["CURRENCY"], false); $total_price += $item_price;?></td>
 	<td class=xl43 style='border-top:none;border-left:none'>&nbsp;</td>
 	<td class=xl44 align=right width=43 style='border-top:none;border-left:none;
 	width:32pt'><?=($taxRate > 0 || count($arTaxList) > 0) ? $taxRate."%" : "Без НДС";?></td>
 	<td class=xl45 align=right width=78 style='border-top:none;border-left:none;
-	width:59pt' x:num><?=SaleFormatCurrency($nds_val, $arOrder["CURRENCY"], false, true); $total_nds += $nds_val;?></td>
+	width:59pt' x:num><?=CCurrencyLang::CurrencyFormat($nds_val, $arOrder["CURRENCY"], false); $total_nds += $nds_val;?></td>
 	<td class=xl45 align=right width=83 style='border-top:none;border-left:none;
-	width:62pt' x:num><?=SaleFormatCurrency($nds_val+$item_price, $arOrder["CURRENCY"], false, true); $total_sum += $nds_val+$item_price?></td>
+	width:62pt' x:num><?=CCurrencyLang::CurrencyFormat($nds_val+$item_price, $arOrder["CURRENCY"], false); $total_sum += $nds_val+$item_price?></td>
 	<td class=xl46 ><input size="5" style="border:0px solid #000000;font-size:14px;font-style:bold;text-align:center;" type="text" value="---"></td>
 	<td class=xl46 ><input size="5" style="border:0px solid #000000;font-size:14px;font-style:bold;text-align:center;" type="text" value="---"></td>
 	<td class=xl53 width=114 style='border-top:none;border-left:none;width:86pt'>---</td>
@@ -760,11 +760,11 @@ if ($arOrder["DELIVERY_ID"]):
 	<td class=xl59>&nbsp;</td>
 	<td class=xl59>&nbsp;</td>
 	<td class=xl59>&nbsp;</td>
-	<td class=xl60 align=right width=80 style='border-top:none;width:60pt' x:num><?=SaleFormatCurrency($total_price, $arOrder["CURRENCY"], false, true);?></td>
+	<td class=xl60 align=right width=80 style='border-top:none;width:60pt' x:num><?=CCurrencyLang::CurrencyFormat($total_price, $arOrder["CURRENCY"], false);?></td>
 	<td class=xl61 style='border-left:none'>&nbsp;</td>
 	<td class=xl61 style='border-left:none'>&nbsp;</td>
-	<td class=xl62 align=right width=78 style='border-top:none;width:59pt' x:num><?=SaleFormatCurrency($total_nds, $arOrder["CURRENCY"], false, true);?></td>
-	<td class=xl63 align=right width=83 style='border-top:none;width:62pt;white-space:nowrap' x:num><?=SaleFormatCurrency($total_sum, $arOrder["CURRENCY"], false, true);?></td>
+	<td class=xl62 align=right width=78 style='border-top:none;width:59pt' x:num><?=CCurrencyLang::CurrencyFormat($total_nds, $arOrder["CURRENCY"], false);?></td>
+	<td class=xl63 align=right width=83 style='border-top:none;width:62pt;white-space:nowrap' x:num><?=CCurrencyLang::CurrencyFormat($total_sum, $arOrder["CURRENCY"], false);?></td>
 </tr>
 <tr height=26 style='mso-height-source:userset;height:19.5pt'>
 	<td height=26 class=xl36 style='height:19.5pt'></td>

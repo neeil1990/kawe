@@ -225,6 +225,15 @@ if (is_array($arResult["ActiveFeatures"]) && count($arResult["ActiveFeatures"]) 
 	}
 	//=============End date
 
+	if (
+		array_key_exists("flt_ip", $_REQUEST)
+		&& strlen($_REQUEST["flt_ip"]) > 0
+	)
+	{
+		$ip = htmlspecialcharsbx($_REQUEST["flt_ip"]);
+		$arParams["IP"] = trim($ip);
+	}
+
 	function CheckFilter()
 	{
 		if(strlen($_REQUEST["flt_date_from"])>0)
@@ -248,6 +257,8 @@ if (is_array($arResult["ActiveFeatures"]) && count($arResult["ActiveFeatures"]) 
 			$arEventFilter["TIMESTAMP_X_1"] = $arParams["LOG_DATE_FROM"];
 		if ($arParams["LOG_DATE_TO"] != "")
 			$arEventFilter["TIMESTAMP_X_2"] = $arParams["LOG_DATE_TO"];
+		if ($arParams["IP"] != "")
+			$arEventFilter["REMOTE_ADDR"] = $arParams["IP"];
 		$arEventFilter["USER_ID"] =  ($find != '' && $find_type == "user_id" ? $find : $find_user_id);
 
 		$nameFormat = CSite::GetNameFormat(false);

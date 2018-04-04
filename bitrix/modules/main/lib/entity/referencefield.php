@@ -69,6 +69,15 @@ class ReferenceField extends Field
 		}
 	}
 
+	/**
+	 * @param        $value
+	 * @param        $primary
+	 * @param        $row
+	 * @param Result $result
+	 *
+	 * @return Result|void
+	 * @throws SystemException
+	 */
 	public function validateValue($value, $primary, $row, Result $result)
 	{
 		throw new SystemException('Reference field doesn\'t support value set up and validation.');
@@ -89,6 +98,8 @@ class ReferenceField extends Field
 
 	/**
 	 * @return \Bitrix\Main\Entity\Base
+	 * @throws ArgumentException
+	 * @throws SystemException
 	 */
 	public function getRefEntity()
 	{

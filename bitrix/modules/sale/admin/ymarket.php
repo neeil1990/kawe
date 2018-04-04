@@ -55,18 +55,22 @@ if (isset($_REQUEST["https_check"]) && $_REQUEST["https_check"] == "Y" && check_
 	echo CUtil::PhpToJSObject(array("status" => $res, "text" => $text));
 	die();
 }
-else if($REQUEST_METHOD=="POST" && check_bitrix_sessid())
+else if($REQUEST_METHOD == "POST" && check_bitrix_sessid())
 {
 	$site = !empty($_POST["SITE_ID_INITIAL"]) && $SITE_ID == $_POST["SITE_ID_INITIAL"] ? $SITE_ID : $_POST["SITE_ID_INITIAL"];
 
-	if(isset($_POST["YMSETTINGS"]) && is_array($_POST["YMSETTINGS"]) &&!empty($_POST["YMSETTINGS"]))
+	if(isset($_POST["YMSETTINGS"]) && is_array($_POST["YMSETTINGS"]) && !empty($_POST["YMSETTINGS"]))
 	{
 		$settings = CSaleYMHandler::getSettings(false);
+
+		if(!is_array($settings['SETTINGS']))
+			$settings['SETTINGS'] = array();
 
 		if(!is_array($settings['SETTINGS'][$site]))
 			$settings['SETTINGS'][$site] = array();
 
 		$settings['SETTINGS'][$site] = array_merge($settings['SETTINGS'][$site], $_POST["YMSETTINGS"]);
+
 		CSaleYMHandler::saveSettings($settings['SETTINGS']);
 		$bSaved = true;
 	}
@@ -404,10 +408,6 @@ if(CSaleYMHandler::isActive())
 		<tr>
 			<td width="40%"><?=GetMessage("SALE_YM_YANDEX")?>:</td>
 			<td width="60%"><?=makeSelectorFromPaySystems("YMSETTINGS[PAY_SYSTEMS][YANDEX]", $siteSetts["PAY_SYSTEMS"]["YANDEX"], $personTypeId, $SITE_ID)?></td>
-		</tr>
-		<tr>
-			<td ><?=GetMessage("SALE_YM_SHOP_PREPAID")?>:</td>
-			<td><?=makeSelectorFromPaySystems("YMSETTINGS[PAY_SYSTEMS][SHOP_PREPAID]", $siteSetts["PAY_SYSTEMS"]["SHOP_PREPAID"], $personTypeId, $SITE_ID)?></td>
 		</tr>
 		<tr>
 			<td ><?=GetMessage("SALE_YM_CASH_ON_DELIVERY")?>:</td>

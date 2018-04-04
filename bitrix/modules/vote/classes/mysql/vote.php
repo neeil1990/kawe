@@ -58,12 +58,11 @@ class CVote extends CAllVote
 		$params = (is_array($params) ? $params : array($params));
 		$params["RETURN_SEARCH_STRING"] = ($params["RETURN_SEARCH_STRING"] == "Y" ? "Y" : "N");
 
-		$arSqlSelect = array("VE.VOTE_ID", "VE.IP");
+		$arSqlSelect = array("VE.VOTE_ID", "VE.IP", "TIMESTAMPDIFF(SECOND, VE.DATE_VOTE, NOW()) AS KEEP_IP_SEC");
 		$arSqlSearch = array(
 			"VE.VOTE_ID='".$VOTE_ID."'",
 			"VE.IP='".$DB->ForSql($REMOTE_ADDR, 15)."'");
 		if ($KEEP_IP_SEC > 0):
-			$arSqlSelect[] = "TIMESTAMPDIFF(SECOND, VE.DATE_VOTE, NOW()) AS KEEP_IP_SEC";
 			$arSqlSearch[] = "(FROM_UNIXTIME(UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - ".$KEEP_IP_SEC.") <= VE.DATE_VOTE)";
 		endif;
 		if ($params["RETURN_SEARCH_STRING"] == "Y"):

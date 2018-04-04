@@ -15,11 +15,26 @@ namespace Bitrix\Main\Entity;
  */
 class DatetimeField extends DateField
 {
+	/**
+	 * DatetimeField constructor.
+	 *
+	 * @param       $name
+	 * @param array $parameters
+	 *
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function __construct($name, $parameters = array())
 	{
 		ScalarField::__construct($name, $parameters);
 	}
 
+	/**
+	 * @param mixed $value
+	 *
+	 * @return string
+	 * @throws \Bitrix\Main\ArgumentTypeException
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbDateTime($value);

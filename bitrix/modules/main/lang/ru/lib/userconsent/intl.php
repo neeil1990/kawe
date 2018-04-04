@@ -21,7 +21,7 @@ $MESS["MAIN_USER_CONSENT_INTL_PHRASE_COMPANY_NAME"] = "%rq_company_name% (ОГР
 $MESS["MAIN_USER_CONSENT_INTL_PHRASE_IP_NAME"] = "ИП %rq_name% (ОГРНИП %rq_ogrnip%, ИНН %rq_inn%)";
 $MESS["MAIN_USER_CONSENT_INTL_TYPE_N"] = "Собственное";
 $MESS["MAIN_USER_CONSENT_INTL_TYPE_S"] = "Стандартное";
-$MESS["MAIN_USER_CONSENT_INTL_NOTIFY_TEXT"] = "В июле 2017 года вступают в силу поправки к ФЗ-152 от 27.07.2006 «О персональных данных» и штрафы значительно вырастут.
+$MESS["MAIN_USER_CONSENT_INTL_NOTIFY_TEXT"] = "В июле 2017 года вступили в силу поправки к ФЗ-152 от 27.07.2006 «О персональных данных» и штрафы значительно выросли.
 Битрикс24 поможет вам соответствовать требованиям закона и избежать штрафов.";
 $MESS["MAIN_USER_CONSENT_INTL_NOTIFY_TEXT_BTN"] = "Подробнее";
 $MESS["MAIN_USER_CONSENT_INTL_DESCRIPTION"] = "В России при сборе личных данных требуется обязательное согласие пользователя на обработку его персональных данных. <a target=\"_blank\" href=\"https://152fz.net/\">Подробнее</a>";

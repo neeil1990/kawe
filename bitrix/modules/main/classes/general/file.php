@@ -2638,6 +2638,8 @@ function ImgShw(ID, width, height, alt)
 				$cache_time = intval($arOptions["cache_time"]);
 			if(isset($arOptions["attachment_name"]))
 				$attachment_name = $arOptions["attachment_name"];
+			if(isset($arOptions["fast_download"]))
+				$fastDownload = (bool)$arOptions["fast_download"];
 		}
 
 		if($cache_time < 0)
@@ -3389,7 +3391,7 @@ function ImgShw(ID, width, height, alt)
 		{
 			$ct = "application/vnd.ms-excel";
 		}
-		elseif (strpos($ct, "word") !== false)
+		elseif (strpos($ct, "word") !== false && strpos($ct, "vnd.openxmlformats") === false)
 		{
 			$ct = "application/msword";
 		}

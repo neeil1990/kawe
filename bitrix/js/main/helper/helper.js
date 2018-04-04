@@ -93,9 +93,17 @@ BX.Helper =
 				}
 			}
 
-			if(event.data.action === "getNewArticleCount")
+			if (event.data.action === "getNewArticleCount")
 			{
-				this.frameNode.contentWindow.postMessage({action: 'throwNewArticleCount', articleCount: this.notifyNum}, '*');
+				var newArticleInfo = {
+					action: 'throwNewArticleCount',
+					articleCount: this.notifyNum
+				};
+				if(this.notifyData)
+				{
+					newArticleInfo.lastTimestampCheckNewArticle = this.notifyData.counter_update_date
+				}
+				this.frameNode.contentWindow.postMessage(newArticleInfo, '*');
 			}
 		}, this));
 
@@ -117,10 +125,8 @@ BX.Helper =
 			return;
 		}
 
-		var url =
-			this.frameOpenUrl + "?" +
-			(BX.type.isNotEmptyString(additionalParam) ? additionalParam : "")
-		;
+		var url = this.frameOpenUrl + ((this.frameOpenUrl.indexOf("?") < 0) ? "?" : "&") +
+			(BX.type.isNotEmptyString(additionalParam) ? additionalParam : "");
 
 		if (this.getFrame().src !== url)
 		{
@@ -264,7 +270,7 @@ BX.Helper =
 	{
 		if (!isNaN(parseFloat(num)) && isFinite(num) && num > 0)
 		{
-			var numBlock = '<div class="help-block-counter">' + (num > 99 ? '99+' : num) + '</div>';
+			var numBlock = '<div class="help-cl-count"><span class="help-cl-count-digit">' + (num > 99 ? '99+' : num) + '</span></div>';
 		}
 		else
 		{
@@ -273,6 +279,7 @@ BX.Helper =
 		this.notifyBlock.innerHTML = numBlock;
 
 		this.setNotification(num);
+		this.notifyNum = num;
 	},
 
 	showFlyingHero : function(url)

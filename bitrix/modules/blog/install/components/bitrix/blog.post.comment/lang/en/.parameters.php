@@ -41,4 +41,5 @@ $MESS["RATING_TYPE_STANDART_TEXT"] = "Like/Unlike (text)";
 $MESS["RATING_TYPE_STANDART_GRAPHIC"] = "Like/Unlike (image)";
 $MESS["RATING_TYPE_LIKE_TEXT"] = "Like (text)";
 $MESS["RATING_TYPE_LIKE_GRAPHIC"] = "Like (image)";
+$MESS["BPC_AJAX_PAGINATION"] = "Use AJAX based page navigation in comments";
 ?>

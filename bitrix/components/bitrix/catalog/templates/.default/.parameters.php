@@ -209,10 +209,9 @@ if (isset($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] >
 			'quantity' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_QUANTITY'),
 			'buttons' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_BUTTONS'),
 			'props' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_PROPS'),
-			'sku' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_SKU'),
-			'compare' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_COMPARE')
+			'sku' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_SKU')
 		)),
-		'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons,compare'
+		'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons'
 	);
 
 	$lineElementCount = (int)$arCurrentValues['LINE_ELEMENT_COUNT'] ?: 3;
@@ -1074,10 +1073,9 @@ if (isset($arCurrentValues['SHOW_TOP_ELEMENTS']) && 'Y' == $arCurrentValues['SHO
 				'quantity' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_QUANTITY'),
 				'buttons' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_BUTTONS'),
 				'props' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_PROPS'),
-				'sku' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_SKU'),
-				'compare' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_COMPARE')
+				'sku' => GetMessage('CP_BC_TPL_PRODUCT_BLOCK_SKU')
 			)),
-			'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons,compare'
+			'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons'
 		);
 
 		$lineElementCount = (int)$arCurrentValues['TOP_LINE_ELEMENT_COUNT'] ?: 3;

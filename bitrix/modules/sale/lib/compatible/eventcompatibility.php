@@ -1367,9 +1367,9 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$eventManager->registerEventHandler('sale', 'OnSaleOrderCanceled', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleCancelOrder');
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderPaidSendMail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderPaidSendMail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderPaidSendMail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderPaidSendMail', 500);
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderCancelSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderCancelSendEmail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderCancelSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderCancelSendEmail', 500);
 
 		$eventManager->registerEventHandler('sale', 'OnSaleOrderEntitySaved', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderSave');
 
@@ -1385,11 +1385,11 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$eventManager->registerEventHandler('sale', 'OnSaleStatusOrderChange', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleStatusOrderChange');
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderStatusChangeSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderStatusChangeSendEmail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderStatusChangeSendEmail', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onSaleOrderStatusChangeSendEmail', 500);
 
-		$eventManager->registerEventHandler('sale', 'OnSaleOrderSaved', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderNewSendEmail');
+		$eventManager->registerEventHandler('sale', 'OnSaleOrderSaved', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onOrderNewSendEmail', 500);
 
-		RegisterModuleDependences("sale", "OnOrderNewSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderNewSendEmail");
+		RegisterModuleDependences("sale", "OnOrderNewSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderNewSendEmail", 500);
 
 		$eventManager->registerEventHandler('sale', 'OnBeforeSaleBasketItemEntityDeleted', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'OnBeforeBasketDelete');
 
@@ -1397,7 +1397,7 @@ class EventCompatibility extends Sale\Compatible\Internals\EntityCompatibility
 
 		$eventManager->registerEventHandler('sale', 'OnShipmentAllowDelivery', 'sale', '\Bitrix\Sale\Compatible\EventCompatibility', 'onShipmentAllowDelivery');
 
-		RegisterModuleDependences("sale", "OnOrderCancelSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderCancelSendEmail");
+		RegisterModuleDependences("sale", "OnOrderCancelSendEmail", "sale", "\\Bitrix\\Sale\\Compatible\\EventCompatibility", "onCallOrderCancelSendEmail", 500);
 
 		$eventManager->registerEventHandler('sale', 'OnSaleOrderSaved', 'sale', '\Bitrix\Sale\Product2ProductTable', 'onSaleOrderAddEvent');
 		

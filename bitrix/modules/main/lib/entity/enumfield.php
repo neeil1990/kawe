@@ -18,6 +18,14 @@ class EnumField extends ScalarField
 {
 	protected $values;
 
+	/**
+	 * EnumField constructor.
+	 *
+	 * @param       $name
+	 * @param array $parameters
+	 *
+	 * @throws SystemException
+	 */
 	function __construct($name, $parameters = array())
 	{
 		parent::__construct($name, $parameters);
@@ -42,6 +50,11 @@ class EnumField extends ScalarField
 		$this->values = $parameters['values'];
 	}
 
+	/**
+	 * @return array|Validator\Base[]|callback[]
+	 * @throws SystemException
+	 * @throws \Bitrix\Main\ArgumentTypeException
+	 */
 	public function getValidators()
 	{
 		$validators = parent::getValidators();
@@ -59,6 +72,12 @@ class EnumField extends ScalarField
 		return $this->values;
 	}
 
+	/**
+	 * @param mixed $value
+	 *
+	 * @return string
+	 * @throws SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbString($value);

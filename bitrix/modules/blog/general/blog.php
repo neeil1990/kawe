@@ -88,16 +88,22 @@ class CAllBlog
 
 		if (CBlog::IsBlogOwner($ID, $userID))
 			return $arAvailPerms[count($arAvailPerms) - 1];
-
+		
+		$arUserGroups = CBlogUser::GetUserGroups($userID, $ID, "Y", BLOG_BY_USER_ID);
+		$permGroups = CBlogUser::GetUserPerms($arUserGroups, $ID, 0, BLOG_PERMS_POST, BLOG_BY_USER_ID);
+		
+//		if for user unset option "WRITE TO BLOG", they can only read (even if all user can write), or smaller rights, if group have smaller
 		$arBlogUser = CBlogUser::GetByID($userID, BLOG_BY_USER_ID);
 		if ($arBlogUser && $arBlogUser["ALLOW_POST"] != "Y")
-			return $arAvailPerms[0];
+		{
+			if($permGroups && in_array(BLOG_PERMS_READ, $arAvailPerms))
+				return min(BLOG_PERMS_READ, $permGroups);
+			else
+				return $arAvailPerms[0];
+		}
 
-		$arUserGroups = CBlogUser::GetUserGroups($userID, $ID, "Y", BLOG_BY_USER_ID);
-
-		$perms = CBlogUser::GetUserPerms($arUserGroups, $ID, 0, BLOG_PERMS_POST, BLOG_BY_USER_ID);
-		if ($perms)
-			return $perms;
+		if ($permGroups)
+			return $permGroups;
 
 		return $arAvailPerms[0];
 	}

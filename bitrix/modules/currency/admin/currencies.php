@@ -269,6 +269,10 @@ while ($arRes = $currencyIterator->Fetch())
 			$userIDs[$arRes['MODIFIED_BY']] = true;
 	}
 
+	$arRes['FULL_NAME'] = (string)$arRes['FULL_NAME'];
+	if ($arRes['FULL_NAME'] === '')
+		$arRes['FULL_NAME'] = $arRes['CURRENCY'];
+
 	$urlEdit = '/bitrix/admin/currency_edit.php?lang='.LANGUAGE_ID.'&ID='.$arRes['CURRENCY'];
 
 	$arRows[$arRes['CURRENCY']] = $row =& $adminList->AddRow($arRes['CURRENCY'], $arRes, $urlEdit, GetMessage('CURRENCY_A_EDIT'));

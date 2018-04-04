@@ -9,6 +9,9 @@ class CBXVirtualIoFileSystem
 	const directionDecode = 2;
 	const invalidChars = "\\/:*?\"'<>|~#&;";
 
+	//the pattern should be quoted, "|" is allowed below as a delimiter
+	const invalidBytes = "\xE2\x80\xAE"; //Right-to-Left Override Unicode Character
+
 	private $arErrors = array();
 
 	public static function ConvertCharset($string, $direction = 1, $skipEvents = false)
@@ -227,42 +230,63 @@ class CBXVirtualIoFileSystem
 		return $res;
 	}
 
+	protected static function ValidateCommon($path)
+	{
+		if (trim($path) == '')
+		{
+			return false;
+		}
+
+		if (strpos($path, "\0") !== false)
+		{
+			return false;
+		}
+
+		if(preg_match("#(".self::invalidBytes.")#", $path))
+		{
+			return false;
+		}
+
+		if(defined("BX_UTF") && !mb_check_encoding($path, "UTF-8"))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	function ValidatePathString($path)
 	{
 		if(strlen($path) > 4096)
+		{
 			return false;
+		}
 
-		$p = trim($path);
-		if ($p == '')
+		if(!static::ValidateCommon($path))
+		{
 			return false;
-
-		if (strpos($path, "\0") !== false)
-			return false;
-
-		if(defined("BX_UTF") && !mb_check_encoding($path, "UTF-8"))
-			return false;
+		}
 
 		return (preg_match("#^([a-z]:)?/([^\x01-\x1F".preg_quote(self::invalidChars, "#")."]+/?)*$#isD", $path) > 0);
 	}
 
 	function ValidateFilenameString($filename)
 	{
-		$fn = trim($filename);
-		if ($fn == '')
+		if(!static::ValidateCommon($filename))
+		{
 			return false;
-
-		if (strpos($filename, "\0") !== false)
-			return false;
-
-		if(defined("BX_UTF") && !mb_check_encoding($filename, "UTF-8"))
-			return false;
+		}
 
 		return (preg_match("#^[^\x01-\x1F".preg_quote(self::invalidChars, "#")."]+$#isD", $filename) > 0);
 	}
 
 	function RandomizeInvalidFilename($filename)
 	{
-		return preg_replace_callback("#([\x01-\x1F".preg_quote(self::invalidChars, "#")."])#", 'CBXVirtualIoFileSystem::getRandomChar', $filename);
+		return preg_replace_callback(
+			"#([\x01-\x1F".preg_quote(self::invalidChars, "#")."]|".self::invalidBytes.")#",
+			'CBXVirtualIoFileSystem::getRandomChar',
+			$filename
+		);
 	}
 
 	public static function getRandomChar()

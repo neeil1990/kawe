@@ -101,7 +101,7 @@ class AnswerTable extends Entity\DataManager
 	 */
 	public static function setCounter(array $id, $increment = true)
 	{
-		$id = implode(", ", $id);
+		$id = implode(", ", array_map('intval', $id));
 		if (empty($id))
 			return;
 		$connection = \Bitrix\Main\Application::getInstance()->getConnection();

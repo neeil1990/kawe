@@ -4,7 +4,12 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 if (isset($_REQUEST['bxsender']))
 {
 	if ($_REQUEST['bxsender'] == 'core_window_cauthdialog')
-		echo $APPLICATION->ShowHead();
+	{
+		echo '<meta http-equiv="Content-Type" content="text/html; charset='.LANG_CHARSET.'" />'."\n";
+		$APPLICATION->ShowCSS();
+		$APPLICATION->ShowHeadStrings();
+		$APPLICATION->ShowHeadScripts();
+	}
 	return;
 }
 
@@ -80,7 +85,12 @@ CJSCore::Init(array('admin_login'));
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="initial-scale=1.0, width=device-width">
-<?$APPLICATION->ShowHead();?>
+<?
+echo '<meta http-equiv="Content-Type" content="text/html; charset='.LANG_CHARSET.'" />'."\n";
+$APPLICATION->ShowCSS();
+$APPLICATION->ShowHeadStrings();
+$APPLICATION->ShowHeadScripts();
+?>
 <title><?echo htmlspecialcharsex($APPLICATION->GetTitle(false, true))?> - <?echo COption::GetOptionString("main","site_name", $_SERVER["SERVER_NAME"])?></title>
 </head>
 <body id="bx-admin-prefix">

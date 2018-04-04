@@ -30,7 +30,7 @@ foreach ($arResult["QUESTIONS"] as $arQuestion):
 							echo '&nbsp';
 						echo '('.GetMessage('VOTE_GROUP_TOTAL') .')';
 					endif; ?> - <?=$arAnswer["COUNTER"]?> (<?=$arAnswer["PERCENT"]?>%)<br />
-				<div class="graph-bar" style="width: <?=$arAnswer["BAR_PERCENT"]?>%;background-color:#<?=$arAnswer["COLOR"]?>">&nbsp;</div>
+				<div class="graph-bar" style="width: <?=$arAnswer["BAR_PERCENT"]?>%;background-color:#<?=htmlspecialcharsbx($arAnswer["COLOR"])?>">&nbsp;</div>
 				<? if (isset($arResult['GROUP_ANSWERS'][$arAnswer['ID']])): ?>
 					<? $arGroupAnswers = $arResult['GROUP_ANSWERS'][$arAnswer['ID']]; ?> 
 					<?foreach ($arGroupAnswers as $arGroupAnswer):?>
@@ -40,7 +40,7 @@ foreach ($arResult["QUESTIONS"] as $arQuestion):
 								<span class='vote-answer-lolight'><?=$arAnswer["MESSAGE"]?>:&nbsp;</span>
 							<? } ?>
 							<?=$arGroupAnswer["MESSAGE"]?> - <?=($arGroupAnswer["COUNTER"] > 0?'&nbsp;':'')?><?=$arGroupAnswer["COUNTER"]?> (<?=$arGroupAnswer["PERCENT"]?>%)<br />
-							<div class="graph-bar" style="width: <?=$arGroupAnswer["PERCENT"]?>%;background-color:#<?=$arAnswer["COLOR"]?>">&nbsp;</div>
+							<div class="graph-bar" style="width: <?=$arGroupAnswer["PERCENT"]?>%;background-color:#<?=htmlspecialcharsbx($arAnswer["COLOR"])?>">&nbsp;</div>
 					<?endforeach?>
 				<? endif; // GROUP_ANSWERS ?>
 <?

@@ -107,14 +107,16 @@ class CatalogProvider
 		$productGetIdList = array();
 		$correctProductIds = array();
 
-		$iblockElementSelect = array('ID', 'IBLOCK_ID', 'IBLOCK_SECTION_ID');
+		$iblockElementSelect = array('ID', 'IBLOCK_ID', 'IBLOCK_SECTION_ID', 'ACTIVE', 'ACTIVE_DATE');
 		if (is_array($options) && !in_array('CATALOG_DATA', $options))
 		{
 			$iblockElementSelect = array_merge($iblockElementSelect, array('NAME', 'DETAIL_PAGE_URL'));
 		}
 
+		$resultList = array();
 		foreach ($products as $productId => $itemData)
 		{
+			$resultList[$productId] = false;
 			if (!isset($itemData['ITEM_CODE']))
 			{
 				$itemData['ITEM_CODE'] = $productId;
@@ -167,7 +169,7 @@ class CatalogProvider
 			$products = static::removeNotExistsItemFromProducts($products, $correctProductIds);
 			if (empty($products))
 			{
-				return static::getResultProvider($result, $outputVariable);
+				return static::getResultProvider($result, $outputVariable, $resultList);
 			}
 		}
 
@@ -208,7 +210,7 @@ class CatalogProvider
 		$products = static::removeNotExistsItemFromProducts($products, $correctProductList);
 		if (empty($products))
 		{
-			return static::getResultProvider($result, $outputVariable);
+			return static::getResultProvider($result, $outputVariable, $resultList);
 		}
 
 		$products = static::changeSubscribeProductQuantity($products, $iblockProductMap);
@@ -240,10 +242,9 @@ class CatalogProvider
 		$catalogProductDataList = static::getCatalogProducts(array_keys($products), $catalogSelect);
 
 		$products = static::removeNotExistsItemFromProducts($products, array_keys($catalogProductDataList));
-
 		if (empty($products))
 		{
-			return static::getResultProvider($result, $outputVariable);
+			return static::getResultProvider($result, $outputVariable, $resultList);
 		}
 
 		$checkQuantityList = array();
@@ -524,7 +525,6 @@ class CatalogProvider
 	{
 		$filter = array(
 			'ID' => $list,
-			'ACTIVE' => 'Y',
 			'ACTIVE_DATE' => 'Y',
 			'CHECK_PERMISSIONS' => 'Y',
 			'MIN_PERMISSION' => 'R'
@@ -956,36 +956,7 @@ class CatalogProvider
 	 */
 	public function ship(array $products)
 	{
-		$result = new Sale\Result();
-
-//		$reverseQuantityProducts = $this->createReverseQuantityProducts($products);
-		$r = $this->tryShip($products);
-		if (!$r->isSuccess())
-		{
-			$result->addErrors($r->getErrors());
-			return $result;
-		}
-
-		$data = $r->getData();
-
-		if (!empty($data['TRY_SHIP_PRODUCTS_LIST']))
-		{
-			$productsList = array();
-			foreach ($data['TRY_SHIP_PRODUCTS_LIST'] as $productId => $value)
-			{
-				if ($value && !empty($products[$productId]))
-				{
-					$productsList[$productId] = $products[$productId];
-				}
-			}
-
-			if (!empty($productsList))
-			{
-				return $this->shipProducts($productsList);
-			}
-		}
-
-		return $result;
+		return $this->shipProducts($products);
 	}
 
 	/**
@@ -1342,6 +1313,7 @@ class CatalogProvider
 			$r = static::shipProduct($productData, $productStoreData);
 			if (!$r->isSuccess())
 			{
+				$result->addErrors($r->getErrors());
 				$result->addWarnings($r->getErrors());
 			}
 
@@ -2574,39 +2546,91 @@ class CatalogProvider
 		}
 
 		$availableItems = $this->createProductsListWithCatalogData($filteredProducts);
-
-		if ($useStoreControl)
+		if (empty($availableItems))
 		{
-			$r = $this->checkProductsInStore($availableItems);
-			if ($r->isSuccess())
+			$productIdList = array_keys($products);
+			foreach($productIdList as $productId)
 			{
-				$data = $r->getData();
-				if (!empty($data['PRODUCTS_LIST_IN_STORE']))
-				{
-					$resultList = $data['PRODUCTS_LIST_IN_STORE'];
-				}
+				$result->addError(
+					new Sale\ResultError(
+						Main\Localization\Loc::getMessage(
+							"SALE_PROVIDER_PRODUCT_NOT_AVAILABLE",
+							array_merge(
+								self::getProductCatalogInfo($productId),
+								array("#PRODUCT_ID#" => $productId)
+							)
+						), "SALE_PROVIDER_PRODUCT_NOT_AVAILABLE"
+					)
+				);
 			}
-			else
-			{
-				$result->addErrors($r->getErrors());
-			}
+
+			$result->setData(
+				array(
+					'TRY_SHIP_PRODUCTS_LIST' => array_fill_keys($productIdList, false)
+				)
+			);
+
+			return $result;
 		}
 		else
 		{
-			$r = $this->checkProductsQuantity($availableItems);
-			if ($r->isSuccess())
+			foreach ($availableItems as $productId => $productData)
 			{
-				$data = $r->getData();
-				if (!empty($data['PRODUCTS_LIST_REQUIRED_QUANTITY']))
+				if (!isset($productData['CATALOG']['ACTIVE']) || $productData['CATALOG']['ACTIVE'] != 'Y')
 				{
-					$resultList = $data['PRODUCTS_LIST_REQUIRED_QUANTITY'];
+					$result->addError(
+						new Sale\ResultError(
+							Main\Localization\Loc::getMessage(
+								"SALE_PROVIDER_PRODUCT_NOT_AVAILABLE",
+								array_merge(
+									self::getProductCatalogInfo($productId),
+									array("#PRODUCT_ID#" => $productId)
+								)
+							), "SALE_PROVIDER_PRODUCT_NOT_AVAILABLE"
+						)
+					);
+
+					$resultList[$productId] = false;
+					unset($availableItems[$productId]);
+				}
+			}
+		}
+
+		if (!empty($availableItems))
+		{
+			if ($useStoreControl)
+			{
+				$r = $this->checkProductsInStore($availableItems);
+				if ($r->isSuccess())
+				{
+					$data = $r->getData();
+					if (!empty($data['PRODUCTS_LIST_IN_STORE']))
+					{
+						$resultList = $resultList + $data['PRODUCTS_LIST_IN_STORE'];
+					}
+				}
+				else
+				{
+					$result->addErrors($r->getErrors());
 				}
 			}
 			else
 			{
-				$result->addErrors($r->getErrors());
-			}
+				$r = $this->checkProductsQuantity($availableItems);
+				if ($r->isSuccess())
+				{
+					$data = $r->getData();
+					if (!empty($data['PRODUCTS_LIST_REQUIRED_QUANTITY']))
+					{
+						$resultList = $resultList + $data['PRODUCTS_LIST_REQUIRED_QUANTITY'];
+					}
+				}
+				else
+				{
+					$result->addErrors($r->getErrors());
+				}
 
+			}
 		}
 
 		if (!empty($resultList))
@@ -2927,6 +2951,10 @@ class CatalogProvider
 		{
 			foreach ($availableListId as $productId)
 			{
+				if ($productDataList[$productId] === false)
+				{
+					continue;
+				}
 				$resultList[$productId] = $products[$productId];
 				$resultList[$productId]['CATALOG'] = $productDataList[$productId];
 			}
@@ -3471,7 +3499,15 @@ class CatalogProvider
 		$resultList = array();
 		$hasNew = false;
 
-		$countStores = $this->getStoresCount();
+		$countStores = 0;
+
+		$countStoresResult = $this->getStoresCount();
+		if ($countStoresResult->isSuccess())
+		{
+			$countStores = $countStoresResult->get('STORES_COUNT');
+		}
+
+		$countStoresResult->getData();
 		$defaultDeductionStore = Main\Config\Option::get("sale", "deduct_store_id", "", $context['SITE_ID']);
 		foreach ($products as $productId => $productData)
 		{
@@ -3481,7 +3517,10 @@ class CatalogProvider
 				continue;
 			}
 
-			$isOnlyOneStore = ($countStores == 1 || $countStores == -1 || $defaultDeductionStore > 0);
+			$isOneStore = ($countStores == 1 || $countStores == -1);
+			$isDefaultStore = ($defaultDeductionStore > 0);
+
+			$isOnlyOneStore = ($isOneStore || $isDefaultStore);
 			$isMulti = false;
 			if (isset($productData['STORE_DATA_LIST']))
 			{
@@ -3536,7 +3575,10 @@ class CatalogProvider
 						{
 							if (floatval($storeData['AMOUNT']) > 0)
 							{
-								$countProductInStore++;
+								if ($isOneStore || ($isDefaultStore && $defaultDeductionStore == $storeId))
+								{
+									$countProductInStore++;
+								}
 							}
 						}
 						$resultList[$productId] = ($countProductInStore == 1);
@@ -3640,51 +3682,45 @@ class CatalogProvider
 	}
 
 	/**
-	 * @return array|bool
+	 * @return array|false
 	 */
 	private function getStoreIds()
 	{
 		$context = $this->getContext();
-		//TODO: use orm after fix logic or for null with string value
-		/*
-		$filter = array('=ACTIVE' => 'Y', '=SHIPPING_CENTER' => 'Y');
-		if (isset($params['SITE_ID']) && $params['SITE_ID'] != '')
-		{
-			$filter[] = array(
-				'LOGIC' => 'OR',
-				'=SITE_ID' => $params['SITE_ID'],
-				'==SITE_ID' => null
-			);
-		} */
 
-		$filter = array('ACTIVE' => 'Y', 'SHIPPING_CENTER' => 'Y');
+		$filterId = array('ACTIVE' => 'Y', 'SHIPPING_CENTER' => 'Y');
 		if (isset($context['SITE_ID']) && $context['SITE_ID'] != '')
-		{
-			$filter['+SITE_ID'] = $context['SITE_ID'];
-		}
+			$filterId['+SITE_ID'] = $context['SITE_ID'];
 
-		$cacheId = md5(serialize($filter));
-		if (!($storeIds = static::getHitCache(self::CACHE_STORE, $cacheId)))
+		$cacheId = md5(serialize($filterId));
+		$storeIds = static::getHitCache(self::CACHE_STORE, $cacheId);
+		if (empty($storeIds))
 		{
 			$storeIds = array();
-			$iterator = \CCatalogStore::GetList(
-				array('ID' => 'ASC'),
-				$filter,
-				false,
-				false,
-				array('ID')
-			);
-			while ($row = $iterator->Fetch())
+
+			$filter = Main\Entity\Query::filter();
+			$filter->where('ACTIVE', '=', 'Y');
+			$filter->where('SHIPPING_CENTER', '=', 'Y');
+			if (isset($context['SITE_ID']) && $context['SITE_ID'] != '')
 			{
-				$storeIds[] = (int)$row['ID'];
+				$subFilter = Main\Entity\Query::filter();
+				$subFilter->logic('or')->where('SITE_ID', '=', $context['SITE_ID'])->where('SITE_ID', '=', '')->whereNull('SITE_ID');
+				$filter->where($subFilter);
+				unset($subFilter);
 			}
 
-			unset($row, $iterator);
+			$iterator = Catalog\StoreTable::getList(array(
+				'select' => array('ID'),
+				'filter' => $filter,
+				'order' => array('ID' => 'ASC')
+			));
+			while ($row = $iterator->fetch())
+				$storeIds[] = (int)$row['ID'];
+			unset($row, $iterator, $filter);
 			if (!empty($storeIds))
-			{
 				static::setHitCache(self::CACHE_STORE, $cacheId, $storeIds);
-			}
 		}
+		unset($cacheId, $filterId);
 
 		return $storeIds;
 	}
@@ -4545,6 +4581,11 @@ class CatalogProvider
 			$itemCode = $productData['ITEM_CODE'];
 			$basketCode = $productData['BASKET_CODE'];
 			$resultList[$productId] = $items[$productId];
+
+			if (isset($productData['PRODUCT_DATA']['ACTIVE']))
+			{
+				$resultList[$productId]['ACTIVE'] = $productData['PRODUCT_DATA']['ACTIVE'];
+			}
 
 			$resultList[$productId]['ITEM_CODE'] = $itemCode;
 

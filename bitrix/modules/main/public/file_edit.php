@@ -305,8 +305,16 @@ if(strlen($strWarning) <= 0)
 
 ?>
 <script>
-<?if($_REQUEST['subdialog'] != 'Y'):?>
-	top.BX.reload('<?=CUtil::JSEscape($_REQUEST["back_url"])?>', true);
+<?
+if($_REQUEST['subdialog'] != 'Y'):
+	$url = $_REQUEST["back_url"];
+	if(substr($url, 0, 1) != "/" || substr($url, 1, 1) == "/")
+	{
+		//only local /url is allowed
+		$url = '';
+	}
+?>
+	top.BX.reload('<?=CUtil::JSEscape($url)?>', true);
 <?else:?>
 	if (null != top.structReload)
 		top.structReload('<?=urlencode($_REQUEST["path"])?>');

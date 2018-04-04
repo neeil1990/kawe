@@ -265,7 +265,7 @@ class Client
 				return $this->call($methodName, $additionalParams, true, true);
 			}
 
-			$this->errorCollection->add(array(new Error($answer['error'].". ".$answer['error_description'])));
+			$this->errorCollection->add(array(new Error($answer['error_description'], $answer['error'])));
 			return false;
 		}
 

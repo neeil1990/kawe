@@ -308,7 +308,7 @@ array(
 											([<?echo $arOrder["DELIVERY_ID"];?>]
 											<?
 											$arDeliv = CSaleDelivery::GetByID($arOrder["DELIVERY_ID"]);
-											echo $arDeliv["NAME"];
+											echo htmlspecialcharsbx($arDeliv["NAME"]);
 											?>):
 										</td>
 										<td align="right" class="smallText">

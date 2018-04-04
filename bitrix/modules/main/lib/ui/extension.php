@@ -87,7 +87,7 @@ class Extension
 		$path = "js";
 		foreach ($namespaces as $namespace)
 		{
-			if (!preg_match("/^[a-z0-9_\\.]+$/i", $namespace))
+			if (!preg_match("/^[a-z0-9_\\.\\-]+$/i", $namespace))
 			{
 				return null;
 			}

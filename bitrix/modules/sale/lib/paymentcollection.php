@@ -371,7 +371,9 @@ class PaymentCollection
 							$order->getId(),
 							"PAYMENT_SAVED",
 							$payment->getId(),
-							$payment
+							$payment,
+							array(),
+							OrderHistory::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_1
 						);
 					}
 

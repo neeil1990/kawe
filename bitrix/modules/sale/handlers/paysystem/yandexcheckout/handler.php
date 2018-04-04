@@ -83,6 +83,15 @@ class YandexCheckoutHandler extends PaySystem\ServiceHandler implements PaySyste
 		}
 
 		$yandexPaymentData = $createResult->getData();
+		if ($yandexPaymentData['status'] === static::PAYMENT_STATUS_CANCELED)
+		{
+			return $result->addError(
+				new Main\Error(
+					Localization\Loc::getMessage('SALE_HPS_YANDEX_CHECKOUT_ERROR_PAYMENT_CANCELED')
+				)
+			);
+		}
+
 		$result->setPsData(array('PS_INVOICE_ID' => $yandexPaymentData['id']));
 
 		$params = array(

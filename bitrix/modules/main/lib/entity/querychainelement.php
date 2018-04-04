@@ -2,10 +2,12 @@
 
 namespace Bitrix\Main\Entity;
 
+use Bitrix\Main\ArgumentException;
 use Bitrix\Main\SystemException;
 
 class QueryChainElement
 {
+	/** @var array|Base|Field|ReferenceField|ScalarField  */
 	protected $value;
 
 	protected $parameters;
@@ -22,9 +24,11 @@ class QueryChainElement
 	 * 2. ReferenceField - pointer to another entity
 	 * 3. array(Base, ReferenceField) - pointer from another entity to this
 	 * 4. Base - all fields of entity
+	 *
 	 * @param Field|array|Base $element
-	 * @param array $parameters
-	 * @throws \Exception
+	 * @param array            $parameters
+	 *
+	 * @throws SystemException
 	 */
 	public function __construct($element, $parameters = array())
 	{
@@ -57,7 +61,7 @@ class QueryChainElement
 	}
 
 	/**
-	 * @return array|Base|ExpressionField|ReferenceField|FileField|ScalarField
+	 * @return array|Base|ExpressionField|ReferenceField|ScalarField
 	 */
 	public function getValue()
 	{
@@ -74,6 +78,11 @@ class QueryChainElement
 		$this->parameters[$name] = $value;
 	}
 
+	/**
+	 * @return string
+	 * @throws SystemException
+	 * @throws ArgumentException
+	 */
 	public function getDefinitionFragment()
 	{
 		if (is_null($this->definition_fragment))
@@ -122,6 +131,11 @@ class QueryChainElement
 		return $this->definition_fragment;
 	}
 
+	/**
+	 * @return string
+	 * @throws ArgumentException
+	 * @throws SystemException
+	 */
 	public function getAliasFragment()
 	{
 		if (is_null($this->alias_fragment))
@@ -170,6 +184,11 @@ class QueryChainElement
 		return $this->alias_fragment;
 	}
 
+	/**
+	 * @return mixed|string
+	 * @throws ArgumentException
+	 * @throws SystemException
+	 */
 	public function getSqlDefinition()
 	{
 		if (is_array($this->value) || $this->value instanceof ReferenceField || $this->value instanceof Base)
@@ -200,6 +219,11 @@ class QueryChainElement
 		return $sql;
 	}
 
+	/**
+	 * @return bool
+	 * @throws ArgumentException
+	 * @throws SystemException
+	 */
 	public function isBackReference()
 	{
 		if ($this->type === 3)

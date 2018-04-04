@@ -271,12 +271,12 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 					<?echo Bitrix\Sale\BasketItem::formatQuantity($arQuantities[$mi]); ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo SaleFormatCurrency($arBasket["PRICE"], $arOrder["CURRENCY"], false, true) ?>
+					<?echo CCurrencyLang::CurrencyFormat($arBasket["PRICE"], $arOrder["CURRENCY"], false) ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
 					<?
 						$sum = $arBasket["PRICE"] * $arQuantities[$mi];
-						echo SaleFormatCurrency($sum, $arOrder["CURRENCY"], false, true);
+						echo CCurrencyLang::CurrencyFormat($sum, $arOrder["CURRENCY"], false);
 					?>
 				</td>
 			</tr>
@@ -296,10 +296,10 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 				</td>
 				<td valign="top" align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">1 </td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo SaleFormatCurrency($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false, true);?>
+					<?echo CCurrencyLang::CurrencyFormat($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false);?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo SaleFormatCurrency($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false, true);?>
+					<?echo CCurrencyLang::CurrencyFormat($arOrder["DISCOUNT_VALUE"], $arOrder["CURRENCY"], false);?>
 				</td>
 			</tr>
 		<?endif?>
@@ -329,10 +329,12 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 				</td>
 				<td valign="top" align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">1 </td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-right:none; border-top:none;">
-					<?echo SaleFormatCurrency($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false, true);?>
+					<?
+                    echo CCurrencyLang::CurrencyFormat($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false);
+                    ?>
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo SaleFormatCurrency($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false, true);?>
+					<?echo CCurrencyLang::CurrencyFormat($arOrder["PRICE_DELIVERY"], $arOrder["CURRENCY"], false);?>
 				</td>
 			</tr>
 		<?endif?>
@@ -357,7 +359,7 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 					?>:
 				</td>
 				<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-					<?echo SaleFormatCurrency($total_nds, $arOrder["CURRENCY"], false, true);?>
+					<?echo CCurrencyLang::CurrencyFormat($total_nds, $arOrder["CURRENCY"], false);?>
 				</td>
 			</tr>
 			<?
@@ -366,7 +368,7 @@ $currency = preg_replace('/(^|[^&])#/', '${1}', $arCurFormat['FORMAT_STRING']);
 		<tr>
 			<td align="right" bgcolor="#ffffff" colspan="4" style="border: 1pt solid #000000; border-right:none; border-top:none;">Итого:</td>
 			<td align="right" bgcolor="#ffffff" style="border: 1pt solid #000000; border-top:none;">
-				<?=SaleFormatCurrency($total_sum, $arOrder["CURRENCY"], false, true);?>
+				<?=CCurrencyLang::CurrencyFormat($total_sum, $arOrder["CURRENCY"], false);?>
 			</td>
 		</tr>
 	</table>

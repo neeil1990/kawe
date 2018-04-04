@@ -9,6 +9,9 @@
 .bx-lm-box .bx-lm-box {
 	min-width: 450px !important;
 }
+.bx-finder-container-content .bx-lm-box {
+	max-height: none;
+}
 /*.bx-finder-box a,
 .bx-finder-box a:active,
 .bx-finder-box a:link { color: black!important; text-decoration: none}*/

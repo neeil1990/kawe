@@ -206,7 +206,9 @@ class Query
 
 	/**
 	 * @param Base|Query|string $source
+	 *
 	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function __construct($source)
 	{
@@ -404,7 +406,10 @@ class Query
 	 *   setOrder(['ID' => 'DESC', 'NAME' => 'ASC]) -- ORDER BY `ID` DESC, `NAME` ASC
 	 *
 	 * @param mixed $order
+	 *
 	 * @return Query
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function setOrder($order)
 	{
@@ -435,8 +440,10 @@ class Query
 	 *
 	 * @param string $definition
 	 * @param string $order
+	 *
 	 * @return Query
 	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function addOrder($definition, $order = 'ASC')
 	{
@@ -526,6 +533,8 @@ class Query
 	 * Accepts one ore more Query / SqlExpression.
 	 *
 	 * @return $this
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function union()
 	{
@@ -542,6 +551,8 @@ class Query
 	 * Accepts one ore more Query / SqlExpression.
 	 *
 	 * @return $this
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function unionAll()
 	{
@@ -561,6 +572,7 @@ class Query
 	 * @param $order
 	 *
 	 * @return $this
+	 * @throws Main\SystemException
 	 */
 	public function setUnionOrder($order)
 	{
@@ -577,6 +589,8 @@ class Query
 	 * @param string $order
 	 *
 	 * @return $this
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function addUnionOrder($definition, $order = 'ASC')
 	{
@@ -590,6 +604,7 @@ class Query
 	 * @param $limit
 	 *
 	 * @return $this
+	 * @throws Main\SystemException
 	 */
 	public function setUnionLimit($limit)
 	{
@@ -603,6 +618,7 @@ class Query
 	 * @param $offset
 	 *
 	 * @return $this
+	 * @throws Main\SystemException
 	 */
 	public function setUnionOffset($offset)
 	{
@@ -654,6 +670,8 @@ class Query
 	 * @param array|Field $fieldInfo
 	 *
 	 * @return Query
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function registerRuntimeField($name, $fieldInfo = null)
 	{
@@ -750,6 +768,8 @@ class Query
 	 * Builds and executes the query and returns the result
 	 *
 	 * @return \Bitrix\Main\DB\Result
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public function exec()
 	{
@@ -787,6 +807,14 @@ class Query
 		return $result;
 	}
 
+	/**
+	 * @param      $definition
+	 * @param null $alias
+	 *
+	 * @return $this
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function addToSelectChain($definition, $alias = null)
 	{
 		if ($definition instanceof ExpressionField)
@@ -994,6 +1022,13 @@ class Query
 		return $this;
 	}
 
+	/**
+	 * @param        $filter
+	 * @param string $section
+	 *
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	public function setFilterChains(&$filter, $section = 'filter')
 	{
 		foreach ($filter as $filter_def => &$filter_match)
@@ -1111,6 +1146,13 @@ class Query
 		}
 	}
 
+	/**
+	 * @param Filter $where
+	 * @param string $section
+	 *
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	public function setFilterHandlerChains(Filter $where, $section = 'filter')
 	{
 		foreach ($where->getConditions() as $condition)
@@ -1261,6 +1303,10 @@ class Query
 		}
 	}
 
+	/**
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function divideFilter()
 	{
 		// divide filter to where and having
@@ -1325,6 +1371,10 @@ class Query
 		}
 	}
 
+	/**
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function divideFilterHandler()
 	{
 		$logic = $this->filterHandler->logic();
@@ -1373,6 +1423,12 @@ class Query
 		}
 	}
 
+	/**
+	 * @param $filter
+	 *
+	 * @return bool
+	 * @throws Main\SystemException
+	 */
 	protected function checkFilterAggregation($filter)
 	{
 		foreach ($filter as $filter_def => $filter_match)
@@ -1408,6 +1464,12 @@ class Query
 		return false;
 	}
 
+	/**
+	 * @param Filter $filter
+	 *
+	 * @return bool
+	 * @throws Main\SystemException
+	 */
 	protected function checkFilterHandlerAggregation(Filter $filter)
 	{
 		foreach ($filter->getConditions() as $condition)
@@ -1452,6 +1514,13 @@ class Query
 		return false;
 	}
 
+	/**
+	 * @param Filter $filter
+	 * @param        $section
+	 *
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function rewriteDataDoubling(Filter $filter, $section)
 	{
 		foreach ($filter->getConditions() as $condition)
@@ -1492,6 +1561,11 @@ class Query
 		}
 	}
 
+	/**
+	 * @param $definition
+	 *
+	 * @throws Main\SystemException
+	 */
 	protected function addToGroupChain($definition)
 	{
 		$chain = $this->getRegisteredChain($definition, true);
@@ -1503,6 +1577,11 @@ class Query
 		}
 	}
 
+	/**
+	 * @param $definition
+	 *
+	 * @throws Main\SystemException
+	 */
 	protected function addToOrderChain($definition)
 	{
 		$chain = $this->getRegisteredChain($definition, true);
@@ -1514,6 +1593,12 @@ class Query
 		}
 	}
 
+	/**
+	 * @param null $chains
+	 *
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function buildJoinMap($chains = null)
 	{
 		$connection = $this->entity->getConnection();
@@ -1733,6 +1818,10 @@ class Query
 		return "\n\t".join(",\n\t", $sql);
 	}
 
+	/**
+	 * @return string
+	 * @throws Main\SystemException
+	 */
 	protected function buildJoin()
 	{
 		$sql = array();
@@ -1768,6 +1857,11 @@ class Query
 		return "\n".join("\n", $sql);
 	}
 
+	/**
+	 * @return string
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function buildWhere()
 	{
 		$sql = array();
@@ -1795,6 +1889,10 @@ class Query
 		return join(' AND ', array_filter($sql));
 	}
 
+	/**
+	 * @return string
+	 * @throws Main\SystemException
+	 */
 	protected function buildGroup()
 	{
 		$sql = array();
@@ -1881,6 +1979,11 @@ class Query
 		return join(', ', $sql);
 	}
 
+	/**
+	 * @return string
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function buildHaving()
 	{
 		$sql = array();
@@ -1908,6 +2011,10 @@ class Query
 		return join(' AND ', array_filter($sql));
 	}
 
+	/**
+	 * @return string
+	 * @throws Main\SystemException
+	 */
 	protected function buildOrder()
 	{
 		$sql = array();
@@ -1951,6 +2058,11 @@ class Query
 		return join(', ', $sql);
 	}
 
+	/**
+	 * @return mixed|string
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function buildQuery()
 	{
 		$connection = $this->entity->getConnection();
@@ -2060,6 +2172,13 @@ class Query
 		return $query;
 	}
 
+	/**
+	 * @param $filter
+	 *
+	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function getFilterCswFields(&$filter)
 	{
 		$fields = array();
@@ -2221,6 +2340,18 @@ class Query
 		return $fields;
 	}
 
+	/**
+	 * @param $reference
+	 * @param $alias_this
+	 * @param $alias_ref
+	 * @param $baseDefinition
+	 * @param $refDefinition
+	 * @param $isBackReference
+	 *
+	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function prepareJoinReference($reference, $alias_this, $alias_ref, $baseDefinition, $refDefinition, $isBackReference)
 	{
 		$new = array();
@@ -2423,6 +2554,18 @@ class Query
 		return $new;
 	}
 
+	/**
+	 * @param Filter $reference
+	 * @param        $alias_this
+	 * @param        $alias_ref
+	 * @param        $baseDefinition
+	 * @param        $refDefinition
+	 * @param        $isBackReference
+	 *
+	 * @return Filter
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected function prepareJoinFilterReference(Filter $reference, $alias_this, $alias_ref, $baseDefinition, $refDefinition, $isBackReference)
 	{
 		// do not make an impact on original reference object
@@ -2640,6 +2783,12 @@ class Query
 		return $fields;
 	}
 
+	/**
+	 * @param $chain
+	 *
+	 * @return bool
+	 * @throws Main\SystemException
+	 */
 	protected function checkChainsAggregation($chain)
 	{
 		/** @var QueryChain[] $chains */
@@ -2664,6 +2813,8 @@ class Query
 	 *
 	 * @param QueryChain $chain
 	 * @param array      $storages
+	 *
+	 * @throws Main\SystemException
 	 */
 	protected function collectExprChains(QueryChain $chain, $storages = array('hidden'))
 	{
@@ -2713,6 +2864,10 @@ class Query
 		}
 	}
 
+	/**
+	 * @return Query\Union
+	 * @throws Main\SystemException
+	 */
 	protected function getUnionHandler()
 	{
 		if ($this->unionHandler === null)
@@ -2751,6 +2906,14 @@ class Query
 		return $reg_chain;
 	}
 
+	/**
+	 * @param      $key
+	 * @param bool $force_create
+	 *
+	 * @return QueryChain|bool
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	public function getRegisteredChain($key, $force_create = false)
 	{
 		if (isset($this->global_chains[$key]))
@@ -2775,16 +2938,24 @@ class Query
 		return ($value ? '' : 'NOT ') . $field;
 	}
 
-	public function nullEqualityCallback($field, $operation, $value)
+	public function nullEqualityCallback($field, $operation, /** @noinspection PhpUnusedParameterInspection */ $value)
 	{
 		return $field.' IS '.($operation == 'SE' ? '' : 'NOT ') . 'NULL';
 	}
 
-	public function dataDoublingCallback($field, $operation, $value)
+	public function dataDoublingCallback($field, /** @noinspection PhpUnusedParameterInspection */ $operation, $value)
 	{
 		return $field.' IN ('.$value.')';
 	}
 
+	/**
+	 * @param $query
+	 *
+	 * @return Main\DB\ArrayResult|Main\DB\Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\Db\SqlQueryException
+	 * @throws Main\SystemException
+	 */
 	protected function query($query)
 	{
 		// check nosql configuration
@@ -2806,6 +2977,33 @@ class Query
 			{
 				$nosqlResult = NosqlPrimarySelector::relayQuery($nosqlConnection, $this);
 				$result = new Main\DB\ArrayResult($nosqlResult);
+
+				// add data converters
+				if (!empty($nosqlResult))
+				{
+					/** @var callable[] $converters */
+					$converters = [];
+
+					foreach ($this->getSelectChains() as $selectChain)
+					{
+						$field = $selectChain->getLastElement()->getValue();
+
+						if ($field instanceof ScalarField)
+						{
+							$converter = $connection->getSqlHelper()->getConverter($field);
+
+							if (is_callable($converter))
+							{
+								$converter[$selectChain->getAlias()] = $converter;
+							}
+						}
+					}
+
+					if (!empty($converters))
+					{
+						$result->setConverters($converters);
+					}
+				}
 			}
 		}
 
@@ -2832,7 +3030,8 @@ class Query
 				$cntQuery = join("\n", $buildParts);
 
 				// select count
-				$cntQuery = 'SELECT COUNT(cntholder) AS TMP_ROWS_CNT FROM ('.$cntQuery.') xxx';
+				$cntQuery = /** @lang text */
+					"SELECT COUNT(cntholder) AS TMP_ROWS_CNT FROM ({$cntQuery}) xxx";
 				$cnt = $connection->queryScalar($cntQuery);
 			}
 
@@ -2874,6 +3073,7 @@ class Query
 	/**
 	 * Check if fetch data modification reqired, also caches modifier-callbacks
 	 * @return bool
+	 * @throws Main\SystemException
 	 */
 	public function isFetchModificationRequired()
 	{
@@ -2890,6 +3090,12 @@ class Query
 		return !empty($this->selectFetchModifiers) || !empty($this->files);
 	}
 
+	/**
+	 * @param $query
+	 *
+	 * @return array
+	 * @throws Main\SystemException
+	 */
 	protected function replaceSelectAliases($query)
 	{
 		$connection = $this->entity->getConnection();
@@ -2924,6 +3130,12 @@ class Query
 		return array($query, $replaced);
 	}
 
+	/**
+	 * @param $source
+	 *
+	 * @return string
+	 * @throws Main\SystemException
+	 */
 	public function quoteTableSource($source)
 	{
 		// don't quote subqueries
@@ -3021,6 +3233,8 @@ class Query
 	 * Builds and returns SQL query string
 	 *
 	 * @return string
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public function getQuery()
 	{
@@ -3046,10 +3260,12 @@ class Query
 	 * Builds SQL filter conditions for WHERE.
 	 * Useful for external calls: building SQL for mass UPDATEs or DELETEs
 	 *
-	 * @param Base $entity
+	 * @param Base         $entity
 	 * @param array|Filter $filter the same format as for setFilter/where
 	 *
 	 * @return string
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public static function buildFilterSql(Base $entity, $filter)
 	{
@@ -3073,7 +3289,9 @@ class Query
 
 	/**
 	 * @param bool $withPostfix
+	 *
 	 * @return string
+	 * @throws Main\SystemException
 	 */
 	public function getInitAlias($withPostfix = true)
 	{

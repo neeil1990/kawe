@@ -36,7 +36,7 @@ class CSaleDeliveryRequestComponent extends CBitrixComponent
 	{
 		global $APPLICATION;
 
-		if ($APPLICATION->GetGroupRight("sale") < "W")
+		if ($APPLICATION->GetGroupRight("sale") < "U")
 		{
 			ShowError(Loc::getMessage('SALE_CSDR_ACCESS_DENIED'));
 			return;

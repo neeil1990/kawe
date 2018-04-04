@@ -1074,17 +1074,20 @@ class CSiteCheckerTest
 				break;
 			}
 
+
 		$overload  = intval(ini_get('mbstring.func_overload'));
 		$encoding = strtolower(ini_get('mbstring.internal_encoding'));
+		$default = strtolower(ini_get('default_charset'));
+		$current = str_replace(array("-", "windows"), array("", "cp"), $encoding ? $encoding : $default);
 
 		if ($bUtf)
 		{
 			$text = GetMessage('SC_MB_UTF');
 
-			$retVal = ($overload == 2) && ($encoding == 'utf8' || $encoding == 'utf-8');
+			$retVal = $overload == 2 && $current == 'utf8';
 			if (!$retVal)
-				$text .= ', '.GetMessage('SC_MB_CUR_SETTINGS').'<br>mbstring.func_overload='.$overload.'<br>mbstring.internal_encoding='.$encoding.
-				'<br>'.GetMessage('SC_MB_REQ_SETTINGS').'<br>mbstring.func_overload=2<br>mbstring.internal_encoding=utf-8';
+				$text .= ', '.GetMessage('SC_MB_CUR_SETTINGS').'<br>mbstring.func_overload='.$overload.'<br>mbstring.internal_encoding="'.$encoding.'"<br>default_charset="'.$default.'"'.
+				'<br>'.GetMessage('SC_MB_REQ_SETTINGS').'<br>mbstring.func_overload=2<br>mbstring.internal_encoding=""<br>default_charset="utf-8"';
 
 			if (!defined('BX_UTF') || BX_UTF !== true)
 			{
@@ -1100,12 +1103,9 @@ class CSiteCheckerTest
 			if ($overload == 2)
 			{
 				$ru = LANG_CHARSET == 'windows-1251';
-				$mb_string_req = '<br>mbstring.internal_encoding='.($ru ? 'cp1251' : 'latin1');
+				$mb_string_req = '<br>mbstring.internal_encoding=""<br>default_charset="'.($ru ? 'cp1251' : 'latin1').'"';
 
-				if ($ru)
-					$retVal = false !== strpos($encoding,'1251');
-				else
-					$retVal = false === strpos($encoding,'utf');
+				$retVal = false === strpos($current,'utf');
 			}
 			else
 			{
@@ -1113,7 +1113,7 @@ class CSiteCheckerTest
 				$retVal = $overload == 0;
 			}
 			if (!$retVal)
-				$text .= ', '.GetMessage('SC_MB_CUR_SETTINGS').'<br>mbstring.func_overload='.$overload.'<br>mbstring.internal_encoding='.$encoding.
+				$text .= ', '.GetMessage('SC_MB_CUR_SETTINGS').'<br>mbstring.func_overload='.$overload.'<br>mbstring.internal_encoding="'.$encoding.'"<br>default_charset="'.$default.'"'.
 				'<br>'.GetMessage('SC_MB_REQ_SETTINGS').$mb_string_req;
 
 			if (defined('BX_UTF'))
@@ -2448,6 +2448,19 @@ class CSiteCheckerTest
 				}
 			}
 
+			if (file_exists($file = str_replace('/install.sql', '/install_ft.sql', $file)))
+			{
+				if (false === ($query = file_get_contents($file)))
+					return false;
+				$query = preg_replace('# on +([a-z_0-9]+) \(#i', ' on site_checker_\\1 (', $query);
+				$arQuery = $DB->ParseSQLBatch(str_replace("\r", "", $query));
+				foreach($arQuery as $sql)
+				{
+					if (!$DB->Query($sql, true))
+						break;
+				}
+			}
+
 			foreach($arTables as $table => $sql)
 			{
 				$tmp_table = 'site_checker_'.$table;
@@ -2518,6 +2531,7 @@ class CSiteCheckerTest
 				}
 
 				$arIndexes_tmp = array();
+				$arFT = array();
 				$rs = $DB->Query('SHOW INDEXES FROM `'.$tmp_table.'`');
 				while($f = $rs->Fetch())
 				{
@@ -2527,6 +2541,8 @@ class CSiteCheckerTest
 						$ix .= ','.$column;
 					else
 						$ix = $column;
+					if ($f['Index_type'] == 'FULLTEXT')
+						$arFT[$f['Key_name']] = true;
 				}
 				unset($ix); // unlink the reference
 				foreach($arIndexes_tmp as $name => $ix)
@@ -2535,7 +2551,7 @@ class CSiteCheckerTest
 					{
 						while($arIndexes[$name])
 							$name .= '_sc';
-						$sql = $name == 'PRIMARY' ? 'ALTER TABLE `'.$table.'` ADD PRIMARY KEY ('.$ix.')' : 'CREATE INDEX `'.$name.'` ON `'.$table.'` ('.$ix.')';
+						$sql = $name == 'PRIMARY' ? 'ALTER TABLE `'.$table.'` ADD PRIMARY KEY ('.$ix.')' : 'CREATE '.($arFT[$name] ? 'FULLTEXT ' : '').'INDEX `'.$name.'` ON `'.$table.'` ('.$ix.')';
 						if ($this->fix_mode)
 						{
 							if (!$DB->Query($sql, true))
@@ -2550,10 +2566,23 @@ class CSiteCheckerTest
 							$this->arTestVars['cntNoIndexes']++;
 						}
 					}
+
+					if ($arFT[$name] && !$this->fullTextIndexEnabled($table, $name))
+					{
+						if ($this->fix_mode)
+							$this->enableFullTextIndex($table, $name);
+						else
+						{
+							$strError .= GetMessage('SC_ERR_NO_INDEX_ENABLED', array('#TABLE#' => $table, '#INDEX#' => $name.' ('.$ix.')'))."<br>";
+							$this->arTestVars['iError']++;
+							$this->arTestVars['iErrorAutoFix']++;
+						}
+					}
 				}
 
 				$DB->Query('DROP TABLE `'.$tmp_table.'`');
 			}
+
 			echo $strError; // to log
 		}
 
@@ -2665,6 +2694,40 @@ class CSiteCheckerTest
 		$_SERVER['HTTP_USER_AGENT'] = $HTTP_USER_AGENT;
 
 		return "CSiteCheckerTest::CommonTest();";
+	}
+
+	function enableFullTextIndex($table, $field)
+	{
+		$name = '~ft_'.strtolower($table);
+		global $DB;
+		$options = array();
+		$f = $DB->Query('SELECT * FROM b_option WHERE MODULE_ID="main" AND NAME="'.$name.'"')->Fetch();
+		$optionString = $f['VALUE'];
+		if($optionString <> '')
+		{
+			$options = unserialize($optionString);
+		}
+		$options[strtoupper($field)] = true;
+		if ($f)
+			$DB->Query('UPDATE b_option SET VALUE="'.$DB->ForSQL(serialize($options)).'" WHERE MODULE_ID="main" AND NAME="'.$name.'"');
+		else
+			$DB->Query('INSERT INTO b_option (MODULE_ID, NAME, VALUE) VALUES("main", "'.$name.'", "'.$DB->ForSQL(serialize($options)).'")');
+	}
+
+	function fullTextIndexEnabled($table, $field)
+	{
+		$name = '~ft_'.strtolower($table);
+		global $DB;
+		$options = array();
+		$f = $DB->Query('SELECT * FROM b_option WHERE MODULE_ID="main" AND NAME="'.$name.'"')->Fetch();
+		$optionString = $f['VALUE'];
+		if($optionString <> '')
+		{
+			$options = unserialize($optionString);
+		}
+		if ($options[strtoupper($field)])
+			return true;
+		return false;
 	}
 }
 

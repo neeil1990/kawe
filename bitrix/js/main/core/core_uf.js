@@ -289,7 +289,7 @@
 
 	BX.Main.UF.BaseType.prototype.isEmpty = function(field)
 	{
-		var node = fieldStack[field].NODE,
+		var node = this.getNode(field),
 			fieldName = field + (
 				fieldStack[field].FIELD.MULTIPLE === 'Y'
 				? '[]'
@@ -323,7 +323,7 @@
 
 	BX.Main.UF.BaseType.prototype.getValue = function(field)
 	{
-		var node = fieldStack[field].NODE,
+		var node = this.getNode(field),
 			fieldName = field + (
 					fieldStack[field].FIELD.MULTIPLE === 'Y'
 						? '[]'
@@ -371,7 +371,7 @@
 
 	BX.Main.UF.BaseType.prototype.focus = function(field)
 	{
-		var node = fieldStack[field].NODE,
+		var node = this.getNode(field),
 			fieldName = field + (
 					fieldStack[field].FIELD.MULTIPLE === 'Y'
 						? '[]'
@@ -388,6 +388,11 @@
 		{
 			BX.focus(nodeList[0]);
 		}
+	};
+
+	BX.Main.UF.BaseType.prototype.getNode = function(field)
+	{
+		return fieldStack[field].NODE;
 	};
 
 	/**
@@ -499,6 +504,18 @@
 		return BX.util.array_values(inputList);
 	};
 
+	BX.Main.UF.TypeEnumeration.prototype.focus = function(field)
+	{
+		if(fieldStack[field] && fieldStack[field].FIELD.SETTINGS.DISPLAY === 'UI')
+		{
+			BX.fireEvent(BX(fieldStack[field].FIELD.FIELD + '_control').firstChild, 'focus');
+		}
+		else
+		{
+			BX.Main.UF.TypeEnumeration.superclass.focus.apply(this, arguments);
+		}
+	};
+
 	/**
 	 * Date type handler class. Will be initialized in Factory.
 	 *
@@ -511,6 +528,23 @@
 
 	BX.Main.UF.TypeDate.USER_TYPE_ID = 'date';
 
+	BX.Main.UF.TypeDate.prototype.focus = function(field)
+	{
+		var fieldName = field + (
+			fieldStack[field].FIELD.MULTIPLE === 'Y'
+				? '[]'
+				: ''
+		);
+		var inputList = this.findInput(this.getNode(field), fieldName);
+
+		if(inputList.length > 0)
+		{
+			BX.fireEvent(inputList[0], 'click');
+		}
+
+		BX.Main.UF.TypeDate.superclass.focus.apply(this, arguments);
+	};
+
 	/**
 	 * Datetime type handler class. Will be initialized in Factory.
 	 *
@@ -519,7 +553,7 @@
 	BX.Main.UF.TypeDateTime = function()
 	{
 	};
-	BX.extend(BX.Main.UF.TypeDateTime, BX.Main.UF.BaseType);
+	BX.extend(BX.Main.UF.TypeDateTime, BX.Main.UF.TypeDate);
 
 	BX.Main.UF.TypeDateTime.USER_TYPE_ID = 'datetime';
 
@@ -699,4 +733,6 @@
 	BX.Main.UF.Factory.setTypeHandler(BX.Main.UF.TypeStingFormatted.USER_TYPE_ID, BX.Main.UF.TypeStingFormatted);
 	BX.Main.UF.Factory.setTypeHandler(BX.Main.UF.TypeEnumeration.USER_TYPE_ID, BX.Main.UF.TypeEnumeration);
 	BX.Main.UF.Factory.setTypeHandler(BX.Main.UF.TypeFile.USER_TYPE_ID, BX.Main.UF.TypeFile);
+	BX.Main.UF.Factory.setTypeHandler(BX.Main.UF.TypeDate.USER_TYPE_ID, BX.Main.UF.TypeDate);
+	BX.Main.UF.Factory.setTypeHandler(BX.Main.UF.TypeDateTime.USER_TYPE_ID, BX.Main.UF.TypeDateTime);
 })();

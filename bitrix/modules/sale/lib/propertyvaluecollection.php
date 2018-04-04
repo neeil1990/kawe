@@ -254,7 +254,11 @@ class PropertyValueCollection
 			OrderHistory::addAction(
 				'PROPERTY',
 				$order->getId(),
-				"PROPERTY_SAVED"
+				"PROPERTY_SAVED",
+				null,
+				null,
+				array(),
+				OrderHistory::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_1
 			);
 		}
 

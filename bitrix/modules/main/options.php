@@ -95,10 +95,12 @@ $arAllOptions = array(
 		Array("CONVERT_UNIX_NEWLINE_2_WINDOWS", GetMessage("MAIN_CONVERT_UNIX_NEWLINE_2_WINDOWS"), "N", Array("checkbox", "Y")),
 		Array("convert_mail_header", GetMessage("MAIN_OPTION_CONVERT_8BIT"), "Y", Array("checkbox", "Y")),
 		Array("attach_images", GetMessage("MAIN_OPTION_ATTACH_IMAGES"), "N", array("checkbox", "Y")),
+		Array("mail_gen_text_version", GetMessage("MAIN_OPTION_MAIL_GEN_TEXT_VERSION"), "Y", array("checkbox", "Y")),
 		Array("max_file_size", GetMessage("MAIN_OPTION_MAX_FILE_SIZE"), "0", Array("text", 10)),
 		Array("mail_event_period", GetMessage("main_option_mail_period"), "14", Array("text", 10)),
 		Array("mail_event_bulk", GetMessage("main_option_mail_bulk"), "5", Array("text", 10)),
 		Array("mail_additional_parameters", GetMessage("MAIN_OPTION_MAIL_ADDITIONAL_PARAMETERS"), "", Array("text", 30)),
+		Array("mail_link_protocol", GetMessage("MAIN_OPTION_MAIL_LINK_PROTOCOL"), "", Array("text", 10)),
 
 		GetMessage("main_options_files"),
 		Array("disk_space", GetMessage("MAIN_DISK_SPACE"), "", Array("text", 30)),

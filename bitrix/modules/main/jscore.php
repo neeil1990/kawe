@@ -281,6 +281,7 @@ $arJSCoreConfig = array(
 		),
 		'css' => '/bitrix/js/main/sidepanel/css/sidepanel.css',
 		'rel' => array('ajax', 'fx'),
+		'lang' => $pathLang.'/js/sidepanel.php',
 		'bundle_js' => 'sidepanel',
 		'bundle_css' => 'sidepanel'
 	),

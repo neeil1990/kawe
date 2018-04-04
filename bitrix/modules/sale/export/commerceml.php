@@ -131,7 +131,7 @@ while ($dbOrderList->NavNext(true, "f_")):
 		echo "		<".GetMessage("Company")." ".GetMessage("ID")."=\"BC".$f_USER_ID."\" ".GetMessage("Name")."=\"".htmlspecialcharsbx($contra_name)."\" ".GetMessage("DisplayName")."=\"".htmlspecialcharsbx($contra_name)."\" ".GetMessage("Address")."=\"\" ".GetMessage("JuridicAddress")."=\"\" ".GetMessage("WWW")."=\"\" ".GetMessage("Comment")."=\"".htmlspecialcharsbx($contra_other)."\">\n";
 		echo "			<".GetMessage("Contact")." ".GetMessage("ID")."=\"B".$f_USER_ID."\" ".GetMessage("Name")."=\"".GetMessage("Contact")."\">\n";
 		echo "				<".GetMessage("ContactMan").">".htmlspecialcharsbx($arUser["NAME"]." ".$arUser["LAST_NAME"])." (".htmlspecialcharsbx($contra_name).")</".GetMessage("ContactMan").">\n";
-		echo "				<".GetMessage("E-mail").">".$contra_mail."</".GetMessage("E-mail").">\n";
+		echo "				<".GetMessage("E-mail").">".htmlspecialcharsbx($contra_mail)."</".GetMessage("E-mail").">\n";
 		echo "			</".GetMessage("Contact").">\n";
 		echo "		</".GetMessage("Company").">\n";
 	}

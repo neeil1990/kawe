@@ -1402,8 +1402,7 @@ class CSaleOrderLoader
 					{
 						if (IntVal($arItem["PRICE"]) != IntVal($shipment->getField('PRICE_DELIVERY')))
 						{
-							$shipment->setField("CUSTOM_PRICE_DELIVERY", "Y");
-							$shipment->setField('BASE_PRICE_DELIVERY', $arItem["PRICE"]);
+							$shipment->setBasePriceDelivery($arItem["PRICE"], true);
 							$shipment->setField('CURRENCY',CSaleLang::GetLangCurrency($this->getSiteId()));
 						}
 
@@ -2051,9 +2050,44 @@ class CSaleOrderLoader
 		return false;
 	}
 
-	function nodeHandler(CDataXML $dataXml)
+	protected function getXMLStream(CXMLFileStream $fileStream)
+	{
+		$startPosition = 0;
+		$endPosition = 0;
+
+		$positionLast = $fileStream->getPosition();
+
+		if(isset($positionLast[1]))
+			$endPosition = $positionLast[1];
+
+		if(is_array($_SESSION["BX_CML2_EXPORT"]["proccess_xml_entry"]))
+		{
+			$position = $_SESSION["BX_CML2_EXPORT"]["proccess_xml_entry"];
+
+			if(isset($position[1]))
+				$startPosition = $position[1];
+		}
+		else
+		{
+			foreach(explode("/", $positionLast[2]) as $pathPart)
+			{
+				@list($elementPosition, $elementName) = explode("@", $pathPart, 2);
+				$positionStack[] = $elementPosition;
+			}
+			$startPosition = array_pop($positionStack);
+		}
+
+		$_SESSION["BX_CML2_EXPORT"]["proccess_xml_entry"] = $fileStream->getPosition();
+
+		$xmlChunk = $fileStream->readFilePart($startPosition, $endPosition);
+
+		return \Bitrix\Main\Text\Encoding::convertEncoding($xmlChunk, $positionLast[0], LANG_CHARSET, $error);
+	}
+
+	function nodeHandler(CDataXML $dataXml, CXMLFileStream $fileStream)
 	{
 		$value = $dataXml->GetArray();
+		$xmlStream = $this->getXMLStream($fileStream);
 
 		if(!empty($value[GetMessage("CC_BSC1_CONTAINER")]) ||
 			empty($value[GetMessage("CC_BSC1_DOCUMENT")])
@@ -2074,6 +2108,9 @@ class CSaleOrderLoader
 			$r = $importer::checkSettings();
 			if($r->isSuccess())
 			{
+				if(strlen($xmlStream)>0)
+					$importer->setRawData($xmlStream);
+
 				$r = $importer->process($documentData);
 			}
 

@@ -252,7 +252,7 @@ if ($params['BASKET_ITEMS'])
 					$data = SaleFormatCurrency($basketItemPrice * $basketItem['QUANTITY'], $basketItem['CURRENCY'], true);
 					break;
 				default:
-					$data = '';
+					$data = ($basketItem[$columnId]) ?: '';
 			}
 			if ($data !== null)
 				$arCells[$n][$columnId] = $data;

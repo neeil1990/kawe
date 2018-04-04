@@ -84,3 +84,7 @@
 	border-bottom: 2px solid #d9dee6;
 	color: #000;
 }
+
+.row::before {
+	display: initial;
+}

@@ -53,3 +53,21 @@
 	width: 147px;
 	z-index: 995;
 }
+
+.help-cl-count-digit { padding: 1px 5px;display: inline-block;}
+.help-cl-count {
+	display:inline-block;
+	float:right;
+	font: 11px/14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+	vertical-align: top;
+	border-radius: 12px;
+	background-color: #e15655;
+	background-position: 7px -83px;
+	color: #f7f6f6;
+	text-shadow: none;
+	margin-top: 7px;
+	margin-left: 3px;
+	margin-right: 3px;
+	-webkit-animation: imOpacityFrom05To1 .4s 1; animation: imOpacityFrom05To1 .4s 1;
+	z-index: 12;
+}

@@ -322,7 +322,7 @@ class OrderAdditional
 		}
 		else
 		{
-			$data['RESPONSIBLE_ID'] = 0;
+			$data['RESPONSIBLE_ID'] = '';
 		}
 
 

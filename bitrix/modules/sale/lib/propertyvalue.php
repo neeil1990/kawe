@@ -272,7 +272,7 @@ class PropertyValue
 
 		$key = isset($property["ID"]) ? $property["ID"] : "n".$this->getId();
 
-		if (array_key_exists($key, $post['PROPERTIES']))
+		if (is_array($post['PROPERTIES']) && array_key_exists($key, $post['PROPERTIES']))
 		{
 			$this->setValue($post['PROPERTIES'][$key]);
 		}

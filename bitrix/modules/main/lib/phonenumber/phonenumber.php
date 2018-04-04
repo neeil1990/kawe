@@ -13,19 +13,35 @@ class PhoneNumber
 	protected $nationalPrefix;
 	protected $hasPlus = false;
 	protected $numberType;
-	protected $extension;
+	protected $extension = '';
+	protected $extensionSeparator;
 
 	protected $international = false;
 
 	public function format($formatType = '', $forceNationalPrefix = false)
 	{
-		if(!$this->valid)
-			return $this->rawNumber;
-
-		if($formatType == '')
-			return Formatter::formatOriginal($this);
+		if($this->valid)
+		{
+			if($formatType == '')
+			{
+				return Formatter::formatOriginal($this);
+			}
+			else
+			{
+				return Formatter::format($this, $formatType, $forceNationalPrefix);
+			}
+		}
 		else
-			return Formatter::format($this, $formatType, $forceNationalPrefix);
+		{
+			if($formatType == '' && ShortNumberFormatter::isApplicable($this))
+			{
+				return ShortNumberFormatter::format($this);
+			}
+			else
+			{
+				return $this->rawNumber;
+			}
+		}
 	}
 
 	/**
@@ -121,6 +137,11 @@ class PhoneNumber
 		return $this->countryCode;
 	}
 
+	public function hasExtension()
+	{
+		return $this->extension != '';
+	}
+
 	/**
 	 * @return string
 	 */
@@ -135,6 +156,22 @@ class PhoneNumber
 	public function setExtension($extension)
 	{
 		$this->extension = $extension;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getExtensionSeparator()
+	{
+		return $this->extensionSeparator;
+	}
+
+	/**
+	 * @param mixed $extensionSeparator
+	 */
+	public function setExtensionSeparator($extensionSeparator)
+	{
+		$this->extensionSeparator = $extensionSeparator;
 	}
 
 	/**

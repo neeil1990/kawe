@@ -18,6 +18,14 @@ use Bitrix\Main\Type;
  */
 class DateField extends ScalarField
 {
+	/**
+	 * DateField constructor.
+	 *
+	 * @param       $name
+	 * @param array $parameters
+	 *
+	 * @throws Main\SystemException
+	 */
 	public function __construct($name, $parameters = array())
 	{
 		parent::__construct($name, $parameters);
@@ -25,6 +33,11 @@ class DateField extends ScalarField
 		$this->addFetchDataModifier(array($this, 'assureValueObject'));
 	}
 
+	/**
+	 * @return array|Validator\Base[]|callback[]
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\SystemException
+	 */
 	public function getValidators()
 	{
 		$validators = parent::getValidators();
@@ -37,6 +50,12 @@ class DateField extends ScalarField
 		return $validators;
 	}
 
+	/**
+	 * @param $value
+	 *
+	 * @return Type\Date
+	 * @throws Main\ObjectException
+	 */
 	public function assureValueObject($value)
 	{
 		if ($value instanceof Type\DateTime)
@@ -51,6 +70,13 @@ class DateField extends ScalarField
 		return $value;
 	}
 
+	/**
+	 * @param mixed $value
+	 *
+	 * @return string
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbDate($value);

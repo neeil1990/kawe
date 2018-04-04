@@ -369,7 +369,7 @@ class CUserTypeBoolean extends \Bitrix\Main\UserField\TypeBase
 		foreach ($value as $res)
 		{
 			if (!$first)
-				$html .= ', ';
+				$text .= ', ';
 			$first = false;
 
 			$text .= $res ? $label[1] : $label[0];

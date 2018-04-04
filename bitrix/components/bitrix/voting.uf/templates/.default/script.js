@@ -134,7 +134,7 @@
 				return BX.PreventDefault(e);
 			},
 			send : function(data, el, success, fail) {
-				BX.addClass(el, (BX.hasClass(el, "feed-add-button") ? "feed-add-button-load" : "bx-vote-loading"));
+				BX.addClass(el, "ui-btn-clock");
 				data["sessid"] = BX.bitrix_sessid();
 				data["attachId"] = this.id;
 				BX.ajax({
@@ -143,7 +143,7 @@
 					data: data,
 					dataType: 'json',
 					onsuccess: BX.proxy(function(data) {
-						BX.removeClass(el, 'bx-vote-loading feed-add-button-load');
+						BX.removeClass(el, 'ui-btn-clock');
 						if (data.status == "success")
 						{
 							this.showError(null);
@@ -159,7 +159,7 @@
 						}
 					}, this),
 					onfailure: BX.proxy(function(){
-						BX.removeClass(el, 'bx-vote-loading feed-add-button-load');
+						BX.removeClass(el, 'ui-btn-clock');
 						if (BX.type.isFunction(fail))
 							fail.apply(this, arguments);
 					}, this)

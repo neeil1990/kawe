@@ -125,12 +125,26 @@
 		return ch !== '' ? formattedValue.replace(new RegExp('\\' + ch + '0+$'), '') : formattedValue;
 	};
 
+	BX.Currency.Editor.escapeRegExp = function(text)
+	{
+		return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+	};
+
 	BX.Currency.Editor.getUnFormattedValue = function(formattedValue, currency)
 	{
 		var listCurrency = getCurrencyList();
-		return formattedValue
-			.replace(new RegExp(listCurrency[currency]['SEPARATOR'], 'g'), '')
-			.replace(listCurrency[currency]['DEC_POINT'], '.');
+		if (listCurrency[currency]['SEPARATOR'].length === 1)
+		{
+			return formattedValue
+				.replace(new RegExp('[' + listCurrency[currency]['SEPARATOR'] + ']', 'g'), '')
+				.replace(listCurrency[currency]['DEC_POINT'], '.');
+		}
+		else
+		{
+			return formattedValue
+				.replace(new RegExp(this.escapeRegExp(listCurrency[currency]['SEPARATOR']), 'g'), '')
+				.replace(listCurrency[currency]['DEC_POINT'], '.');
+		}
 	};
 
 	BX.Currency.Editor.getFormattedValue = function(baseValue, currency)

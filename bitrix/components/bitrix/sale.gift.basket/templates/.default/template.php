@@ -136,13 +136,8 @@ if (!empty($arResult['ITEMS']))
 	<? if(empty($arParams['HIDE_BLOCK_TITLE']) || $arParams['HIDE_BLOCK_TITLE'] !== 'Y'){ ?><div class="bx_item_list_title"><? echo ($arParams['BLOCK_TITLE']? htmlspecialcharsbx($arParams['BLOCK_TITLE']) : GetMessage('SGB_TPL_BLOCK_TITLE_DEFAULT')) ?></div><? } ?>
 	<div class="bx_item_list_section">
 	<div class="bx_item_list_slide active"><?
-	$elementEdit = CIBlock::GetArrayByID($arParams['IBLOCK_ID'], 'ELEMENT_EDIT');
-	$elementDelete = CIBlock::GetArrayByID($arParams['IBLOCK_ID'], 'ELEMENT_DELETE');
-	$elementDeleteParams = array('CONFIRM' => GetMessage('CVP_TPL_ELEMENT_DELETE_CONFIRM'));
 	foreach ($arResult['ITEMS'] as $key => $arItem)
 	{
-		$this->AddEditAction($arItem['ID'], $arItem['EDIT_LINK'], $elementEdit);
-		$this->AddDeleteAction($arItem['ID'], $arItem['DELETE_LINK'], $elementDelete, $elementDeleteParams);
 		$strMainID = $this->GetEditAreaId($arItem['ID'] . $key);
 
 		$arItemIDs = array(
@@ -593,7 +588,6 @@ if (!empty($arResult['ITEMS']))
 	}
 	?></div></div><?
 	}
-	unset($elementDeleteParams, $elementDelete, $elementEdit);
 	?>
 	<div style="clear: both;"></div>
 	</div>

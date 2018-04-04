@@ -369,8 +369,11 @@ class Manager
 				'!=DELIVERY_ID' => false,
 				array(
 					'LOGIC' => 'OR',
-					array('!=TRACKING_STATUS' => Statuses::HANDED),
-					array('!=TRACKING_STATUS' => Statuses::RETURNED),
+					array(
+						'LOGIC' => 'AND',
+						array('!=TRACKING_STATUS' => Statuses::HANDED),
+						array('!=TRACKING_STATUS' => Statuses::RETURNED),
+					),
 					array('=TRACKING_STATUS' => false)
 				),
 				array(

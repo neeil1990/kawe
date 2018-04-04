@@ -390,6 +390,7 @@ final class Manager
 
 	/**
 	 * @return string
+	 * @throws Main\ArgumentException
 	 */
 	public static function updateChecksStatus()
 	{

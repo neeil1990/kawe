@@ -15,6 +15,8 @@ class Rest extends \IRestService
 	{
 		return array(
 			'pull' => array(
+				'pull.application.config.get' =>  array('callback' => array(__CLASS__, 'applicationConfigGet'), 'options' => array('private' => true)),
+
 				'pull.watch.extend' =>  array('callback' => array(__CLASS__, 'watchExtend'), 'options' => array()),
 			),
 			'pull_channel' => array(
@@ -37,6 +39,31 @@ class Rest extends \IRestService
 		);
 	}
 
+
+	public static function applicationConfigGet($params, $n, \CRestServer $server)
+	{
+		$params = array_change_key_case($params, CASE_UPPER);
+
+		$clientId = $server->getClientId();
+		if (!$clientId)
+		{
+			throw new \Bitrix\Rest\RestException("Get access to application config available only for application authorization.", "WRONG_AUTH_TYPE", \CRestServer::STATUS_FORBIDDEN);
+		}
+
+		$configParams = Array();
+		$configParams['CACHE'] = $params['CACHE'] != 'N';
+		$configParams['REOPEN'] = $params['REOPEN'] != 'N';
+		$configParams['CUSTOM_TYPE'] = $clientId;
+		$configParams['JSON'] = true;
+
+		$config = \Bitrix\Pull\Config::get($configParams);
+		if (!$config)
+		{
+			throw new \Bitrix\Rest\RestException("Push & Pull server is not configured", "SERVER_ERROR", \CRestServer::STATUS_INTERNAL);
+		}
+
+		return $config;
+	}
 
 	public static function configGet($params, $n, \CRestServer $server)
 	{
@@ -87,6 +114,15 @@ class Rest extends \IRestService
 	public static function counterTypesGet($params, $n, \CRestServer $server)
 	{
 		$types = \Bitrix\Pull\MobileCounter::getTypes();
+
+		if (isset($params['USER_VALUES']) && $params['USER_VALUES'] == 'Y')
+		{
+			$config = \Bitrix\Pull\MobileCounter::getConfig();
+			foreach ($types as $type => $value)
+			{
+				$types[$type]['VALUE'] = $config[$type];
+			}
+		}
 
 		$result = Array();
 		foreach ($types as $type)
@@ -160,7 +196,7 @@ class Rest extends \IRestService
 			{
 				if ($withUserValues)
 				{
-					$typeConfig['ACTIVE'] = $userConfig[$moduleId][$typeId];
+					$typeConfig['VALUE'] = $userConfig[$moduleId][$typeId];
 				}
 				$types[] = array_change_key_case($typeConfig, CASE_LOWER);
 			}
@@ -240,7 +276,7 @@ class Rest extends \IRestService
 	{
 		$params = array_change_key_case($params, CASE_UPPER);
 
-		$status = (bool)$params['STATUS'];
+		$status = (bool)$params['ACTIVE'];
 		\Bitrix\Pull\Push::setStatus($status);
 
 		return true;
@@ -255,7 +291,8 @@ class Rest extends \IRestService
 	{
 		$params = array_change_key_case($params, CASE_UPPER);
 
-		$status = (bool)$params['STATUS'];
+		$status = (bool)$params['ACTIVE'];
+
 		\Bitrix\Pull\PushSmartfilter::setStatus($status);
 
 		return true;

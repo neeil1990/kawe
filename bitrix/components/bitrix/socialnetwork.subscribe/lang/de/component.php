@@ -1,0 +1,33 @@
+<?
+$MESS ['SONET_C3_PVG_USER'] = "Alle Gruppenmitglieder";
+$MESS ['SONET_C3_PVG_ALL'] = "Alle Nutzer";
+$MESS ['SONET_C3_PVU_ALL'] = "Alle Nutzer";
+$MESS ['SUBSCRIBE_NAME_blog'] = "Blog";
+$MESS ['SUBSCRIBE_NAME_calendar'] = "Kalender";
+$MESS ['SUBSCRIBE_NAME1_calendar'] = "Kalender";
+$MESS ['SUBSCRIBE_NAME1_forum'] = "Diskussion";
+$MESS ['SUBSCRIBE_NAME_files'] = "Dateien";
+$MESS ['SUBSCRIBE_NAME1_files'] = "Dateien";
+$MESS ['SUBSCRIBE_NAME_forum'] = "Forum";
+$MESS ['SONET_C3_SYSTEM_FR'] = "Freunde";
+$MESS ['SONET_C3_PVG_OWNER'] = "Nur der Gruppenbesitzer";
+$MESS ['SONET_C3_PVG_MOD'] = "Gruppenbesitzer und Gruppenmoderatoren";
+$MESS ['SONET_C3_NO_GROUP'] = "Gruppe wurde nicht gefunden";
+$MESS ['SONET_C3_SYSTEM_GR'] = "Gruppen";
+$MESS ['SONET_C3_PVU_FR'] = "Nur Freunde";
+$MESS ['SONET_C3_PVU_FR2'] = "Nur Freunde und Freunde der Freunde";
+$MESS ['SONET_C3_PVU_NONE'] = "Nur ich";
+$MESS ['SUBSCRIBE_NAME_photo'] = "Foto";
+$MESS ['SUBSCRIBE_NAME1_photo'] = "Foto";
+$MESS ['SUBSCRIBE_NAME1_blog'] = "Berichte";
+$MESS ['SONET_C3_GROUP_SETTINGS'] = "Abonnement";
+$MESS ['SONET_C3_USER_SETTINGS'] = "Abonnement";
+$MESS ['SONET_C3_SYSTEM'] = "System";
+$MESS ['SUBSCRIBE_NAME_tasks'] = "Aufgaben";
+$MESS ['SUBSCRIBE_NAME1_tasks'] = "Aufgaben";
+$MESS ['SONET_C3_NO_GROUP_ID'] = "Die Gruppen ID wurde nicht angegeben";
+$MESS ['SONET_MODULE_NOT_INSTALL'] = "Das Modul \"Soziales Netz\" wurde nicht installiert.";
+$MESS ['SONET_C3_NO_USER_ID'] = "Die Nutzer-ID wurde nicht angegeben";
+$MESS ['SONET_P_USER_NO_USER'] = "Der Nutzer wurde nicht gefunden.";
+$MESS ['SONET_C3_PERMS'] = "Sie haben nicht genügend Rechte, um diese Operation auszuführen";
+?>

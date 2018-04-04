@@ -57,9 +57,13 @@ else
 		<?endif;?>
 	>
 	<?
+	$values = $arResult["VALUE"];
+	if(!is_array($values))
+		$values = array($values);
+	$values = array_map("strval", $values);
 	foreach ($arParams["arUserField"]["USER_TYPE"]["FIELDS"] as $key => $val)
 	{
-		$bSelected = in_array(strval($key), $arResult["VALUE"], true) && (
+		$bSelected = in_array(strval($key), $values, true) && (
 			(!$bWasSelect) ||
 			($arParams["arUserField"]["MULTIPLE"] == "Y")
 		);

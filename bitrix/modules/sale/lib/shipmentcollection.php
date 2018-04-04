@@ -388,7 +388,9 @@ class ShipmentCollection
 							$order->getId(),
 							"SHIPMENT_SAVED",
 							$shipment->getId(),
-							$shipment
+							$shipment,
+							array(),
+							OrderHistory::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_1
 						);
 					}
 				}
@@ -1149,6 +1151,8 @@ class ShipmentCollection
 		/** @var Result $result */
 		$result = new Result();
 
+		$calculatedDeliveries = [];
+
 		/** @var Shipment $shipment */
 		foreach ($this->collection as $shipment)
 		{
@@ -1158,18 +1162,21 @@ class ShipmentCollection
 			if ($shipment->isCustomPrice())
 			{
 				$priceDelivery = $shipment->getPrice();
+
+				$calcResult = new Delivery\CalculationResult();
+				$calcResult->setDeliveryPrice($priceDelivery);
 			}
 			else
 			{
-				/** @var Delivery\CalculationResult $deliveryCalculate */
-				$deliveryCalculate = $shipment->calculateDelivery();
-				if (!$deliveryCalculate->isSuccess())
+				/** @var Delivery\CalculationResult $calcResult */
+				$calcResult = $shipment->calculateDelivery();
+				if (!$calcResult->isSuccess())
 				{
-					$result->addErrors($deliveryCalculate->getErrors());
+					$result->addErrors($calcResult->getErrors());
 					continue;
 				}
 
-				$priceDelivery = $deliveryCalculate->getPrice();
+				$priceDelivery = $calcResult->getPrice();
 				if ($priceDelivery < 0)
 				{
 					$result->addError(new ResultError(Loc::getMessage('SALE_ORDER_SHIPMENT_WRONG_DELIVERY_PRICE'), 'WRONG_DELIVERY_PRICE'));
@@ -1180,7 +1187,10 @@ class ShipmentCollection
 			$priceDelivery = PriceMaths::roundPrecision($priceDelivery);
 			$shipment->setField('BASE_PRICE_DELIVERY', $priceDelivery);
 
+			$calculatedDeliveries[] = $calcResult;
 		}
+
+		$result->setData(['CALCULATED_DELIVERIES' => $calculatedDeliveries]);
 
 		return $result;
 	}

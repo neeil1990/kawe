@@ -227,17 +227,20 @@ if($arResult["ERROR"] === '' && $saleModulePermissions >= "W" && check_bitrix_se
 					);
 				}
 
-				$shipmentCollection = $order->getShipmentCollection();
-				/** @var \Bitrix\Sale\Shipment $shipment */
-				foreach ($shipmentCollection as $shipment)
+				if (Cashbox\Manager::isSupportedFFD105())
 				{
-					if ($shipment->isSystem())
-						continue;
+					$shipmentCollection = $order->getShipmentCollection();
+					/** @var \Bitrix\Sale\Shipment $shipment */
+					foreach ($shipmentCollection as $shipment)
+					{
+						if ($shipment->isSystem())
+							continue;
 
-					$arResult['SHIPMENTS'][] = array(
-						'ID' => $shipment->getId(),
-						'CODE' => 'S_'.$shipment->getId(),
-					);
+						$arResult['SHIPMENTS'][] = array(
+							'ID' => $shipment->getId(),
+							'CODE' => 'S_'.$shipment->getId(),
+						);
+					}
 				}
 			}
 
@@ -288,53 +291,36 @@ if($arResult["ERROR"] === '' && $saleModulePermissions >= "W" && check_bitrix_se
 					}
 				}
 
-				$paymentCollection = $order->getPaymentCollection();
-				/** @var Payment $payment */
-				foreach ($paymentCollection as $payment)
+				$checkType = $arResult['CHECK_TYPES'][0]['ID'];
+				if ($entityType === Cashbox\Check::SUPPORTED_ENTITY_TYPE_PAYMENT)
 				{
-					if ($entityType === Cashbox\Check::SUPPORTED_ENTITY_TYPE_PAYMENT && $payment->getId() == $entityId)
-						continue;
-
-					$item = array(
-						'ID' => $payment->getId(),
-						'NAME' => $payment->getPaymentSystemName()
-					);
-
-					if (Cashbox\Manager::isSupportedFFD105())
-					{
-						$item['PAYMENT_TYPES'] = array(
-							array(
-								'CODE' => Cashbox\Check::PAYMENT_TYPE_ADVANCE,
-								'NAME' => Loc::getMessage('SALE_CASHBOX_CHECK_ADVANCE'),
-							),
-							array(
-								'CODE' => Cashbox\Check::PAYMENT_TYPE_CREDIT,
-								'NAME' => Loc::getMessage('SALE_CASHBOX_CHECK_CREDIT'),
-							)
-						);
-					}
-
-					$arResult['PAYMENTS'][] = $item;
+					$relatedEntities = Cashbox\CheckManager::getRelatedEntitiesForPayment($checkType, $entityId);
+				}
+				else
+				{
+					$relatedEntities = Cashbox\CheckManager::getRelatedEntitiesForShipment($checkType, $entityId);
 				}
 
-				$shipmentCollection = $order->getShipmentCollection();
-				/** @var \Bitrix\Sale\Shipment $shipment */
-				foreach ($shipmentCollection as $shipment)
-				{
-					if ($shipment->isSystem())
-						continue;
+				$arResult = $arResult + $relatedEntities;
 
-					if ($entityType === Cashbox\Check::SUPPORTED_ENTITY_TYPE_SHIPMENT && $shipment->getId() == $entityId)
-						continue;
-
-					$arResult['SHIPMENTS'][] = array(
-						'ID' => $shipment->getId(),
-						'NAME' => $shipment->getDeliveryName(),
-					);
-				}
-
-				$arResult['FFD_106_ENABLED'] = Cashbox\Manager::isSupportedFFD105();
+				$arResult['FFD_105_ENABLED'] = Cashbox\Manager::isSupportedFFD105();
 			}
+
+			break;
+		case 'get_related_entities':
+			$entityCode = $request->get('entityCode');
+			$checkType = $request->get('checkType');
+			list($entityType, $entityId) = explode('_', $entityCode);
+			if ($entityType === 'S')
+			{
+				$arResult = Cashbox\CheckManager::getRelatedEntitiesForShipment($checkType, $entityId);
+			}
+			else
+			{
+				$arResult = Cashbox\CheckManager::getRelatedEntitiesForPayment($checkType, $entityId);
+			}
+
+			$arResult['FFD_105_ENABLED'] = Cashbox\Manager::isSupportedFFD105();
 
 			break;
 		case "add_check":

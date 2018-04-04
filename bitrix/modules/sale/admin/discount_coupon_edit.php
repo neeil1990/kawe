@@ -129,9 +129,9 @@ if (
 		);
 
 		if (!empty($rawData[$prefix.'ACTIVE_FROM']))
-			$fields['COUPON']['ACTIVE_FROM'] = new Main\Type\DateTime($rawData[$prefix.'ACTIVE_FROM']);
+			$fields['COUPON']['ACTIVE_FROM'] = Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_FROM']);
 		if (!empty($rawData[$prefix.'ACTIVE_TO']))
-			$fields['COUPON']['ACTIVE_TO'] = new Main\Type\DateTime($rawData[$prefix.'ACTIVE_TO']);
+			$fields['COUPON']['ACTIVE_TO'] = Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_TO']);
 		if (isset($rawData[$prefix.'TYPE']))
 			$fields['COUPON']['TYPE'] = $rawData[$prefix.'TYPE'];
 		if (isset($fields['COUPON']['TYPE']) && $fields['COUPON']['TYPE'] == Internals\DiscountCouponTable::TYPE_MULTI_ORDER)
@@ -173,10 +173,8 @@ if (
 			$fields['COUPON'] = $rawData['COUPON'];
 		if (!empty($rawData[$prefix.'ACTIVE']))
 			$fields['ACTIVE'] = $rawData[$prefix.'ACTIVE'];
-		if (isset($rawData[$prefix.'ACTIVE_FROM']))
-			$fields['ACTIVE_FROM'] = (!empty($rawData[$prefix.'ACTIVE_FROM']) ? new Main\Type\DateTime($rawData[$prefix.'ACTIVE_FROM']) : null);
-		if (isset($rawData[$prefix.'ACTIVE_TO']))
-			$fields['ACTIVE_TO'] = (!empty($rawData[$prefix.'ACTIVE_TO']) ? new Main\Type\DateTime($rawData[$prefix.'ACTIVE_TO']) : null);
+		$fields['ACTIVE_FROM'] = (!empty($rawData[$prefix.'ACTIVE_FROM']) ? Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_FROM']) : null);
+		$fields['ACTIVE_TO'] = (!empty($rawData[$prefix.'ACTIVE_TO']) ? Main\Type\DateTime::createFromUserTime($rawData[$prefix.'ACTIVE_TO']) : null);
 		if (isset($rawData[$prefix.'TYPE']))
 			$fields['TYPE'] = $rawData[$prefix.'TYPE'];
 		if (isset($fields['TYPE']) && $fields['TYPE'] == Internals\DiscountCouponTable::TYPE_MULTI_ORDER)

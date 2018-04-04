@@ -389,6 +389,36 @@ class CMainUiFilter extends CBitrixComponent
 						break;
 					}
 
+					case Type::CUSTOM_DATE :
+					{
+						$days = array();
+
+						if (isset($presetFields[$field["NAME"]."_days"]) && is_array($presetFields[$field["NAME"]."_days"]))
+						{
+							$days = $presetFields[$field["NAME"]."_days"];
+						}
+
+						$months = array();
+
+						if (isset($presetFields[$field["NAME"]."_months"]) && is_array($presetFields[$field["NAME"]."_months"]))
+						{
+							$months = $presetFields[$field["NAME"]."_months"];
+						}
+
+						$years = array();
+
+						if (isset($presetFields[$field["NAME"]."_years"]) && is_array($presetFields[$field["NAME"]."_years"]))
+						{
+							$years = $presetFields[$field["NAME"]."_years"];
+						}
+
+						$field["VALUE"] = array(
+							"days" => $days,
+							"months" => $months,
+							"years" => $years
+						);
+					}
+
 					case Type::NUMBER :
 					{
 						$field["SUB_TYPE"] = self::prepareSubtype($field, $presetFields, "_numsel");
@@ -449,40 +479,30 @@ class CMainUiFilter extends CBitrixComponent
 				$fields = isset($presetFields["fields"]) && is_array($presetFields["fields"])
 					? $presetFields["fields"] : array();
 
+				if (isset($presetFields["for_all"]))
+				{
+					$forAll = $presetFields["for_all"];
+				}
+				else
+				{
+					$forAll = !$this->arParams["FILTER_PRESETS"][$presetId]["disallow_for_all"];
+				}
+
 				$preset = array(
 					"ID" => $presetId,
 					"SORT" => $presetFields["sort"] !== null ? $presetFields["sort"] : $index,
 					"TITLE" => $presetFields["name"],
 					"FIELDS" => $this->preparePresetFields($rows, $fields),
+					"FOR_ALL" => $forAll,
 					"IS_PINNED" => false
 				);
 
-				if (is_array($presetFields["additional"]))
+				$additionalFields = $options->getAdditionalPresetFields($presetId);
+
+				if (is_array($additionalFields))
 				{
-					if (isset($presetFields["additional_rows"]))
-					{
-						$additionalRows = explode(",", $presetFields["additional_rows"]);
-					}
-					else
-					{
-						$additionalRows = array();
-
-						foreach ($presetFields["additional"] as $fieldKey => $fieldValue)
-						{
-							$fieldKey = str_replace(
-								array("_numsel", "_datesel", "_from", "_to", "_days", "_year", "_month", "_quarter"),
-								"",
-								$fieldKey
-							);
-
-							if (!in_array($fieldKey, $additionalRows))
-							{
-								$additionalRows[] = $fieldKey;
-							}
-						}
-					}
-
-					$preset["ADDITIONAL"] = $this->preparePresetFields($additionalRows, $presetFields["additional"]);
+					$additionalRows = \Bitrix\Main\UI\Filter\Options::getRowsFromFields($additionalFields);
+					$preset["ADDITIONAL"] = $this->preparePresetFields($additionalRows, $additionalFields);
 				}
 
 				if ($arOptions["default"] === $presetId)
@@ -547,13 +567,17 @@ class CMainUiFilter extends CBitrixComponent
 
 	protected function prepareDefaultPreset()
 	{
-		if (!is_array($this->arResult["CURRENT_PRESET"]))
+		global $USER;
+
+		if (!is_array($this->arResult["CURRENT_PRESET"]) &&
+			$USER->CanDoOperation("edit_other_settings"))
 		{
 			$this->arResult["CURRENT_PRESET"] = array(
 				"ID" => "default_filter",
 				"TITLE" => Loc::getMessage("MAIN_UI_FILTER__DEFAULT_FILTER_TITLE"),
 				"FIELDS" => $this->prepareFilterRows(),
-				"FIELDS_COUNT" => $this->prepareFieldsCount()
+				"FIELDS_COUNT" => $this->prepareFieldsCount(),
+				"FOR_ALL" => true
 			);
 		}
 
@@ -666,16 +690,20 @@ class CMainUiFilter extends CBitrixComponent
 
 			foreach ($sourcePresets as $presetId => $presetFields)
 			{
-				$rows = array_keys($presetFields["fields"]);
-				$preset["ID"] = $presetId;
-				$preset["TITLE"] = $presetFields["name"];
-				$preset["SORT"] = $sort;
-				$preset["FIELDS"] = $this->preparePresetFields($rows, $presetFields["fields"]);
-				$preset["IS_DEFAULT"] = true;
-				$preset["PINNED"] = $presetFields["default"] == true;
+				if ($presetId !== "default_filter")
+				{
+					$rows = array_keys($presetFields["fields"]);
+					$preset["ID"] = $presetId;
+					$preset["TITLE"] = $presetFields["name"];
+					$preset["SORT"] = $sort;
+					$preset["FIELDS"] = $this->preparePresetFields($rows, $presetFields["fields"]);
+					$preset["IS_DEFAULT"] = true;
+					$preset["FOR_ALL"] = !$presetFields["disallow_for_all"];
+					$preset["PINNED"] = $presetFields["default"] == true;
 
-				$presets[] = $preset;
-				$sort++;
+					$presets[] = $preset;
+					$sort++;
+				}
 			}
 		}
 
@@ -709,7 +737,8 @@ class CMainUiFilter extends CBitrixComponent
 			"TITLE" => Loc::getMessage("MAIN_UI_FILTER__DEFAULT_FILTER_TITLE"),
 			"SORT" => $sort,
 			"FIELDS" => $this->preparePresetFields($rows, $rows),
-			"IS_DEFAULT" => true
+			"IS_DEFAULT" => true,
+			"FOR_ALL" => true
 		);
 
 		return $presets;

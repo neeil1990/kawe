@@ -118,8 +118,8 @@ if (strlen($public_dir)>0) :
 	{
 		?>
 		<tr>
-			<td width="0%"><p>[<?=$site["ID"]?>] <?=$site["NAME"]?></p></td>
-			<td width="0%"><p><a href="<?if(strlen($site["SERVER_NAME"])>0) echo "http://".$site["SERVER_NAME"];?><?=$site["DIR"].$public_dir?>/"><?=$site["DIR"].$public_dir?>/</a></p></td>
+			<td width="0%"><p>[<?=htmlspecialcharsbx($site["ID"])?>] <?=htmlspecialcharsbx($site["NAME"])?></p></td>
+			<td width="0%"><p><a href="<?if(strlen($site["SERVER_NAME"])>0) echo "http://".htmlspecialcharsbx($site["SERVER_NAME"]);?><?=htmlspecialcharsbx($site["DIR"]).$public_dir?>/"><?=htmlspecialcharsbx($site["DIR"]).$public_dir?>/</a></p></td>
 		</tr>
 		<?
 	}

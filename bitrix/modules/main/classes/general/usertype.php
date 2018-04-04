@@ -905,6 +905,12 @@ class CUserTypeManager
 	var $arFieldsCache = array();
 	var $arRightsCache = array();
 
+	/**
+	 * @var null|array Stores relations of usertype ENTITY_ID to ORM entities. Aggregated by event main:onUserTypeEntityOrmMap.
+	 * @see CUserTypeManager::getEntityList()
+	 */
+	protected $entityList = null;
+
 	function CleanCache()
 	{
 		$this->arFieldsCache = array();
@@ -1241,6 +1247,38 @@ class CUserTypeManager
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Aggregates entity map by event.
+	 * @return array [ENTITY_ID => 'SomeTable']
+	 */
+	function getEntityList()
+	{
+		if ($this->entityList === null)
+		{
+			$event = new \Bitrix\Main\Event('main', 'onUserTypeEntityOrmMap');
+			$event->send();
+
+			foreach ($event->getResults() as $eventResult)
+			{
+				if ($eventResult->getType() == \Bitrix\Main\EventResult::SUCCESS)
+				{
+					$result = $eventResult->getParameters(); // [ENTITY_ID => 'SomeTable']
+					foreach ($result as $entityId => $entityClass)
+					{
+						if (substr($entityClass, 0, 1) !== '\\')
+						{
+							$entityClass = '\\'.$entityClass;
+						}
+
+						$this->entityList[$entityId] = $entityClass;
+					}
+				}
+			}
+		}
+
+		return $this->entityList;
 	}
 
 	function OnAfterFetch($arUserField, $result)

@@ -1,19 +1,224 @@
-2018-Mar-28 03:02:28 Наличие необходимых модулей php (check_php_modules): Ok
+2018-Apr-04 11:11:01 Наличие необходимых модулей php (check_php_modules): Ok
 Все необходимые модули установлены
-2018-Mar-28 03:02:28 Обязательные параметры PHP (check_php_settings): Ok
+2018-Apr-04 11:11:01 Обязательные параметры PHP (check_php_settings): Ok
 Настройки правильные
-2018-Mar-28 03:02:28 Модули веб-сервера (check_security): Ok
+2018-Apr-04 11:11:02 Модули веб-сервера (check_security): Ok
 Конфликтов не выявлено
-2018-Mar-28 03:02:28 Значения переменных сервера (check_server_vars): Ok
+2018-Apr-04 11:11:02 Значения переменных сервера (check_server_vars): Ok
 Корректные
-2018-Mar-28 03:02:28 Сохранение сессии (check_session): Ok
+2018-Apr-04 11:11:02 Сохранение сессии (check_session): Ok
 50% done
-2018-Mar-28 03:02:28 Параметры настройки UTF (mbstring и константа BX_UTF) (check_mbstring): Ok
+2018-Apr-04 11:11:02 Сохранение сессии (check_session): Ok
+Успешно
+2018-Apr-04 11:11:02 Параметры настройки UTF (mbstring и константа BX_UTF) (check_mbstring): Ok
 Правильные. Сайт работает в UTF кодировке
-2018-Mar-28 03:02:28 Служебные скрипты в корне сайта (check_install_scripts): Ok
+2018-Apr-04 11:11:02 Служебные скрипты в корне сайта (check_install_scripts): Ok
 Отсутствуют
-2018-Mar-28 03:02:28 Работа с сокетами (check_socket): Fail
-Connection to ssl://82.146.46.237:443	Fail
-Socket error [0]: 
+2018-Apr-04 11:11:02 Работа с сокетами (check_socket): Ok
+Connection to ssl://kawe.su:443	Success
 
-Ошибка! Не работает
+Успешно
+2018-Apr-04 11:11:03 Выполнение агентов на cron (check_bx_crontab): Warning
+Замечание. Агенты выполняются на хитах, рекомендуется перевести выполнение агентов на cron
+2018-Apr-04 11:11:03 Параметры подключения к базе данных (check_dbconn_settings): Ok
+Успешно
+2018-Apr-04 11:11:03 Лишний вывод в файлах конфигурации (check_dbconn): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:03 Сохранение сессии без UserAgent (check_session_ua): Ok
+50% done
+Connection to ssl://kawe.su:443	Success
+
+2018-Apr-04 11:11:04 Сохранение сессии без UserAgent (check_session_ua): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:04 Настройки сайтов (check_sites): Ok
+Правильные
+2018-Apr-04 11:11:04 Передача объектов по ссылке (check_clone): Ok
+Успешно
+2018-Apr-04 11:11:04 Размер стека и pcre.recursion_limit (check_pcre_recursion): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:04 Загрузка файла (check_upload): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:04 Загрузка файла больше 4Мб (check_upload_big): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:04 Загрузка файла через php://input (check_upload_raw): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:05 Передача POST запроса с большим числом параметров (check_post): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:05 Отправка почты (check_mail): Ok
+Успешно
+2018-Apr-04 11:11:05 Отправка почтового сообщения больше 64Кб (check_mail_big): Ok
+Успешно
+2018-Apr-04 11:11:05 Проверка на наличие неотправленных сообщений (check_mail_b_event): Ok
+Успешно
+2018-Apr-04 11:11:05 Внутреннее перенаправление (функция LocalRedirect) (check_localredirect): Ok
+50% done
+Connection to ssl://kawe.su:443	Success
+
+2018-Apr-04 11:11:06 Внутреннее перенаправление (функция LocalRedirect) (check_localredirect): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:06 Фактическое ограничение памяти (check_memory_limit): Ok
+20% done
+Connection to ssl://kawe.su:443	Success
+
+2018-Apr-04 11:11:06 Фактическое ограничение памяти (check_memory_limit): Ok
+40% done
+Connection to ssl://kawe.su:443	Success
+
+2018-Apr-04 11:11:06 Фактическое ограничение памяти (check_memory_limit): Ok
+60% done
+Connection to ssl://kawe.su:443	Success
+
+2018-Apr-04 11:11:06 Фактическое ограничение памяти (check_memory_limit): Ok
+80% done
+Connection to ssl://kawe.su:443	Success
+
+2018-Apr-04 11:11:07 Фактическое ограничение памяти (check_memory_limit): Ok
+Connection to ssl://kawe.su:443	Success
+
+Не менее 256 М
+2018-Apr-04 11:11:07 Работа с файлами кеша (check_cache): Ok
+Успешно
+2018-Apr-04 11:11:07 Доступ к серверу обновлений (check_update): Ok
+Успешно
+2018-Apr-04 11:11:08 HTTP авторизация (check_http_auth): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:08 Создание и запуск файла (check_exec): Ok
+Connection to ssl://kawe.su:443	Success
+
+Успешно
+2018-Apr-04 11:11:08 Функция getimagesize для swf (check_getimagesize): Ok
+Успешно
+2018-Apr-04 11:11:08 Версия MySQL-сервера (check_mysql_bug_version): Ok
+Успешно
+2018-Apr-04 11:11:09 Время на БД и веб-сервере (check_mysql_time): Ok
+Успешно
+2018-Apr-04 11:11:09 Режим работы MySQL (check_mysql_mode): Ok
+Успешно
+2018-Apr-04 11:11:09 Кодировка соединения (check_mysql_connection_charset): Ok
+character_set_connection=utf8, collation_connection=utf8_unicode_ci, character_set_results=utf8
+Успешно
+2018-Apr-04 11:11:09 Кодировка базы данных (check_mysql_db_charset): Ok
+CHARSET=utf8, COLLATION=utf8_unicode_ci
+Успешно
+2018-Apr-04 11:11:10 Кодировки таблиц в БД (check_mysql_table_charset): Ok
+Успешно
+2018-Apr-04 11:11:10 Структура базы данных (check_mysql_table_structure): Ok
+0% done
+2018-Apr-04 11:11:10 Структура базы данных (check_mysql_table_structure): Ok
+2% done
+2018-Apr-04 11:11:10 Структура базы данных (check_mysql_table_structure): Ok
+4% done
+2018-Apr-04 11:11:11 Структура базы данных (check_mysql_table_structure): Ok
+6% done
+2018-Apr-04 11:11:15 Структура базы данных (check_mysql_table_structure): Ok
+8% done
+2018-Apr-04 11:11:15 Структура базы данных (check_mysql_table_structure): Ok
+10% done
+2018-Apr-04 11:11:15 Структура базы данных (check_mysql_table_structure): Ok
+12% done
+2018-Apr-04 11:11:15 Структура базы данных (check_mysql_table_structure): Ok
+14% done
+2018-Apr-04 11:11:15 Структура базы данных (check_mysql_table_structure): Ok
+16% done
+2018-Apr-04 11:11:15 Структура базы данных (check_mysql_table_structure): Ok
+18% done
+2018-Apr-04 11:11:16 Структура базы данных (check_mysql_table_structure): Ok
+20% done
+2018-Apr-04 11:11:17 Структура базы данных (check_mysql_table_structure): Ok
+22% done
+2018-Apr-04 11:11:18 Структура базы данных (check_mysql_table_structure): Ok
+24% done
+2018-Apr-04 11:11:18 Структура базы данных (check_mysql_table_structure): Ok
+26% done
+2018-Apr-04 11:11:21 Структура базы данных (check_mysql_table_structure): Ok
+28% done
+2018-Apr-04 11:11:26 Структура базы данных (check_mysql_table_structure): Ok
+30% done
+2018-Apr-04 11:11:27 Структура базы данных (check_mysql_table_structure): Ok
+32% done
+2018-Apr-04 11:11:29 Структура базы данных (check_mysql_table_structure): Ok
+34% done
+2018-Apr-04 11:11:29 Структура базы данных (check_mysql_table_structure): Ok
+36% done
+2018-Apr-04 11:11:29 Структура базы данных (check_mysql_table_structure): Ok
+38% done
+2018-Apr-04 11:11:29 Структура базы данных (check_mysql_table_structure): Ok
+40% done
+2018-Apr-04 11:11:37 Структура базы данных (check_mysql_table_structure): Ok
+42% done
+2018-Apr-04 11:11:37 Структура базы данных (check_mysql_table_structure): Ok
+44% done
+2018-Apr-04 11:11:38 Структура базы данных (check_mysql_table_structure): Ok
+46% done
+2018-Apr-04 11:11:39 Структура базы данных (check_mysql_table_structure): Ok
+48% done
+2018-Apr-04 11:11:39 Структура базы данных (check_mysql_table_structure): Ok
+50% done
+2018-Apr-04 11:11:41 Структура базы данных (check_mysql_table_structure): Ok
+52% done
+2018-Apr-04 11:11:42 Структура базы данных (check_mysql_table_structure): Ok
+54% done
+2018-Apr-04 11:11:42 Структура базы данных (check_mysql_table_structure): Ok
+56% done
+2018-Apr-04 11:11:42 Структура базы данных (check_mysql_table_structure): Ok
+57% done
+2018-Apr-04 11:11:42 Структура базы данных (check_mysql_table_structure): Ok
+60% done
+2018-Apr-04 11:11:42 Структура базы данных (check_mysql_table_structure): Ok
+62% done
+2018-Apr-04 11:11:43 Структура базы данных (check_mysql_table_structure): Ok
+64% done
+2018-Apr-04 11:11:43 Структура базы данных (check_mysql_table_structure): Ok
+66% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+68% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+70% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+72% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+74% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+76% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+78% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+80% done
+2018-Apr-04 11:11:44 Структура базы данных (check_mysql_table_structure): Ok
+82% done
+2018-Apr-04 11:11:45 Структура базы данных (check_mysql_table_structure): Ok
+84% done
+2018-Apr-04 11:11:45 Структура базы данных (check_mysql_table_structure): Ok
+86% done
+2018-Apr-04 11:11:45 Структура базы данных (check_mysql_table_structure): Ok
+88% done
+2018-Apr-04 11:11:45 Структура базы данных (check_mysql_table_structure): Ok
+90% done
+2018-Apr-04 11:11:45 Структура базы данных (check_mysql_table_structure): Ok
+92% done
+2018-Apr-04 11:11:45 Структура базы данных (check_mysql_table_structure): Ok
+94% done
+2018-Apr-04 11:11:47 Структура базы данных (check_mysql_table_structure): Ok
+96% done
+2018-Apr-04 11:11:48 Структура базы данных (check_mysql_table_structure): Ok
+98% done
+2018-Apr-04 11:11:48 Структура базы данных (check_mysql_table_structure): Ok
+Успешно

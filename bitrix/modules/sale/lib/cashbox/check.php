@@ -3,6 +3,7 @@
 namespace Bitrix\Sale\Cashbox;
 
 use Bitrix\Main;
+use Bitrix\Catalog;
 use Bitrix\Sale\BasketItem;
 use Bitrix\Sale\Cashbox\Internals\CashboxCheckTable;
 use Bitrix\Sale\Cashbox\Internals\Check2CashboxTable;
@@ -47,6 +48,7 @@ abstract class Check
 	const SUPPORTED_ENTITY_TYPE_PAYMENT = 'payment';
 	const SUPPORTED_ENTITY_TYPE_SHIPMENT = 'shipment';
 	const SUPPORTED_ENTITY_TYPE_ALL = 'all';
+	const SUPPORTED_ENTITY_TYPE_NONE = 'none';
 
 	/** @var array $fields */
 	private $fields = array();
@@ -131,8 +133,10 @@ abstract class Check
 	}
 
 	/**
-	 * @param CollectableEntity[] $entities
+	 * @param array $entities
+	 * @throws Main\ArgumentNullException
 	 * @throws Main\ArgumentTypeException
+	 * @throws Main\ObjectNotFoundException
 	 */
 	public function setEntities(array $entities)
 	{
@@ -203,7 +207,12 @@ abstract class Check
 	}
 
 	/**
-	 * @return CollectableEntity[]
+	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public function getRelatedEntities()
 	{
@@ -324,6 +333,9 @@ abstract class Check
 
 	/**
 	 * @return Main\Entity\AddResult|Main\Entity\UpdateResult
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectException
+	 * @throws \Exception
 	 */
 	public function save()
 	{
@@ -380,6 +392,15 @@ abstract class Check
 
 	/**
 	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\LoaderException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public function getDataForCheck()
 	{
@@ -471,6 +492,13 @@ abstract class Check
 	/**
 	 * @param array $entities
 	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\LoaderException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	private function extractDataFromEntitiesInternal(array $entities)
 	{
@@ -579,7 +607,15 @@ abstract class Check
 	}
 
 	/**
-	 * @return array
+	 * @return array|null
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\LoaderException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	protected function extractData()
 	{
@@ -605,6 +641,14 @@ abstract class Check
 
 	/**
 	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\LoaderException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	protected function extractDataInternal()
 	{
@@ -649,6 +693,8 @@ abstract class Check
 	/**
 	 * @param Shipment $shipment
 	 * @return int
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
 	 */
 	protected function getDeliveryVatId(Shipment $shipment)
 	{
@@ -664,27 +710,97 @@ abstract class Check
 
 	/**
 	 * @param BasketItem $basketItem
-	 * @return int
+	 * @return mixed
+	 * @throws Main\ArgumentException
+	 * @throws Main\LoaderException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	protected function getProductVatId(BasketItem $basketItem)
 	{
-		static $vatInfoList = array();
+		static $vatList = array();
 
-		if (!isset($vatInfoList[$basketItem->getProductId()]))
+		if (!isset($vatList[$basketItem->getProductId()]))
 		{
-			if (Main\Loader::includeModule('catalog'))
+			$vatId = $this->getVatIdByProductId($basketItem->getProductId());
+			if ($vatId === 0)
 			{
-				$dbRes = \CCatalogProduct::GetVATInfo($basketItem->getProductId());
-				$vat = $dbRes->Fetch();
-				$vatInfoList[$basketItem->getProductId()] = ($vat['ID']) ?: 0;
+				$vatRate = (int)($basketItem->getVatRate() * 100);
+				if ($vatRate > 0)
+				{
+					$vatId = $this->getVatIdByVatRate($vatRate);
+				}
+			}
+
+			$vatList[$basketItem->getProductId()] = (int)$vatId;
+		}
+
+		return $vatList[$basketItem->getProductId()];
+	}
+
+	/**
+	 * @param $productId
+	 * @return int
+	 * @throws Main\LoaderException
+	 */
+	private function getVatIdByProductId($productId)
+	{
+		$vatId = 0;
+		if (Main\Loader::includeModule('catalog'))
+		{
+			$dbRes = \CCatalogProduct::GetVATInfo($productId);
+			$vat = $dbRes->Fetch();
+			if ($vat)
+			{
+				$vatId = (int)$vat['ID'];
 			}
 		}
 
-		return (int)$vatInfoList[$basketItem->getProductId()];
+		return $vatId;
+	}
+
+	/**
+	 * @param $vatRate
+	 * @return int|mixed
+	 * @throws Main\ArgumentException
+	 * @throws Main\LoaderException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
+	 */
+	private function getVatIdByVatRate($vatRate)
+	{
+		static $vatList = array();
+
+		if (!$vatList)
+		{
+			if (Main\Loader::includeModule('catalog'))
+			{
+				$dbRes = Catalog\VatTable::getList(array('filter' => array('ACTIVE' => 'Y')));
+				while ($data = $dbRes->fetch())
+				{
+					$vatList[(int)$data['RATE']] = (int)$data['ID'];
+				}
+			}
+		}
+
+		if (!isset($vatList[$vatRate]))
+		{
+			return 0;
+		}
+
+		return $vatList[$vatRate];
 	}
 
 	/**
 	 * @return Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\LoaderException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public function validate()
 	{
@@ -743,10 +859,26 @@ abstract class Check
 	}
 
 	/**
-	 *
+	 * @return string
+	 */
+	public static function getSupportedRelatedEntityType()
+	{
+		return static::SUPPORTED_ENTITY_TYPE_PAYMENT;
+	}
+
+	/**
 	 * @deprecated use method extractData() instead
+	 *
 	 * @param array $entities
-	 * @return array
+	 * @return array|null
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\LoaderException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	protected function extractDataFromEntities(array $entities)
 	{

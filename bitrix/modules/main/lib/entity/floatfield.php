@@ -18,6 +18,14 @@ class FloatField extends ScalarField
 	/** @var int|null */
 	protected $scale;
 
+	/**
+	 * FloatField constructor.
+	 *
+	 * @param       $name
+	 * @param array $parameters
+	 *
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function __construct($name, $parameters = array())
 	{
 		parent::__construct($name, $parameters);
@@ -36,6 +44,12 @@ class FloatField extends ScalarField
 		return $this->scale;
 	}
 
+	/**
+	 * @param mixed $value
+	 *
+	 * @return string
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbFloat($value);

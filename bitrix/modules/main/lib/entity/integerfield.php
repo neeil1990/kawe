@@ -15,6 +15,12 @@ namespace Bitrix\Main\Entity;
  */
 class IntegerField extends ScalarField
 {
+	/**
+	 * @param int $value
+	 *
+	 * @return string
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbInteger($value);

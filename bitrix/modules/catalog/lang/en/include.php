@@ -24,4 +24,7 @@ $MESS["CATALOG_ERR_PRODUCT_MEASURE_RATIO_NOT_FOUND"] = "Product unit of measurem
 $MESS["CATALOG_ERR_PRODUCT_BAD_TYPE"] = "Incorrect product type.";
 $MESS["CATALOG_ERR_NO_PRODUCT_SET"] = "Bundle contents was not found.";
 $MESS["CATALOG_ERR_NO_PRODUCT_SET_ITEM"] = "Bundled products were not found.";
+$MESS["BX_CATALOG_PRODUCT_BASKET_ERR_NO_PRODUCT"] = "The product was not found.";
+$MESS["BX_CATALOG_PRODUCT_BASKET_ERR_EMPTY_QUANTITY"] = "Product quantity to be added to the cart is not specified.";
+
 ?>

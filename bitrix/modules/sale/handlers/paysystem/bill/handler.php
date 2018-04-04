@@ -7,30 +7,26 @@ use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Request;
 use Bitrix\Main\Type\Date;
 use Bitrix\Sale;
-use Bitrix\Sale\Delivery\Services;
 use Bitrix\Sale\PaySystem;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class BillHandler
+ * @package Sale\Handlers\PaySystem
+ */
 class BillHandler extends PaySystem\BaseServiceHandler
 {
 	/**
 	 * @param Sale\Payment $payment
 	 * @param Request|null $request
 	 * @return PaySystem\ServiceResult
+	 * @throws \Bitrix\Main\ArgumentNullException
+	 * @throws \Bitrix\Main\LoaderException
 	 */
 	public function initiatePay(Sale\Payment $payment, Request $request = null)
 	{
 		$template = 'template';
-
-		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
-		$paymentCollection = $payment->getCollection();
-
-		/** @var \Bitrix\Sale\Order $order */
-		$order = $paymentCollection->getOrder();
-
-//		if ($paymentCollection->getPaidSum() + $payment->getSum() < $order->getPrice())
-//			$template .= '_prepay';
 
 		if (array_key_exists('pdf', $_REQUEST))
 			$template .= '_pdf';
@@ -57,6 +53,8 @@ class BillHandler extends PaySystem\BaseServiceHandler
 	 * @param Sale\Payment $payment
 	 * @param Request|null $request
 	 * @return array
+	 * @throws \Bitrix\Main\ArgumentNullException
+	 * @throws \Bitrix\Main\LoaderException
 	 */
 	protected function getPreparedParams(Sale\Payment $payment, Request $request = null)
 	{
@@ -70,9 +68,9 @@ class BillHandler extends PaySystem\BaseServiceHandler
 			'ACCOUNT_NUMBER' => (IsModuleInstalled('intranet')) ? $order->getField('ACCOUNT_NUMBER') : $payment->getField('ACCOUNT_NUMBER'),
 			'CURRENCY' => $payment->getField('CURRENCY'),
 			'DATE_BILL' => $payment->getField('DATE_BILL'),
-			'SUM' => $payment->getSum(),
-			'SUM_PAID' => (float)$paymentCollection->getPaidSum(),
-			'DISCOUNT_PRICE' => (float)$order->getDiscountPrice()
+			'SUM' => Sale\PriceMaths::roundPrecision($payment->getSum()),
+			'SUM_PAID' => Sale\PriceMaths::roundPrecision($paymentCollection->getPaidSum()),
+			'DISCOUNT_PRICE' => Sale\PriceMaths::roundPrecision($order->getDiscountPrice())
 		);
 
 		$taxes = $order->getTax();
@@ -183,6 +181,8 @@ class BillHandler extends PaySystem\BaseServiceHandler
 
 	/**
 	 * @return array
+	 * @throws \Bitrix\Main\LoaderException
+	 * @throws \Bitrix\Main\ObjectException
 	 */
 	public function getDemoParams()
 	{

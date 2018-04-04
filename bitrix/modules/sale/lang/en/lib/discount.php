@@ -22,4 +22,5 @@ $MESS["BX_SALE_DISCOUNT_APPLY_MODE_FULL_DISABLE"] = "disable all shopping cart r
 $MESS["BX_SALE_DISCOUNT_MESS_SIMPLE_DESCRIPTION_BASKET"] = "Shopping cart total change";
 $MESS["BX_SALE_DISCOUNT_MESS_SIMPLE_DESCRIPTION_DELIVERY"] = "Cost of delivery change";
 $MESS["BX_SALE_DISCOUNT_MESS_SIMPLE_DESCRIPTION_UNKNOWN"] = "Unknown shopping cart rule";
+$MESS["BX_SALE_DISCOUNT_ERR_PARSE_ERROR"] = "There is an error in one of the shopping cart rules or actions. Use the <a href=\"#LINK#\">e-Store settings page</a> to re-index the shopping cart rules.";
 ?>

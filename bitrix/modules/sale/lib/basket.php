@@ -168,43 +168,45 @@ class Basket extends BasketBase
 
 		$sqlExpiredDate = $sqlHelper->getDateToCharFunction("'" . $expiredValue . "'");
 
-		$query = "
-			DELETE bsbp 
-			FROM b_sale_basket_props as bsbp 
-				INNER JOIN b_sale_basket as bsb ON bsbp.BASKET_ID = bsb.ID
-				LEFT JOIN b_sale_fuser bsf ON bsf.ID = bsb.FUSER_ID 
-			WHERE 
-				bsf.DATE_UPDATE < ".$sqlExpiredDate." 
-				AND
-				bsf.USER_ID IS NULL 
+		$query = "DELETE FROM b_sale_basket	WHERE
+			FUSER_ID IN (
+				SELECT b_sale_fuser.id FROM b_sale_fuser WHERE
+						b_sale_fuser.DATE_UPDATE < ".$sqlExpiredDate."
+						AND b_sale_fuser.USER_ID IS NULL
+				) AND ORDER_ID IS NULL LIMIT ". static::BASKET_DELETE_LIMIT;
+
+		$connection->queryExecute($query);
+		$affectRows = $connection->getAffectedRowsCount();
+
+		$query = "DELETE FROM b_sale_basket	
+			WHERE
+				FUSER_ID NOT IN (SELECT b_sale_fuser.id FROM b_sale_fuser)
 				AND 
-				bsb.ORDER_ID IS NULL
+				ORDER_ID IS NULL
+			LIMIT ". static::BASKET_DELETE_LIMIT;
+
+		$connection->queryExecute($query);
+		$affectRows = max($affectRows, $connection->getAffectedRowsCount());
+
+		$query = "
+			DELETE
+			FROM b_sale_basket_props 
+			WHERE b_sale_basket_props.BASKET_ID NOT IN (
+				SELECT b_sale_basket.ID FROM b_sale_basket
+			)
 			LIMIT ".static::BASKET_DELETE_LIMIT;
 
 		$connection->queryExecute($query);
 
-		$query = "
-			DELETE bsb 
-			FROM b_sale_basket as bsb 
-				LEFT JOIN b_sale_fuser bsf ON bsf.ID = bsb.FUSER_ID  
-			WHERE 
-				bsf.DATE_UPDATE < ".$sqlExpiredDate." 
-				AND
-				bsf.USER_ID IS NULL 
-				AND 
-				bsb.ORDER_ID IS NULL
-			LIMIT ".static::BASKET_DELETE_LIMIT;
-
-		$connection->queryExecute($query);
-
-		return true;
+		return max($affectRows, $connection->getAffectedRowsCount());
 	}
 
 	/**
 	 * @param $days
-	 * @param $speed
-	 *
+	 * @param int $speed
 	 * @return string
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
 	 */
 	public static function deleteOldAgent($days, $speed = 0)
 	{
@@ -214,16 +216,16 @@ class Basket extends BasketBase
 			$GLOBALS["USER"] = new \CUser();
 		}
 
-		static::deleteOld($days);
-
+		$affectRows = static::deleteOld($days);
 		Fuser::deleteOld($days);
-		$speed = intval($speed);
-		$result = "\\Bitrix\\Sale\\Basket::deleteOldAgent(".intval(Main\Config\Option::get("sale", "delete_after", "30")).");";
 
-		if ($speed > 0)
+		$days = intval(Main\Config\Option::get("sale", "delete_after", "30"));
+		$result = "\Bitrix\Sale\Basket::deleteOldAgent(".$days.");";
+
+		if ($affectRows === static::BASKET_DELETE_LIMIT)
 		{
-			\CAgent::AddAgent($result, "sale", "N", $speed, "", "Y");
-			$result = "";
+			global $pPERIOD;
+			$pPERIOD = 300;
 		}
 
 		if (isset($tmpUser))
@@ -415,7 +417,6 @@ class Basket extends BasketBase
 	 */
 	public function getContext()
 	{
-		global $USER;
 		$context = array();
 
 		$order = $this->getOrder();

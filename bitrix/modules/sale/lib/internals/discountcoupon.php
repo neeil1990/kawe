@@ -118,7 +118,7 @@ class DiscountCouponTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_DATE_APPLY_FIELD')
 			)),
 			'TIMESTAMP_X' => new Main\Entity\DatetimeField('TIMESTAMP_X', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_TIMESTAMP_X_FIELD')
 			)),
 			'MODIFIED_BY' => new Main\Entity\IntegerField('MODIFIED_BY', array(
@@ -126,7 +126,7 @@ class DiscountCouponTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_MODIFIED_BY_FIELD')
 			)),
 			'DATE_CREATE' => new Main\Entity\DatetimeField('DATE_CREATE', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('DISCOUNT_COUPON_ENTITY_DATE_CREATE_FIELD')
 			)),
 			'CREATED_BY' => new Main\Entity\IntegerField('CREATED_BY', array(
@@ -902,27 +902,13 @@ class DiscountCouponTable extends Main\Entity\DataManager
 		{
 			if (isset($fields['ACTIVE_FROM']) && is_string($fields['ACTIVE_FROM']))
 			{
-				try
-				{
-					$fields['ACTIVE_FROM'] = trim($fields['ACTIVE_FROM']);
-					$fields['ACTIVE_FROM'] = ($fields['ACTIVE_FROM'] !== '' ? new Main\Type\DateTime($fields['ACTIVE_FROM']) : null);
-				}
-				catch (Main\ObjectException $e)
-				{
-					$fields['ACTIVE_FROM'] = new Main\Type\Date($fields['ACTIVE_FROM']);
-				}
+				$fields['ACTIVE_FROM'] = trim($fields['ACTIVE_FROM']);
+				$fields['ACTIVE_FROM'] = ($fields['ACTIVE_FROM'] !== '' ? Main\Type\DateTime::createFromUserTime($fields['ACTIVE_FROM']) : null);
 			}
 			if (isset($fields['ACTIVE_TO']) && is_string($fields['ACTIVE_TO']))
 			{
-				try
-				{
-					$fields['ACTIVE_TO'] = trim($fields['ACTIVE_TO']);
-					$fields['ACTIVE_TO'] = ($fields['ACTIVE_TO'] !== '' ? new Main\Type\DateTime($fields['ACTIVE_TO']) : null);
-				}
-				catch(Main\ObjectException $e)
-				{
-					$fields['ACTIVE_TO'] = new Main\Type\Date($fields['ACTIVE_TO']);
-				}
+				$fields['ACTIVE_TO'] = trim($fields['ACTIVE_TO']);
+				$fields['ACTIVE_TO'] = ($fields['ACTIVE_TO'] !== '' ? Main\Type\DateTime::createFromUserTime($fields['ACTIVE_TO']) : null);
 			}
 		}
 		return $result;

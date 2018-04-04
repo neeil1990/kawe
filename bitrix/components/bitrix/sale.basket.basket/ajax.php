@@ -38,12 +38,21 @@ if ($request->get('via_ajax') === 'Y')
 	{
 		die();
 	}
+
+	try
+	{
+		$template = $signer->unsign($request->get('template'), 'sale.basket.basket');
+	}
+	catch (Exception $e)
+	{
+		$template = '.default';
+	}
 }
 
 global $APPLICATION;
 
 $APPLICATION->IncludeComponent(
 	'bitrix:sale.basket.basket',
-	'.default',
+	$template,
 	$params
 );

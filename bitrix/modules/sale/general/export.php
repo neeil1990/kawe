@@ -56,7 +56,10 @@ class CSaleExport
 
 	static $siteNameByOrder = "";
 
+	static $documentsToLog;
+
 	protected static $lid = null;
+
 
 	/**
 	 * @param $value
@@ -685,7 +688,6 @@ class CSaleExport
 				"DATE_INSERT",
 				"CURRENCY",
 				"PRICE_DELIVERY",
-				"DATE_INSERT",
 				"COMMENTS",
 				"DATE_ALLOW_DELIVERY",
 				"STATUS_ID",
@@ -733,6 +735,41 @@ class CSaleExport
 		return $result;
 	}
 
+	protected static function getLastOrderExported($timeUpdate)
+	{
+		$result = array();
+
+		if($timeUpdate <> '')
+		{
+			$r = \Bitrix\Sale\Exchange\Internals\ExchangeLogTable::getList(array(
+				'select' => array(
+					'ENTITY_ID',
+					'ENTITY_DATE_UPDATE'
+				),
+				'filter' => array(
+					'ENTITY_TYPE_ID'=>\Bitrix\Sale\Exchange\EntityType::ORDER,
+					'=ENTITY_DATE_UPDATE'=>$timeUpdate,
+					'=DIRECTION'=>\Bitrix\Sale\Exchange\ManagerExport::getDirectionType()
+				),
+				'order'=>array('ID'=>'ASC'),
+
+			));
+			while ($order = $r->fetch())
+				$result[$order['ENTITY_DATE_UPDATE']->toString()][]=$order['ENTITY_ID'];
+		}
+		return $result;
+	}
+
+	protected static function exportedLastExport($arOrder, array $lastDateUpdateOrders)
+    {
+		$dateUpdate = $arOrder["DATE_UPDATE"]->toString();
+
+		$result = (isset($lastDateUpdateOrders[$dateUpdate]) &&
+			in_array($arOrder['ID'], $lastDateUpdateOrders[$dateUpdate]));
+
+		return $result;
+    }
+
 	/**
 	 * @return array
 	 */
@@ -740,7 +777,7 @@ class CSaleExport
     {
 		if(IntVal($_SESSION["BX_CML2_EXPORT"][self::getOrderPrefix()]) > 0)
 		{
-			$arFilter[">DATE_UPDATE"] = ConvertTimeStamp($_SESSION["BX_CML2_EXPORT"][self::getOrderPrefix()], "FULL");
+			$arFilter[">=DATE_UPDATE"] = ConvertTimeStamp($_SESSION["BX_CML2_EXPORT"][self::getOrderPrefix()], "FULL");
 		}
 		return $arFilter;
     }
@@ -757,6 +794,7 @@ class CSaleExport
 	{
 		$lastOrderPrefix = '';
 		$arCharSets = array();
+		$lastDateUpdateOrders = array();
 
 	    self::setVersionSchema($version);
 		self::setCrmMode($crmMode);
@@ -779,7 +817,11 @@ class CSaleExport
 		}
 
 		if(!self::$crmMode)
+        {
 			$arFilter = static::prepareFilter($arFilter);
+			$timeUpdate = isset($arFilter[">=DATE_UPDATE"])? $arFilter[">=DATE_UPDATE"]:'';
+            $lastDateUpdateOrders = static::getLastOrderExported($timeUpdate);
+        }
 
 		self::$arResultStat = array(
 			"ORDERS" => 0,
@@ -804,7 +846,7 @@ class CSaleExport
 
 <<?=CSaleExport::getTagName("SALE_EXPORT_COM_INFORMATION")?> <?=self::getCmrXmlRootNameParams()?>><?
 
-		$arOrder = array("DATE_UPDATE" => "ASC");
+		$arOrder = array("DATE_UPDATE" => "ASC", "ID"=>"ASC");
 
 		$arSelect = array(
 			"ID", "LID", "PERSON_TYPE_ID", "PAYED", "DATE_PAYED", "EMP_PAYED_ID", "CANCELED", "DATE_CANCELED",
@@ -814,7 +856,7 @@ class CSaleExport
 			"ADDITIONAL_INFO",
 			"COMMENTS", "TAX_VALUE", "STAT_GID", "RECURRING_ID", "ACCOUNT_NUMBER", "SUM_PAID", "DELIVERY_DOC_DATE", "DELIVERY_DOC_NUM", "TRACKING_NUMBER", "STORE_ID",
 			"ID_1C", "VERSION",
-			"USER.XML_ID"
+			"USER.XML_ID", "USER.TIMESTAMP_X"
 		);
 
 		$bCrmModuleIncluded = false;
@@ -835,8 +877,6 @@ class CSaleExport
 			'limit'  => $count["nTopCount"]
 		);
 
-
-
 		if (!empty($arOptions['RUNTIME']) && is_array($arOptions['RUNTIME']))
 		{
 			$filter['runtime'] = $arOptions['RUNTIME'];
@@ -846,6 +886,14 @@ class CSaleExport
 
 		while($arOrder = $dbOrderList->Fetch())
 		{
+		    if(!self::$crmMode && static::exportedLastExport($arOrder, $lastDateUpdateOrders))
+            {
+				continue;
+            }
+
+		    static::$documentsToLog = array();
+			$contentToLog = '';
+
 		    $order = \Bitrix\Sale\Order::load($arOrder['ID']);
 			$arOrder['DATE_STATUS'] = $arOrder['DATE_STATUS']->toString();
 		    $arOrder['DATE_INSERT'] = $arOrder['DATE_INSERT']->toString();
@@ -920,6 +968,7 @@ class CSaleExport
 
 			if(self::getVersionSchema() >= self::CONTAINER_VERSION)
             {
+                ob_start();
 				echo '<'.CSaleExport::getTagName("SALE_EXPORT_CONTAINER").'>';
             }
 
@@ -935,6 +984,9 @@ class CSaleExport
 			if(self::getVersionSchema() >= self::CONTAINER_VERSION)
 			{
 				echo '</'.CSaleExport::getTagName("SALE_EXPORT_CONTAINER").'>';
+				$contentToLog = ob_get_contents();
+				ob_end_clean();
+				echo $contentToLog;
 			}
 
 			if (self::$crmMode)
@@ -947,6 +999,23 @@ class CSaleExport
 			else
 			{
 				static::saveExportParams($arOrder);
+			}
+
+			ksort(static::$documentsToLog);
+
+			foreach (static::$documentsToLog as $entityTypeId=>$documentsToLog)
+			{
+				foreach ($documentsToLog as $documentToLog)
+				{
+					$fieldToLog = $documentToLog;
+					$fieldToLog['ENTITY_TYPE_ID'] = $entityTypeId;
+					if(self::getVersionSchema() >= self::CONTAINER_VERSION)
+					{
+						if($entityTypeId == \Bitrix\Sale\Exchange\EntityType::ORDER )
+							$fieldToLog['MESSAGE'] = $contentToLog;
+					}
+					static::log($fieldToLog);
+				}
 			}
 
 			if(self::checkTimeIsOver($time_limit, $end_time))
@@ -1667,7 +1736,7 @@ class CSaleExport
 	{
 		global $DB;
 		?>
-
+		<?ob_start();?>
 	<<?=CSaleExport::getTagName("SALE_EXPORT_DOCUMENT")?>><?
 		switch($typeDocument)
 		{
@@ -1750,7 +1819,7 @@ class CSaleExport
 			}?>
 		<<?=CSaleExport::getTagName("SALE_EXPORT_VERSION")?>><?=(IntVal($document["VERSION"]) > 0 ? $document["VERSION"] : 0)?></<?=CSaleExport::getTagName("SALE_EXPORT_VERSION")?>>
 		<<?=CSaleExport::getTagName("SALE_EXPORT_NUMBER_BASE")?>><?=$document['ORDER_ID']?></<?=CSaleExport::getTagName("SALE_EXPORT_NUMBER_BASE")?>>
-		<?=$xmlResult['Contragents'];?>
+		<?echo $xmlResult['Contragents'];?>
 		<?	switch($typeDocument)
 			{
 				case 'Payment':
@@ -1920,7 +1989,59 @@ class CSaleExport
 		}
 		?>
 	</<?=CSaleExport::getTagName("SALE_EXPORT_DOCUMENT")?>>
-	<?
+		<?$c = ob_get_contents();
+		ob_end_clean();
+		echo $c;
+
+		$typeEntityId = \Bitrix\Sale\Exchange\EntityType::UNDEFINED;
+		switch ($typeDocument)
+		{
+			case 'Order':
+				$typeEntityId = \Bitrix\Sale\Exchange\EntityType::ORDER;
+				break;
+			case 'Payment':
+				$psType = \Bitrix\Sale\PaySystem\Manager::getPsType($document['PAY_SYSTEM_ID']);
+
+				if($psType == 'A')
+					$typeEntityId = \Bitrix\Sale\Exchange\EntityType::PAYMENT_CARD_TRANSACTION;
+                elseif($psType == 'N')
+					$typeEntityId = \Bitrix\Sale\Exchange\EntityType::PAYMENT_CASH_LESS;
+				else//if($psType == 'Y')
+					$typeEntityId = \Bitrix\Sale\Exchange\EntityType::PAYMENT_CASH;
+				break;
+			case 'Shipment':
+				$typeEntityId = \Bitrix\Sale\Exchange\EntityType::SHIPMENT;
+				break;
+		}
+
+		if(intval($typeEntityId)>0)
+		{
+			$filedsTolog = array(
+				'ENTITY_ID' => $document["ID"],
+				'XML_ID' => $document["ID_1C"]
+			);
+
+			if(self::getVersionSchema() < self::CONTAINER_VERSION)
+			    $filedsTolog['MESSAGE'] = $c;
+
+			switch ($typeDocument)
+			{
+                case 'Order':
+					$filedsTolog['ENTITY_DATE_UPDATE'] = new \Bitrix\Main\Type\DateTime(\CAllDatabase::FormatDate($document['DATE_UPDATE']));
+					if(self::getVersionSchema() >= self::CONTAINER_VERSION)
+						$filedsTolog['PARENT_ID'] = $document["ID"];
+                    break;
+				case 'Payment':
+				case 'Shipment':
+				    $filedsTolog['OWNER_ENTITY_ID'] = $document["ORDER_ID"];
+
+				    if(self::getVersionSchema() >= self::CONTAINER_VERSION)
+				        $filedsTolog['PARENT_ID'] = $document["ORDER_ID"];
+					break;
+			}
+
+			static::$documentsToLog[$typeEntityId][] = $filedsTolog;
+		}
 	}
 
 
@@ -1928,22 +2049,20 @@ class CSaleExport
 	{
 		$bExportFromCrm = (isset($arOptions["EXPORT_FROM_CRM"]) && $arOptions["EXPORT_FROM_CRM"] === "Y");
 		?>
-
 		<<?=CSaleExport::getTagName("SALE_EXPORT_CONTRAGENTS")?>>
 			<<?=CSaleExport::getTagName("SALE_EXPORT_CONTRAGENT")?>>
 		<?
-		if ($bExportFromCrm): ?>
-				<<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=htmlspecialcharsbx(substr($arProp["CRM"]["CLIENT_ID"]."#".$arProp["CRM"]["CLIENT"]["LOGIN"]."#".$arProp["CRM"]["CLIENT"]["LAST_NAME"]." ".$arProp["CRM"]["CLIENT"]["NAME"]." ".$arProp["CRM"]["CLIENT"]["SECOND_NAME"], 0, 40))?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?
-		else: ?>
-				<?if(strlen($arOrder["SALE_INTERNALS_ORDER_USER_XML_ID"])>0):?>
-				    <<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=htmlspecialcharsbx($arOrder["SALE_INTERNALS_ORDER_USER_XML_ID"])?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>>
-                <?else:
+		if ($bExportFromCrm):
+			$xmlId = htmlspecialcharsbx(substr($arProp["CRM"]["CLIENT_ID"]."#".$arProp["CRM"]["CLIENT"]["LOGIN"]."#".$arProp["CRM"]["CLIENT"]["LAST_NAME"]." ".$arProp["CRM"]["CLIENT"]["NAME"]." ".$arProp["CRM"]["CLIENT"]["SECOND_NAME"], 0, 40));
+		else:
+				if(strlen($arOrder["SALE_INTERNALS_ORDER_USER_XML_ID"])>0):
+                    $xmlId = htmlspecialcharsbx($arOrder["SALE_INTERNALS_ORDER_USER_XML_ID"]);
+                else:
 				    $xmlId = htmlspecialcharsbx(substr($arOrder["USER_ID"]."#".$arProp["USER"]["LOGIN"]."#".$arProp["USER"]["LAST_NAME"]." ".$arProp["USER"]["NAME"]." ".$arProp["USER"]["SECOND_NAME"], 0, 40));
                     \Bitrix\Sale\Exchange\Entity\UserImportBase::updateEmptyXmlId($arOrder["USER_ID"], $xmlId);
-                ?>
-				    <<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=$xmlId?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>>
-				<?endif;?><?
+				endif;
 		endif; ?>
+                <<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>><?=$xmlId?></<?=CSaleExport::getTagName("SALE_EXPORT_ID")?>>
 
 				<<?=CSaleExport::getTagName("SALE_EXPORT_ITEM_NAME")?>><?=htmlspecialcharsbx($agent["AGENT_NAME"])?></<?=CSaleExport::getTagName("SALE_EXPORT_ITEM_NAME")?>>
 				<?
@@ -2356,6 +2475,15 @@ class CSaleExport
 			</<?=CSaleExport::getTagName("SALE_EXPORT_CONTRAGENT")?>>
 		</<?=CSaleExport::getTagName("SALE_EXPORT_CONTRAGENTS")?>>
 		<?
+
+		$filedsTolog = array(
+			'ENTITY_ID' => $arOrder["USER_ID"],
+			'PARENT_ID' => $arOrder['ID'],
+			'ENTITY_DATE_UPDATE' => new \Bitrix\Main\Type\DateTime(\CAllDatabase::FormatDate($arOrder["SALE_INTERNALS_ORDER_USER_TIMESTAMP_X"])),
+			'XML_ID' => $xmlId
+		);
+
+		static::$documentsToLog[\Bitrix\Sale\Exchange\EntityType::USER_PROFILE][] = $filedsTolog;
 	}
 
     public static function getFormatDate($value)
@@ -2991,4 +3119,37 @@ class CSaleExport
 
 		return $value;
 	}
+
+	/**
+	 * @param array $fields
+	 * @return \Bitrix\Main\Entity\AddResult
+     * @deprecated
+	 */
+	static public function log(array $fields)
+	{
+		$params['ENTITY_ID'] = $fields['ENTITY_ID'];
+		$params['ENTITY_TYPE_ID'] = $fields['ENTITY_TYPE_ID'];
+		$params['DIRECTION'] = \Bitrix\Sale\Exchange\ManagerExport::getDirectionType();
+
+		if (strlen($fields['XML_ID'])>0)
+			$params['XML_ID'] = $fields['XML_ID'];
+
+		if (strlen($fields['ENTITY_DATE_UPDATE'])>0)
+			$params['ENTITY_DATE_UPDATE'] = $fields['ENTITY_DATE_UPDATE'];
+
+		if (intval($fields['PARENT_ID'])>0)
+			$params['PARENT_ID'] = $fields['PARENT_ID'];
+
+		if (intval($fields['OWNER_ENTITY_ID'])>0)
+			$params['OWNER_ENTITY_ID'] = $fields['OWNER_ENTITY_ID'];
+
+		if (strlen($fields['MARKED'])>0)
+		    $params['MARKED'] = $fields['MARKED'];
+
+		$params['MESSAGE'] = \Bitrix\Sale\Exchange\Internals\LoggerDiag::isOn()? $fields['MESSAGE']:null;
+
+		$params['DATE_INSERT'] = new \Bitrix\Main\Type\DateTime();
+
+		return \Bitrix\Sale\Exchange\Internals\ExchangeLogTable::add($params);
+    }
 }

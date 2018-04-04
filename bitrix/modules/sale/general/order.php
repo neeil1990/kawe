@@ -1767,6 +1767,8 @@ class CAllSaleOrder
 				ExecuteModuleEventEx($arEvent, Array($ID, $val));
 		}
 
+		unset($GLOBALS["SALE_ORDER"]["SALE_ORDER_CACHE_".$ID]);
+			
 		if ($val == "Y")
 		{
 			CTimeZone::Disable();

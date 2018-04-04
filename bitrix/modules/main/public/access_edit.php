@@ -232,6 +232,18 @@ $popupWindow->StartContent();
 $access = new CAccess();
 $arNames = $access->GetNames($arUserGroupsID, true);
 
+//sort codes by sorted names
+$positions = array_flip(array_keys($arNames));
+usort($arUserGroupsID,
+	function($a, $b) use ($positions)
+	{
+		if(!isset($positions[$a]) && !isset($positions[$b])) return 0;
+		if(!isset($positions[$a])) return 1;
+		if(!isset($positions[$b])) return -1;
+		return ($positions[$a] > $positions[$b]? 1 : -1);
+	}
+);
+
 //Javascript variables
 $jsTaskArray = "window.BXTaskArray = {'0':'".CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_INHERIT"))."'";
 foreach ($arPermTypes as $taskID => $taskTitle)
@@ -242,9 +254,7 @@ $jsInheritPerm = "";
 $jsInheritPermID = "var jsInheritPermIDs = [";
 $bWasCurrentPerm = false;
 
-foreach($arNames as $access_code => $dummy):
-	if(!in_array($access_code, $arUserGroupsID))
-		continue;
+foreach($arUserGroupsID as $access_code):
 
 	//Restore post value if error occured
 	$errorOccured = ($strWarning != "" && isset($_POST["PERMISSION"]) && is_array($_POST["PERMISSION"]) && array_key_exists($access_code, $_POST["PERMISSION"]));
@@ -384,7 +394,7 @@ window.BXAddNewPermission = function(arRights)
 	}
 
 	return false;
-}
+};
 
 window.BXCreateTaskList = function(permissionID, currentPermission, inheritPermission, userGroupID)
 {
@@ -402,15 +412,15 @@ window.BXCreateTaskList = function(permissionID, currentPermission, inheritPermi
 	var selectedIndex = 0;
 
 	<?if ($path == "/"):?>
-		BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_NOT_SET"))?>";
+		window.BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_NOT_SET"))?>";
 	<?else:?>
-		BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_INHERIT"))?>" + " \"" + BXTaskArray[(inheritPermission == 0 ? <?=intval($jsInheritPerm)?> : inheritPermission)] + "\"";
+		window.BXTaskArray["0"] = "<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_INHERIT"))?>" + " \"" + window.BXTaskArray[(inheritPermission == 0 ? <?=intval($jsInheritPerm)?> : inheritPermission)] + "\"";
 	<?endif?>
 
 	for(var taskID in BXTaskArray)
 	{
 		var option = selectDocument.createElement("OPTION");
-		option.text = BXTaskArray[taskID];
+		option.text = window.BXTaskArray[taskID];
 		option.value = taskID;
 
 		select.options.add(option);
@@ -422,7 +432,7 @@ window.BXCreateTaskList = function(permissionID, currentPermission, inheritPermi
 	select.selectedIndex = selectedIndex;
 
 	return select;
-}
+};
 
 window.BXBlurEditPermission = function(select, permissionID)
 {
@@ -443,7 +453,7 @@ window.BXBlurEditPermission = function(select, permissionID)
 		while (editPermission.firstChild)
 			editPermission.removeChild(editPermission.firstChild);
 	}
-}
+};
 
 window.BXEditPermission = function(permissionID)
 {
@@ -469,7 +479,7 @@ window.BXEditPermission = function(permissionID)
 
 	editPermission.appendChild(taskSelect);
 	taskSelect.focus();
-}
+};
 
 
 window.BXCreateAccessHint = function()
@@ -480,7 +490,7 @@ window.BXCreateAccessHint = function()
 	var groupTD = tableRow.cells[0];
 	var currentTD = tableRow.cells[1];
 
-	oBXHint = new BXHint("<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_PERMISSION_INFO"))?>");
+	var oBXHint = new BXHint("<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_PERMISSION_INFO"))?>");
 	currentTD.appendChild(oBXHint.oIcon);
 
 
@@ -488,7 +498,7 @@ window.BXCreateAccessHint = function()
 
 	for (var index = 0; index < jsInheritPermIDs.length; index++)
 		oBXHint = new BXHint("<?=CUtil::JSEscape(GetMessage("EDIT_ACCESS_SET_PERMISSION"))?>", document.getElementById("bx_permission_view_"+ jsInheritPermIDs[index]), {"width":200});
-}
+};
 
 window.BXClearPermission = function()
 {
@@ -497,7 +507,7 @@ window.BXClearPermission = function()
 		BX("REMOVE_PERMISSIONS").value = "Y";
 		BX.WindowManager.Get().PostParameters();
 	}
-}
+};
 
 window.BXCreateAccessHint();
 </script>

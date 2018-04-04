@@ -100,11 +100,15 @@ $APPLICATION->IncludeComponent(
 	</div>
 	<?
 
+	$componentCommentName = "bitrix:blog.post.comment";
+	if(isset($arParams["COMMENTS_LIST_VIEW"]) && $arParams["COMMENTS_LIST_VIEW"] == "Y")
+		$componentCommentName = 'bitrix:blog.post.comment.list';
+	
 	$componentCommentParams = array(
 		"BLOG_VAR"		=> $arResult["ALIASES"]["blog"],
 		"USER_VAR"		=> $arResult["ALIASES"]["user_id"],
 		"PAGE_VAR"		=> $arResult["ALIASES"]["page"],
-		"POST_VAR"			=> $arResult["ALIASES"]["post_id"],
+		"POST_VAR"		=> $arResult["ALIASES"]["post_id"],
 		"PATH_TO_BLOG"	=> $arResult["PATH_TO_BLOG"],
 		"PATH_TO_POST"	=> $arResult["PATH_TO_POST"],
 		"PATH_TO_USER"	=> $arResult["PATH_TO_USER"],
@@ -141,6 +145,7 @@ $APPLICATION->IncludeComponent(
 		"NO_URL_IN_COMMENTS_AUTHORITY" => $arParams["NO_URL_IN_COMMENTS_AUTHORITY"],
 		"AJAX_POST" => $arParams["AJAX_POST"],
 		"COMMENT_PROPERTY" => $arParams["COMMENT_PROPERTY"],
+		"AJAX_PAGINATION" => $arParams["AJAX_PAGINATION"],
 	);
 	if(isset($arParams["USER_CONSENT"]))
 		$componentCommentParams["USER_CONSENT"] = $arParams["USER_CONSENT"];
@@ -150,9 +155,10 @@ $APPLICATION->IncludeComponent(
 		$componentCommentParams["USER_CONSENT_IS_CHECKED"] = $arParams["USER_CONSENT_IS_CHECKED"];
 	if(isset($arParams["USER_CONSENT_IS_LOADED"]))
 		$componentCommentParams["USER_CONSENT_IS_LOADED"] = $arParams["USER_CONSENT_IS_LOADED"];
+	$componentCommentParams["USER_CONSENT_FOR_REGISTERED"] = "Y";	// get consent for registered
 	$APPLICATION->IncludeComponent(
-		"bitrix:blog.post.comment", 
-		"",
+		$componentCommentName,
+		'',
 		$componentCommentParams,
 		$component 
 	);

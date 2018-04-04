@@ -210,8 +210,7 @@ class Order
 
 		if($deliveryPrice !== false)
 		{
-			$shipment->setField('CUSTOM_PRICE_DELIVERY', "Y");
-			$shipment->setField('BASE_PRICE_DELIVERY', floatval($deliveryPrice));
+			$shipment->setBasePriceDelivery(floatval($deliveryPrice), true);
 		}
 
 		$basket = $order->getBasket();

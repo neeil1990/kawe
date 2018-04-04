@@ -207,7 +207,7 @@ class CComponentAjax
 
 	function __GetSEFRealUrl($url)
 	{
-		$arResult = CUrlRewriter::GetList(array('QUERY' => $url));
+		$arResult = \Bitrix\Main\UrlRewriter::getList(SITE_ID, array('QUERY' => $url));
 
 		if (is_array($arResult) && count($arResult) > 0)
 			return $arResult[0]['PATH'];

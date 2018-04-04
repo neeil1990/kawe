@@ -19,6 +19,7 @@ class TransferProviderCompatibility extends TransferProviderBase
 	 */
 	public function tryShip(array $products)
 	{
+		Main\Loader::includeModule('catalog');
 		$result = new Sale\Result();
 
 		$tryShipmentItemList = array();
@@ -124,6 +125,7 @@ class TransferProviderCompatibility extends TransferProviderBase
 	 */
 	public function isNeedShip(array $products)
 	{
+		Main\Loader::includeModule('catalog');
 		$result = new Sale\Result();
 
 		$resultNeedShipList = array();
@@ -660,6 +662,7 @@ class TransferProviderCompatibility extends TransferProviderBase
 	 */
 	public function deliver(array $products)
 	{
+		Main\Loader::includeModule('catalog');
 		$result = new Sale\Result();
 		$resultList = array();
 
@@ -762,6 +765,7 @@ class TransferProviderCompatibility extends TransferProviderBase
 	public function viewProduct(array $products)
 	{
 		global $USER;
+		Main\Loader::includeModule('catalog');
 		$result = new Sale\Result();
 		$resultList = array();
 
@@ -837,6 +841,7 @@ class TransferProviderCompatibility extends TransferProviderBase
 	 */
 	public function getProductListStores(array $products)
 	{
+		Main\Loader::includeModule('catalog');
 		$result = new Sale\Result();
 		$resultList = array();
 
@@ -960,6 +965,8 @@ class TransferProviderCompatibility extends TransferProviderBase
 	public function recurring(array $products)
 	{
 		global $USER;
+		Main\Loader::includeModule('catalog');
+
 		$result = new Sale\Result();
 		$resultList = array();
 

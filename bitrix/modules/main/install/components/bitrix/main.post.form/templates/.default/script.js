@@ -2460,10 +2460,10 @@ window.onKeyDownHandler = function(e, editor, formID)
 		return true;
 
 	if (
-		keyCode == 107
+		BX.util.in_array(keyCode, [107, 187])
 		|| (
 			(e.shiftKey || e.modifiers > 3)
-			&& BX.util.in_array(keyCode, [187, 50, 107, 43, 61])
+			&& BX.util.in_array(keyCode, [50, 43, 61])
 		)
 		|| (
 			e.altKey

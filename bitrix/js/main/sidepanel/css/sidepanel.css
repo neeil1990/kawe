@@ -190,3 +190,38 @@
 	animation: dash 1.5s ease-in-out infinite;
 	stroke-linecap: round;
 }
+
+.side-panel-print {
+	display: none;
+	position: absolute;
+	left: -64px;
+	bottom: 0;
+	width: 64px;
+	height: 64px;
+	cursor: pointer;
+}
+
+.side-panel-print-visible {
+	display: block;
+}
+
+.side-panel-print:after {
+	display: block;
+	content: "";
+	position: absolute;
+	bottom: 22px;
+	right: 24px;
+	width: 16px;
+	height: 17px;
+	background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMi44OTUgMy4yMjVoMTAuMTE3Yy4xNyAwIC4zMDgtLjE0LjMwOC0uMzE3Vi4zODVhLjMxMi4zMTIgMCAwIDAtLjMwOC0uMzE3SDIuODk1YS4zMTQuMzE0IDAgMCAwLS4zMDguMzE3djIuNTI2YzAgLjE3NC4xMzkuMzE0LjMwOC4zMTR6bTEyLjE3NyAxLjU3OUgxLjE1YS43NzEuNzcxIDAgMCAwLS43NzMuNzY2djUuMzY3YzAgLjQyMi4zNDcuNzY3Ljc3My43NjdoLjc3NHYzLjA2NmMwIC40MjMuMzQ3Ljc2Ny43NzMuNzY3aDEwLjgyOGEuNzcxLjc3MSAwIDAgMCAuNzc0LS43Njd2LTMuMDY2aC43NzNhLjc3MS43NzEgMCAwIDAgLjc3NC0uNzY3VjUuNTdhLjc3MS43NzEgMCAwIDAtLjc3NC0uNzY2em0tMi4zMiA5LjJIMy40N3YtMy4wNjdoOS4yOHYzLjA2N3ptLjc3My02LjEzNGEuNzcxLjc3MSAwIDAgMS0uNzczLS43NjZjMC0uNDIzLjM0Ny0uNzY3Ljc3My0uNzY3LjQyNyAwIC43NzQuMzQ0Ljc3NC43NjdhLjc3MS43NzEgMCAwIDEtLjc3NC43NjZ6IiBmaWxsPSIjRkZGIiBvcGFjaXR5PSIuNiIvPjwvc3ZnPg==);
+	opacity: 0.2;
+	transition: opacity .3s;
+}
+
+.side-panel-print-visible:after {
+	opacity: 0.6;
+}
+
+.side-panel-print:hover:after {
+	opacity: 1;
+}

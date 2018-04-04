@@ -350,6 +350,99 @@ class User extends BaseObject
 		return \CVote::UserAlreadyVote($voteId, 0, $vote["UNIQUE_TYPE"], $vote["KEEP_IP_SEC"], $userId);
 	}
 
+	public static function getVotingMask(array $vote, array $user)
+	{
+		global $DB, $USER;
+		$voteId = intval($vote["ID"]);
+		$delay = intval($vote["DELAY"]);
+		$uniqueType = $voteId > 0 ? intval($vote["UNIQUE_TYPE"]) : 0;
+		$voteUserId = intval($user["COOKIE_ID"]);
+
+		$userId = intval($user["ID"]);
+		$result = array();
+		$checkedMask = 0;
+
+		$arSqlSearch = array();
+		$arSqlSelect = array("VE.ID");
+
+		while (($uniqueType & $checkedMask) != $uniqueType)
+		{
+			//One session
+			if (($uniqueType & 1) && ($checkedMask < 1) && ($checkedMask |= 1))
+			{
+				if (IsModuleInstalled('statistic') && array_key_exists($voteId, $_SESSION["VOTE"]["VOTES"]))
+					$result[] = 1;
+			}
+			//Same cookie
+			if (($uniqueType & 2) && ($checkedMask < 2) && ($checkedMask |= 2))
+			{
+				$arSqlSelect[] = "VE.VOTE_USER_ID";
+				$arSqlSearch[] = "VE.VOTE_USER_ID='".$voteUserId."'";
+			}
+			// Same IP
+			if (($uniqueType & 4) && ($checkedMask < 4) && ($checkedMask |= 4))
+			{
+				$arSqlSelect[] = "TIMESTAMPDIFF(SECOND, VE.DATE_VOTE, NOW()) AS KEEP_IP_SEC";
+				$arSqlSearch[] = "VE.IP='".$DB->ForSql($_SERVER["REMOTE_ADDR"], 15)."'".($delay > 0 ?
+						" AND (FROM_UNIXTIME(UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - ".$delay.") <= VE.DATE_VOTE)" : "");
+			}
+			// Same User ID
+			if (($uniqueType & 8) && ($checkedMask < 8) && ($checkedMask |= 8))
+			{
+				if ($userId <= 0 || $userId == $USER->GetID() && isset($_SESSION["VOTE"]["VOTES"][$voteId]))
+				{
+					$result |= 8;
+				}
+				else
+				{
+					$arSqlSelect[] = "VU.AUTH_USER_ID";
+					$arSqlSearch[] = "VU.AUTH_USER_ID=".$userId;
+				}
+			}
+			// Check Users from due register date
+			if (($uniqueType & 16) && ($checkedMask < 16) && ($checkedMask |= 16))
+			{
+				$userRegister = 0;
+				if ($userId > 0)
+				{
+					$us = (isset($user['DATE_REGISTER']) ? $user : \CUser::GetByID($userId)->fetch());
+					$userRegister = MakeTimeStamp($us['DATE_REGISTER']);
+				}
+				if (!(0 < $userRegister && $userRegister < MakeTimeStamp($vote['DATE_START'])))
+				{
+					$result |= 16;
+				}
+			}
+		}
+
+		if (!empty($arSqlSearch))
+		{
+			$dbRes = $DB->Query("SELECT ".implode(",", $arSqlSelect)."
+				FROM b_vote_event VE
+				LEFT JOIN b_vote_user VU ON (VE.VOTE_USER_ID = VU.ID)
+				WHERE VE.VOTE_ID=".$voteId." AND ((".implode(") OR (", $arSqlSearch)."))", false, 'File: '.__FILE__.' Line:'.__LINE__);
+			while ($res = $dbRes->Fetch())
+			{
+				$_SESSION["VOTE"]["VOTES"][$voteId] = $res["ID"];
+				if (($uniqueType & 2) && $res["VOTE_USER_ID"] == $voteUserId)
+				{
+					$result |= 2;
+				}
+				if (($uniqueType & 4) && $res["IP"] == $_SERVER["REMOTE_ADDR"] &&
+					($delay <= 0 || $delay > $res["KEEP_IP_SEC"]))
+				{
+					$result |= 4;
+				}
+				if (($uniqueType & 8) && $res["AUTH_USER_ID"] == $userId)
+				{
+					$result |= 8;
+				}
+			}
+		}
+
+		return $result;
+	}
+
 	/**
 	 * @return User
 	 */

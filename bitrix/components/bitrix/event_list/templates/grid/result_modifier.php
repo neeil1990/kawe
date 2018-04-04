@@ -99,6 +99,12 @@ $arResult["FILTER"] = array(
 		"name" => Loc::getMessage("EVENT_LIST_DATE_FIELD"),
 		"type" => "date",
 		"default" => true,
+	),
+	"flt_ip" => array(
+		"id" => "flt_ip",
+		"name" => Loc::getMessage("EVENT_LIST_IP_FIELD"),
+		"type" => "text",
+		"default" => true,
 	)
 );
 

@@ -10,7 +10,7 @@ global $tabControl, $APPLICATION;
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 
-if ($saleModulePermissions < "W")
+if ($saleModulePermissions < "U")
 	$APPLICATION->AuthForm(Loc::getMessage("SALE_ESDL_ACCESS_DENIED"));
 
 /**
@@ -32,7 +32,7 @@ if($requestId <= 0)
 	return;
 }
 
-if(isset($_REQUEST["action"]) && $_REQUEST["action"] == "delete_request_shipment" && isset($_REQUEST["SHIPMENT_ID"]) && $saleModulePermissions >= "W" && check_bitrix_sessid())
+if(isset($_REQUEST["action"]) && $_REQUEST["action"] == "delete_request_shipment" && isset($_REQUEST["SHIPMENT_ID"]) && $saleModulePermissions >= "U" && check_bitrix_sessid())
 {
 	if(intval($_REQUEST["SHIPMENT_ID"] > 0))
 	{
@@ -140,7 +140,7 @@ while ($record = $dbRecords->Fetch())
 	}
 
 
-	if ($saleModulePermissions >= "W")
+	if ($saleModulePermissions >= "U")
 	{
 		$arActions = Array();
 		

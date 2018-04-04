@@ -280,9 +280,13 @@ if (StrLen($curLoadSessID) > 0 && array_key_exists($curLoadSessID, $_SESSION) &&
 	$okMessage = $_SESSION[$curLoadSessID]["OK_MESSAGE"].$okMessage;
 
 if (strlen($errorMessage) > 0)
+{
 	echo CAdminMessage::ShowMessage(Array("DETAILS"=>$errorMessage, "TYPE"=>"ERROR", "MESSAGE"=>GetMessage("SAC_ERROR_TITLE"), "HTML"=>true));
-if (strlen($okMessage) > 0)
+}
+elseif (strlen($okMessage) > 0)
+{
 	echo CAdminMessage::ShowMessage(Array("DETAILS"=>$okMessage, "TYPE"=>"OK", "MESSAGE"=>GetMessage("SAC_SUCCESS_TITLE"), "HTML"=>true));
+}
 ?>
 
 <form method="GET" action="<?echo $APPLICATION->GetCurPage()?>?" name="form1">

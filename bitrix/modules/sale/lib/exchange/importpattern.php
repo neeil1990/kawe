@@ -2,7 +2,6 @@
 namespace Bitrix\Sale\Exchange;
 
 use Bitrix\Sale\Result;
-use Bitrix\Sale\Exchange;
 
 abstract class ImportPattern
 {
@@ -24,6 +23,12 @@ abstract class ImportPattern
      */
     abstract protected function import(array $items);
 
+	/**
+	 * @param ImportBase[] $items
+	 * @return Result
+	 */
+    abstract protected function logger(array $items);
+
     /**
      * @param array $rawData
      * @return Result
@@ -42,6 +47,9 @@ abstract class ImportPattern
 
         $entityItems = $r->getData();
         $r = $this->import($entityItems);
+
+        $this->logger($entityItems);
+
         return $r;
     }
 }

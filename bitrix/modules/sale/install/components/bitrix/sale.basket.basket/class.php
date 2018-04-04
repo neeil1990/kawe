@@ -352,13 +352,21 @@ class CBitrixBasketComponent extends CBitrixComponent
 		if (empty($params['COLUMNS_LIST']))
 		{
 			$columns = (string)$this->request->get('select_props');
-			$params['COLUMNS_LIST'] = explode(',', $columns);
+
+			if (!empty($columns))
+			{
+				$params['COLUMNS_LIST'] = explode(',', $columns);
+			}
 		}
 
 		if (empty($params['OFFERS_PROPS']))
 		{
 			$offerProps = (string)$this->request->get('offers_props');
-			$params['OFFERS_PROPS'] = explode(',', $offerProps);
+
+			if (!empty($offerProps))
+			{
+				$params['OFFERS_PROPS'] = explode(',', $offerProps);
+			}
 		}
 
 		if (empty($params['QUANTITY_FLOAT']))
@@ -863,6 +871,13 @@ class CBitrixBasketComponent extends CBitrixComponent
 		return Catalog\Product\Basket::addProductToBasketWithPermissions($basket, $fields, $context, false);
 	}
 
+	protected function getUserId()
+	{
+		global $USER;
+
+		return $USER instanceof CUser ? $USER->GetID() : null;
+	}
+
 	protected function needToReloadGifts(array $result)
 	{
 		$collections = array();
@@ -875,10 +890,7 @@ class CBitrixBasketComponent extends CBitrixComponent
 			{
 				if (!empty($result['BASKET_DATA']['FULL_DISCOUNT_LIST']))
 				{
-					global $USER;
-
-					$userId = $USER instanceof CUser ? $USER->GetID() : null;
-					$giftManager = Sale\Discount\Gift\Manager::getInstance()->setUserId($userId);
+					$giftManager = Sale\Discount\Gift\Manager::getInstance()->setUserId($this->getUserId());
 
 					Sale\Compatible\DiscountCompatibility::stopUsageCompatible();
 					$collections = $giftManager->getCollectionsByBasket(
@@ -1062,9 +1074,7 @@ class CBitrixBasketComponent extends CBitrixComponent
 	{
 		if (!$basket->getOrder())
 		{
-			global $USER;
-
-			$userId = $USER->GetID() ? $USER->GetID() : CSaleUser::GetAnonymousUserID();
+			$userId = $this->getUserId() ?: CSaleUser::GetAnonymousUserID();
 			$order = Sale\Order::create($this->getSiteId(), $userId);
 
 			$result = $order->appendBasket($basket);
@@ -2319,6 +2329,80 @@ class CBitrixBasketComponent extends CBitrixComponent
 		$_SESSION['SALE_USER_BASKET_QUANTITY'][$this->getSiteId()][$fUserId] = $quantity;
 	}
 
+	protected function getAffectedReformattedBasketItemsInDiscount(Sale\BasketBase $basket, array $discountData, array $calcResults)
+	{
+		$items = array();
+
+		foreach($calcResults['PRICES']['BASKET'] as $basketCode => $priceData)
+		{
+			if (empty($priceData['DISCOUNT']) || !empty($priceData['PRICE']) || empty($calcResults['RESULT']['BASKET'][$basketCode]))
+			{
+				continue;
+			}
+
+			//we have gift and PRICE equals 0.
+			$found = false;
+
+			foreach ($calcResults['RESULT']['BASKET'][$basketCode] as $data)
+			{
+				if ($data['DISCOUNT_ID'] == $discountData['ID'])
+				{
+					$found = true;
+				}
+			}
+			unset($data);
+
+			if (!$found)
+			{
+				continue;
+			}
+
+			$basketItem = $basket->getItemByBasketCode($basketCode);
+			if (!$basketItem || $basketItem->getField('MODULE') != 'catalog')
+			{
+				continue;
+			}
+
+			$items[] = array(
+				'PRODUCT_ID' => $basketItem->getProductId(),
+				'VALUE_PERCENT' => '100',
+				'MODULE' => 'catalog',
+			);
+		}
+		unset($priceData);
+
+		return $items;
+	}
+
+	protected function getDiscountData(Sale\BasketBase $basket)
+	{
+		/** @var Sale\Order $order */
+		$order = $basket->getOrder();
+		$calcResults = $order->getDiscount()->getApplyResult(true);
+
+		$appliedDiscounts = array();
+
+		foreach ($calcResults['DISCOUNT_LIST'] as $discountData)
+		{
+			if (isset($calcResults['FULL_DISCOUNT_LIST'][$discountData['REAL_DISCOUNT_ID']]))
+			{
+				$appliedDiscounts[$discountData['REAL_DISCOUNT_ID']] = $calcResults['FULL_DISCOUNT_LIST'][$discountData['REAL_DISCOUNT_ID']];
+
+				if (empty($appliedDiscounts[$discountData['REAL_DISCOUNT_ID']]['RESULT']['BASKET']))
+				{
+					$appliedDiscounts[$discountData['REAL_DISCOUNT_ID']]['RESULT']['BASKET'] = array();
+				}
+
+				$appliedDiscounts[$discountData['REAL_DISCOUNT_ID']]['RESULT']['BASKET'] = array_merge(
+					$appliedDiscounts[$discountData['REAL_DISCOUNT_ID']]['RESULT']['BASKET'],
+					$this->getAffectedReformattedBasketItemsInDiscount($basket, $discountData, $calcResults)
+				);
+			}
+		}
+
+		return [$calcResults['FULL_DISCOUNT_LIST'], $appliedDiscounts];
+	}
+
 	protected function getBasketTotal()
 	{
 		$result = array();
@@ -2351,9 +2435,7 @@ class CBitrixBasketComponent extends CBitrixComponent
 			$basketBasePrice = $basket->getBasePrice();
 			$basketVatSum = $basket->getVatSum();
 
-			$result['APPLIED_DISCOUNT_LIST'] = DiscountCouponsManager::get(true, array(), true, true);
-			$discountList = $basket->getOrder()->getDiscount()->getApplyResult(true);
-			$result['FULL_DISCOUNT_LIST'] = $discountList['FULL_DISCOUNT_LIST'];
+			list($result['FULL_DISCOUNT_LIST'], $result['APPLIED_DISCOUNT_LIST']) = $this->getDiscountData($basket);
 		}
 
 		$siteCurrency = Sale\Internals\SiteCurrencyTable::getSiteCurrency($this->getSiteId());
@@ -3340,11 +3422,11 @@ class CBitrixBasketComponent extends CBitrixComponent
 			$result['DELETED_BASKET_ITEMS'][] = $item->getId();
 
 			// compatibility
-			global $USER;
+			$userId = $this->getUserId();
 
-			if ($item->getField('SUBSCRIBE') === 'Y' && is_array($_SESSION['NOTIFY_PRODUCT'][$USER->GetID()]))
+			if ($item->getField('SUBSCRIBE') === 'Y' && is_array($_SESSION['NOTIFY_PRODUCT'][$userId]))
 			{
-				unset($_SESSION['NOTIFY_PRODUCT'][$USER->GetID()][$item->getProductId()]);
+				unset($_SESSION['NOTIFY_PRODUCT'][$userId][$item->getProductId()]);
 			}
 
 			$_SESSION['SALE_BASKET_NUM_PRODUCTS'][SITE_ID]--;

@@ -13,16 +13,16 @@ use	\Bitrix\Main\Localization\Loc,
 
 Loc::loadMessages(__FILE__);
 
-if(!$USER->CanDoOperation('view_other_settings'))
+$saleModulePermissions = $APPLICATION->GetGroupRight("sale");
+
+if($saleModulePermissions < "U" || $USER->CanDoOperation('view_other_settings'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-$isAdmin = $USER->CanDoOperation('edit_other_settings');
-$saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 $sTableID = "tbl_delivery_request_batch";
 $oSort = new CAdminSorting($sTableID, "ID", "ASC");
 $lAdmin = new CAdminList($sTableID, $oSort);
 
-if(($ids = $lAdmin->GroupAction()) && $saleModulePermissions >= "W" && check_bitrix_sessid())
+if(($ids = $lAdmin->GroupAction()) && $saleModulePermissions >= "U" && check_bitrix_sessid())
 {
 	foreach ($ids as $id)
 	{
@@ -211,7 +211,7 @@ while($fields = $resRequestList->fetch())
 		$row->AddViewField("SHIPMENTS_NUMBER", $shipmentNumbers);
 	}
 
-	if ($isAdmin)
+	if ($saleModulePermissions >= "U")
 	{
 		$arActions = array();
 

@@ -25,6 +25,8 @@ class Parser
 	protected $whitespace = '\s';
 	protected $brackets = '()\\[\\]';
 	protected $tildes = '~';
+	protected $extensionSeparators = ';#';
+	protected $extensionSymbols = ',';
 
 	protected $phoneNumberStartPattern;
 	protected $afterPhoneNumberEndPattern;
@@ -45,9 +47,9 @@ class Parser
 	protected function __construct()
 	{
 		$this->phoneNumberStartPattern = '[' . $this->plusChar . $this->validDigits . ']';
-		$this->afterPhoneNumberEndPattern = '[^' . $this->validDigits . ']+$';
+		$this->afterPhoneNumberEndPattern = '[^' . $this->validDigits . $this->extensionSeparators . $this->extensionSymbols . ']+$';
 		$this->minLengthPhoneNumberPattern = '[' . $this->validDigits . ']{' . static::MIN_LENGTH_FOR_NSN . '}';
-		$this->validPunctuation = $this->dashes . $this->slashes . $this->dot . $this->whitespace . $this->brackets . $this->tildes;
+		$this->validPunctuation = $this->dashes . $this->slashes . $this->dot . $this->whitespace . $this->brackets . $this->tildes . $this->extensionSeparators . $this->extensionSymbols;
 		$this->validPhoneNumber =
 			'[' . $this->plusChar . ']{0,1}' .
 			'(?:' .
@@ -125,7 +127,7 @@ class Parser
 			{
 				$portalZone = \CBitrix24::getPortalZone();
 
-				if(in_array($portalZone, array('br', 'cn', 'de', 'in', 'ru', 'ua', 'by', 'kz', 'fr', 'pl')));
+				if(in_array($portalZone, array('br', 'cn', 'de', 'in', 'ru', 'ua', 'by', 'kz', 'fr', 'pl')))
 				{
 					$defaultCountry = $portalZone;
 				}
@@ -135,7 +137,7 @@ class Parser
 		if(!$defaultCountry)
 		{
 			$currentLanguage = Context::getCurrent()->getLanguage();
-			if(in_array($currentLanguage, array('br', 'cn', 'de', 'in', 'ru', 'ua', 'by', 'kz', 'fr', 'pl')));
+			if(in_array($currentLanguage, array('br', 'cn', 'de', 'in', 'ru', 'ua', 'by', 'kz', 'fr', 'pl')))
 			{
 				$defaultCountry = $currentLanguage;
 			}
@@ -170,6 +172,11 @@ class Parser
 		{
 			return $result;
 		}
+
+		list($extensionSeparator, $extension) = $this->stripExtension($formattedPhoneNumber);
+		$result->setNationalNumber($formattedPhoneNumber);
+		$result->setExtensionSeparator($extensionSeparator);
+		$result->setExtension($extension);
 
 		$parseResult = $this->parsePhoneNumberAndCountryPhoneCode($formattedPhoneNumber);
 		if($parseResult === false)
@@ -248,6 +255,26 @@ class Parser
 		$result->setValid($numberType !== false);
 
 		return $result;
+	}
+
+	/**
+	 * Strips and returns extension and extension separator from the specified phone number.
+	 * @param string $phoneNumber Phone number to be stripped.
+	 * @return [$extenstionSeparator, $extension]
+	 */
+	public function stripExtension(&$phoneNumber)
+	{
+		$extension = "";
+		$extensionSeparator = "";
+
+		if(preg_match("/[" . $this->extensionSeparators ."]/", $phoneNumber, $matches, PREG_OFFSET_CAPTURE))
+		{
+			$extensionSeparator = $matches[0][0];
+			$separatorPosition = $matches[0][1];
+			$extension = substr($phoneNumber, $separatorPosition + 1);
+			$phoneNumber = substr($phoneNumber, 0, $separatorPosition);
+		}
+		return [$extensionSeparator, $extension];
 	}
 
 	/**

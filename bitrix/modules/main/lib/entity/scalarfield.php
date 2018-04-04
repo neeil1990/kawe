@@ -30,6 +30,14 @@ abstract class ScalarField extends Field implements IStorable
 	/** @var null|callable|mixed  */
 	protected $default_value;
 
+	/**
+	 * ScalarField constructor.
+	 *
+	 * @param       $name
+	 * @param array $parameters
+	 *
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function __construct($name, $parameters = array())
 	{
 		parent::__construct($name, $parameters);

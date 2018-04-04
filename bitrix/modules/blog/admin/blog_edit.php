@@ -335,7 +335,7 @@ $tabControl->BeginNextTab();
 			</td>
 		</tr>
 		<tr>
-			<td><label for="EDITOR_USE_IMAGE"><?echo GetMessage("BLBE_EDITOR_USE_IMAGE")?>:</label></td>
+			<td><label for="EDITOR_USE_IMAGE"><?echo GetMessage("BLBE_EDITOR_USE_IMAGE_AND_FILES")?>:</label></td>
 			<td>
 				<input type="checkbox" name="EDITOR_USE_IMAGE" id="EDITOR_USE_IMAGE" value="Y"<?if ($str_EDITOR_USE_IMAGE == "Y") echo " checked";?>>
 			</td>
@@ -373,8 +373,7 @@ $tabControl->BeginNextTab();
 		<td width="60%">
 			<select name="PERMS_P[1]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS_EVERYONE"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS_EVERYONE"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_POST_PERMS"]))
 				{
@@ -390,8 +389,7 @@ $tabControl->BeginNextTab();
 		<td>
 			<select name="PERMS_P[2]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_POST_PERMS"]))
 				{
@@ -414,8 +412,7 @@ $tabControl->BeginNextTab();
 				<td>
 					<select name="PERMS_P[<?= IntVal($arGroup["ID"]) ?>]">
 					<?
-					reset($GLOBALS["AR_BLOG_PERMS"]);
-					while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+					foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 					{
 						if (in_array($key, $GLOBALS["AR_BLOG_POST_PERMS"]))
 						{
@@ -451,8 +448,7 @@ $tabControl->BeginNextTab();
 		<td>
 			<select name="PERMS_C[1]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_COMMENT_PERMS"]))
 				{
@@ -468,8 +464,7 @@ $tabControl->BeginNextTab();
 		<td>
 			<select name="PERMS_C[2]">
 			<?
-			reset($GLOBALS["AR_BLOG_PERMS"]);
-			while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+			foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 			{
 				if (in_array($key, $GLOBALS["AR_BLOG_COMMENT_PERMS"]))
 				{
@@ -492,8 +487,7 @@ $tabControl->BeginNextTab();
 				<td>
 					<select name="PERMS_C[<?= IntVal($arGroup["ID"]) ?>]">
 					<?
-					reset($GLOBALS["AR_BLOG_PERMS"]);
-					while (list($key, $val) = each($GLOBALS["AR_BLOG_PERMS"]))
+					foreach($GLOBALS["AR_BLOG_PERMS"] as $key => $val)
 					{
 						if (in_array($key, $GLOBALS["AR_BLOG_COMMENT_PERMS"]))
 						{

@@ -469,6 +469,8 @@ class CAllSaleAffiliate
 	{
 		global $DB;
 
+		$disableCalculate = false;
+
 		// Prepare function params - affiliate
 		$arAffiliate = CSaleAffiliate::CheckAffiliateFunc($affiliate);
 		if (!$arAffiliate)
@@ -476,11 +478,18 @@ class CAllSaleAffiliate
 
 		$db_events = GetModuleEvents("sale", "OnBeforeAffiliateCalculate");
 		while ($arEvent = $db_events->Fetch())
-			if (ExecuteModuleEventEx($arEvent, Array(&$arAffiliate, &$dateFrom, &$dateTo, &$datePlanFrom, &$datePlanTo))===false)
+		{
+			if (ExecuteModuleEventEx($arEvent, Array(&$arAffiliate, &$dateFrom, &$dateTo, &$datePlanFrom, &$datePlanTo, &$disableCalculate)) === false)
+			{
 				return false;
-
+			}
+		}
 
 		$affiliateID = IntVal($arAffiliate["ID"]);
+		if ($disableCalculate === true)
+		{
+			return True;
+		}
 
 		if (!$dateFrom || StrLen($dateFrom) <= 0)
 		{

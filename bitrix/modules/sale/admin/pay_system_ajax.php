@@ -266,7 +266,7 @@ if(strlen($arResult["ERROR"]) <= 0 && $saleModulePermissions >= "W" && check_bit
 				'waitResponse' => 10
 			);
 			$http = new \Bitrix\Main\Web\HttpClient();
-			$response = @$http->get('https://'.$_SERVER['SERVER_NAME'].'/bitrix/tools/sale_ps_result.php');
+			$response = @$http->get('https://'.$_SERVER['HTTP_HOST'].'/bitrix/tools/sale_ps_result.php');
 			if ($response === false || $http->getStatus() != 200)
 			{
 				$arResult['CHECK_STATUS'] =  'ERROR';

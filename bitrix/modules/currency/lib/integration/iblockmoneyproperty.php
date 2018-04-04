@@ -171,7 +171,7 @@ class IblockMoneyProperty
 			$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
 			$decPoint = $format['DEC_POINT'];
 			$thousandsSep = $format['THOUSANDS_SEP'];
-			$decimals = intval($format['DECIMALS']);
+			$decimals = $format['DECIMALS'];
 			$regExp = '/^\d{1,3}(('.$thousandsSep.'){0,1}\d{3})*(\\'.$decPoint.'\d{1,'.$decimals.'})?$/';
 			if($thousandsSep && $decPoint)
 			{

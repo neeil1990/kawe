@@ -7,7 +7,7 @@ use Bitrix\Sale\Delivery\Services,
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/internals/input.php");
 
-class CSaleDeliveryRequestComponent extends CBitrixComponent
+class CSaleDeliveryRequestProcessComponent extends CBitrixComponent
 {
 	public function checkParams($params)
 	{
@@ -52,7 +52,7 @@ class CSaleDeliveryRequestComponent extends CBitrixComponent
 	{
 		global $APPLICATION;
 
-		if ($APPLICATION->GetGroupRight("sale") < "W")
+		if ($APPLICATION->GetGroupRight("sale") < "U")
 		{
 			ShowError(Loc::getMessage('SALE_CSDRP_ACCESS_DENIED'));
 			return;

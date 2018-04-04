@@ -30,6 +30,9 @@ class EventActions
 	const EVENT_ON_SHIPMENT_ALLOW_DELIVERY = "OnShipmentAllowDelivery";
 	const EVENT_ON_SHIPMENT_DEDUCTED = "OnShipmentDeducted";
 
+	const EVENT_ON_BEFORE_SHIPMENT_RESERVE = "OnSaleBeforeShipmentReserve";
+	const EVENT_ON_SHIPMENT_RESERVED = "OnSaleShipmentReserved";
+
 	const EVENT_ON_PAYMENT_PAID = "OnPaymentPaid";
 
 	const EVENT_ON_BEFORE_ORDER_STATUS_CHANGE = "OnSaleBeforeStatusOrderChange";

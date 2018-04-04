@@ -132,16 +132,6 @@ class UrlRewriter
 		elseif ($sortA < $sortB)
 			return -1;
 
-		/*
-		$isIdA = isset($a["ID"]) && ($a["ID"] != "");
-		$isIdB = isset($b["ID"]) && ($b["ID"] != "");
-
-		if ($isIdA && !$isIdB)
-			return 1;
-		if (!$isIdA && $isIdB)
-			return -1;
-		*/
-
 		$lenA = strlen($a["CONDITION"]);
 		$lenB = strlen($b["CONDITION"]);
 		if ($lenA < $lenB)
@@ -301,7 +291,7 @@ class UrlRewriter
 				Component\ParametersTable::deleteBySiteId($site["site_id"]);
 				if (!in_array($site["root"], $arAlreadyDeleted))
 				{
-					UrlRewriter::delete(
+					static::delete(
 						$site["site_id"],
 						array("!ID" => "")
 					);
@@ -326,7 +316,7 @@ class UrlRewriter
 				continue;
 			}
 
-			UrlRewriter::recursiveReindex($site["root"], "/", $arSites, $maxExecutionTime, $ns);
+			static::recursiveReindex($site["root"], "/", $arSites, $maxExecutionTime, $ns);
 
 			if ($maxExecutionTime > 0 && !empty($ns["FLG"]))
 				return $ns;
@@ -368,7 +358,7 @@ class UrlRewriter
 					|| (strlen($ns["FLG"]) > 0
 						&& substr($ns["ID"]."/", 0, strlen($child->getPath()."/")) == $child->getPath()."/"))
 				{
-					if (UrlRewriter::recursiveReindex($rootPath, substr($child->getPath(), strlen($rootPath)), $arSites, $maxExecutionTime, $ns) === false)
+					if (static::recursiveReindex($rootPath, substr($child->getPath(), strlen($rootPath)), $arSites, $maxExecutionTime, $ns) === false)
 						return false;
 				}
 				else //all done
@@ -386,7 +376,7 @@ class UrlRewriter
 				}
 				elseif (empty($ns["FLG"]))
 				{
-					$ID = UrlRewriter::reindexFile($siteId, $rootPath, substr($child->getPath(), strlen($rootPath)), $ns["max_file_size"]);
+					$ID = static::reindexFile($siteId, $rootPath, substr($child->getPath(), strlen($rootPath)), $ns["max_file_size"]);
 					if ($ID)
 						$ns["CNT"] = intval($ns["CNT"]) + 1;
 				}
@@ -403,15 +393,15 @@ class UrlRewriter
 		return true;
 	}
 
-	private function reindexFile($siteId, $rootPath, $path, $maxFileSize = 0)
+	public static function reindexFile($siteId, $rootPath, $path, $maxFileSize = 0)
 	{
 		$pathAbs = IO\Path::combine($rootPath, $path);
 
-		if (!UrlRewriter::checkPath($pathAbs))
+		if (!static::checkPath($pathAbs))
 			return 0;
 
 		$file = new IO\File($pathAbs);
-		if ($maxFileSize > 0 && $file->getFileSize() > $maxFileSize * 1024)
+		if ($maxFileSize > 0 && $file->getSize() > $maxFileSize * 1024)
 			return 0;
 
 		$fileSrc = $file->getContents();
@@ -420,6 +410,7 @@ class UrlRewriter
 			return 0;
 
 		$arComponents = \PHPParser::parseScript($fileSrc);
+
 		for ($i = 0, $cnt = count($arComponents); $i < $cnt; $i++)
 		{
 			$sef = (is_array($arComponents[$i]["DATA"]["PARAMS"]) && $arComponents[$i]["DATA"]["PARAMS"]["SEF_MODE"] == "Y");
@@ -464,7 +455,7 @@ class UrlRewriter
 					);
 				}
 
-				UrlRewriter::add($siteId, $arFields);
+				static::add($siteId, $arFields);
 			}
 		}
 

@@ -48,4 +48,24 @@ class UtfSafeString
 			return \CUtil::binsubstr($string, 0, -3);
 		return $string;
 	}
+
+	/**
+	 * Escapes 4-bytes UTF sequences.
+	 *
+	 * @param $string
+	 * @return string
+	 */
+	public static function escapeInvalidUtf($string)
+	{
+		$escape = function($matches)
+		{
+			return (isset($matches[2])? '?' : $matches[1]);
+		};
+
+		return preg_replace_callback('/([\x00-\x7F]+
+			|[\xC2-\xDF][\x80-\xBF]
+			|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF])
+			|([\x80-\xFF])/x', $escape, $string
+		);
+	}
 }

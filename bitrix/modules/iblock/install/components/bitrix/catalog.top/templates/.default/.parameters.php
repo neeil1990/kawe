@@ -478,10 +478,9 @@ if ($viewModeValue === 'SECTION')
 			'quantity' => GetMessage('CP_BCT_TPL_PRODUCT_BLOCK_QUANTITY'),
 			'buttons' => GetMessage('CP_BCT_TPL_PRODUCT_BLOCK_BUTTONS'),
 			'props' => GetMessage('CP_BCT_TPL_PRODUCT_BLOCK_PROPS'),
-			'sku' => GetMessage('CP_BCT_TPL_PRODUCT_BLOCK_SKU'),
-			'compare' => GetMessage('CP_BCT_TPL_PRODUCT_BLOCK_COMPARE')
+			'sku' => GetMessage('CP_BCT_TPL_PRODUCT_BLOCK_SKU')
 		)),
-		'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons,compare'
+		'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons'
 	);
 
 	$arTemplateParameters['SHOW_SLIDER'] = array(

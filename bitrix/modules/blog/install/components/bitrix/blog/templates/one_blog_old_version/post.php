@@ -81,6 +81,7 @@ if(isset($arParams["USER_CONSENT_IS_CHECKED"]))
 	$componentCommentParams["USER_CONSENT_IS_CHECKED"] = $arParams["USER_CONSENT_IS_CHECKED"];
 if(isset($arParams["USER_CONSENT_IS_LOADED"]))
 	$componentCommentParams["USER_CONSENT_IS_LOADED"] = $arParams["USER_CONSENT_IS_LOADED"];
+$componentCommentParams["USER_CONSENT_FOR_REGISTERED"] = "Y";	// get consent for registered
 $APPLICATION->IncludeComponent(
 	"bitrix:blog.post.comment",
 	"",

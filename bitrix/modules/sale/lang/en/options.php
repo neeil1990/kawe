@@ -237,4 +237,5 @@ $MESS["SALE_BASKET_PUBLIC_BEHAVIOR_TITLE"] = "Shopping cart preferences for the 
 $MESS["SALE_BLOCK_CHECK_TITLE"] = "Receipt printout preferences";
 $MESS["SALE_USE_ADVANCE_CHECK_BY_DEFAULT"] = "Print advance receipt upon receipt of payment";
 $MESS["SALE_BASKET_REFRESH_GAP"] = "Refresh shopping cart after (sec.)";
+$MESS["SALE_ORDER_HISTORY_ACTION_LOG_LEVEL"] = "Enable detailed order logging:";
 ?>

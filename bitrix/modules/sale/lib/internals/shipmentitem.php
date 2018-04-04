@@ -108,6 +108,12 @@ class ShipmentItemTable extends Main\Entity\DataManager
 				'required' => true,
 				'title' => Loc::getMessage('ORDER_DELIVERY_BASKET_ENTITY_BASKET_ID_FIELD'),
 			),
+			'BASKET' => array(
+				'data_type' => 'Bitrix\Sale\Internals\Basket',
+				'reference' => array(
+					'=this.BASKET_ID' => 'ref.ID'
+				)
+			),
 			'DATE_INSERT' => array(
 				'data_type' => 'datetime'
 			),

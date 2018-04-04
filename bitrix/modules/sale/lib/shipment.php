@@ -455,9 +455,60 @@ class Shipment
 		}
 
 		$shipmentReservedValue = $shipmentReserved ? "Y" : "N";
+		$currentValue = $shipment->getField('RESERVED');
 		if ($shipment->getField('RESERVED') != $shipmentReservedValue)
 		{
+			$eventManager = Main\EventManager::getInstance();
+			$eventsList = $eventManager->findEventHandlers('sale', EventActions::EVENT_ON_BEFORE_SHIPMENT_RESERVE);
+			if (!empty($eventsList))
+			{
+				/** @var Main\Entity\Event $event */
+				$event = new Main\Event('sale', EventActions::EVENT_ON_BEFORE_SHIPMENT_RESERVE, array(
+					'ENTITY' => $shipment,
+					'VALUE' => $shipmentReservedValue,
+				));
+
+				$event->send();
+
+				if ($event->getResults())
+				{
+					$result = new Result();
+					/** @var Main\EventResult $eventResult */
+					foreach($event->getResults() as $eventResult)
+					{
+						if($eventResult->getType() == Main\EventResult::ERROR)
+						{
+							$errorMsg = new ResultError(Main\Localization\Loc::getMessage('SALE_EVENT_ON_BEFORE_SHIPMENT_RESERVE_ERROR'), 'SALE_EVENT_ON_BEFORE_SHIPMENT_RESERVE_ERROR');
+
+							$eventResultData = $eventResult->getParameters();
+							if ($eventResultData)
+							{
+								if (isset($eventResultData) && $eventResultData instanceof ResultError)
+								{
+									/** @var ResultError $errorMsg */
+									$errorMsg = $eventResultData;
+								}
+							}
+
+							$result->addError($errorMsg);
+
+						}
+					}
+
+					if (!$result->isSuccess())
+					{
+						return $result;
+					}
+				}
+			}
+
 			$shipment->setFieldNoDemand('RESERVED', $shipmentReserved ? "Y" : "N");
+
+			Internals\EventsPool::addEvent('s'.$shipment->getInternalIndex(), EventActions::EVENT_ON_SHIPMENT_RESERVED, array(
+				'ENTITY' => $shipment,
+				'VALUE' => $shipmentReservedValue,
+				'OLD_VALUE' => $currentValue,
+			));
 		}
 
 		return new Result();
@@ -1239,6 +1290,11 @@ class Shipment
 		{
 			$result->addErrors( $r->getErrors() );
 		}
+
+		if ($r->hasWarnings())
+		{
+			$result->addWarnings( $r->getWarnings() );
+		}
 		return $result;
 	}
 
@@ -1309,6 +1365,8 @@ class Shipment
 			throw new Main\ObjectNotFoundException('Entity "Order" not found');
 		}
 
+		$result = new Result();
+
 		$context = array(
 			'USER_ID' => $order->getUserId(),
 			'SITE_ID' => $order->getSiteId(),
@@ -1330,7 +1388,30 @@ class Shipment
 			$creator->addShipmentItem($shipmentItem);
 		}
 
-		return $creator->deliver();
+		$r = $creator->deliver();
+		if ($r->isSuccess())
+		{
+			$r = $creator->createItemsResultAfterDeliver($r);
+			if ($r->isSuccess())
+			{
+				$data = $r->getData();
+				if (array_key_exists('RESULT_AFTER_DELIVER_LIST', $data))
+				{
+					$resultList = $data['RESULT_AFTER_DELIVER_LIST'];
+				}
+			}
+		}
+		else
+		{
+			$result->addErrors($r->getErrors());
+		}
+
+		if (!empty($resultList) && is_array($resultList))
+		{
+			Recurring::repeat($order, $resultList);
+		}
+
+		return $result;
 	}
 
 	/**
@@ -1483,6 +1564,11 @@ class Shipment
 		if (!$r->isSuccess())
 		{
 			$result->addErrors($r->getErrors());
+		}
+
+		if ($r->hasWarnings())
+		{
+			$result->addWarnings($r->getWarnings());
 		}
 
 		if (($resultData = $r->getData()) && !empty($resultData))
@@ -1691,17 +1777,7 @@ class Shipment
 			return new Delivery\CalculationResult();
 		}
 
-		/** @var Delivery\CalculationResult $deliveryCalculate */
-		$deliveryCalculate =  Delivery\Services\Manager::calculateDeliveryPrice($this);
-		if (!$deliveryCalculate->isSuccess())
-		{
-			return $deliveryCalculate;
-		}
-
-		$data = $deliveryCalculate->getData();
-		$deliveryCalculate->setData($data);
-
-		return $deliveryCalculate;
+		return Delivery\Services\Manager::calculateDeliveryPrice($this);
 	}
 
 
@@ -2260,6 +2336,34 @@ class Shipment
 		$price = $this->getPrice() * $vatRate / (1 + $vatRate);
 		
 		return PriceMaths::roundPrecision($price);
+	}
+
+	/**
+	 * @param $value
+	 * @param bool $custom
+	 *
+	 * @return Result
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotSupportedException
+	 * @throws \Exception
+	 */
+	public function setBasePriceDelivery($value, $custom = false)
+	{
+		$result = new Result();
+
+		$r = $this->setField('CUSTOM_PRICE_DELIVERY', ($custom ? 'Y' : 'N'));
+		if (!$r->isSuccess())
+		{
+			$result->addErrors($r->getErrors());
+		}
+
+		$r = $this->setField('BASE_PRICE_DELIVERY', $value);
+		if (!$r->isSuccess())
+		{
+			$result->addErrors($r->getErrors());
+		}
+
+		return $result;
 	}
 }
 

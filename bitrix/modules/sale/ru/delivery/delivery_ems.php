@@ -46,6 +46,8 @@ class CDeliveryEMS
 			"COMPABILITY" => array("CDeliveryEMS", "Compability"),
 			"CALCULATOR" => array("CDeliveryEMS", "Calculate"),
 
+			"DEPRECATED" => "Y",
+
 			/* List of delivery profiles */
 			"PROFILES" => array(
 				"delivery" => array(
@@ -658,6 +660,9 @@ class CDeliveryEMS
 
 	function Compability($arOrder, $arConfig)
 	{
+		//It will work never.
+		return array();
+
 		$arLocationFrom = CSaleHelper::getLocationByIdHitCached($arOrder["LOCATION_FROM"]);
 		$arLocationTo = CDeliveryEMS::__GetLocation($arOrder["LOCATION_TO"]);
 

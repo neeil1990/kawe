@@ -15,6 +15,12 @@ namespace Bitrix\Main\Entity;
  */
 class TextField extends StringField
 {
+	/**
+	 * @param string $value
+	 *
+	 * @return string
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbText($value);

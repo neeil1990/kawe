@@ -12,6 +12,7 @@
 	 * @param types.STRING
 	 * @param types.SELECT
 	 * @param types.DATE
+	 * @param types.CUSTOM_DATE
 	 * @param types.MULTI_SELECT
 	 * @param types.NUMBER
 	 * @param types.CUSTOM_ENTITY
@@ -199,7 +200,8 @@
 					presetsSettings[presetId] = {
 						sort: index,
 						name: presetData.TITLE,
-						fields: this.preparePresetSettingsFields(presetData.FIELDS)
+						fields: this.preparePresetSettingsFields(presetData.FIELDS),
+						for_all: presetData.FOR_ALL
 					}
 				}
 			}, this);
@@ -557,7 +559,10 @@
 				rows = BX.type.isNotEmptyString(rows) ? rows.split(',') : [];
 				fieldKeys = rows.length ? rows : Object.keys(dataFields);
 				fieldKeys.forEach(function(current) {
-					current = current.replace('_datesel', '').replace('_numsel', '');
+					current = current
+						.replace('_datesel', '')
+						.replace('_numsel', '')
+						.replace('_days', '');
 					field = BX.clone(this.getFieldByName(current));
 
 					if (BX.type.isPlainObject(field))
@@ -588,6 +593,21 @@
 								'_month': dataFields[current + '_month'],
 								'_quarter': dataFields[current + '_quarter'],
 								'_year': dataFields[current + '_year']
+							};
+						}
+
+						if (field.TYPE === this.types.CUSTOM_DATE)
+						{
+							field.VALUE = {
+								'days': Object.keys(dataFields[current + '_days'] || {}).map(function(index) {
+									return dataFields[current + '_days'][index];
+								}),
+								'months': Object.keys(dataFields[current + '_months'] || {}).map(function(index) {
+									return dataFields[current + '_months'][index];
+								}),
+								'years': Object.keys(dataFields[current + '_years'] || {}).map(function(index) {
+									return dataFields[current + '_years'][index];
+								})
 							};
 						}
 
@@ -1094,12 +1114,31 @@
 						{
 							this.getPreset().addField(response);
 							BX.addClass(target, this.settings.classMenuItemChecked);
+
+							if (BX.type.isString(response.HTML))
+							{
+								var wrap = BX.create("div");
+								this.getHiddenElement().appendChild(wrap);
+								BX.html(wrap, response.HTML);
+							}
 						}
 					}
 
 					this.syncFields();
 				}.bind(this));
 			}
+		},
+
+
+		getHiddenElement: function()
+		{
+			if (!this.hiddenElement)
+			{
+				this.hiddenElement = BX.create("div");
+				document.body.appendChild(this.hiddenElement);
+			}
+
+			return this.hiddenElement;
 		},
 
 
@@ -1191,6 +1230,7 @@
 					this.fieldsPopup.contentContainer.style = null;
 					this.fieldsPopupLoader.hide();
 					this.fieldsPopup.setContent(res);
+					this.syncFields();
 				}.bind(this));
 			}
 
@@ -1547,6 +1587,11 @@
 							break;
 						}
 
+						case this.types.CUSTOM_DATE : {
+							this.prepareControlCustomDateValue(values, name, current);
+							break;
+						}
+
 						case this.types.SELECT : {
 							this.prepareControlSelectValue(values, name, current);
 							break;
@@ -1679,6 +1724,42 @@
 			var value = JSON.parse(BX.data(select, 'value'));
 
 			values[name] = value.VALUE;
+		},
+
+		prepareControlCustomDateValue: function(values, name, field)
+		{
+			var daysControl = field.querySelector("[data-name=\""+name + '_days'+"\"]");
+
+			if (daysControl)
+			{
+				var daysValue = JSON.parse(daysControl.dataset.value);
+
+				values[name + '_days'] = daysValue.map(function(item) {
+					return item.VALUE;
+				});
+			}
+
+			var monthsControl = field.querySelector("[data-name=\""+name + '_months'+"\"]");
+
+			if (monthsControl)
+			{
+				var monthsValue = JSON.parse(monthsControl.dataset.value);
+
+				values[name + '_months'] = monthsValue.map(function(item) {
+					return item.VALUE;
+				});
+			}
+
+			var yearsControl = field.querySelector("[data-name=\""+name + '_years'+"\"]");
+
+			if (yearsControl)
+			{
+				var yearsValue = JSON.parse(yearsControl.dataset.value);
+
+				values[name + '_years'] = yearsValue.map(function(item) {
+					return item.VALUE;
+				});
+			}
 		},
 
 		prepareControlDateValue: function(values, name, field)
@@ -2002,6 +2083,15 @@
 						break;
 					}
 
+					case this.types.CUSTOM_DATE : {
+						controlData.VALUES = {
+							'days': [],
+							'months': [],
+							'years': []
+						};
+						break;
+					}
+
 					case this.types.NUMBER : {
 						controlData.SUB_TYPE = controlData.SUB_TYPES[0];
 						controlData.VALUES = {
@@ -2146,6 +2236,7 @@
 						popupContainer = popup.popupContainer;
 						BX.removeClass(popupContainer, this.settings.classAnimationClose);
 						BX.addClass(popupContainer, this.settings.classAnimationShow);
+						BX.onCustomEvent(window, "BX.Main.Filter:show", [this]);
 					}
 				}, this), showDelay);
 			}
@@ -2408,7 +2499,8 @@
 						sort: current.SORT,
 						preset_id: current.ID,
 						fields:  this.prepareFields(current.FIELDS),
-						rows: rows
+						rows: rows,
+						for_all: current.FOR_ALL
 					};
 				}, this);
 

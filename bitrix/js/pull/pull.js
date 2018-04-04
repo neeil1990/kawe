@@ -583,10 +583,10 @@
 					if (message.id)
 					{
 						message.id = parseInt(message.id);
-						message.channel = message.channel? message.channel: (message.text.channel? message.text.channel: message.time);
-						if (!_channelStack[''+message.channel+message.id])
+						message.mid = message.mid? message.mid: (message.text.channel? message.text.channel: message.time)+message.id;
+						if (!_channelStack[message.mid])
 						{
-							_channelStack[''+message.channel+message.id] = message.id;
+							_channelStack[message.mid] = true;
 
 							if (_channelLastID < message.id)
 							{
@@ -595,12 +595,9 @@
 
 							BX.PULL.executeMessages([message.text]);
 						}
-						else
+						else if (typeof(console) == 'object')
 						{
-							if (typeof(console) == 'object')
-							{
-								console.warn('PULL: message #'+message.id+' in channel '+message.channel+' is already received');
-							}
+							console.warn('PULL: message #'+message.id+' (mid: '+message.mid+') is already received');
 						}
 					}
 					if (message.tag)
@@ -751,10 +748,10 @@
 									if (message.id)
 									{
 										message.id = parseInt(message.id);
-										message.channel = message.channel? message.channel: (message.text.channel? message.text.channel: message.time);
-										if (!_channelStack[''+message.channel+message.id])
+										message.mid = message.mid? message.mid: (message.text.channel? message.text.channel: message.time)+message.id;
+										if (!_channelStack[message.mid])
 										{
-											_channelStack[''+message.channel+message.id] = message.id;
+											_channelStack[message.mid] = true;
 
 											if (_channelLastID < message.id)
 											{
@@ -762,12 +759,9 @@
 											}
 											BX.PULL.executeMessages([message.text]);
 										}
-										else
+										else if (typeof(console) == 'object')
 										{
-											if (typeof(console) == 'object')
-											{
-												console.warn('PULL: message #'+message.id+' in channel '+message.channel+' is already received');
-											}
+											console.warn('PULL: message #'+message.id+' (mid: '+message.mid+') is already received');
 										}
 									}
 									else
@@ -1036,7 +1030,7 @@
 		pull = pull !== false;
 		for (var i = 0; i < message.length; i++)
 		{
-			if (message[i].extra.revision && !BX.PULL.checkRevision(message[i].extra.revision))
+			if (message[i].extra.revision_web && !BX.PULL.checkRevision(message[i].extra.revision_web))
 				return false;
 
 			message[i].extra.server_time_ago = (((new Date()).getTime()-(message[i].extra.server_time_unix*1000))/1000);

@@ -21,7 +21,6 @@ if (CModule::IncludeModule("blog")):
 		$str_blog_ALIAS = htmlspecialcharsbx($_POST["blog_ALIAS"]);
 		$str_blog_DESCRIPTION = htmlspecialcharsbx($_POST["blog_DESCRIPTION"]);
 		$str_blog_INTERESTS = htmlspecialcharsbx($_POST["blog_INTERESTS"]);
-		$str_blog_ALLOW_POST = htmlspecialcharsbx($_POST["blog_ALLOW_POST"]);
 	}
 	?>
 	<input type="hidden" name="profile_module_id[]" value="blog">

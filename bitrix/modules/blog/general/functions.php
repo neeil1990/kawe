@@ -509,27 +509,39 @@ class blogTextParser extends CTextParser
 		return $res;
 	}
 	
-	public static function GetEditorToolbar($arParams)
+	private static function getEditorDefaultFeatures()
 	{
-		if(isset($arParams["blog"]))
-		{
-			$blog = $arParams["blog"];
-		}
-		else
-		{
-			$blog = array();
-			$arParams = array("EDITOR_FULL" => "Y");
-		}
-		$editorFull = isset($arParams["EDITOR_FULL"]) && $arParams["EDITOR_FULL"] == "Y";
-		
-		$defaultFeatures = array("Bold","Italic","Underline","SmileList","RemoveFormat","Quote","Code"/*,"Source"*/);
-		$extendFeatures = array(
+		return array("Bold","Italic","Underline","SmileList","RemoveFormat","Quote","Code"/*,"Source"*/);
+	}
+	
+	private static function getEditorExtendFeatures()
+	{
+		return array(
 			"EDITOR_USE_FONT" => array("FontList", "FontSizeList","ForeColor"),
 			"EDITOR_USE_LINK" => array("CreateLink"),
 			"EDITOR_USE_IMAGE" => array("UploadImage","Image"),
 			"EDITOR_USE_FORMAT" => array("Strike","Table","Justify","InsertOrderedList","InsertUnorderedList"),
+			"EDITOR_USE_VIDEO" => array("InputVideo")
 		);
+	}
+	
+	public static function GetEditorToolbar($params, $arResult = null)
+	{
+		if(isset($params["blog"]))
+		{
+			$blog = $params["blog"];
+		}
+		else
+		{
+			$blog = array();
+			$params = array("EDITOR_FULL" => "Y");
+		}
+		$editorFull = isset($params["EDITOR_FULL"]) && $params["EDITOR_FULL"] == "Y";
 		
+		$defaultFeatures = self::getEditorDefaultFeatures();
+		$extendFeatures = self::getEditorExtendFeatures();
+		
+//		if set FULL flag - use ALL features. If other - use features by blog settings
 		$result = $defaultFeatures;
 		if($editorFull)
 		{
@@ -540,18 +552,53 @@ class blogTextParser extends CTextParser
 		{
 			foreach($extendFeatures as $key => $feature)
 			{
+//				use feature name as key to can remove then later
 				if(isset($blog[$key]) && $blog[$key] == "Y")
-					$result = array_merge($result, $feature);
+					foreach($feature as $f)
+						$result[$f] = $f;
 			}
 		}
 		
-//		use allow video setting from base blog params
-		$useVideo = Option::get('blog', 'allow_video', 'N') == "Y" ? true : false;
-		if($useVideo && ((isset($blog["EDITOR_USE_VIDEO"]) && $blog["EDITOR_USE_VIDEO"] == "Y") || $editorFull))
-			$result[] = "InputVideo";
+//		UNSET not allowed by component settings features
+		if(is_array($arResult) && !$arResult["allowVideo"])
+			foreach($extendFeatures["EDITOR_USE_VIDEO"] as $f)
+				unset($result[$f]);
+		
+		if(is_array($arResult) && $arResult["NoCommentUrl"])
+			foreach($extendFeatures["EDITOR_USE_LINK"] as $f)
+				unset($result[$f]);
 
 		if (LANGUAGE_ID == 'ru')
 			$result[] = 'Translit';
+		
+		return $result;
+	}
+	
+	public function getEditorButtons($blog, $arResult)
+	{
+		$result = array();
+		
+//		IMAGES or FILES
+		if(
+			(
+				array_key_exists("UF_BLOG_COMMENT_FILE", $arResult["COMMENT_PROPERTIES"]["DATA"])
+				|| array_key_exists("UF_BLOG_COMMENT_DOC", $arResult["COMMENT_PROPERTIES"]["DATA"])
+			)
+			&& array_key_exists('EDITOR_USE_IMAGE', $blog) && $blog["EDITOR_USE_IMAGE"] == "Y"
+		)
+			$result[] = "UploadFile";
+		
+//		VIDEO
+		if($arResult["allowVideo"] && (isset($blog["EDITOR_USE_VIDEO"]) && $blog["EDITOR_USE_VIDEO"] == "Y"))
+			$result[] = "InputVideo";
+		
+//		LINK
+		if(!$arResult["NoCommentUrl"] && (isset($blog["EDITOR_USE_LINK"]) && $blog["EDITOR_USE_LINK"] == "Y"))
+			$result[] = 'CreateLink';
+		
+//		OTHER for all
+		$result[] = "Quote";
+		$result[] = "BlogTag";
 		
 		return $result;
 	}

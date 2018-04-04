@@ -35,7 +35,7 @@ class EventMessageTable extends Entity\DataManager
 			'TIMESTAMP_X' => array(
 				'data_type' => 'datetime',
 				'required' => true,
-				'default_value' => new Type\DateTime(),
+				'default_value' => function(){return new Type\DateTime();},
 			),
 			'EVENT_NAME' => array(
 				'data_type' => 'string',

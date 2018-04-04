@@ -147,6 +147,9 @@ if ($ID != '')
 		{
 			$language['THOUSANDS_SEP'] = (string)$language['THOUSANDS_SEP'];
 			$language['THOUSANDS_VARIANT'] = (string)$language['THOUSANDS_VARIANT'];
+			$language['FULL_NAME'] = (string)$language['FULL_NAME'];
+			if ($language['FULL_NAME'] === '')
+				$language['FULL_NAME'] = $ID;
 			$currencyLangs[$language['LID']] = $language;
 		}
 		unset($language, $langIterator, $order, $by);

@@ -141,7 +141,8 @@ class CAllSaleDiscount
 		{
 			$groupDiscountIterator = Sale\Internals\DiscountGroupTable::getList(array(
 				'select' => array('DISCOUNT_ID'),
-				'filter' => array('@GROUP_ID' => CUser::GetUserGroup($arOrder['USER_ID']), '=ACTIVE' => 'Y')
+				'filter' => array('@GROUP_ID' => CUser::GetUserGroup($arOrder['USER_ID']), '=ACTIVE' => 'Y'),
+				'order' => array('DISCOUNT_ID' => 'ASC')
 			));
 			while ($groupDiscount = $groupDiscountIterator->fetch())
 			{
@@ -236,7 +237,7 @@ class CAllSaleDiscount
 			else
 			{
 				$needDiscountHandlers = array();
-				foreach ($arIDS as &$discountID)
+				foreach ($arIDS as $discountID)
 				{
 					if (!isset(self::$cacheDiscountHandlers[$discountID]))
 						$needDiscountHandlers[] = $discountID;
@@ -278,7 +279,26 @@ class CAllSaleDiscount
 					'>=ACTIVE_TO' => $currentDatetime
 				)
 			);
-			if (empty($couponList))
+
+			$couponsDiscount = array();
+			if (!empty($couponList))
+			{
+				$iterator = Sale\Internals\DiscountCouponTable::getList(array(
+					'select' => array('DISCOUNT_ID', 'COUPON'),
+					'filter' => array('@DISCOUNT_ID' => $arIDS,'@COUPON' => array_keys($couponList)),
+					'order' => array('DISCOUNT_ID' => 'ASC')
+				));
+				while ($row = $iterator->fetch())
+				{
+					$id = (int)$row['DISCOUNT_ID'];
+					if (isset($couponsDiscount[$id]))
+						continue;
+					$couponsDiscount[$id] = $row['COUPON'];
+				}
+				unset($id, $row, $iterator);
+			}
+
+			if (empty($couponsDiscount))
 			{
 				$discountFilter['=USE_COUPONS'] = 'N';
 			}
@@ -289,10 +309,9 @@ class CAllSaleDiscount
 					'=USE_COUPONS' => 'N',
 					array(
 						'=USE_COUPONS' => 'Y',
-						'=COUPON.COUPON' => array_keys($couponList)
+						'@ID' => array_keys($couponsDiscount)
 					)
 				);
-				$discountSelect['DISCOUNT_COUPON'] = 'COUPON.COUPON';
 			}
 
 			$newDiscounts = null;
@@ -303,7 +322,6 @@ class CAllSaleDiscount
 				'order' => $discountOrder
 			));
 
-			$discountApply = array();
 			$resultDiscountList = array();
 			$resultDiscountKeys = array();
 			$resultDiscountIndex = 0;
@@ -311,9 +329,8 @@ class CAllSaleDiscount
 			while ($discount = $discountIterator->fetch())
 			{
 				$discount['ID'] = (int)$discount['ID'];
-				if (isset($discountApply[$discount['ID']]))
-					continue;
-				$discountApply[$discount['ID']] = true;
+				if ($discount['USE_COUPONS'] == 'Y')
+					$discount['DISCOUNT_COUPON'] = $couponsDiscount[$discount['ID']];
 
 				if($skipPriorityLevel == $discount['PRIORITY'])
 				{
@@ -1842,15 +1859,12 @@ class CAllSaleDiscount
 				continue;
 			if (is_string($fields[$fieldName]))
 			{
-				try
-				{
-					$fields[$fieldName] = trim($fields[$fieldName]);
-					$fields[$fieldName] = ($fields[$fieldName] !== '' ? new Main\Type\DateTime($fields[$fieldName]) : null);
-				}
-				catch (Main\ObjectException $e)
-				{
-					$fields[$fieldName] = new Main\Type\Date($fields[$fieldName]);
-				}
+				$fields[$fieldName] = trim($fields[$fieldName]);
+				$fields[$fieldName] = (
+					$fields[$fieldName] === ''
+					? null
+					: Main\Type\DateTime::createFromUserTime($fields[$fieldName])
+				);
 			}
 			$result[$fieldName] = $fields[$fieldName];
 		}

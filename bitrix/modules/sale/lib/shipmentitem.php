@@ -207,13 +207,11 @@ class ShipmentItem
 				if($eventResult->getType() == Main\EventResult::ERROR)
 				{
 					$errorMsg = new ResultError(Loc::getMessage('SALE_EVENT_ON_'.ToUpper(self::$eventClassName).'_ENTITY_DELETED_ERROR'), 'SALE_EVENT_ON_'.ToUpper(self::$eventClassName).'_ENTITY_DELETED_ERROR');
-					if ($eventResultData = $eventResult->getParameters())
+					$eventResultData = $eventResult->getParameters();
+					if (isset($eventResultData) && $eventResultData instanceof ResultError)
 					{
-						if (isset($eventResultData) && $eventResultData instanceof ResultError)
-						{
-							/** @var ResultError $errorMsg */
-							$errorMsg = $eventResultData;
-						}
+						/** @var ResultError $errorMsg */
+						$errorMsg = $eventResultData;
 					}
 
 					$result->addError($errorMsg);
@@ -251,23 +249,6 @@ class ShipmentItem
 	}
 
 	/**
-	 * @param $quantity
-	 * @return bool
-	 * @throws Main\NotSupportedException
-	 */
-//	public function reserve($quantity)
-//	{
-//		$quantity = floatval($quantity);
-//
-//		$reservedQuantity = Provider::tryReserveShipmentItem($this);
-//		$newQuantity = $this->getReservedQuantity() + $reservedQuantity;
-//
-//		//$this->setField("RESERVED_QUANTITY", $newQuantity);
-//
-//		return ($this->getQuantity() === $this->getReservedQuantity());
-//	}
-
-	/**
 	 * @return float
 	 */
 	public function getQuantity()
@@ -275,6 +256,17 @@ class ShipmentItem
 		return (float)$this->getField('QUANTITY');
 	}
 
+	/**
+	 * @param string $name
+	 * @param mixed $oldValue
+	 * @param mixed $value
+	 *
+	 * @return Result
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotSupportedException
+	 * @throws Main\ObjectNotFoundException
+	 * @throws \Exception
+	 */
 	protected function onFieldModify($name, $oldValue, $value)
 	{
 		$result = new Result();
@@ -362,69 +354,26 @@ class ShipmentItem
 					}
 					else
 					{
-						$result->addError(new ResultError(
-												Loc::getMessage('SALE_SHIPMENT_ITEM_LESS_AVAILABLE_QUANTITY', array(
-													'#PRODUCT_NAME#' => $basketItem->getField('NAME'),
-												)),
-												'SALE_SHIPMENT_ITEM_LESS_AVAILABLE_QUANTITY')
+						$result->addError(
+							new ResultError(
+								Loc::getMessage(
+									'SALE_SHIPMENT_ITEM_LESS_AVAILABLE_QUANTITY',
+									array(
+										'#PRODUCT_NAME#' => $basketItem->getField('NAME'),
+									)
+								), 'SALE_SHIPMENT_ITEM_LESS_AVAILABLE_QUANTITY'
+							)
 						);
 
 						static::$errors[$errorBasketCode][$basketItem->getField('ORDER_DELIVERY_BASKET_ID')]['STORE_QUANTITY_LARGER_ALLOWED'] = $basketItem->getQuantity();
 					}
 
-//
-//					$result->addError(new ResultError(Loc::getMessage('SALE_SHIPMENT_ITEM_LESS_AVAILABLE_QUANTITY', array(
-//						'#PRODUCT_NAME#' => $basketItem->getField('NAME')
-//					)), 'SALE_SHIPMENT_ITEM_LESS_AVAILABLE_QUANTITY'));
 					return $result;
 				}
 			}
 
-			if ($basketItem && $basketItem->isBundleParent())
-			{
-				$r = parent::onFieldModify($name, $oldValue, $value);
-				if (!$r->isSuccess())
-				{
-					$result->addErrors($r->getErrors());
-				}
 
-				if ($bundleCollection = $basketItem->getBundleCollection())
-				{
-					$bundleBaseQuantity = $basketItem->getBundleBaseQuantity();
-					/** @var BasketItem $bundleBasketItem */
-					foreach ($bundleCollection as $bundleBasketItem)
-					{
-						/** @var ShipmentItem $shipmentItem */
-						if ($shipmentItem = $shipmentItemCollection->getItemByBasketCode($bundleBasketItem->getBasketCode()))
-						{
-							$bundleProductId = $bundleBasketItem->getProductId();
-
-							if (!isset($bundleBaseQuantity[$bundleProductId]))
-								throw new Main\ArgumentOutOfRangeException("bundle product id");
-
-							$quantity = $bundleBaseQuantity[$bundleProductId] * $value;
-
-							$r = $shipmentItem->setQuantity($quantity);
-							if (!$r->isSuccess())
-							{
-								$result->addErrors($r->getErrors());
-							}
-						}
-					}
-				}
-
-				if (!$this->isMathActionOnly())
-				{
-					$r = $this->calculateDelivery();
-					if (!$r->isSuccess())
-					{
-						$result->addErrors($r->getErrors());
-					}
-				}
-				return $result;
-			}
-
-			if ($basketItem && !$basketItem->isBundleChild())
+			if ($basketItem)
 			{
 				if (!$this->isMathActionOnly())
 				{
@@ -474,10 +423,9 @@ class ShipmentItem
 				}
 
 			}
-			else
+			elseif (!$basketItem->isBundleParent())
 			{
 				// check barcodes
-
 				$r = $shipmentItemStoreCollection->onShipmentItemModify(EventActions::UPDATE, $this, $name, $oldValue, $value);
 				if (!$r->isSuccess())
 				{
@@ -488,7 +436,13 @@ class ShipmentItem
 				$barcodeQuantity = $shipmentItemStoreCollection->getQuantityByBasketCode($basketItem->getBasketCode());
 				if ($barcodeQuantity > $value)
 				{
-					$result->addError(new ResultError(Loc::getMessage('SALE_SHIPMENT_ITEM_BARCODE_MORE_ITEM_QUANTITY'), 'BARCODE_MORE_ITEM_QUANTITY'));
+					$result->addError(
+						new ResultError(
+							Loc::getMessage('SALE_SHIPMENT_ITEM_BARCODE_MORE_ITEM_QUANTITY'),
+							'BARCODE_MORE_ITEM_QUANTITY'
+						)
+					);
+
 					return $result;
 				}
 			}
@@ -686,8 +640,8 @@ class ShipmentItem
 					'SALE_SHIPMENT_ITEM_BASKET_ITEM_ID_EMPTY',
 					array(
 						'#PRODUCT_NAME#' => $this->basketItem->getField('NAME')
-					));
-
+					)
+				);
 
 				OrderHistory::addAction(
 					'SHIPMENT',
@@ -1119,13 +1073,17 @@ class ShipmentItem
 
 		if (!$basketItem = $this->getBasketItem())
 		{
-			$result->addError( new ResultError(
-			   Loc::getMessage('SALE_SHIPMENT_ITEM_BASKET_ITEM_NOT_FOUND',  array(
-				   '#BASKET_ITEM_ID#' => $this->getBasketId(),
-				   '#SHIPMENT_ID#' => $shipment->getId(),
-				   '#SHIPMENT_ITEM_ID#' => $this->getId(),
-			   )),
-				'SALE_SHIPMENT_ITEM_BASKET_ITEM_NOT_FOUND')
+			$result->addError(
+				new ResultError(
+					Loc::getMessage(
+						'SALE_SHIPMENT_ITEM_BASKET_ITEM_NOT_FOUND',
+						array(
+							'#BASKET_ITEM_ID#' => $this->getBasketId(),
+							'#SHIPMENT_ID#' => $shipment->getId(),
+							'#SHIPMENT_ITEM_ID#' => $this->getId(),
+						)
+					), 'SALE_SHIPMENT_ITEM_BASKET_ITEM_NOT_FOUND'
+				)
 			);
 		}
 

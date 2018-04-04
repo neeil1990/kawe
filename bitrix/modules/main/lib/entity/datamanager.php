@@ -36,6 +36,8 @@ abstract class DataManager
 	 * Returns entity object
 	 *
 	 * @return Base
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public static function getEntity()
 	{
@@ -105,11 +107,25 @@ abstract class DataManager
 	}
 
 	/**
+	 * @param Base $entity
+	 *
+	 * @return null
+	 */
+	public static function postInitialize(Base $entity)
+	{
+		return null;
+	}
+
+	/**
 	 * Returns selection by entity's primary key and optional parameters for getList()
 	 *
-	 * @param mixed $primary Primary key of the entity
+	 * @param mixed $primary    Primary key of the entity
 	 * @param array $parameters Additional parameters for getList()
+	 *
 	 * @return Main\DB\Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public static function getByPrimary($primary, array $parameters = array())
 	{
@@ -137,9 +153,13 @@ abstract class DataManager
 
 	/**
 	 * Returns selection by entity's primary key
-
+	 *
 	 * @param mixed $id Primary key of the entity
+	 *
 	 * @return Main\DB\Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public static function getById($id)
 	{
@@ -150,7 +170,11 @@ abstract class DataManager
 	 * Returns one row (or null) by entity's primary key
 	 *
 	 * @param mixed $id Primary key of the entity
+	 *
 	 * @return array|null
+	 * @throws Main\ArgumentException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public static function getRowById($id)
 	{
@@ -164,7 +188,11 @@ abstract class DataManager
 	 * Returns one row (or null) by parameters for getList()
 	 *
 	 * @param array $parameters Primary key of the entity
+	 *
 	 * @return array|null
+	 * @throws Main\ArgumentException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public static function getRow(array $parameters)
 	{
@@ -193,7 +221,9 @@ abstract class DataManager
 	 * @see Query::filter()
 	 *
 	 * @return Main\DB\Result
-	 * @throws \Bitrix\Main\ArgumentException
+	 * @throws Main\ArgumentException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public static function getList(array $parameters = array())
 	{
@@ -267,6 +297,8 @@ abstract class DataManager
 	 * @param array $cache An array of cache options
 	 * 		"ttl" => integer indicating cache TTL
 	 * @return int
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public static function getCount($filter = array(), array $cache = array())
 	{
@@ -298,12 +330,21 @@ abstract class DataManager
 	 * Creates and returns the Query object for the entity
 	 *
 	 * @return Query
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public static function query()
 	{
 		return new Query(static::getEntity());
 	}
 
+	/**
+	 * @param array $data
+	 *
+	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected static function replaceFieldName($data = array())
 	{
 		$entity = static::getEntity();
@@ -322,6 +363,13 @@ abstract class DataManager
 		return $data;
 	}
 
+	/**
+	 * @param       $primary
+	 * @param array $data
+	 *
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected static function normalizePrimary(&$primary, $data = array())
 	{
 		$entity = static::getEntity();
@@ -365,6 +413,12 @@ abstract class DataManager
 		}
 	}
 
+	/**
+	 * @param $primary
+	 *
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
 	protected static function validatePrimary($primary)
 	{
 		$entity = static::getEntity();
@@ -414,9 +468,11 @@ abstract class DataManager
 	 * Checks the data fields before saving to DB. Result stores in the $result object
 	 *
 	 * @param Result $result
-	 * @param mixed $primary
-	 * @param array $data
+	 * @param mixed  $primary
+	 * @param array  $data
+	 *
 	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	public static function checkFields(Result $result, $primary, array $data)
 	{

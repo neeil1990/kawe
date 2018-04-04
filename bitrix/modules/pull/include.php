@@ -1,8 +1,8 @@
 <?
 IncludeModuleLangFile(__FILE__);
 
-define("PULL_REVISION", 17);
-define("PULL_REVISION_MOBILE", 1);
+define("PULL_REVISION_WEB", 17);
+define("PULL_REVISION_MOBILE", 2);
 
 global $APPLICATION, $DBType;
 

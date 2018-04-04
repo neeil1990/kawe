@@ -9,7 +9,7 @@ global $APPLICATION;
 
 $APPLICATION->SetTitle(Loc::getMessage('SALE_DELIVERY_REQUEST_SEND'));
 
-if ($APPLICATION->GetGroupRight("sale") < "W")
+if ($APPLICATION->GetGroupRight("sale") < "U")
 	$APPLICATION->AuthForm(Loc::getMessage('SALE_DELIVERY_REQUEST_ACCESS_DENIED'));
 
 $adminErrorMessages = array();

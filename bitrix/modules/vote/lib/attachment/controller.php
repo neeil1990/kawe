@@ -300,7 +300,7 @@ class Controller extends \Bitrix\Vote\Base\Controller
 								BX_RESIZE_IMAGE_EXACT,
 								false
 							);
-							$res["PHOTO_SRC"] = $f["src"];
+							$res["PHOTO_SRC"] = ($f["src"] ? $f["src"] : "");
 							$res["PHOTO"] = \CFile::showImage($f["src"], 21, 21, "border=0");
 						}
 						else

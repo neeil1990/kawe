@@ -7,10 +7,13 @@ class Formatter
 	public static function format(PhoneNumber $number, $formatType, $forceNationalPrefix = false)
 	{
 		if(!$number->isValid())
+		{
 			return $number->getRawNumber();
-
+		}
 		if($formatType === Format::E164)
+		{
 			return '+' . $number->getCountryCode() . $number->getNationalNumber();
+		}
 
 		$countryMetadata = MetadataProvider::getInstance()->getCountryMetadata($number->getCountry());
 		$format = static::selectFormatForNumber($number, $formatType, $countryMetadata);
@@ -28,6 +31,11 @@ class Formatter
 		else
 		{
 			$formattedNationalNumber = $number->getNationalNumber();
+		}
+
+		if($number->hasExtension())
+		{
+			$formattedNationalNumber .= $number->getExtensionSeparator() ." ". $number->getExtension();
 		}
 
 		if($formatType == Format::INTERNATIONAL)
@@ -60,6 +68,11 @@ class Formatter
 			$number,
 			$format
 		);
+
+		if($number->hasExtension())
+		{
+			$formattedNationalNumber .= $number->getExtensionSeparator() . " " . $number->getExtension();
+		}
 
 		if($number->isInternational())
 		{

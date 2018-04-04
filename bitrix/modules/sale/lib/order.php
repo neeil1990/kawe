@@ -7,15 +7,12 @@
  */
 namespace Bitrix\Sale;
 
-use Bitrix\Catalog\Product\QuantityControl;
-use Bitrix\Main\Config;
 use Bitrix\Main\Entity;
 use Bitrix\Main;
 use Bitrix\Main\Type;
 use Bitrix\Sale\Internals;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\PaySystem\Manager;
-use Bitrix\Sale\PaySystem\Service;
 
 Loc::loadMessages(__FILE__);
 
@@ -23,6 +20,7 @@ class Order
 	extends OrderBase implements \IShipmentOrder, \IPaymentOrder, IBusinessValueProvider
 {
 	private $isNew = true;
+	private $isSaving = false;
 
 	/** @var Discount $discount */
 	protected $discount = null;
@@ -171,7 +169,8 @@ class Order
 					{
 						$result->addErrors($r->getErrors());
 					}
-					elseif ($r->hasWarnings())
+
+					if ($r->hasWarnings())
 					{
 						$result->addWarnings($r->getWarnings());
 						EntityMarker::addMarker($this, $shipment, $r);
@@ -191,7 +190,8 @@ class Order
 						{
 							$result->addErrors($r->getErrors());
 						}
-						elseif ($r->hasWarnings())
+
+						if ($r->hasWarnings())
 						{
 							$result->addWarnings($r->getWarnings());
 							EntityMarker::addMarker($this, $shipment, $r);
@@ -238,7 +238,8 @@ class Order
 					{
 						$result->addErrors($r->getErrors());
 					}
-					elseif ($r->hasWarnings())
+
+					if ($r->hasWarnings())
 					{
 						$result->addWarnings($r->getWarnings());
 						EntityMarker::addMarker($this, $this, $r);
@@ -256,7 +257,8 @@ class Order
 					{
 						$result->addErrors($r->getErrors());
 					}
-					elseif ($r->hasWarnings())
+
+					if ($r->hasWarnings())
 					{
 						$result->addWarnings($r->getWarnings());
 						EntityMarker::addMarker($this, $shipment, $r);
@@ -291,7 +293,8 @@ class Order
 					{
 						$result->addErrors($r->getErrors());
 					}
-					elseif ($r->hasWarnings())
+
+					if ($r->hasWarnings())
 					{
 						$result->addWarnings($r->getWarnings());
 						EntityMarker::addMarker($this, $shipment, $r);
@@ -308,7 +311,8 @@ class Order
 					{
 						$result->addErrors($r->getErrors());
 					}
-					elseif ($r->hasWarnings())
+
+					if ($r->hasWarnings())
 					{
 						$result->addWarnings($r->getWarnings());
 						EntityMarker::addMarker($this, $shipment, $r);
@@ -328,7 +332,8 @@ class Order
 				{
 					$result->addErrors($r->getErrors());
 				}
-				elseif ($r->hasWarnings())
+
+				if ($r->hasWarnings())
 				{
 					$result->addWarnings($r->getWarnings());
 					EntityMarker::addMarker($this, $shipment, $r);
@@ -347,7 +352,8 @@ class Order
 				{
 					$result->addErrors($r->getErrors());
 				}
-				elseif ($r->hasWarnings())
+
+				if ($r->hasWarnings())
 				{
 					$result->addWarnings($r->getWarnings());
 					EntityMarker::addMarker($this, $shipment, $r);
@@ -363,7 +369,8 @@ class Order
 					{
 						$result->addErrors($r->getErrors());
 					}
-					elseif ($r->hasWarnings())
+
+					if ($r->hasWarnings())
 					{
 						$result->addWarnings($r->getWarnings());
 						EntityMarker::addMarker($this, $shipment, $r);
@@ -810,14 +817,27 @@ class Order
 		return $result;
 	}
 
-
 	/**
-	 * @return Entity\AddResult|Entity\UpdateResult|Result|mixed
+	 * @return Entity\AddResult|Entity\UpdateResult|Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
 	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectException
+	 * @throws Main\ObjectNotFoundException
+	 * @throws Main\SystemException
+	 * @throws \Exception
 	 */
 	public function save()
 	{
 		global $USER, $CACHE_MANAGER;
+
+		if ($this->isSaving())
+		{
+			trigger_error("Order saving in recursion", E_USER_WARNING);
+		}
+
+		$this->setSaving(true);
 
 		$result = new Result();
 
@@ -876,6 +896,7 @@ class Order
 
 		if (!$result->isSuccess())
 		{
+			$this->setSaving(false);
 			return $result;
 		}
 
@@ -901,6 +922,7 @@ class Order
 				{
 					EntityMarker::saveMarkers($this);
 				}
+				$this->setSaving(false);
 				return $result;
 			}
 		}
@@ -913,9 +935,21 @@ class Order
 			$resultPool = EntityMarker::getPoolAsResult($this);
 			if (!$resultPool->isSuccess())
 			{
-				$result->addErrors($resultPool->getErrors());
+				foreach ($resultPool->getErrors() as $errorPool)
+				{
+					foreach ($result->getErrors() as $error)
+					{
+						if ($errorPool->getCode() == $error->getCode() && $errorPool->getMessage() == $error->getMessage())
+						{
+							continue 2;
+						}
+					}
+
+					$result->addError($errorPool);
+				}
 			}
-			
+			$this->setSaving(false);
+			EntityMarker::saveMarkers($this);
 			return $result;
 		}
 		elseif ($r->hasWarnings())
@@ -967,13 +1001,22 @@ class Order
 					);
 
 					$result->addWarnings($r->getErrors());
+					$this->setSaving(false);
 					return $result;
 				}
 
 				if ($resultData = $r->getData())
 					$result->setData($resultData);
 
-				OrderHistory::addAction('ORDER', $id, 'ORDER_UPDATED', $id, $this);
+				OrderHistory::addAction(
+					'ORDER',
+					$id,
+					'ORDER_UPDATED',
+					$id,
+					$this,
+					array(),
+					OrderHistory::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_1
+				);
 			}
 		}
 		else
@@ -1035,6 +1078,7 @@ class Order
 			if (!$r->isSuccess())
 			{
 				$result->addWarnings($r->getErrors());
+				$this->setSaving(false);
 				return $result;
 			}
 
@@ -1283,6 +1327,7 @@ class Order
 		OrderHistory::collectEntityFields('ORDER', $id, $id);
 
 		$this->isNew = false;
+		$this->setSaving(false);
 
 		return $result;
 	}
@@ -2015,6 +2060,15 @@ class Order
 				));
 			}
 
+		}
+
+		if ($value != $oldValue)
+		{
+			$fields = $this->fields->getChangedValues();
+			if (!array_key_exists("UPDATED_1C", $fields))
+			{
+				parent::setField("UPDATED_1C", "N");
+			}
 		}
 
 		return $result;
@@ -2812,7 +2866,7 @@ class Order
 	 */
 	protected function loadDiscount()
 	{
-		return Discount::load($this);
+		return Discount::buildFromOrder($this);
 	}
 
 	/**
@@ -2849,11 +2903,18 @@ class Order
 						if (isset($basketItemData['PRICE']) && isset($basketItemData['DISCOUNT_PRICE']))
 						{
 							$basketItemData['PRICE'] = (float)$basketItemData['PRICE'];
-							if ($basketItemData['PRICE'] >= 0 && $basketItem->getPrice() != $basketItemData['PRICE'])
+
+							if ($basketItemData['PRICE'] >= 0
+								&& $basketItem->getPrice() != $basketItemData['PRICE'])
 							{
 								$basketItemData['PRICE'] = PriceMaths::roundPrecision($basketItemData['PRICE']);
-								$basketItemData['DISCOUNT_PRICE'] = PriceMaths::roundPrecision($basketItemData['DISCOUNT_PRICE']);
 								$basketItem->setFieldNoDemand('PRICE', $basketItemData['PRICE']);
+							}
+
+							if ($basketItemData['DISCOUNT_PRICE'] >= 0
+								&& $basketItem->getDiscountPrice() != $basketItemData['DISCOUNT_PRICE'])
+							{
+								$basketItemData['DISCOUNT_PRICE'] = PriceMaths::roundPrecision($basketItemData['DISCOUNT_PRICE']);
 								$basketItem->setFieldNoDemand('DISCOUNT_PRICE', $basketItemData['DISCOUNT_PRICE']);
 							}
 						}
@@ -3597,7 +3658,9 @@ class Order
 
 	/**
 	 * @param string $reasonMarked
+	 *
 	 * @return Result
+	 * @throws \Exception
 	 */
 	public function addMarker($reasonMarked)
 	{
@@ -3615,5 +3678,21 @@ class Order
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function isSaving()
+	{
+		return $this->isSaving;
+	}
+
+	/**
+	 * @param bool $value
+	 */
+	protected function setSaving($value)
+	{
+		$this->isSaving = ($value === true);
 	}
 }

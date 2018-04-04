@@ -14,7 +14,6 @@ use Bitrix\Sale\Exchange\Entity\UserImportBase;
  */
 class ProfileImport extends UserImportBase
 {
-    protected $entity = array();
 
     /**
      * ProfileImport constructor.
@@ -30,22 +29,6 @@ class ProfileImport extends UserImportBase
     public function getOwnerTypeId()
     {
         return EntityType::PROFILE;
-    }
-
-    /**
-     * @return array
-     */
-    public function getEntity()
-    {
-        return $this->entity;
-    }
-
-    /**
-     * @param $profile
-     */
-    public function setEntity($profile)
-    {
-        $this->entity = $profile;
     }
 
 	/**

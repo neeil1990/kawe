@@ -91,7 +91,7 @@ if (check_bitrix_sessid())
 					'server_time' => $serverTime,
 					'server_time_unix' => $serverTimeUnix,
 					'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
-					'revision' => PULL_REVISION,
+					'revision_web' => PULL_REVISION_WEB,
 					'revision_mobile' => PULL_REVISION_MOBILE,
 				),
 			);

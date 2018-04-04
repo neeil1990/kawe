@@ -38,14 +38,8 @@ function BXDeleteFromSystem($absoluteFilePath, $path, $site)
 		CSearch::DeleteIndex("main", $site."|".$path);
 
 	//Delete from rewrite rule
-	CUrlRewriter::Delete(Array("SITE_ID" => $site, "PATH" => $path));
-
-	if (class_exists("\\Bitrix\\Main\\Application", false))
-	{
-		\Bitrix\Main\Component\ParametersTable::deleteByFilter(
-			array("SITE_ID" => $site, "REAL_PATH" => $path)
-		);
-	}
+	\Bitrix\Main\UrlRewriter::delete($site, array("PATH" => $path));
+	\Bitrix\Main\Component\ParametersTable::deleteByFilter(array("SITE_ID" => $site, "REAL_PATH" => $path));
 
 	return true;
 }
@@ -241,7 +235,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["save"]) && $strWarn
 			'content' => $f->GetContents(),
 			'site' => $site,
 			'perm' => CFileMan::FetchFileAccessPerm(Array($site, $path)),
-			'SEF' => CUrlRewriter::GetList(array("PATH" => $path))
+			'SEF' => \Bitrix\Main\UrlRewriter::getList($site, array("PATH" => $path)),
 		)
 	);
 

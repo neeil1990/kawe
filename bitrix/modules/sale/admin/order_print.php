@@ -295,7 +295,7 @@ else
 		</tr>
 
 		<tr>
-			<td align="right" valign="top"><?echo GetMessage("SALE_PR_SHABLON")?>:<br><img src="/bitrix/images/sale/mouse.gif" width="44" height="21" border="0" alt=""></td>
+			<td align="right" valign="top"><?echo GetMessage("SALE_PR_SHABLON")?>:</td>
 			<td>
 				<select size="5" multiple name="REPORT_ID[]">
 					<?

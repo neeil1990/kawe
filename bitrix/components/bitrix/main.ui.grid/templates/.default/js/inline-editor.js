@@ -226,7 +226,8 @@
 				BX.type.isPlainObject(editObject) &&
 				('TYPE' in editObject) &&
 				('NAME' in editObject) &&
-				('VALUE' in editObject)
+				('VALUE' in editObject) &&
+				(!('items' in editObject) || (BX.type.isArray(editObject.items) && editObject.items.length))
 			);
 		},
 

@@ -4439,7 +4439,7 @@ BX.parseDate = function(str, bUTC, formatDate, formatDatetime)
 				d.setUTCFullYear(aResult['YYYY']);
 				d.setUTCMonth(aResult['MM'] - 1);
 				d.setUTCDate(aResult['DD']);
-				d.setUTCHours(0, 0, 0);
+				d.setUTCHours(0, 0, 0, 0);
 			}
 			else
 			{
@@ -4447,7 +4447,7 @@ BX.parseDate = function(str, bUTC, formatDate, formatDatetime)
 				d.setFullYear(aResult['YYYY']);
 				d.setMonth(aResult['MM'] - 1);
 				d.setDate(aResult['DD']);
-				d.setHours(0, 0, 0);
+				d.setHours(0, 0, 0, 0);
 			}
 
 			if(

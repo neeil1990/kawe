@@ -7,6 +7,8 @@ function Number2Word_Rus($source, $IS_MONEY = "Y", $currency = "")
 	$currency = (string)$currency;
 	if ($currency == '' || $currency == 'RUR')
 		$currency = 'RUB';
+	else if ($currency == 'BYR')
+		$currency = 'BYN';
 	if ($IS_MONEY == 'Y')
 	{
 		if ($currency != 'RUB' && $currency != 'UAH' && $currency != 'KZT' && $currency != 'BYN')

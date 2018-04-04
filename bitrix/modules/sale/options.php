@@ -470,6 +470,9 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && strlen($Update) > 0 && $SALE_RIGHT =
 		$ORDER_HISTORY_LOG_LEVEL = intval($ORDER_HISTORY_LOG_LEVEL);
 		COption::SetOptionString("sale", "order_history_log_level", $ORDER_HISTORY_LOG_LEVEL);
 
+		$ORDER_HISTORY_ACTION_LOG_LEVEL = intval($ORDER_HISTORY_ACTION_LOG_LEVEL);
+		COption::SetOptionString("sale", "order_history_action_log_level", $ORDER_HISTORY_ACTION_LOG_LEVEL);
+
 
 		if (!empty($SELECTED_FIELDS) && is_array($SELECTED_FIELDS))
 		{
@@ -1012,6 +1015,17 @@ $tabControl->BeginNextTab();
 			$valOrderHistoryLogLevel = COption::GetOptionString("sale", "order_history_log_level", "");
 			?>
 			<input type="checkbox" name="ORDER_HISTORY_LOG_LEVEL" id="ORDER_HISTORY_LOG_LEVEL" value="1"<?if($valOrderHistoryLogLevel == "1")echo" checked";?>>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<label for="ORDER_HISTORY_ACTION_LOG_LEVEL"><?echo GetMessage("SALE_ORDER_HISTORY_ACTION_LOG_LEVEL")?></label>
+		</td>
+		<td>
+			<?
+			$valOrderHistoryActionLogLevel = COption::GetOptionString("sale", "order_history_action_log_level", "");
+			?>
+			<input type="checkbox" name="ORDER_HISTORY_ACTION_LOG_LEVEL" id="ORDER_HISTORY_ACTION_LOG_LEVEL" value="1"<?if($valOrderHistoryActionLogLevel == "1")echo" checked";?>>
 		</td>
 	</tr>
 

@@ -16,8 +16,15 @@ if ($arResult["IS_AVAILABLE"]):
 
 <script>
 BX.ready(function() {
-	var spotlight = BX.SpotLight.Manager.create(<?=CUtil::phpToJsObject($arResult["OPTIONS"], false, false, true)?>);
-	spotlight.show();
+	try
+	{
+		var spotlight = BX.SpotLight.Manager.create(<?=CUtil::phpToJsObject($arResult["OPTIONS"], false, false, true)?>);
+		spotlight.show();
+	}
+	catch (e)
+	{
+
+	}
 });
 </script>
 

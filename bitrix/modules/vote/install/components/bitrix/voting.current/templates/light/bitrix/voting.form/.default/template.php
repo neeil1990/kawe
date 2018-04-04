@@ -131,6 +131,24 @@ endif;
 		endforeach
 ?>
 </ol>
+<?//region Captcha
+if (isset($arResult["CAPTCHA_CODE"])):  ?>
+	<div class="vote-item-header">
+		<div class="vote-item-title vote-item-question"><?=GetMessage("F_CAPTCHA_TITLE")?></div>
+		<div class="vote-clear-float"></div>
+	</div>
+	<div class="vote-form-captcha">
+		<input type="hidden" name="captcha_code" value="<?=$arResult["CAPTCHA_CODE"]?>"/>
+		<div class="vote-reply-field-captcha-image">
+			<img src="/bitrix/tools/captcha.php?captcha_code=<?=$arResult["CAPTCHA_CODE"]?>" alt="<?=GetMessage("F_CAPTCHA_TITLE")?>" />
+		</div>
+		<div class="vote-reply-field-captcha-label">
+			<label for="captcha_word"><?=GetMessage("F_CAPTCHA_PROMT")?><span class='starrequired'>*</span></label><br />
+			<input type="text" size="20" name="captcha_word" />
+		</div>
+	</div>
+<? endif //endregion?>
+
 <div class="vote-form-box-buttons vote-vote-footer">
 	<span class="vote-form-box-button vote-form-box-button-first"><input type="submit" name="vote" value="<?=GetMessage("VOTE_SUBMIT_BUTTON")?>" /></span>
 	<span class="vote-form-box-button vote-form-box-button-last">

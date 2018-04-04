@@ -397,11 +397,4 @@ abstract class Cashbox
 		return false;
 	}
 
-	/**
-	 * @return Result
-	 */
-	public static function checkMinimalRequirements()
-	{
-		return new Result();
-	}
 }

@@ -2,6 +2,12 @@
 .ui-btn:after,
 .ui-btn-main:after { transition: 160ms color linear, 160ms transform linear, 160ms opacity linear, 160ms background-color linear; }
 
+.ui-btn:empty,
+.ui-btn.ui-btn-lg:empty,
+.ui-btn.ui-btn-md:empty,
+.ui-btn.ui-btn-sm:empty,
+.ui-btn.ui-btn-xs:empty { min-width: 0; }
+
 /*region ui-btn-icon-stop*/
 .ui-btn-icon-stop.ui-btn,
 .ui-btn-icon-stop.ui-btn-double .ui-btn-main { padding-left: 29px; }
@@ -120,13 +126,13 @@
 .ui-btn-icon-add.ui-btn-danger,
 .ui-btn-icon-add.ui-btn-primary,
 .ui-btn-icon-add.ui-btn-default,
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-add { --ui-btn-icon-add: url(images/ui-plus-white.svg); }
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-add { --ui-btn-icon-add: url(/bitrix/js/ui/buttons/icons/images/ui-plus-white.svg); }
 
 .ui-btn-icon-add.ui-btn-link,
 .ui-btn-icon-add.ui-btn-light,
 .ui-btn-icon-add.ui-btn-success,
 .ui-btn-icon-add.ui-btn-secondary,
-.ui-btn-icon-add.ui-btn-light-border { --ui-btn-icon-add: url(images/ui-plus-black.svg); }
+.ui-btn-icon-add.ui-btn-light-border { --ui-btn-icon-add: url(/bitrix/js/ui/buttons/icons/images/ui-plus-black.svg); }
 
 .bx-retina .ui-btn-icon-add.ui-btn:after,
 .bx-retina .ui-btn-icon-add.ui-btn-double .ui-btn-main:after {
@@ -194,7 +200,7 @@
 .bx-ie .ui-btn-icon-add.ui-btn.ui-btn-primary:after,
 .bx-ie .ui-btn-icon-add.ui-btn-double.ui-btn-primary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-add.ui-btn.ui-btn-default:after,
-.bx-ie .ui-btn-icon-add.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(images/ui-plus-white.svg); }
+.bx-ie .ui-btn-icon-add.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-plus-white.svg); }
 
 .bx-ie .ui-btn-icon-add.ui-btn.ui-btn-link:after,
 .bx-ie .ui-btn-icon-add.ui-btn-double.ui-btn-link .ui-btn-main:after,
@@ -205,7 +211,7 @@
 .bx-ie .ui-btn-icon-add.ui-btn.ui-btn-secondary:after,
 .bx-ie .ui-btn-icon-add.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-add.ui-btn.ui-btn-light-border:after,
-.bx-ie .ui-btn-icon-add.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(images/ui-plus-black.svg); }
+.bx-ie .ui-btn-icon-add.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-plus-black.svg); }
 
 /*endregion*/
 /*endregion*/
@@ -234,13 +240,13 @@
 .ui-btn-icon-setting.ui-btn-danger,
 .ui-btn-icon-setting.ui-btn-primary,
 .ui-btn-icon-setting.ui-btn-default,
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-setting { --ui-btn-icon-setting: url(images/ui-setting-white.svg); }
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-setting { --ui-btn-icon-setting: url(/bitrix/js/ui/buttons/icons/images/ui-setting-white.svg); }
 
 .ui-btn-icon-setting.ui-btn-link,
 .ui-btn-icon-setting.ui-btn-light,
 .ui-btn-icon-setting.ui-btn-success,
 .ui-btn-icon-setting.ui-btn-secondary,
-.ui-btn-icon-setting.ui-btn-light-border { --ui-btn-icon-setting: url(images/ui-setting-black.svg); }
+.ui-btn-icon-setting.ui-btn-light-border { --ui-btn-icon-setting: url(/bitrix/js/ui/buttons/icons/images/ui-setting-black.svg); }
 
 .bx-retina .ui-btn-icon-setting.ui-btn:after,
 .bx-retina .ui-btn-icon-setting.ui-btn-double .ui-btn-main:after {
@@ -308,7 +314,7 @@
 .bx-ie .ui-btn-icon-setting.ui-btn.ui-btn-primary:after,
 .bx-ie .ui-btn-icon-setting.ui-btn-double.ui-btn-primary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-setting.ui-btn.ui-btn-default:after,
-.bx-ie .ui-btn-icon-setting.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(images/ui-setting-white.svg); }
+.bx-ie .ui-btn-icon-setting.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-setting-white.svg); }
 
 .bx-ie .ui-btn-icon-setting.ui-btn.ui-btn-link:after,
 .bx-ie .ui-btn-icon-setting.ui-btn-double.ui-btn-link .ui-btn-main:after,
@@ -319,7 +325,7 @@
 .bx-ie .ui-btn-icon-setting.ui-btn.ui-btn-secondary:after,
 .bx-ie .ui-btn-icon-setting.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-setting.ui-btn.ui-btn-light-border:after,
-.bx-ie .ui-btn-icon-setting.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(images/ui-setting-black.svg); }
+.bx-ie .ui-btn-icon-setting.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-setting-black.svg); }
 
 /*endregion*/
 
@@ -540,13 +546,13 @@
 .ui-btn-icon-task.ui-btn-danger,
 .ui-btn-icon-task.ui-btn-primary,
 .ui-btn-icon-task.ui-btn-default,
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-task { --ui-btn-icon-task: url(images/ui-task-white.svg); }
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-task { --ui-btn-icon-task: url(/bitrix/js/ui/buttons/icons/images/ui-task-white.svg); }
 
 .ui-btn-icon-task.ui-btn-link,
 .ui-btn-icon-task.ui-btn-light,
 .ui-btn-icon-task.ui-btn-success,
 .ui-btn-icon-task.ui-btn-secondary,
-.ui-btn-icon-task.ui-btn-light-border { --ui-btn-icon-task: url(images/ui-task-black.svg); }
+.ui-btn-icon-task.ui-btn-light-border { --ui-btn-icon-task: url(/bitrix/js/ui/buttons/icons/images/ui-task-black.svg); }
 
 .bx-retina .ui-btn-icon-task.ui-btn:after,
 .bx-retina .ui-btn-icon-task.ui-btn-double .ui-btn-main:after {
@@ -616,7 +622,7 @@
 .bx-ie .ui-btn-icon-task.ui-btn.ui-btn-secondary:after,
 .bx-ie .ui-btn-icon-task.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-task.ui-btn.ui-btn-light-border:after,
-.bx-ie .ui-btn-icon-task.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(images/ui-task-black.svg); }
+.bx-ie .ui-btn-icon-task.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-task-black.svg); }
 
 .bx-ie .ui-btn-icon-task.ui-btn:after,
 .bx-ie .ui-btn-icon-task.ui-btn-double .ui-btn-main:after,
@@ -625,7 +631,7 @@
 .bx-ie .ui-btn-icon-task.ui-btn.ui-btn-primary:after,
 .bx-ie .ui-btn-icon-task.ui-btn-double.ui-btn-primary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-task.ui-btn.ui-btn-default:after,
-.bx-ie .ui-btn-icon-task.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(images/ui-task-white.svg); }
+.bx-ie .ui-btn-icon-task.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-task-white.svg); }
 
 /*endregion*/
 
@@ -654,13 +660,13 @@
 .ui-btn-icon-info.ui-btn-danger,
 .ui-btn-icon-info.ui-btn-primary,
 .ui-btn-icon-info.ui-btn-default,
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-info { --ui-btn-icon-info: url(images/ui-info-white.svg); }
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-info { --ui-btn-icon-info: url(/bitrix/js/ui/buttons/icons/images/ui-info-white.svg); }
 
 .ui-btn-icon-info.ui-btn-link,
 .ui-btn-icon-info.ui-btn-light,
 .ui-btn-icon-info.ui-btn-success,
 .ui-btn-icon-info.ui-btn-secondary,
-.ui-btn-icon-info.ui-btn-light-border { --ui-btn-icon-info: url(images/ui-info-black.svg); }
+.ui-btn-icon-info.ui-btn-light-border { --ui-btn-icon-info: url(/bitrix/js/ui/buttons/icons/images/ui-info-black.svg); }
 
 .bx-retina .ui-btn-icon-info.ui-btn:after,
 .bx-retina .ui-btn-icon-info.ui-btn-double .ui-btn-main:after {
@@ -730,7 +736,7 @@
 .bx-ie .ui-btn-icon-info.ui-btn.ui-btn-secondary:after,
 .bx-ie .ui-btn-icon-info.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-info.ui-btn.ui-btn-light-border:after,
-.bx-ie .ui-btn-icon-info.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(images/ui-info-black.svg); }
+.bx-ie .ui-btn-icon-info.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-info-black.svg); }
 
 .bx-ie .ui-btn-icon-info.ui-btn:after,
 .bx-ie .ui-btn-icon-info.ui-btn-double .ui-btn-main:after,
@@ -739,7 +745,7 @@
 .bx-ie .ui-btn-icon-info.ui-btn.ui-btn-primary:after,
 .bx-ie .ui-btn-icon-info.ui-btn-double.ui-btn-primary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-info.ui-btn.ui-btn-default:after,
-.bx-ie .ui-btn-icon-info.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(images/ui-info-white.svg); }
+.bx-ie .ui-btn-icon-info.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-info-white.svg); }
 
 /*endregion*/
 
@@ -768,13 +774,13 @@
 .ui-btn-icon-search.ui-btn-danger,
 .ui-btn-icon-search.ui-btn-primary,
 .ui-btn-icon-search.ui-btn-default,
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-search { --ui-btn-icon-search: url(images/ui-search-white.svg); }
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-search { --ui-btn-icon-search: url(/bitrix/js/ui/buttons/icons/images/ui-search-white.svg); }
 
 .ui-btn-icon-search.ui-btn-link,
 .ui-btn-icon-search.ui-btn-light,
 .ui-btn-icon-search.ui-btn-success,
 .ui-btn-icon-search.ui-btn-secondary,
-.ui-btn-icon-search.ui-btn-light-border { --ui-btn-icon-search: url(images/ui-search-black.svg); }
+.ui-btn-icon-search.ui-btn-light-border { --ui-btn-icon-search: url(/bitrix/js/ui/buttons/icons/images/ui-search-black.svg); }
 
 .bx-retina .ui-btn-icon-search.ui-btn:after,
 .bx-retina .ui-btn-icon-search.ui-btn-double .ui-btn-main:after {
@@ -844,7 +850,7 @@
 .bx-ie .ui-btn-icon-search.ui-btn.ui-btn-secondary:after,
 .bx-ie .ui-btn-icon-search.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-search.ui-btn.ui-btn-light-border:after,
-.bx-ie .ui-btn-icon-search.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(images/ui-search-black.svg); }
+.bx-ie .ui-btn-icon-search.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-search-black.svg); }
 
 .bx-ie .ui-btn-icon-search.ui-btn:after,
 .bx-ie .ui-btn-icon-search.ui-btn-double .ui-btn-main:after,
@@ -853,7 +859,7 @@
 .bx-ie .ui-btn-icon-search.ui-btn.ui-btn-primary:after,
 .bx-ie .ui-btn-icon-search.ui-btn-double.ui-btn-primary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-search.ui-btn.ui-btn-default:after,
-.bx-ie .ui-btn-icon-search.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(images/ui-search-white.svg); }
+.bx-ie .ui-btn-icon-search.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-search-white.svg); }
 
 /*endregion*/
 
@@ -882,13 +888,13 @@
 .ui-btn-icon-unfollow.ui-btn-danger,
 .ui-btn-icon-unfollow.ui-btn-primary,
 .ui-btn-icon-unfollow.ui-btn-default,
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-unfollow { --ui-btn-icon-unfollow: url(images/ui-unfollow-white.svg); }
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-unfollow { --ui-btn-icon-unfollow: url(/bitrix/js/ui/buttons/icons/images/ui-unfollow-white.svg); }
 
 .ui-btn-icon-unfollow.ui-btn-link,
 .ui-btn-icon-unfollow.ui-btn-light,
 .ui-btn-icon-unfollow.ui-btn-success,
 .ui-btn-icon-unfollow.ui-btn-secondary,
-.ui-btn-icon-unfollow.ui-btn-light-border { --ui-btn-icon-unfollow: url(images/ui-unfollow-black.svg); }
+.ui-btn-icon-unfollow.ui-btn-light-border { --ui-btn-icon-unfollow: url(/bitrix/js/ui/buttons/icons/images/ui-unfollow-black.svg); }
 
 .bx-retina .ui-btn-icon-unfollow.ui-btn:after,
 .bx-retina .ui-btn-icon-unfollow.ui-btn-double .ui-btn-main:after {
@@ -958,7 +964,7 @@
 .bx-ie .ui-btn-icon-unfollow.ui-btn.ui-btn-secondary:after,
 .bx-ie .ui-btn-icon-unfollow.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-unfollow.ui-btn.ui-btn-light-border:after,
-.bx-ie .ui-btn-icon-unfollow.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(images/ui-unfollow-black.svg); }
+.bx-ie .ui-btn-icon-unfollow.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-unfollow-black.svg); }
 
 .bx-ie .ui-btn-icon-unfollow.ui-btn:after,
 .bx-ie .ui-btn-icon-unfollow.ui-btn-double .ui-btn-main:after,
@@ -967,7 +973,7 @@
 .bx-ie .ui-btn-icon-unfollow.ui-btn.ui-btn-primary:after,
 .bx-ie .ui-btn-icon-unfollow.ui-btn-double.ui-btn-primary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-unfollow.ui-btn.ui-btn-default:after,
-.bx-ie .ui-btn-icon-unfollow.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(images/ui-unfollow-white.svg); }
+.bx-ie .ui-btn-icon-unfollow.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-unfollow-white.svg); }
 
 /*endregion*/
 
@@ -996,13 +1002,13 @@
 .ui-btn-icon-follow.ui-btn-danger,
 .ui-btn-icon-follow.ui-btn-primary,
 .ui-btn-icon-follow.ui-btn-default,
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-follow { --ui-btn-icon-follow: url(images/ui-follow-white.svg); }
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-follow { --ui-btn-icon-follow: url(/bitrix/js/ui/buttons/icons/images/ui-follow-white.svg); }
 
 .ui-btn-icon-follow.ui-btn-link,
 .ui-btn-icon-follow.ui-btn-light,
 .ui-btn-icon-follow.ui-btn-success,
 .ui-btn-icon-follow.ui-btn-secondary,
-.ui-btn-icon-follow.ui-btn-light-border { --ui-btn-icon-follow: url(images/ui-follow-black.svg); }
+.ui-btn-icon-follow.ui-btn-light-border { --ui-btn-icon-follow: url(/bitrix/js/ui/buttons/icons/images/ui-follow-black.svg); }
 
 .bx-retina .ui-btn-icon-follow.ui-btn:after,
 .bx-retina .ui-btn-icon-follow.ui-btn-double .ui-btn-main:after {
@@ -1072,7 +1078,7 @@
 .bx-ie .ui-btn-icon-follow.ui-btn.ui-btn-secondary:after,
 .bx-ie .ui-btn-icon-follow.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-follow.ui-btn.ui-btn-light-border:after,
-.bx-ie .ui-btn-icon-follow.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(images/ui-follow-black.svg); }
+.bx-ie .ui-btn-icon-follow.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-follow-black.svg); }
 
 .bx-ie .ui-btn-icon-follow.ui-btn:after,
 .bx-ie .ui-btn-icon-follow.ui-btn-double .ui-btn-main:after,
@@ -1081,7 +1087,235 @@
 .bx-ie .ui-btn-icon-follow.ui-btn.ui-btn-primary:after,
 .bx-ie .ui-btn-icon-follow.ui-btn-double.ui-btn-primary .ui-btn-main:after,
 .bx-ie .ui-btn-icon-follow.ui-btn.ui-btn-default:after,
-.bx-ie .ui-btn-icon-follow.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(images/ui-follow-white.svg); }
+.bx-ie .ui-btn-icon-follow.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-follow-white.svg); }
+
+/*endregion*/
+
+/*endregion*/
+
+/*region ui-btn-icon-print*/
+.ui-btn-icon-print.ui-btn,
+.ui-btn-icon-print.ui-btn-double .ui-btn-main { padding-left: 37px; }
+
+.ui-btn-icon-print.ui-btn:after,
+.ui-btn-icon-print.ui-btn-double .ui-btn-main:after {
+	position: absolute;
+	top: 50%;
+	left: 19px;
+	display: block;
+	box-sizing: border-box;
+	margin-top: -8px;
+	width: 16px;
+	height: 16px;
+	background: no-repeat center;
+	content: '';
+}
+
+.ui-btn-icon-print.ui-btn,
+.ui-btn-icon-print.ui-btn-double,
+.ui-btn-icon-print.ui-btn-danger,
+.ui-btn-icon-print.ui-btn-primary,
+.ui-btn-icon-print.ui-btn-default,
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-print { --ui-btn-icon-print: url(/bitrix/js/ui/buttons/icons/images/ui-print-white.svg); }
+
+.ui-btn-icon-print.ui-btn-link,
+.ui-btn-icon-print.ui-btn-light,
+.ui-btn-icon-print.ui-btn-success,
+.ui-btn-icon-print.ui-btn-secondary,
+.ui-btn-icon-print.ui-btn-light-border { --ui-btn-icon-print: url(/bitrix/js/ui/buttons/icons/images/ui-print-black.svg); }
+
+.bx-retina .ui-btn-icon-print.ui-btn:after,
+.bx-retina .ui-btn-icon-print.ui-btn-double .ui-btn-main:after {
+	margin: 0;
+	transform: translate3d(-50%, -50%, 0);
+}
+
+.bx-no-retina .ui-btn-icon-print.ui-btn:after,
+.bx-no-retina .ui-btn-icon-print.ui-btn-double .ui-btn-main:after {
+	margin-top: -8.5px;
+	margin-left: -8.5px;
+	transform: translate3d(0, 0, 0);
+}
+
+.ui-btn-icon-print.ui-btn:after,
+.ui-btn-icon-print.ui-btn-double .ui-btn-main:after { background-image: var(--ui-btn-icon-print); }
+
+/*region Empty*/
+.ui-btn-icon-print:empty,
+.ui-btn-icon-print.ui-btn-double .ui-btn-main:empty {
+	padding: 0;
+	width: var(--ui-btn-size-md);
+	height: var(--ui-btn-size-md);
+}
+
+.ui-btn-icon-print:empty:after,
+.ui-btn-icon-print.ui-btn-double .ui-btn-main:empty:after {
+	top: 50%;
+	left: 50%;
+	margin: 0;
+	transform: translate3d(-50%, -50%, 0);
+}
+
+.ui-btn-icon-print.ui-btn-lg:empty,
+.ui-btn-icon-print.ui-btn-lg.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-lg);
+	height: var(--ui-btn-size-lg);
+}
+
+.ui-btn-icon-print.ui-btn-md:empty,
+.ui-btn-icon-print.ui-btn-md.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-md);
+	height: var(--ui-btn-size-md);
+}
+
+.ui-btn-icon-print.ui-btn-sm:empty,
+.ui-btn-icon-print.ui-btn-sm.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-sm);
+	height: var(--ui-btn-size-sm);
+}
+
+.ui-btn-icon-print.ui-btn-xs:empty,
+.ui-btn-icon-print.ui-btn-xs.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-xs);
+	height: var(--ui-btn-size-xs);
+}
+
+/*endregion*/
+
+/*region Fix for IE*/
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-link:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-link .ui-btn-main:after,
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-light:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-light .ui-btn-main:after,
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-success:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-success .ui-btn-main:after,
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-secondary:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-light-border:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-print-black.svg); }
+
+.bx-ie .ui-btn-icon-print.ui-btn:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double .ui-btn-main:after,
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-danger:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-danger .ui-btn-main:after,
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-primary:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-primary .ui-btn-main:after,
+.bx-ie .ui-btn-icon-print.ui-btn.ui-btn-default:after,
+.bx-ie .ui-btn-icon-print.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-print-white.svg); }
+
+/*endregion*/
+
+/*endregion*/
+
+/*region ui-btn-icon-list*/
+.ui-btn-icon-list.ui-btn,
+.ui-btn-icon-list.ui-btn-double .ui-btn-main { padding-left: 37px; }
+
+.ui-btn-icon-list.ui-btn:after,
+.ui-btn-icon-list.ui-btn-double .ui-btn-main:after {
+	position: absolute;
+	top: 50%;
+	left: 19px;
+	display: block;
+	box-sizing: border-box;
+	margin-top: -7px;
+	width: 16px;
+	height: 14px;
+	background: no-repeat center;
+	content: '';
+}
+
+.ui-btn-icon-list.ui-btn,
+.ui-btn-icon-list.ui-btn-double,
+.ui-btn-icon-list.ui-btn-danger,
+.ui-btn-icon-list.ui-btn-primary,
+.ui-btn-icon-list.ui-btn-default,
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border.ui-btn-icon-list { --ui-btn-icon-list: url(/bitrix/js/ui/buttons/icons/images/ui-list-white.svg); }
+
+.ui-btn-icon-list.ui-btn-link,
+.ui-btn-icon-list.ui-btn-light,
+.ui-btn-icon-list.ui-btn-success,
+.ui-btn-icon-list.ui-btn-secondary,
+.ui-btn-icon-list.ui-btn-light-border { --ui-btn-icon-list: url(/bitrix/js/ui/buttons/icons/images/ui-list-black.svg); }
+
+.bx-retina .ui-btn-icon-list.ui-btn:after,
+.bx-retina .ui-btn-icon-list.ui-btn-double .ui-btn-main:after {
+	margin: 0;
+	transform: translate3d(-50%, -50%, 0);
+}
+
+.bx-no-retina .ui-btn-icon-list.ui-btn:after,
+.bx-no-retina .ui-btn-icon-list.ui-btn-double .ui-btn-main:after {
+	margin-top: -8.5px;
+	margin-left: -8.5px;
+	transform: translate3d(0, 0, 0);
+}
+
+.ui-btn-icon-list.ui-btn:after,
+.ui-btn-icon-list.ui-btn-double .ui-btn-main:after { background-image: var(--ui-btn-icon-list); }
+
+/*region Empty*/
+.ui-btn-icon-list:empty,
+.ui-btn-icon-list.ui-btn-double .ui-btn-main:empty {
+	padding: 0;
+	width: var(--ui-btn-size-md);
+	height: var(--ui-btn-size-md);
+}
+
+.ui-btn-icon-list:empty:after,
+.ui-btn-icon-list.ui-btn-double .ui-btn-main:empty:after {
+	top: 50%;
+	left: 50%;
+	margin: 0;
+	transform: translate3d(-50%, -50%, 0);
+}
+
+.ui-btn-icon-list.ui-btn-lg:empty,
+.ui-btn-icon-list.ui-btn-lg.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-lg);
+	height: var(--ui-btn-size-lg);
+}
+
+.ui-btn-icon-list.ui-btn-md:empty,
+.ui-btn-icon-list.ui-btn-md.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-md);
+	height: var(--ui-btn-size-md);
+}
+
+.ui-btn-icon-list.ui-btn-sm:empty,
+.ui-btn-icon-list.ui-btn-sm.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-sm);
+	height: var(--ui-btn-size-sm);
+}
+
+.ui-btn-icon-list.ui-btn-xs:empty,
+.ui-btn-icon-list.ui-btn-xs.ui-btn-double .ui-btn-main:empty {
+	width: var(--ui-btn-size-xs);
+	height: var(--ui-btn-size-xs);
+}
+
+/*endregion*/
+
+/*region Fix for IE*/
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-link:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-link .ui-btn-main:after,
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-light:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-light .ui-btn-main:after,
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-success:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-success .ui-btn-main:after,
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-secondary:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-secondary .ui-btn-main:after,
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-light-border:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-light-border .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-list-black.svg); }
+
+.bx-ie .ui-btn-icon-list.ui-btn:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double .ui-btn-main:after,
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-danger:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-danger .ui-btn-main:after,
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-primary:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-primary .ui-btn-main:after,
+.bx-ie .ui-btn-icon-list.ui-btn.ui-btn-default:after,
+.bx-ie .ui-btn-icon-list.ui-btn-double.ui-btn-default .ui-btn-main:after { background-image: url(/bitrix/js/ui/buttons/icons/images/ui-list-white.svg); }
 
 /*endregion*/
 
@@ -1117,6 +1351,7 @@
 	width: 26px;
 	height: 26px;
 }
+
 /*endregion*/
 
 /*endregion*/

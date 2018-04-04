@@ -12,4 +12,5 @@ $MESS["SALE_PROVIDER_SHIPMENT_SHIPPED_MORE_QUANTITY"] = "Quantity of \"#PRODUCT_
 $MESS["SALE_PROVIDER_BASKET_ITEM_WRONG_AVAILABLE_QUANTITY"] = "Insufficient stock of \"#PRODUCT_NAME#\"";
 $MESS["SALE_PROVIDER_WRONG_BASKET_ITEM"] = "Incorrect shopping cart object";
 $MESS["SALE_PROVIDER_BASKET_ITEM_NOT_FOUND"] = "A shopping cart item ##BASKET_ITEM_ID# linked to the shipment ##SHIPMENT_ID# was not found.";
+$MESS["PROVIDER_UNRESERVE_SHIPMENT_ITEM_WRONG_AVAILABLE_QUANTITY"] = "Error getting available stock while reserving";
 ?>

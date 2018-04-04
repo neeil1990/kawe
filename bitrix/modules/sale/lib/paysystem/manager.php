@@ -296,7 +296,7 @@ final class Manager
 			'USER' => array()
 		);
 
-		$oldHandlerList = array('yandex_3x', 'bill', 'bill_de', 'bill_ua', 'bill_en', 'bill_la', 'paymaster', 'assist', 'liqpay', 'qiwi', 'sberbank_new', 'webmoney_web', 'money.mail', 'payment_forward_calc', 'payment_forward', 'roboxchange', 'cash');
+		$oldHandlerList = array('yandex_3x', 'bill', 'bill_de', 'bill_ua', 'bill_en', 'bill_la', 'paymaster', 'assist', 'liqpay', 'qiwi', 'sberbank_new', 'sberbank', 'webmoney_web', 'money.mail', 'payment_forward_calc', 'payment_forward', 'roboxchange', 'cash');
 
 		foreach (self::getHandlerDirectories() as $type => $dir)
 		{

@@ -165,11 +165,45 @@ function deleteComment(url, id)
 	return false;
 }
 <?if($arResult["NEED_NAV"] == "Y"):?>
+function bcNavAjax(page, th)
+{
+//	get url from attrubute or just from href
+	var href = th.getAttribute('data-bx-href');
+	if(href == null || href == 'undefined')
+		href = th.href;
+	BX.showWait(th);
+	BX.ajax({
+		'method': 'POST',
+		'url': href,
+		'dataType': 'html',
+		'processData': false,
+		onsuccess: BX.proxy(function (data) {
+			var answer = BX.create('div',{'html':data});
+			var newPage = BX.findChild(answer, {"attribute" : {"id": 'blog-comment-page'}}, true);
+			BX("blog-comment-page").innerHTML = newPage.innerHTML;
+
+//			marking page numbers
+			BX.removeClass(BX.findChild(BX('blog-comment-nav-t'), {"className": 'blog-comment-nav-item-sel'}, true), 'blog-comment-nav-item-sel');
+			BX.removeClass(BX.findChild(BX('blog-comment-nav-b'), {"className": 'blog-comment-nav-item-sel'}, true), 'blog-comment-nav-item-sel');
+			BX.addClass(BX('blog-comment-nav-t'+page), 'blog-comment-nav-item-sel');
+			BX.addClass(BX('blog-comment-nav-b'+page), 'blog-comment-nav-item-sel');
+			
+			BX.closeWait();
+		}),
+		onfailure: function(){
+			BX.closeWait();
+			return false;
+		}
+	});
+	
+	return false;
+}
+
 function bcNav(page, th)
 {
 	BX.showWait(th);
 	setTimeout(function() {
-		for(i=1; i <= <?=$arResult["PAGE_COUNT"]?>; i++)
+		for(i = 1; i <= <?=$arResult["PAGE_COUNT"]?>; i++)
 		{
 			if(i == page)
 			{
@@ -185,9 +219,9 @@ function bcNav(page, th)
 			}
 		}
 		BX.closeWait();
-		}, 300);
+	}, 300);
 	return false;
-}	
+}
 <?endif;?>
 
 </script>

@@ -509,7 +509,9 @@ abstract class BasketBase extends BasketItemCollection
 						$orderId,
 						"BASKET_SAVED",
 						$basketItem->getId(),
-						$basketItem
+						$basketItem,
+						array(),
+						OrderHistory::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_1
 					);
 				}
 			}
@@ -685,18 +687,6 @@ abstract class BasketBase extends BasketItemCollection
 	}
 
 	/**
-	 * Removing the old records in the basket
-	 *
-	 * @param int $days - number of days, how many is considered obsolete basket
-	 *
-	 * @return bool
-	 */
-	public static function deleteOld($days)
-	{
-		return true;
-	}
-
-	/**
 	 * @internal
 	 * @param \SplObjectStorage $cloneEntity
 	 *
@@ -854,6 +844,11 @@ abstract class BasketBase extends BasketItemCollection
 	{
 		/** @var BasketBase $basket */
 		$basket = static::create($this->getSiteId());
+
+		if ($this->isLoadForFUserId())
+		{
+			$basket->setFUserId($this->getFUserId(true));
+		}
 
 		if ($order = $this->getOrder())
 		{

@@ -656,34 +656,81 @@
 		
 		constructCheckInfoBlock : function (data)
 		{
-			var i, j, div;
+			var i, element;
 			
 			var result = [];
 			
 			select = BX.create('select', {
+				attrs : {id : 'CHECK_TYPE'},
 				props : {
 					name : 'CHECK_TYPE',
-					onchange : function ()
+					onchange : BX.delegate(function ()
 					{
-						var option = this.value;
-						var entityCode = BX('ENTITY_CODE').value;
-						var disabled = (entityCode.indexOf('P') === 0 && option.indexOf('advance') !== -1)
-							||
-							(entityCode.indexOf('S') === 0 && option.indexOf('credit') !== -1);
+						var td = BX('related_entity_list');
+						td.innerHTML = '';
+						BX.hide(td.parentNode);
 
-						var parent = BX.findParent(this, {tag : 'tr'});
-						var tr = parent.nextElementSibling;
-						var checkboxList = BX.findChildren(tr, {tag : 'input'}, true);
-						for (var i in checkboxList)
-						{
-							if (checkboxList.hasOwnProperty(i))
+						var entityCode = BX('ENTITY_CODE').value;
+						var sendData = {
+							sessid : BX.bitrix_sessid(),
+							entityCode: entityCode,
+							checkType: BX('CHECK_TYPE').value,
+							action: 'get_related_entities'
+						};
+
+						BX.ajax({
+							method: 'post',
+							dataType: 'json',
+							url: '/bitrix/admin/sale_cashbox_ajax.php',
+							data: sendData,
+							onsuccess: BX.delegate(function (result)
 							{
-								if (checkboxList[i].checked)
-									checkboxList[i].click();
-								checkboxList[i].disabled = disabled;
-							}
-						}
-					}
+								if (result.ERROR && result.ERROR.length > 0)
+								{
+									alert(result.ERROR);
+								}
+								else
+								{
+									var td = BX('related_entity_list');
+
+									if (result.PAYMENTS)
+									{
+										for (i in result.PAYMENTS)
+										{
+											if (!result.PAYMENTS.hasOwnProperty(i))
+												continue;
+						
+											element = this.createSinglePayment(result.PAYMENTS[i]);
+											td.appendChild(element);
+										}
+									}
+
+									if (result.SHIPMENTS)
+									{
+										for (i in result.SHIPMENTS)
+										{
+											if (!result.SHIPMENTS.hasOwnProperty(i))
+												continue;
+						
+											element = this.createSingleShipment(result.SHIPMENTS[i], result.FFD_105_ENABLED);
+											td.appendChild(element);
+										}
+									}
+									
+									var tdTitle = td.parentNode;
+									if (!result.PAYMENTS && !result.SHIPMENTS)
+									{
+										BX.hide(tdTitle);
+									}
+									else
+									{
+										BX.show(tdTitle, 'table-row');
+									}
+								}
+							}, this),
+							onfailure: function() {BX.debug('Select params error');}
+						});
+					}, this)
 				}
 			});
 			for (i in data.CHECK_TYPES)
@@ -710,7 +757,7 @@
 
 			result.push(tr);
 
-			var td = BX.create('td');
+			var td = BX.create('td', {attrs : {id : 'related_entity_list'}});
 			if (data.PAYMENTS)
 			{
 				for (i in data.PAYMENTS)
@@ -718,68 +765,8 @@
 					if (!data.PAYMENTS.hasOwnProperty(i))
 						continue;
 
-					var checkbox = BX.create('input', {
-						props : {
-							id : 'payment_'+data.PAYMENTS[i].ID,
-							name : 'PAYMENTS['+data.PAYMENTS[i].ID+'][ID]',
-							onclick : function ()
-							{
-								var label = this.nextElementSibling;
-								if (this.checked)
-									label.style.color = '';
-								else
-									label.style.color = '#D2D1D1';
-								
-								var select = label.nextElementSibling;
-								if (select)
-									select.disabled = !this.checked;
-							}
-						},
-						attrs : {
-							type : 'checkbox',
-							value : data.PAYMENTS[i].ID
-						}
-					});
-
-					div = BX.create('div', {children : [
-						checkbox,
-						BX.create('label', {
-							text : BX.message('CASHBOX_ADD_CHECK_PAYMENT')+' '+data.PAYMENTS[i].ID+': '+data.PAYMENTS[i].NAME+' ',
-							attrs : {
-								style : 'color: #D2D1D1',
-								for : 'payment_'+data.PAYMENTS[i].ID
-							}
-						})
-					]});
-
-					if (data.PAYMENTS[i].PAYMENT_TYPES)
-					{
-						var select = BX.create('select', {
-							props: {
-								name: 'PAYMENTS[' + data.PAYMENTS[i].ID + '][TYPE]',
-								id: 'payment_' + data.PAYMENTS[i].ID
-							},
-							attrs: {disabled: 'disabled'}
-						});
-		
-						for (j in data.PAYMENTS[i].PAYMENT_TYPES)
-						{
-							if (!data.PAYMENTS[i].PAYMENT_TYPES.hasOwnProperty(j))
-								continue;
-							
-							var option = BX.create('option', {
-								text: data.PAYMENTS[i].PAYMENT_TYPES[j].NAME,
-								attrs: {
-									value: data.PAYMENTS[i].PAYMENT_TYPES[j].CODE
-								}
-							});
-							select.appendChild(option);
-						}
-
-						div.appendChild(select);
-					}
-					
-					td.appendChild(div);
+					element = this.createSinglePayment(data.PAYMENTS[i]);
+					td.appendChild(element);
 				}
 			}
 			if (data.SHIPMENTS)
@@ -789,53 +776,8 @@
 					if (!data.SHIPMENTS.hasOwnProperty(i))
 						continue;
 
-					checkbox = BX.create('input', {
-						props : {
-							id : 'shipment_'+data.SHIPMENTS[i].ID,
-							name : 'SHIPMENTS['+data.SHIPMENTS[i].ID+'][ID]',
-							onclick : function ()
-							{
-								var label = this.nextElementSibling;
-								if (this.checked)
-									label.style.color = '';
-								else
-									label.style.color = '#D2D1D1';
-					
-								if (!data.FFD_106_ENABLED)
-								{
-									var td = this.parentNode.parentNode;
-									var inputs = BX.findChildren(td, {tag: 'input'}, true);
-									for (var i in inputs)
-									{
-										if (inputs.hasOwnProperty(i))
-										{
-											if (inputs[i].id === this.id)
-												continue;
-											
-											inputs[i].disabled = this.checked;
-										}
-									}
-								}
-							}
-						},
-						attrs : {
-							type : 'checkbox',
-							value : data.SHIPMENTS[i].ID
-						}
-					});
-	
-					div = BX.create('div', {children : [
-						checkbox,
-						BX.create('label', {
-							text : BX.message('CASHBOX_ADD_CHECK_SHIPMENT')+' '+data.SHIPMENTS[i].ID+': '+data.SHIPMENTS[i].NAME,
-							attrs : {
-								style : 'color: #D2D1D1',
-								for : 'shipment_'+data.SHIPMENTS[i].ID
-							}
-						})
-					]});
-					
-					td.appendChild(div);
+					element = this.createSingleShipment(data.SHIPMENTS[i], data.FFD_105_ENABLED);
+					td.appendChild(element);
 				}
 			}
 			
@@ -849,6 +791,123 @@
 			result.push(tr);
 			
 			return result;
+		},
+
+		createSinglePayment : function (payment)
+		{
+			var checkbox = BX.create('input', {
+				props : {
+					id : 'payment_'+payment.ID,
+					name : 'PAYMENTS['+payment.ID+'][ID]',
+					onclick : function ()
+					{
+						var label = this.nextElementSibling;
+						if (this.checked)
+							label.style.color = '';
+						else
+							label.style.color = '#D2D1D1';
+						
+						var select = label.nextElementSibling;
+						if (select)
+							select.disabled = !this.checked;
+					}
+				},
+				attrs : {
+					type : 'checkbox',
+					value : payment.ID
+				}
+			});
+
+			var div = BX.create('div', {children : [
+				checkbox,
+				BX.create('label', {
+					text : BX.message('CASHBOX_ADD_CHECK_PAYMENT')+' '+payment.ID+': '+payment.NAME+' ',
+					attrs : {
+						style : 'color: #D2D1D1',
+						for : 'payment_'+payment.ID
+					}
+				})
+			]});
+
+			if (payment.PAYMENT_TYPES)
+			{
+				var select = BX.create('select', {
+					props: {
+						name: 'PAYMENTS[' + payment.ID + '][TYPE]',
+						id: 'payment_' + payment.ID
+					},
+					attrs: {disabled: 'disabled'}
+				});
+
+				for (j in payment.PAYMENT_TYPES)
+				{
+					if (!payment.PAYMENT_TYPES.hasOwnProperty(j))
+						continue;
+					
+					var option = BX.create('option', {
+						text: payment.PAYMENT_TYPES[j].NAME,
+						attrs: {
+							value: payment.PAYMENT_TYPES[j].CODE
+						}
+					});
+					select.appendChild(option);
+				}
+
+				div.appendChild(select);
+			}
+			
+			return div;
+		},
+		
+		createSingleShipment: function(shipment, isFfd105Enable)
+		{
+			var checkbox = BX.create('input', {
+				props : {
+					id : 'shipment_'+shipment.ID,
+					name : 'SHIPMENTS['+shipment.ID+'][ID]',
+					onclick : function ()
+					{
+						var label = this.nextElementSibling;
+						if (this.checked)
+							label.style.color = '';
+						else
+							label.style.color = '#D2D1D1';
+			
+						if (!isFfd105Enable)
+						{
+							var td = this.parentNode.parentNode;
+							var inputs = BX.findChildren(td, {tag: 'input'}, true);
+							for (var i in inputs)
+							{
+								if (inputs.hasOwnProperty(i))
+								{
+									if (inputs[i].id === this.id)
+										continue;
+									
+									inputs[i].disabled = this.checked;
+								}
+							}
+						}
+					}
+				},
+				attrs : {
+					type : 'checkbox',
+					value : shipment.ID
+				}
+			});
+
+			var div = BX.create('div', {children : [
+				checkbox,
+				BX.create('label', {
+					text : BX.message('CASHBOX_ADD_CHECK_SHIPMENT')+' '+shipment.ID+': '+shipment.NAME,
+					attrs : {
+						style : 'color: #D2D1D1',
+						for : 'shipment_'+shipment.ID
+					}
+				})
+			]});
+			
+			return div;
 		}
 	}
 })(window);

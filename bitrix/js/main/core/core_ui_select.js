@@ -1036,6 +1036,15 @@
 		var control, square, squareContainer, valueDelete, search;
 		var squares = [];
 
+		var attrs = BX.type.isPlainObject(data.attrs) ? data.attrs : {};
+
+		attrs = BX.util.objectMerge({}, attrs, {
+			'data-name': data.name,
+			'data-params': JSON.stringify(data.params),
+			'data-items': JSON.stringify(data.items),
+			'data-value': JSON.stringify(data.value)
+		});
+
 		if ('value' in data && BX.type.isArray(data.value))
 		{
 			squares = data.value.map(function(current) {
@@ -1050,12 +1059,7 @@
 		control = {
 			block: 'main-ui-multi-select',
 			mix: ['main-ui-control'],
-			attrs: {
-				'data-name': data.name,
-				'data-params': JSON.stringify(data.params),
-				'data-items': JSON.stringify(data.items),
-				'data-value': JSON.stringify(data.value)
-			},
+			attrs: attrs,
 			content: []
 		};
 
@@ -1107,16 +1111,19 @@
 	BX.Main.ui.block['main-ui-select'] = function(data)
 	{
 		var control, name, search, valueDelete;
+		var attrs = BX.type.isPlainObject(data.attrs) ? data.attrs : {};
+
+		attrs = BX.util.objectMerge({}, attrs, {
+			'data-name': data.name,
+			'data-params': JSON.stringify(data.params),
+			'data-items': JSON.stringify(data.items),
+			'data-value': JSON.stringify(data.value)
+		});
 
 		control = {
 			block: 'main-ui-select',
 			mix: ['main-ui-control'],
-			attrs: {
-				'data-name': data.name,
-				'data-params': JSON.stringify(data.params),
-				'data-items': JSON.stringify(data.items),
-				'data-value': JSON.stringify(data.value)
-			},
+			attrs: attrs,
 			content: []
 		};
 

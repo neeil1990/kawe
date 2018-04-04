@@ -1,6 +1,7 @@
 <?php
 
-use Bitrix\Sale\Location\ExternalTable;
+use Bitrix\Sale\Location\ExternalTable,
+	\Bitrix\Main\Localization\Loc;
 
 IncludeModuleLangFile(__FILE__);
 
@@ -61,8 +62,16 @@ class CSaleYMLocation
 			)
 		));
 
+		$replaceFrom  = explode(',', Loc::getMessage('SALE_YML_REPLACE_FROM'));
+
 		while($loc = $res->fetch())
-			$result[$loc['ID']] = ToLower($loc['NAME_NAME']);
+		{
+			$result[$loc['ID']] = str_replace(
+				$replaceFrom,
+				Loc::getMessage('SALE_YML_REPLACE_TO'),
+				ToLower($loc['NAME_NAME'])
+			);
+		}
 
 		return $result;
 	}
@@ -74,7 +83,19 @@ class CSaleYMLocation
 	public function getLocationByCityName($cityName)
 	{
 		$this->getData();
-		$result =  array_search(ToLower($cityName), $this->cityNames);
+		$result =  array_search(
+			str_replace(
+				explode(
+					',',
+					Loc::getMessage('SALE_YML_REPLACE_FROM')
+				),
+				Loc::getMessage('SALE_YML_REPLACE_TO'),
+				ToLower(
+					$cityName
+				)
+			),
+			$this->cityNames
+		);
 		return $result;
 	}
 

@@ -219,7 +219,9 @@ if (CModule::IncludeModule("sale"))
 			}
 		}
 
+		CCurrencyLang::disableUseHideZero();
 		include($rep_file_name);
+		CCurrencyLang::enableUseHideZero();
 	}
 }
 else

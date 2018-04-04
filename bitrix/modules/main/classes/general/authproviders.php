@@ -263,7 +263,7 @@ class CUserAuthProvider extends CAuthProvider implements IProviderInterface
 		$arFilter = array(
 			'ACTIVE' => 'Y', 
 			'NAME_SEARCH' => $search,
-			'!EXTERNAL_AUTH_ID' => array('replica', 'email', 'bot', 'imconnector')
+			'!EXTERNAL_AUTH_ID' => \Bitrix\Main\UserTable::getExternalUserTypes(),
 		);
 
 		if (

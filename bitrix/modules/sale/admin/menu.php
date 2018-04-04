@@ -748,6 +748,13 @@ if ($APPLICATION->GetGroupRight("sale") == "W" ||
 			"title" => GetMessage("MAIN_MENU_1C_INTEGRATION_TITLE"),
 			"url" => "1c_admin.php?lang=".LANGUAGE_ID,
 			"more_url" => array("1c_admin.php"),
+			"items" => array(
+				array(
+					"text" => GetMessage("MAIN_MENU_1C_INTEGRATION_LOG"),
+					"title" => GetMessage("MAIN_MENU_1C_INTEGRATION_LOG_TITLE"),
+					"url" => "sale_exchange_log.php?lang=".LANGUAGE_ID,
+				)
+			),
 		);
 		$arMenu["items"][] = array(
 			"text" => GetMessage("MAIN_MENU_REPORT_EDIT"),

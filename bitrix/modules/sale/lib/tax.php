@@ -33,6 +33,9 @@ class Tax
 	/** @var bool  */
 	protected $isClone = false;
 
+	/** @var bool  */
+	protected $isExternal = false;
+
 	/**
 	 * Tax constructor.
 	 */
@@ -83,7 +86,10 @@ class Tax
 	public function initTaxList(array $list)
 	{
 		if (!empty($list))
+		{
 			$this->list = $list;
+			$this->isExternal = true;
+		}
 	}
 
 	/**
@@ -524,7 +530,12 @@ class Tax
 	public function refreshData()
 	{
 		$result = new Result();
-		$this->resetTaxList();
+
+		if (!$this->isExternal)
+		{
+			$this->resetTaxList();
+		}
+
 		$this->resetAvailableTaxList();
 
 		/** @var Result $r */

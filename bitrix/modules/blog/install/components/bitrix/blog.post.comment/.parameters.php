@@ -95,14 +95,14 @@ $arComponentParameters = Array(
 			),
 		"DATE_TIME_FORMAT" => CComponentUtil::GetDateTimeFormatField(GetMessage("BC_DATE_TIME_FORMAT"), "VISUAL"),		
 		"CACHE_TIME" => array("DEFAULT"=>"86400"),
-		"AJAX_POST" => Array(
-		  	"NAME" => GetMessage("BPC_AJAX_POST"),
+		"AJAX_PAGINATION" => Array(
+		  	"NAME" => GetMessage("BPC_AJAX_PAGINATION"),
 			"TYPE" => "CHECKBOX",
 			"MULTIPLE" => "N",
 			"VALUE" => "Y",
-			"DEFAULT" =>"",
+			"DEFAULT" => "N",
 			"PARENT" => "ADDITIONAL_SETTINGS",
-			),		
+			),
 		"SIMPLE_COMMENT" => Array(
 		  	"NAME" => GetMessage("BPC_SIMPLE_COMMENT"),
 			"TYPE" => "CHECKBOX",
@@ -110,8 +110,7 @@ $arComponentParameters = Array(
 			"VALUE" => "Y",
 			"DEFAULT" =>"",
 			"PARENT" => "ADDITIONAL_SETTINGS",
-		
-			),		
+			),
 		"USE_ASC_PAGING" => Array(
 		  	"NAME" => GetMessage("BPC_USE_ASC_PAGING"),
 			"TYPE" => "CHECKBOX",

@@ -1,4 +1,6 @@
 <?
+use \Bitrix\Main\Loader;
+
 IncludeModuleLangFile(__FILE__);
 
 class CAllBlogPost
@@ -95,16 +97,22 @@ class CAllBlogPost
 
 		if (CBlog::IsBlogOwner($arPost["BLOG_ID"], $userID))
 			return $arAvailPerms[count($arAvailPerms) - 1];
-
+		
+		$arUserGroups = CBlogUser::GetUserGroups($userID, $arPost["BLOG_ID"], "Y", BLOG_BY_USER_ID);
+		$permGroups = CBlogUser::GetUserPerms($arUserGroups, $arPost["BLOG_ID"], $ID, BLOG_PERMS_POST, BLOG_BY_USER_ID);
+		
+//		if for user unset option "WRITE TO BLOG", they can only read (even if all user can write), or smaller rights, if group have smaller
 		$arBlogUser = CBlogUser::GetByID($userID, BLOG_BY_USER_ID);
 		if ($arBlogUser && $arBlogUser["ALLOW_POST"] != "Y")
-			return $arAvailPerms[0];
+		{
+			if($permGroups && in_array(BLOG_PERMS_READ, $arAvailPerms))
+				return min(BLOG_PERMS_READ, $permGroups);
+			else
+				return $arAvailPerms[0];
+		}
 
-		$arUserGroups = CBlogUser::GetUserGroups($userID, $arPost["BLOG_ID"], "Y", BLOG_BY_USER_ID);
-
-		$perms = CBlogUser::GetUserPerms($arUserGroups, $arPost["BLOG_ID"], $ID, BLOG_PERMS_POST, BLOG_BY_USER_ID);
-		if ($perms)
-			return $perms;
+		if ($permGroups)
+			return $permGroups;
 
 		return $arAvailPerms[0];
 	}
@@ -139,13 +147,22 @@ class CAllBlogPost
 				{
 					return $arAvailPerms[count($arAvailPerms) - 1];
 				}
-
+				
 				$arUserGroups = CBlogUser::GetUserGroups($userID, $arPost["BLOG_ID"], "Y", BLOG_BY_USER_ID);
-				$perms = CBlogUser::GetUserPerms($arUserGroups, $arPost["BLOG_ID"], $ID, BLOG_PERMS_COMMENT, BLOG_BY_USER_ID);
-				if ($perms)
+				$permGroups = CBlogUser::GetUserPerms($arUserGroups, $arPost["BLOG_ID"], $ID, BLOG_PERMS_COMMENT, BLOG_BY_USER_ID);
+				
+//				if for user unset option "WRITE TO BLOG", they can only read (even if all user can write), or smaller rights, if group have smaller
+				$arBlogUser = CBlogUser::GetByID($userID, BLOG_BY_USER_ID);
+				if ($arBlogUser && $arBlogUser["ALLOW_POST"] != "Y")
 				{
-					return $perms;
+					if($permGroups && in_array(BLOG_PERMS_READ, $arAvailPerms))
+						return min(BLOG_PERMS_READ, $permGroups);
+					else
+						return $arAvailPerms[0];
 				}
+
+				if ($permGroups)
+					return $permGroups;
 			}
 		}
 		else
@@ -153,12 +170,12 @@ class CAllBlogPost
 			return $arAvailPerms[0];
 		}
 
-		if(IntVal($userID) > 0)
-		{
-			$arBlogUser = CBlogUser::GetByID($userID, BLOG_BY_USER_ID);
-			if ($arBlogUser && $arBlogUser["ALLOW_POST"] != "Y")
-				return $arAvailPerms[0];
-		}
+//		if(IntVal($userID) > 0)
+//		{
+//			$arBlogUser = CBlogUser::GetByID($userID, BLOG_BY_USER_ID);
+//			if ($arBlogUser && $arBlogUser["ALLOW_POST"] != "Y")
+//				return $arAvailPerms[0];
+//		}
 
 		return $arAvailPerms[0];
 	}
@@ -832,12 +849,6 @@ class CAllBlogPost
 				}
 
 				CSocNetLog::Update($logID, array("TMP_ID" => $logID));
-				if (CModule::IncludeModule("extranet"))
-				{
-					CSocNetLog::Update($logID, array(
-						"SITE_ID" => CExtranet::GetSitesByLogDestinations($socnetPerms, $arPost["AUTHOR_ID"], $siteId)
-					));
-				}
 
 				$hasVideoTransforming = (
 					!empty($inlineAttachedObjectsIdList)
@@ -851,10 +862,21 @@ class CAllBlogPost
 					$socnetPerms = array("SA", "U".$arPost["AUTHOR_ID"]);
 				}
 
-				CSocNetLogRights::DeleteByLogID($logID);
-				CSocNetLogRights::Add($logID, $socnetPerms);
+				CSocNetLogRights::deleteByLogID($logID);
+				CSocNetLogRights::add($logID, $socnetPerms);
 
-				if (\Bitrix\Main\Loader::includeModule('crm'))
+				$updateFields = array(
+					"TRANSFORM" => ($hasVideoTransforming ? 'Y' : 'N')
+				);
+
+				if (Loader::includeModule("extranet"))
+				{
+					$updateFields["SITE_ID"] = CExtranet::getSitesByLogDestinations($socnetPerms, $arPost["AUTHOR_ID"], $siteId);
+				}
+
+				CSocNetLog::update($logID, $updateFields);
+
+				if (Loader::includeModule('crm'))
 				{
 					CCrmLiveFeedComponent::processCrmBlogPostRights($logID, $arSoFields, $arPost, 'new');
 				}
@@ -967,7 +989,7 @@ class CAllBlogPost
 			CSocNetLogRights::DeleteByLogID($arLog["ID"]);
 			CSocNetLogRights::Add($arLog["ID"], $socnetPerms);
 
-			if (\Bitrix\Main\Loader::includeModule('crm'))
+			if (Loader::includeModule('crm'))
 			{
 				CCrmLiveFeedComponent::processCrmBlogPostRights($arLog["ID"], $arLog, $arPost, 'edit');
 			}
@@ -2000,7 +2022,8 @@ class CAllBlogPost
 						"PATH_TO_POST" => COption::GetOptionString("socialnetwork", "userblogpost_page", '/company/personal/user/#user_id#/blog/#post_id#', SITE_ID),
 						"NAME_TEMPLATE" => CSite::GetNameFormat(),
 						"SHOW_LOGIN" => "Y",
-						"LIVE" => "N"
+						"LIVE" => "N",
+						"MENTION" => "Y"
 					)
 				);
 
@@ -2737,8 +2760,8 @@ class CAllBlogPost
 		$moderatorList = array();
 
 		if (
-			!\Bitrix\Main\Loader::includeModule("im")
-			|| !\Bitrix\Main\Loader::includeModule("socialnetwork")
+			!Loader::includeModule("im")
+			|| !Loader::includeModule("socialnetwork")
 		)
 		{
 			return $arUserIDSent;
@@ -2928,8 +2951,8 @@ class CAllBlogPost
 	public static function NotifyImPublish($arParams = array())
 	{
 		if (
-			!\Bitrix\Main\Loader::includeModule("im")
-			|| !\Bitrix\Main\Loader::includeModule("socialnetwork")
+			!Loader::includeModule("im")
+			|| !Loader::includeModule("socialnetwork")
 		)
 		{
 			return false;
@@ -3207,7 +3230,7 @@ class CAllBlogPost
 
 		if (
 			strtoupper($arFields["type"]) == 'COMMENT'
-			&& \Bitrix\Main\Loader::includeModule('crm')
+			&& Loader::includeModule('crm')
 		)
 		{
 			CCrmLiveFeedComponent::processCrmBlogComment(array(

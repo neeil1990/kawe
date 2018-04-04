@@ -159,7 +159,9 @@ Loader::registerAutoLoadClasses(
 		'CCatalogIblockReindex' => 'general/step_operations.php',
 		'CCatalogProductSettings' => 'general/step_operations.php',
 		'CCatalogTools' => 'general/tools.php',
+		'CCatalogResult' => 'general/result.php',
 
+		'\Bitrix\Catalog\Compatible\EventCompatibility' => 'lib/compatible/eventcompatibility.php',
 		'\Bitrix\Catalog\Discount\DiscountManager' => 'lib/discount/discountmanager.php',
 		'\Bitrix\Catalog\Ebay\EbayXMLer' => 'lib/ebay/ebayxmler.php',
 		'\Bitrix\Catalog\Ebay\ExportOffer' => 'lib/ebay/exportoffer.php',
@@ -170,6 +172,11 @@ Loader::registerAutoLoadClasses(
 		'\Bitrix\Catalog\Helpers\Admin\RoundEdit' => 'lib/helpers/admin/roundedit.php',
 		'\Bitrix\Catalog\Helpers\Admin\Tools' => 'lib/helpers/admin/tools.php',
 		'\Bitrix\Catalog\Helpers\Tools' => 'lib/helpers/tools.php',
+		'\Bitrix\Catalog\Model\Entity' => 'lib/model/entity.php',
+		'\Bitrix\Catalog\Model\EntityEvent' => 'lib/model/entityevent.php',
+		'\Bitrix\Catalog\Model\EventResult' => 'lib/model/eventresult.php',
+		'\Bitrix\Catalog\Model\Price' => 'lib/model/price.php',
+		'\Bitrix\Catalog\Model\Product' => 'lib/model/product.php',
 		'\Bitrix\Catalog\Product\Price\Calculation' => 'lib/product/price/calculation.php',
 		'\Bitrix\Catalog\Product\Basket' =>  'lib/product/basket.php',
 		'\Bitrix\Catalog\Product\CatalogProvider' =>  'lib/product/catalogprovider.php',
@@ -190,6 +197,7 @@ Loader::registerAutoLoadClasses(
 		'\Bitrix\Catalog\GroupTable' => 'lib/group.php',
 		'\Bitrix\Catalog\GroupAccessTable' => 'lib/groupaccess.php',
 		'\Bitrix\Catalog\GroupLangTable' => 'lib/grouplang.php',
+		'\Bitrix\Catalog\MeasureTable' => 'lib/measure.php',
 		'\Bitrix\Catalog\MeasureRatioTable' => 'lib/measureratio.php',
 		'\Bitrix\Catalog\PriceTable' => 'lib/price.php',
 		'\Bitrix\Catalog\ProductTable' => 'lib/product.php',
@@ -418,7 +426,8 @@ function CatalogBasketCallback($productID, $quantity = 0, $renewal = "N", $intUs
 		'RENEWAL' => $renewal,
 		'USER_ID' => $intUserID,
 		'SITE_ID' => $strSiteID,
-		'CHECK_QUANTITY' => 'Y'
+		'CHECK_QUANTITY' => 'Y',
+		'AVAILABLE_QUANTITY' => 'Y'
 	);
 
 	return CCatalogProductProvider::GetProductData($arParams);
@@ -1504,6 +1513,8 @@ function Add2BasketByProductID($productId, $quantity = 1, $rewriteFields = array
 {
 	global $APPLICATION;
 
+	$result = false;
+
 	/* for old use */
 	if ($productParams === false)
 	{
@@ -1526,15 +1537,70 @@ function Add2BasketByProductID($productId, $quantity = 1, $rewriteFields = array
 	if (!empty($productParams))
 		$product['PROPS'] = $productParams;
 
-	$result = false;
 	$basketResult = Catalog\Product\Basket::addProduct($product, ($rewrite ? $rewriteFields : array()));
-	unset($product);
-
 	if ($basketResult->isSuccess())
 	{
 		$data = $basketResult->getData();
 		$result = $data['ID'];
 		unset($data);
+
+		if (!empty($rewriteFields['ORDER_ID']) && intval($rewriteFields['ORDER_ID']) > 0)
+		{
+			trigger_error("Wrong API usage of adding a product in order", E_USER_WARNING);
+
+			$productId = (int)$productId;
+			if ($productId <= 0)
+			{
+				$APPLICATION->ThrowException(
+					Main\Localization\Loc::getMessage('BX_CATALOG_PRODUCT_BASKET_ERR_NO_PRODUCT')
+				);
+				return $result;
+			}
+
+			$module = 'catalog';
+			if (array_key_exists('MODULE', $rewriteFields))
+			{
+				$module = $rewriteFields['MODULE'];
+			}
+
+			$siteId = SITE_ID;
+			if (!empty($rewriteFields['LID']))
+			{
+				$siteId = $rewriteFields['LID'];
+			}
+
+			$basket = \Bitrix\Sale\Basket::loadItemsForFUser(\Bitrix\Sale\Fuser::getId(), $siteId);
+
+			$propertyList = array();
+			if (!empty($product['PROPS']) && is_array($product['PROPS']))
+			{
+				$propertyList = $product['PROPS'];
+			}
+
+			$basketItem = $basket->getExistsItem($module, $productId, $propertyList);
+			if ($basketItem)
+			{
+				$basketItem->setFieldNoDemand('ORDER_ID', intval($rewriteFields['ORDER_ID']));
+				$r = $basket->save();
+
+				$orderId = intval($rewriteFields['ORDER_ID']);
+				$order = \Bitrix\Sale\Order::load($orderId);
+				if ($order)
+				{
+					$basket = $order->getBasket();
+					$basket->refresh();
+					$r = $order->save();
+					if (!$r->isSuccess())
+					{
+						$APPLICATION->ThrowException(
+							implode('; ', $r->getErrorMessages())
+						);
+					}
+				}
+
+			}
+		}
+
 	}
 	else
 	{
@@ -1542,6 +1608,7 @@ function Add2BasketByProductID($productId, $quantity = 1, $rewriteFields = array
 			implode('; ', $basketResult->getErrorMessages())
 		);
 	}
+	unset($product);
 	unset($basketResult);
 
 	return $result;

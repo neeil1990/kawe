@@ -778,6 +778,14 @@ class CAllBlogComment
 			}
 
 			if (
+				$authorId > 0
+				&& $userId == $authorId
+			)
+			{
+				$perms = BLOG_PERMS_READ;
+			}
+
+			if (
 				!empty($arPerms["U"][$userId])
 				|| (
 					!empty($arPerms["U"][$authorId])
@@ -1032,6 +1040,7 @@ class CAllBlogComment
 								"LAST_NAME" => $arAuthor["~LAST_NAME"],
 								"SECOND_NAME" => $arAuthor["~SECOND_NAME"],
 								"LOGIN" => $arAuthor["~LOGIN"],
+								"PERSONAL_GENDER" => $arAuthor["~PERSONAL_GENDER"],
 								"AVATAR" => $arAuthor["PERSONAL_PHOTO_resized"]["src"],
 								"EXTERNAL_AUTH_ID" => (isset($arAuthor["EXTERNAL_AUTH_ID"]) ? $arAuthor["EXTERNAL_AUTH_ID"] : ''),
 								"TYPE" => $authorType

@@ -796,7 +796,7 @@ for ($n = 1; $n <= $rowsCnt; $n++):
 
 <? if ($params['BILLBY_TOTAL_SHOW'] == 'Y'): ?>
 	<div style="margin-top: 5pt; font-weight: bold; word-break: break-word; word-wrap: break-word;"><?
-	$inWords = in_array($params['CURRENCY'], array("RUR", "RUB", "UAH", "KZT", "BYN"));
+	$inWords = in_array($params['CURRENCY'], array("RUR", "RUB", "UAH", "KZT", "BYR", "BYN"));
 	echo Loc::getMessage('SALE_HPS_BILLBY_TOTAL_VAT').': ';
 	if ($inWords)
 		echo Number2Word_Rus(roundEx($totalVatSum, $precision), "Y", $params['CURRENCY']);

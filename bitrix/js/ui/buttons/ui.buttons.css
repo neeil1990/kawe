@@ -16,10 +16,18 @@
 	--ui-btn-bg-success: #bbed21;
 	--ui-btn-bg-success-hover: #d2f95f;
 	--ui-btn-bg-success-active: #b2e232;
+	/*Success Light*/
+	--ui-btn-bg-success-light: #e1f0b1;
+	--ui-btn-bg-success-light-hover: #eaf5c5;
+	--ui-btn-bg-success-light-active: #d3e59a;
 	/*Danger*/
 	--ui-btn-bg-danger: #f1361a;
 	--ui-btn-bg-danger-hover: #cc1c00;
 	--ui-btn-bg-danger-active: #d24430;
+	/*Danger Light*/
+	--ui-btn-bg-danger-light: #ffccca;
+	--ui-btn-bg-danger-light-hover: #ffdcdb;
+	--ui-btn-bg-danger-light-active: #f2b6b3;
 	/*Primary*/
 	--ui-btn-bg-primary: #3bc8f5;
 	--ui-btn-bg-primary-hover: #3eddff;
@@ -37,15 +45,6 @@
 	--ui-btn-icon-color: black;
 }
 
-.header {
-	--ui-btn-inner-color-dark: #535c69;
-	--ui-btn-inner-color-light: #fff;
-	/*Danger*/
-	--ui-btn-bg-danger: #000;
-	--ui-btn-bg-danger-hover: #333;
-	--ui-btn-bg-danger-active: #3d3d3d;
-}
-
 /*endregion*/
 
 /*region Base style*/
@@ -59,6 +58,7 @@
 	display: inline-block;
 	box-sizing: border-box;
 	padding: 0 19px;
+	min-width: 80px;
 	height: 39px;
 	outline: none;
 	border: none;
@@ -70,6 +70,7 @@
 	text-decoration: none;
 	text-transform: uppercase;
 	/*letter-spacing: -0.31px;*/
+	white-space: nowrap;
 	font: 600 12px/39px "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	cursor: pointer;
 	transition: 160ms color linear, 160ms background-color linear, 160ms opacity linear, 160ms padding linear;
@@ -219,6 +220,11 @@ a.ui-btn:focus,
 /*endregion*/
 
 /*region Size*/
+.ui-btn.ui-btn-lg {
+	padding: 0 26px;
+	min-width: 90px;
+}
+
 .ui-btn.ui-btn-lg,
 .ui-btn-double.ui-btn-lg .ui-btn-main,
 .ui-btn-double.ui-btn-lg .ui-btn-extra {
@@ -244,6 +250,11 @@ a.ui-btn:focus,
 	bottom: 10px;
 }
 
+.ui-btn.ui-btn-md {
+	padding: 0 20px;
+	min-width: 80px;
+}
+
 .ui-btn.ui-btn-md,
 .ui-btn-double.ui-btn-md .ui-btn-main,
 .ui-btn-double.ui-btn-md .ui-btn-extra {
@@ -252,12 +263,22 @@ a.ui-btn:focus,
 	line-height: var(--ui-btn-size-md);
 }
 
+.ui-btn.ui-btn-sm {
+	padding: 0 17px;
+	min-width: 70px;
+}
+
 .ui-btn.ui-btn-sm,
 .ui-btn-double.ui-btn-sm .ui-btn-main,
 .ui-btn-double.ui-btn-sm .ui-btn-extra {
 	height: var(--ui-btn-size-sm);
 	font-size: 12px;
 	line-height: var(--ui-btn-size-sm);
+}
+
+.ui-btn.ui-btn-xs {
+	padding: 0 15px;
+	min-width: 66px;
 }
 
 .ui-btn.ui-btn-xs,
@@ -446,6 +467,80 @@ a.ui-btn-success.ui-btn:focus,
 
 /*endregion*/
 
+/*region Success Light button*/
+.ui-btn-success-light.ui-btn,
+.ui-btn-success-light.ui-btn-double .ui-btn-main,
+.ui-btn-success-light.ui-btn-double .ui-btn-extra {
+	background-color: var(--ui-btn-bg-success-light);
+	color: #668d13;
+}
+
+.ui-btn-success-light.ui-btn:hover,
+a.ui-btn-success-light.ui-btn:focus,
+.ui-btn-success-light.ui-btn.ui-btn-hover,
+.ui-btn-success-light.ui-btn-double .ui-btn-main:hover,
+.ui-btn-success-light.ui-btn-double .ui-btn-extra:hover,
+.ui-btn-success-light.ui-btn-double.ui-btn-hover .ui-btn-main,
+.ui-btn-success-light.ui-btn-double.ui-btn-hover .ui-btn-extra,
+.ui-btn-success-light.ui-btn-double.ui-btn-main-hover .ui-btn-main,
+.ui-btn-success-light.ui-btn-double.ui-btn-extra-hover .ui-btn-extra {
+	background-color: var(--ui-btn-bg-success-light-hover);
+	color: #668d13;
+}
+
+.ui-btn-success-light.ui-btn:active,
+.ui-btn-success-light.ui-btn.ui-btn-wait,
+.ui-btn-success-light.ui-btn.ui-btn-clock,
+.ui-btn-success-light.ui-btn.ui-btn-active,
+.ui-btn-success-light.ui-btn-double .ui-btn-main:active,
+.ui-btn-success-light.ui-btn-double .ui-btn-extra:active,
+.ui-btn-success-light.ui-btn-double.ui-btn-active .ui-btn-main,
+.ui-btn-success-light.ui-btn-double.ui-btn-active .ui-btn-extra,
+.ui-btn-success-light.ui-btn-double.ui-btn-main-active .ui-btn-main,
+.ui-btn-success-light.ui-btn-double.ui-btn-extra-active .ui-btn-extra,
+.ui-btn-success-light.ui-btn-double.ui-btn-wait .ui-btn-main,
+.ui-btn-success-light.ui-btn-double.ui-btn-clock .ui-btn-main {
+	background-color: var(--ui-btn-bg-success-light-active);
+	color: #668d13;
+}
+
+.ui-btn-success-light.ui-btn-double .ui-btn-extra:after {
+	background-color: #333;
+	opacity: .2;
+}
+
+.ui-btn-success-light.ui-btn-double .ui-btn-extra:before { border-top-color: #a3bf63; }
+
+/* region Fix for IE*/
+.bx-ie .ui-btn-success-light.ui-btn,
+.bx-ie .ui-btn-success-light.ui-btn-double .ui-btn-main,
+.bx-ie .ui-btn-success-light.ui-btn-double .ui-btn-extra { background-color: #e1f0b1; }
+
+.bx-ie .ui-btn-success-light.ui-btn:hover,
+.bx-ie a.ui-btn-success-light.ui-btn:focus,
+.bx-ie .ui-btn-success-light.ui-btn.ui-btn-hover,
+.bx-ie .ui-btn-success-light.ui-btn-double .ui-btn-main:hover,
+.bx-ie .ui-btn-success-light.ui-btn-double .ui-btn-extra:hover,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-hover .ui-btn-main,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-hover .ui-btn-extra,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-main-hover .ui-btn-main,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-extra-hover .ui-btn-extra { background-color: #eaf5c5; }
+
+.bx-ie .ui-btn-success-light.ui-btn:active,
+.bx-ie .ui-btn-success-light.ui-btn.ui-btn-wait,
+.bx-ie .ui-btn-success-light.ui-btn.ui-btn-clock,
+.bx-ie .ui-btn-success-light.ui-btn.ui-btn-active,
+.bx-ie .ui-btn-success-light.ui-btn-double .ui-btn-main:active,
+.bx-ie .ui-btn-success-light.ui-btn-double .ui-btn-extra:active,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-active .ui-btn-main,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-active .ui-btn-extra,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-main-active .ui-btn-main,
+.bx-ie .ui-btn-success-light.ui-btn-double.ui-btn-extra-active .ui-btn-extra { background-color: #d3e59a; }
+
+/*endregion*/
+
+/*endregion*/
+
 /*region Danger button*/
 .ui-btn-danger.ui-btn,
 .ui-btn-danger.ui-btn-double .ui-btn-main,
@@ -517,6 +612,81 @@ a.ui-btn-danger.ui-btn:focus,
 .bx-ie .ui-btn-danger.ui-btn-double.ui-btn-active .ui-btn-extra,
 .bx-ie .ui-btn-danger.ui-btn-double.ui-btn-main-active .ui-btn-main,
 .bx-ie .ui-btn-danger.ui-btn-double.ui-btn-extra-active .ui-btn-extra { background-color: #d24430; }
+
+/*endregion*/
+/*endregion*/
+
+/*region Danger Light button*/
+.ui-btn-danger-light.ui-btn,
+.ui-btn-danger-light.ui-btn-double .ui-btn-main,
+.ui-btn-danger-light.ui-btn-double .ui-btn-extra {
+	background-color: var(--ui-btn-bg-danger-light);
+	color: #d7413c;
+}
+
+.ui-btn-danger-light.ui-btn:hover,
+a.ui-btn-danger-light.ui-btn:focus,
+.ui-btn-danger-light.ui-btn.ui-btn-hover,
+.ui-btn-danger-light.ui-btn-double .ui-btn-main:hover,
+.ui-btn-danger-light.ui-btn-double .ui-btn-extra:hover,
+.ui-btn-danger-light.ui-btn-double.ui-btn-hover .ui-btn-main,
+.ui-btn-danger-light.ui-btn-double.ui-btn-hover .ui-btn-extra,
+.ui-btn-danger-light.ui-btn-double.ui-btn-main-hover .ui-btn-main,
+.ui-btn-danger-light.ui-btn-double.ui-btn-extra-hover .ui-btn-extra {
+	background-color: var(--ui-btn-bg-danger-light-hover);
+	color: #d7413c;
+}
+
+.ui-btn-danger-light.ui-btn:active,
+.ui-btn-danger-light.ui-btn.ui-btn-wait,
+.ui-btn-danger-light.ui-btn.ui-btn-clock,
+.ui-btn-danger-light.ui-btn.ui-btn-active,
+.ui-btn-danger-light.ui-btn-double .ui-btn-main:active,
+.ui-btn-danger-light.ui-btn-double .ui-btn-extra:active,
+.ui-btn-danger-light.ui-btn-double.ui-btn-active .ui-btn-main,
+.ui-btn-danger-light.ui-btn-double.ui-btn-active .ui-btn-extra,
+.ui-btn-danger-light.ui-btn-double.ui-btn-main-active .ui-btn-main,
+.ui-btn-danger-light.ui-btn-double.ui-btn-extra-active .ui-btn-extra,
+.ui-btn-danger-light.ui-btn-double.ui-btn-wait .ui-btn-main,
+.ui-btn-danger-light.ui-btn-double.ui-btn-clock .ui-btn-main {
+	background-color: var(--ui-btn-bg-danger-light-active);
+	color: #d7413c;
+}
+
+.ui-btn-double.ui-btn-danger-light .ui-btn-extra:after {
+	background-color: #333;
+	opacity: .2;
+}
+
+.ui-btn-double.ui-btn-danger-light .ui-btn-extra:before {
+	border-top-color: #eb8783;
+}
+
+/* region Fix for IE*/
+.bx-ie .ui-btn-danger-light.ui-btn,
+.bx-ie .ui-btn-danger-light.ui-btn-double .ui-btn-main,
+.bx-ie .ui-btn-danger-light.ui-btn-double .ui-btn-extra { background-color: #ffccca; }
+
+.bx-ie .ui-btn-danger-light.ui-btn:hover,
+.bx-ie a.ui-btn-danger-light.ui-btn:focus,
+.bx-ie .ui-btn-danger-light.ui-btn.ui-btn-hover,
+.bx-ie .ui-btn-danger-light.ui-btn-double .ui-btn-main:hover,
+.bx-ie .ui-btn-danger-light.ui-btn-double .ui-btn-extra:hover,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-hover .ui-btn-main,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-hover .ui-btn-extra,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-main-hover .ui-btn-main,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-extra-hover .ui-btn-extra { background-color: #ffdcdb; }
+
+.bx-ie .ui-btn-danger-light.ui-btn:active,
+.bx-ie .ui-btn-danger-light.ui-btn.ui-btn-wait,
+.bx-ie .ui-btn-danger-light.ui-btn.ui-btn-clock,
+.bx-ie .ui-btn-danger-light.ui-btn.ui-btn-active,
+.bx-ie .ui-btn-danger-light.ui-btn-double .ui-btn-main:active,
+.bx-ie .ui-btn-danger-light.ui-btn-double .ui-btn-extra:active,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-active .ui-btn-main,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-active .ui-btn-extra,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-main-active .ui-btn-main,
+.bx-ie .ui-btn-danger-light.ui-btn-double.ui-btn-extra-active .ui-btn-extra { background-color: #f2b6b3; }
 
 /*endregion*/
 /*endregion*/
@@ -860,7 +1030,7 @@ a.ui-btn-light-border.ui-btn:focus,
 	color: #535c69;
 }
 
-.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border { color: #fff;}
+.bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border { color: #fff; }
 
 .bitrix24-light-theme .pagetitle-wrap .ui-btn-light-border:hover { background-color: #cfd4d878; }
 
@@ -890,30 +1060,30 @@ a.ui-btn-light-border.ui-btn:focus,
 .ui-btn-light-border.ui-btn-double .ui-btn-extra:before { border-top-color: #535c69; }
 
 /* region Fix for IE*/
-.bx-ie .ui-btn-primary.ui-btn,
-.bx-ie .ui-btn-primary.ui-btn-double .ui-btn-main,
-.bx-ie .ui-btn-primary.ui-btn-double .ui-btn-extra { background-color: transparent; }
+.bx-ie .ui-btn-light-border.ui-btn,
+.bx-ie .ui-btn-light-border.ui-btn-double .ui-btn-main,
+.bx-ie .ui-btn-light-border.ui-btn-double .ui-btn-extra { background-color: transparent; }
 
-.bx-ie .ui-btn-primary.ui-btn:hover,
-.bx-ie a.ui-btn-primary.ui-btn:focus,
-.bx-ie .ui-btn-primary.ui-btn.ui-btn-hover,
-.bx-ie .ui-btn-primary.ui-btn-double .ui-btn-main:hover,
-.bx-ie .ui-btn-primary.ui-btn-double .ui-btn-extra:hover,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-hover .ui-btn-main,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-hover .ui-btn-extra,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-main-hover .ui-btn-main,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-extra-hover .ui-btn-extra { background-color: #cfd4d8; }
+.bx-ie .ui-btn-light-border.ui-btn:hover,
+.bx-ie a.ui-btn-light-border.ui-btn:focus,
+.bx-ie .ui-btn-light-border.ui-btn.ui-btn-hover,
+.bx-ie .ui-btn-light-border.ui-btn-double .ui-btn-main:hover,
+.bx-ie .ui-btn-light-border.ui-btn-double .ui-btn-extra:hover,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-hover .ui-btn-main,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-hover .ui-btn-extra,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-main-hover .ui-btn-main,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-extra-hover .ui-btn-extra { background-color: #cfd4d8; }
 
-.bx-ie .ui-btn-primary.ui-btn:active,
-.bx-ie .ui-btn-primary.ui-btn.ui-btn-wait,
-.bx-ie .ui-btn-primary.ui-btn.ui-btn-clock,
-.bx-ie .ui-btn-primary.ui-btn.ui-btn-active,
-.bx-ie .ui-btn-primary.ui-btn-double .ui-btn-main:active,
-.bx-ie .ui-btn-primary.ui-btn-double .ui-btn-extra:active,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-active .ui-btn-main,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-active .ui-btn-extra,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-main-active .ui-btn-main,
-.bx-ie .ui-btn-primary.ui-btn-double.ui-btn-extra-active .ui-btn-extra { background-color: #dde2e5; }
+.bx-ie .ui-btn-light-border.ui-btn:active,
+.bx-ie .ui-btn-light-border.ui-btn.ui-btn-wait,
+.bx-ie .ui-btn-light-border.ui-btn.ui-btn-clock,
+.bx-ie .ui-btn-light-border.ui-btn.ui-btn-active,
+.bx-ie .ui-btn-light-border.ui-btn-double .ui-btn-main:active,
+.bx-ie .ui-btn-light-border.ui-btn-double .ui-btn-extra:active,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-active .ui-btn-main,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-active .ui-btn-extra,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-main-active .ui-btn-main,
+.bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-extra-active .ui-btn-extra { background-color: #dde2e5; }
 
 .bx-ie .ui-btn-light-border.ui-btn.ui-btn-lg,
 .bx-ie .ui-btn-light-border.ui-btn-double.ui-btn-lg .ui-btn-main,

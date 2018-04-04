@@ -18,6 +18,7 @@ $MESS["SALE_CASHBOX_ORANGE_DATA_SETTINGS_SECURITY_PKEY"] = "Приватный �
 $MESS["SALE_CASHBOX_ORANGE_DATA_SETTINGS_SECURITY_SSL_CERT"] = "Клиентский сертификат";
 $MESS["SALE_CASHBOX_ORANGE_DATA_SETTINGS_SECURITY_SSL_KEY"] = "Приватный ключ SSL";
 $MESS["SALE_CASHBOX_ORANGE_DATA_SETTINGS_SECURITY_SSL_KEY_PASS"] = "Пароль для приватного ключа SSL";
+$MESS["SALE_CASHBOX_ORANGE_DATA_SETTINGS_SECURITY_KEY_SIGN"] = "Ключ для проверки подписи";
 
 $MESS["SALE_CASHBOX_ORANGE_DATA_SETTINGS_SERVICE"] = "Информация об организации";
 $MESS["SALE_CASHBOX_ORANGE_DATA_SETTINGS_SERVICE_INN_LABEL"] = "ИНН";

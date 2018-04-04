@@ -80,7 +80,7 @@ class CSaleTfpdf extends tFPDF
 		return $this->h;
 	}
 
-	public function Output($name = '', $dest = '')
+	public function Output($name = '', $dest = '', $utfName = '')
 	{
 		// invalid symbols: "%*:<>?| and \x00-\x1F\x7F and \x80-\xFF
 		$name = preg_replace('/[\x00-\x1F\x22\x25\x2A\x3A\x3C\x3E\x3F\x7C\x7F-\xFF]+/', '', $name);
@@ -89,7 +89,7 @@ class CSaleTfpdf extends tFPDF
 		if (in_array($dest, array('I', 'D')))
 			$name = basename($name);
 
-		return parent::Output($name, $dest);
+		return parent::Output($name, $dest, $utfName);
 	}
 
 	function _parsebmp($file)
@@ -320,8 +320,8 @@ class CSalePdf
 
 			if ($arFile)
 			{
-				$height = $arFile[0] * 0.75;
-				$width  = $arFile[1] * 0.75;
+				$height = $arFile[1] * 0.75;
+				$width  = $arFile[0] * 0.75;
 			}
 		}
 

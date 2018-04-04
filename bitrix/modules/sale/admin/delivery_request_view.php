@@ -14,7 +14,7 @@ Bitrix\Main\Loader::includeModule('sale');
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 
-if ($saleModulePermissions < "W")
+if ($saleModulePermissions < "U")
 	$APPLICATION->AuthForm(Loc::getMessage("SALE_DSE_ACCESS_DENIED"));
 
 $ID = isset($_REQUEST["ID"]) ? intval($_REQUEST["ID"]) : 0;

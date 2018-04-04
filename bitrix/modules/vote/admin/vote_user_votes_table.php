@@ -218,7 +218,7 @@ while($res = $rsData->getNext())
 	$row->AddViewField("VALID", ($res["VALID"] == "Y" ? GetMessage("MAIN_YES") : GetMessage("MAIN_NO")));
 	$row->AddViewField("VOTE_USER_ID", "<a href=\"vote_user_list.php?lang=".LANGUAGE_ID."&find_id={$res["VOTE_USER_ID"]}&set_filter=Y\">{$res["VOTE_USER_ID"]}</a>");
 	if ($res["AUTH_USER_ID"] > 0)
-		$row->AddViewField("USER", "[<a href=\"user_admin.php?lang=".LANGUAGE_ID."&find_id={$res["AUTH_USER_ID"]}&set_filter=Y\">{$res["AUTH_USER_ID"]}</a>] " . CUser::FormatName($nameFormat, $res, true, false));
+		$row->AddViewField("USER", "[<a href=\"user_admin.php?lang=".LANGUAGE_ID."&ID={$res["AUTH_USER_ID"]}&apply_filter=Y\">{$res["AUTH_USER_ID"]}</a>] " . CUser::FormatName($nameFormat, $res, true, false));
 	else
 		$row->AddViewField("USER", GetMessage("VOTE_NONAUTHORIZED"));
 

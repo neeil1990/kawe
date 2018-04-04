@@ -123,7 +123,7 @@ if (!empty($arParams['LABEL_PROP_POSITION']))
 								<a href="{{DETAIL_PAGE_URL}}" class="basket-item-info-name-link">
 							{{/DETAIL_PAGE_URL}}
 	
-							<span data-entity="basket-item-name">{{{NAME}}}</span>
+							<span data-entity="basket-item-name">{{NAME}}</span>
 
 							{{#DETAIL_PAGE_URL}}
 								</a>
@@ -195,6 +195,7 @@ if (!empty($arParams['LABEL_PROP_POSITION']))
 																{{#SKU_VALUES_LIST}}
 																	<li class="basket-item-scu-item{{#SELECTED}} selected{{/SELECTED}}
 																		{{#NOT_AVAILABLE_OFFER}} not-available{{/NOT_AVAILABLE_OFFER}}"
+																		title="{{NAME}}"
 																		data-entity="basket-item-sku-field"
 																		data-initial="{{#SELECTED}}true{{/SELECTED}}{{^SELECTED}}false{{/SELECTED}}"
 																		data-value-id="{{VALUE_ID}}"
@@ -218,6 +219,7 @@ if (!empty($arParams['LABEL_PROP_POSITION']))
 																{{#SKU_VALUES_LIST}}
 																	<li class="basket-item-scu-item{{#SELECTED}} selected{{/SELECTED}}
 																		{{#NOT_AVAILABLE_OFFER}} not-available{{/NOT_AVAILABLE_OFFER}}"
+																		title="{{NAME}}"
 																		data-entity="basket-item-sku-field"
 																		data-initial="{{#SELECTED}}true{{/SELECTED}}{{^SELECTED}}false{{/SELECTED}}"
 																		data-value-id="{{VALUE_ID}}"

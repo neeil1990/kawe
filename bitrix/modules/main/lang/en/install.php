@@ -321,4 +321,5 @@ $MESS["SC_EA_ER"] = "PHP eAccelerator is not supported.";
 $MESS["ERR_DATABASE_NAME"] = "Incorrect database name.";
 $MESS["INSTALL_DEVSRV"] = "Development only:";
 $MESS["INSTALL_DEVSRV_NOTE"] = "This installation will be used only for development purpose; no real visitors will see it.";
+$MESS["INST_UTF8_DEFAULT_ENCODING"] = "The values of the default_charset and mbstring.internal_encoding parameters don't match. It is recommended that you delete the mbstring.internal_encoding parameter.";
 ?>

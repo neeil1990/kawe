@@ -280,6 +280,11 @@ class ShipmentRules
 				$result->addErrors($r->getErrors());
 			}
 
+			if ($r->hasWarnings())
+			{
+				$result->addWarnings($r->getWarnings());
+			}
+
 			$r = $creator->setItemsResultAfterShip($r);
 			if (!$r->isSuccess())
 			{

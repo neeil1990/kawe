@@ -74,6 +74,7 @@ class ModuleManager
 
 		$cacheManager = Application::getInstance()->getManagedCache();
 		$cacheManager->clean("b_module");
+		$cacheManager->clean("b_module_to_module");
 	}
 
 	public static function add($moduleName)
@@ -86,6 +87,7 @@ class ModuleManager
 
 		$cacheManager = Application::getInstance()->getManagedCache();
 		$cacheManager->clean("b_module");
+		$cacheManager->clean("b_module_to_module");
 	}
 
 	public static function registerModule($moduleName)

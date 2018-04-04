@@ -5,5 +5,3 @@ $MESS['SALE_CASHBOX_ERROR_PARAMS'] = 'Не указаны параметры о�
 $MESS['SALE_CASHBOX_KKM_ID'] = 'Марка ККМ';
 $MESS['SALE_CASHBOX_KKM_NO_CHOOSE'] = 'Не выбрано';
 $MESS['SALE_CASHBOX_ADD_CHECK_SELECT_TYPE'] = 'Выберите тип чека';
-$MESS['SALE_CASHBOX_CHECK_ADVANCE'] = 'Аванс';
-$MESS['SALE_CASHBOX_CHECK_CREDIT'] = 'Кредит';

@@ -965,6 +965,13 @@ class CXMLFileStream
 			else
 			{
 				$this->startElement($bMB, $xmlChunk, $origChunk);
+				//check for self-closing tag
+				$p = strpos($xmlChunk, ">");
+				if (($p !== false) && (substr($xmlChunk, $p - 1, 1)=="/"))
+				{
+					$this->endElement($xmlChunk);
+					return true;
+				}
 			}
 		}
 		$this->eof = true;
@@ -1084,39 +1091,36 @@ class CXMLFileStream
 				$elementAttrs = "";
 			}
 
-			if(substr($xmlChunk, $p - 1, 1) != "/")
+			$this->elementStack[] = $elementName;
+			$this->positionStack[] = $this->filePosition - ($bMB? mb_strlen($origChunk, 'latin1'): strlen($origChunk)) - 1;
+
+			if (isset($this->endNodes[$elementName]))
 			{
-				$this->elementStack[] = $elementName;
-				$this->positionStack[] = $this->filePosition - ($bMB? mb_strlen($origChunk, 'latin1'): strlen($origChunk)) - 1;
-
-				if (isset($this->endNodes[$elementName]))
+				$xmlPath = implode("/", $this->elementStack);
+				if (isset($this->elementHandlers[$xmlPath]))
 				{
-					$xmlPath = implode("/", $this->elementStack);
-					if (isset($this->elementHandlers[$xmlPath]))
+					$attributes = array();
+					if ($elementAttrs !== "")
 					{
-						$attributes = array();
-						if ($elementAttrs !== "")
+						preg_match_all("/(\\S+)\\s*=\\s*[\"](.*?)[\"]/s", $elementAttrs, $attrs_tmp);
+						if(strpos($elementAttrs, "&")===false)
 						{
-							preg_match_all("/(\\S+)\\s*=\\s*[\"](.*?)[\"]/s", $elementAttrs, $attrs_tmp);
-							if(strpos($elementAttrs, "&")===false)
-							{
-								foreach($attrs_tmp[1] as $i=>$attrs_tmp_1)
-									$attributes[$attrs_tmp_1] = $attrs_tmp[2][$i];
-							}
-							else
-							{
-								foreach($attrs_tmp[1] as $i=>$attrs_tmp_1)
-									$attributes[$attrs_tmp_1] = preg_replace($search, $replace, $attrs_tmp[2][$i]);
-							}
+							foreach($attrs_tmp[1] as $i=>$attrs_tmp_1)
+								$attributes[$attrs_tmp_1] = $attrs_tmp[2][$i];
 						}
+						else
+						{
+							foreach($attrs_tmp[1] as $i=>$attrs_tmp_1)
+								$attributes[$attrs_tmp_1] = preg_replace($search, $replace, $attrs_tmp[2][$i]);
+						}
+					}
 
-						foreach ($this->elementHandlers[$xmlPath] as $callableHandler)
-						{
-							call_user_func_array($callableHandler, array(
-								$xmlPath,
-								$attributes,
-							));
-						}
+					foreach ($this->elementHandlers[$xmlPath] as $callableHandler)
+					{
+						call_user_func_array($callableHandler, array(
+							$xmlPath,
+							$attributes,
+						));
 					}
 				}
 			}

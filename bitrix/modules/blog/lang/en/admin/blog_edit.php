@@ -36,7 +36,7 @@ $MESS["BLBE_EDITOR_USE_FONT"] = "Allow users to choose font styles";
 $MESS["BLBE_EDITOR_USE_LINK"] = "Allow users to add hyperlinks";
 $MESS["BLBE_EDITOR_USE_FORMAT"] = "Enable extended formatting options";
 $MESS["BLBE_EDITOR_USE_FORMAT_HINT"] = "Tables, text alignment etc.";
-$MESS["BLBE_EDITOR_USE_IMAGE"] = "Allow users to insert images";
 $MESS["BLBE_EDITOR_USE_VIDEO"] = "Allow users to add video";
 $MESS["BLBE_EDITOR_USE_VIDEO_HINT"] = "A corresponding option has to be enabled in the Blog module settings";
+$MESS["BLBE_EDITOR_USE_IMAGE_AND_FILES"] = "Enable file and image upload";
 ?>

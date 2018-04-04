@@ -32,7 +32,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/lib/delivery/inputs
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 
-if(empty($arResult["ERRORS"]) && $saleModulePermissions >= "W" && check_bitrix_sessid())
+if(empty($arResult["ERRORS"]) && $saleModulePermissions >= "U" && check_bitrix_sessid())
 {
 	$action = isset($_REQUEST['action']) ? trim($_REQUEST['action']): '';
 

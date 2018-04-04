@@ -18,7 +18,7 @@ if (!\Bitrix\Main\Loader::includeModule('sale'))
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 
-if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "W" && check_bitrix_sessid())
+if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitrix_sessid())
 {
 	$action = isset($_REQUEST['action']) ? trim($_REQUEST['action']): '';
 

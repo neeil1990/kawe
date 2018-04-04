@@ -234,10 +234,9 @@ $arTemplateParameters['PRODUCT_BLOCKS_ORDER'] = array(
 		'quantity' => GetMessage('CP_CPV_TPL_PRODUCT_BLOCK_QUANTITY'),
 		'buttons' => GetMessage('CP_CPV_TPL_PRODUCT_BLOCK_BUTTONS'),
 		'props' => GetMessage('CP_CPV_TPL_PRODUCT_BLOCK_PROPS'),
-		'sku' => GetMessage('CP_CPV_TPL_PRODUCT_BLOCK_SKU'),
-		'compare' => GetMessage('CP_CPV_TPL_PRODUCT_BLOCK_COMPARE')
+		'sku' => GetMessage('CP_CPV_TPL_PRODUCT_BLOCK_SKU')
 	)),
-	'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons,compare'
+	'DEFAULT' => 'price,props,sku,quantityLimit,quantity,buttons'
 );
 
 $lineElementCount = 3;

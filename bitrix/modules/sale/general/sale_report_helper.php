@@ -3005,8 +3005,8 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 		$entity->addField(array(
 			'data_type' => 'integer',
 			'expression' => array(
-				'(SELECT  SUM(1) FROM b_catalog_product, b_catalog_viewed_product WHERE %s = b_catalog_viewed_product.PRODUCT_ID
-				AND b_catalog_product.ID = b_catalog_viewed_product.PRODUCT_ID
+				'(SELECT  SUM(1) FROM b_catalog_product, b_catalog_viewed_product WHERE %s = b_catalog_viewed_product.ELEMENT_ID
+				AND b_catalog_product.ID = b_catalog_viewed_product.ELEMENT_ID
 				AND b_catalog_viewed_product.DATE_VISIT '.$sqlTimeInterval.' AND b_catalog_viewed_product.SITE_ID = \''.$DB->ForSql(self::getDefaultSiteId()).'\')', 'ID'
 			)
 		), 'VIEWS_IN_PERIOD_BY_SHOP');

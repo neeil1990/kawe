@@ -38,7 +38,7 @@ class NosqlPrimarySelector
 			}
 		}
 
-		// skip empty select, just for not handle this useless case in nosql api
+		// skip empty select - useless case for nosql api
 		if (!count($query->getSelect()))
 		{
 			return false;
@@ -67,6 +67,14 @@ class NosqlPrimarySelector
 							break;
 						}
 
+						// no multiple values for HSPHP
+						if (is_array($filterValue))
+						{
+							$passFilter = false;
+							break;
+						}
+
+						// skip system keys
 						if ($filterElement === 'LOGIC')
 						{
 							continue;

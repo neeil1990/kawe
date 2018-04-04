@@ -26,6 +26,8 @@ $VOTE_RIGHT = $APPLICATION->GetGroupRight("vote");
 if ($VOTE_RIGHT <= "D")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/vote/include.php");
+
 $db_res = \Bitrix\Vote\Channel::getList(array(
 	'select' => array("*"),
 	'filter' => ($VOTE_RIGHT < "W" ? array(

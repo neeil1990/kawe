@@ -8,6 +8,7 @@
  * @property {number} [width]
  * @property {boolean} [cacheable=true]
  * @property {boolean} [autoFocus=true]
+ * @property {boolean} [printable=true]
  * @property {boolean} [allowChangeHistory=true]
  * @property {string} [requestMethod]
  * @property {object} [requestParams]
@@ -684,7 +685,11 @@ BX.SidePanel.Manager.prototype =
 			return;
 		}
 
-		this.getTopSlider() && this.getTopSlider().hideCLoseBtn();
+		if (this.getTopSlider())
+		{
+			this.getTopSlider().hideCloseBtn();
+			this.getTopSlider().hidePrintBtn();
+		}
 
 		var slider = event.getSlider();
 		this.addOpenSlider(slider);
@@ -757,6 +762,10 @@ BX.SidePanel.Manager.prototype =
 		if (this.getTopSlider())
 		{
 			this.getTopSlider().showCloseBtn();
+			if (this.getTopSlider().isPrintable())
+			{
+				this.getTopSlider().showPrintBtn();
+			}
 			this.getTopSlider().focus();
 		}
 		else

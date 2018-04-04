@@ -10,5 +10,5 @@ namespace Bitrix\Main\Entity;
 
 interface INosqlPrimarySelector
 {
-	public function getEntityByPrimary(\Bitrix\Main\Entity\Base $entity, $primary, $select);
+	public function getEntityByPrimary(Base $entity, $primary, $select);
 }

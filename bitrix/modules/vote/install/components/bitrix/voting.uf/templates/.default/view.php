@@ -1,5 +1,6 @@
 <?if(!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED!==true) die();
 use Bitrix\Main\Localization\Loc;
+use \Bitrix\Main\UI;
 /** @var array $arParams */
 /** @var array $arResult */
 /** @global CMain $APPLICATION */
@@ -13,6 +14,9 @@ use Bitrix\Main\Localization\Loc;
 /** @var CVoteUfComponent $component*/
 if (empty($arResult['ATTACHES']))
 	return;
+
+UI\Extension::load("ui.buttons");
+
 $this->IncludeLangFile("view.php");
 
 CJSCore::Init(array('ajax', 'popup'));
@@ -48,7 +52,7 @@ foreach ($arResult['ATTACHES'] as $attach)
 		foreach ($attach["QUESTIONS"] as $question):
 			?>
 			<li id="question<?= $question["ID"] ?>"<? if ($question["REQUIRED"] == "Y"): ?> class="bx-vote-question-required"<? endif; ?>>
-				<? if ($question["IMAGE"] !== false): ?>
+				<? if (!empty($question["IMAGE"]) && !empty($question["IMAGE"]["SRC"])): ?>
 					<div class="bx-vote-question-image"><img src="<?= $question["IMAGE"]["SRC"] ?>"/>
 					</div><? endif; ?>
 				<div class="bx-vote-question-title"><?= FormatText($question["QUESTION"], $question["QUESTION_TYPE"]) ?></div>
@@ -178,20 +182,19 @@ foreach ($arResult['ATTACHES'] as $attach)
 	?></div><?
 
 	?><div class="bx-vote-buttons"><?
-		if ($voted === false || ($voted == 8 && $USER->isAuthorized()))
+		if ($canParticipate)
 		{
-			?><a href="#" data-bx-vote-button="showVoteForm" class="bx-vote-block-link"><?=GetMessage("VOTE_RESUBMIT_BUTTON")?></a><?
-			?><a href="#" data-bx-vote-button="actVoting" class="feed-add-button"
-				onmousedown="BX.addClass(this, 'feed-add-button-press')"
-				onmouseup="BX.removeClass(this,'feed-add-button-press')"><?
-			?><?= GetMessage("VOTE_SUBMIT_BUTTON") ?><?
-			?></a><?
+			?><button class="ui-btn ui-btn-lg ui-btn-link" data-bx-vote-button="showVoteForm"><?=GetMessage("VOTE_RESUBMIT_BUTTON")?></button><?
+			?><button class="ui-btn ui-btn-lg ui-btn-primary" data-bx-vote-button="actVoting"><?= GetMessage("VOTE_SUBMIT_BUTTON") ?></button><?
 		}
-		?><a href="#" data-bx-vote-button="showResults" class="bx-vote-block-link"><?= GetMessage("VOTE_RESULTS_BUTTON") ?></a><?
+		?><button class="ui-btn ui-btn-lg ui-btn-link" data-bx-vote-button="showResults"><?=GetMessage("VOTE_RESULTS_BUTTON")?></button><?
 		if ($attach->canEdit($USER->GetID()))
 		{
-			?><a href="#" data-bx-vote-button="stopOrResume" class="bx-vote-block-link"><span><?=GetMessage("VOTE_STOP_BUTTON")?></span><span><?=GetMessage("VOTE_RESUME_BUTTON")?></span></a><?
-			?><a href="#" data-bx-vote-button="exportXls" class="bx-vote-block-link"><?=GetMessage("VOTE_EXPORT_BUTTON")?></a><?
+			?><span href="#" data-bx-vote-button="stopOrResume"><?
+				?><button class="ui-btn ui-btn-lg ui-btn-link"><?=GetMessage("VOTE_STOP_BUTTON")?></button><?
+				?><button class="ui-btn ui-btn-lg ui-btn-link"><?=GetMessage("VOTE_RESUME_BUTTON")?></button><?
+			?></span><?
+			?><button class="ui-btn ui-btn-lg ui-btn-link" data-bx-vote-button="exportXls"><?=GetMessage("VOTE_EXPORT_BUTTON")?></button><?
 		}
 	?></div><?
 ?>

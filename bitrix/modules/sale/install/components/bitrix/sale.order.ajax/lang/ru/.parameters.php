@@ -52,6 +52,7 @@ $MESS["SOA_ADAPTIVE"] = "Адаптивный";
 $MESS["SOA_STANDARD"] = "Стандартный";
 $MESS["SOA_NO_SCALE"] = "Без сжатия";
 $MESS["SOA_DEFAULT"] = "По умолчанию";
+$MESS["SOA_USE_PHONE_NORMALIZATION"] = "Использовать нормализацию номера телефона";
 $MESS["SOA_ADDITIONAL_IMAGE"] = "Дополнительная картинка";
 $MESS["SOA_ANALYTICS_SETTINGS"] = "Настройки аналитики";
 $MESS["SOA_DELIVERY_NO_AJAX3"] = "Когда рассчитывать доставки с внешними системами расчета";

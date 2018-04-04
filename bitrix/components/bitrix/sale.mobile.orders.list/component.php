@@ -157,7 +157,16 @@ $personTypesIds = array();
 $paySysIds = array();
 //$statIds = array();
 
-$dbOrderList = CSaleOrder::GetList($arSort, $arFilter, false, array("nTopCount" =>SALE_ORDERS_INIT_COUNT));
+$select = array(
+	'*',
+	'PS_STATUS', 'PS_STATUS_CODE', 'PS_STATUS_DESCRIPTION',
+	'PS_STATUS_MESSAGE', 'PS_SUM', 'PS_CURRENCY', 'PS_RESPONSE_DATE',
+	'PAY_VOUCHER_NUM', 'PAY_VOUCHER_DATE', 'DATE_PAY_BEFORE',
+	'DATE_BILL', 'PAY_SYSTEM_NAME', 'PAY_SYSTEM_ID',
+	'DATE_PAYED', 'EMP_PAYED_ID'
+);
+
+$dbOrderList = CSaleOrder::GetList($arSort, $arFilter, false, array("nTopCount" =>SALE_ORDERS_INIT_COUNT), $select);
 
 while ($arOrderItem = $dbOrderList->GetNext())
 {

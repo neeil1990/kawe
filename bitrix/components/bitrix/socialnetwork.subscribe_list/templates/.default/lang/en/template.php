@@ -1,0 +1,32 @@
+<?
+$MESS ['SONET_C30_T_USER'] = "Group / User";
+$MESS ['SONET_C30_T_TOTAL'] = "Subscribed";
+$MESS ['SONET_C30_T_ACTIONS'] = "Actions";
+$MESS ['SONET_C30_T_system'] = "System";
+$MESS ['SONET_C30_T_system_groups'] = "Groups";
+$MESS ['SONET_C30_T_system_friends'] = "Friends";
+$MESS ['SONET_C30_T_forum'] = "Forum";
+$MESS ['SONET_C30_T_blog'] = "Blog";
+$MESS ['SONET_C30_T_photo'] = "Photo Gallery";
+$MESS ['SONET_C30_T_calendar'] = "Calendar";
+$MESS ['SONET_C30_T_files'] = "Files";
+$MESS ['SONET_C30_T_tasks'] = "Tasks";
+$MESS ['SONET_C30_T_tasks1'] = "Tasks";
+$MESS ['SONET_C30_T_system1'] = "System";
+$MESS ['SONET_C30_T_forum1'] = "Discussions";
+$MESS ['SONET_C30_T_blog1'] = "Reports";
+$MESS ['SONET_C30_T_photo1'] = "Photo Gallery";
+$MESS ['SONET_C30_T_calendar1'] = "Calendar";
+$MESS ['SONET_C30_T_files1'] = "Files";
+$MESS ['SONET_C30_T_EMPTY'] = "No active subscriptions.<br>This pane shows your subscriptions for groups and users updates.";
+$MESS ['SONET_C30_T_SHOW'] = "Show Subscriptions";
+$MESS ['SONET_C30_T_SHOW_ALL'] = "all";
+$MESS ['SONET_C30_T_SHOW_GROUP'] = "only groups";
+$MESS ['SONET_C30_T_SHOW_USER'] = "only users";
+$MESS ['SONET_C334_GR'] = "Group #NAME#";
+$MESS ['SONET_C334_US'] = "User #NAME#";
+$MESS ['SONET_C334_US1'] = "User ";
+$MESS ['SONET_C334_SITE'] = "at site and by e-mail";
+$MESS ['SONET_C334_MAIL'] = "at site only";
+$MESS ['SONET_C334_CHANGE'] = "Change";
+?>

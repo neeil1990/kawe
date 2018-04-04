@@ -199,4 +199,6 @@ $MESS["SALE_MENU_MARKETPLACE_READY_SHOPS"] = "Install a ready to use shop from M
 $MESS["SALE_MENU_MARKETING_MARKETPLACE_ADD"] = "Install from Marketplace";
 $MESS["SALE_MENU_TRADING_PLATFORMS_MARKETPLACE_ADD"] = "Install from Marketplace";
 $MESS["SALE_MENU_DELIVERY_REQUESTS"] = "Transportation orders";
+$MESS["MAIN_MENU_1C_INTEGRATION_LOG"] = "Exchange log";
+$MESS["MAIN_MENU_1C_INTEGRATION_LOG_TITLE"] = "Entity exchange log";
 ?>

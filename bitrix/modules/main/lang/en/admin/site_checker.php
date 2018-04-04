@@ -159,7 +159,7 @@ $MESS["SC_HELP_CHECK_MBSTRING"] = "The mbstring module is required for internati
 
 The following parameters are mandatory for UTF-8 based websites:
 <b>mbstring.func_overload=2</b>
-<b>mbstring.internal_encoding=utf-8</b>
+<b>default_charset=utf-8</b>
 
 The first parameter implicitly redirects PHP string functions calls to mbstring functions. The second parameter defines the text encoding.
 
@@ -168,7 +168,7 @@ If your website does not use UTF-8, the first parameter must be zero:
 
 If you cannot disable function redirection for some reason, try using a single-byte encoding:
 <b>mbstring.func_overload=2</b>
-<b>mbstring.internal_encoding=latin1</b>
+<b>default_charset=latin1</b>
 
 If the assigned values does not match the website parameters, you will encounter weird and bizarre errors like truncated words, broken XML import etc.
 
@@ -561,4 +561,5 @@ $MESS["SC_FIX_MBSTRING_CONFIRM"] = "Attention!
 This will change the configuration files. If the operation fails, your site will be recoverable only from the web hosting control panel.
 
 Continue?";
+$MESS["SC_ERR_NO_INDEX_ENABLED"] = "Full-text search index #INDEX# is not enabled for table #TABLE#";
 ?>

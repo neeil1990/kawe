@@ -1,4 +1,6 @@
 <?
+use Bitrix\Main\UrlRewriter;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "settings/urlrewrite_edit.php");
@@ -26,7 +28,7 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $isAdmin && check_bitrix_ses
 	{
 		if ($CONDITION_OLD != $CONDITION)
 		{
-			$arResult = CUrlRewriter::GetList(array("SITE_ID" => $site_id, "CONDITION" => $CONDITION));
+			$arResult = UrlRewriter::getList($site_id, array("CONDITION" => $CONDITION));
 			if (count($arResult) > 0)
 				$aMsg[] = array("id"=>"CONDITION", "text"=>str_replace("#CONDITION#", htmlspecialcharsbx($CONDITION), GetMessage("MURL_DUPL_CONDITION")));
 		}
@@ -36,8 +38,9 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $isAdmin && check_bitrix_ses
 	{
 		if (StrLen($CONDITION_OLD) > 0)
 		{
-			CUrlRewriter::Update(
-				array("SITE_ID" => $site_id, "CONDITION" => $CONDITION_OLD),
+			UrlRewriter::update(
+				$site_id,
+				array("CONDITION" => $CONDITION_OLD),
 				array(
 					"CONDITION" => $CONDITION,
 					"ID" => $ID,
@@ -48,9 +51,9 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $isAdmin && check_bitrix_ses
 		}
 		else
 		{
-			CUrlRewriter::Add(
+			UrlRewriter::add(
+				$site_id,
 				array(
-					"SITE_ID" => $site_id,
 					"CONDITION" => $CONDITION,
 					"ID" => $ID,
 					"PATH" => $FILE_PATH,
@@ -79,7 +82,7 @@ else
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
-$arResultList = CUrlRewriter::GetList(array("SITE_ID" => $site_id, "CONDITION" => $CONDITION));
+$arResultList = UrlRewriter::getList($site_id, array("CONDITION" => $CONDITION));
 
 if (count($arResultList) <= 0)
 {

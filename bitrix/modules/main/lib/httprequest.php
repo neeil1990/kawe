@@ -43,6 +43,11 @@ class HttpRequest extends Request
 	protected $cookiesRaw;
 
 	/**
+	 * @var Type\ParameterDictionary
+	 */
+	protected $headers;
+
+	/**
 	 * Creates new HttpRequest object
 	 *
 	 * @param Server $server
@@ -61,6 +66,7 @@ class HttpRequest extends Request
 		$this->files = new Type\ParameterDictionary($files);
 		$this->cookiesRaw = new Type\ParameterDictionary($cookies);
 		$this->cookies = new Type\ParameterDictionary($this->prepareCookie($cookies));
+		$this->headers = new Type\ParameterDictionary($this->fetchHeaders($server));
 	}
 
 	/**
@@ -74,8 +80,9 @@ class HttpRequest extends Request
 			"get" => $this->queryString->values,
 			"post" => $this->postData->values,
 			"files" => $this->files->values,
+			"headers" => $this->headers->values,
 			"cookie" => $this->cookiesRaw->values
-			));
+		));
 
 		if (isset($filteredValues['get']))
 			$this->queryString->setValuesNoDemand($filteredValues['get']);
@@ -83,6 +90,8 @@ class HttpRequest extends Request
 			$this->postData->setValuesNoDemand($filteredValues['post']);
 		if (isset($filteredValues['files']))
 			$this->files->setValuesNoDemand($filteredValues['files']);
+		if (isset($filteredValues['headers']))
+			$this->headers->setValuesNoDemand($this->normalizeHeaders($filteredValues['headers']));
 		if (isset($filteredValues['cookie']))
 		{
 			$this->cookiesRaw->setValuesNoDemand($filteredValues['cookie']);
@@ -154,6 +163,28 @@ class HttpRequest extends Request
 	public function getFileList()
 	{
 		return $this->files;
+	}
+
+	/**
+	 * Returns the header of the current request.
+	 *
+	 * @param string $name Name of header.
+	 *
+	 * @return null|string
+	 */
+	public function getHeader($name)
+	{
+		return $this->headers->get(strtolower($name));
+	}
+
+	/**
+	 * Returns the list of headers of the current request.
+	 *
+	 * @return Type\ParameterDictionary
+	 */
+	public function getHeaders()
+	{
+		return $this->headers;
 	}
 
 	/**
@@ -349,6 +380,33 @@ class HttpRequest extends Request
 			$cookiesNew[substr($name, $cookiePrefixLength)] = $value;
 		}
 		return $cookiesNew;
+	}
+
+	private function fetchHeaders(Server $server)
+	{
+		$headers = [];
+		foreach ($server as $name => $value)
+		{
+			if (substr($name, 0, 5) === 'HTTP_')
+			{
+				$headerName = substr($name, 5);
+				$headers[$headerName] = $value;
+			}
+		}
+
+		return $this->normalizeHeaders($headers);
+	}
+
+	private function normalizeHeaders(array $headers)
+	{
+		$normalizedHeaders = [];
+		foreach ($headers as $name => $value)
+		{
+			$headerName = strtolower(str_replace('_', '-', $name));
+			$normalizedHeaders[$headerName] = $value;
+		}
+
+		return $normalizedHeaders;
 	}
 
 	protected static function normalize($path)

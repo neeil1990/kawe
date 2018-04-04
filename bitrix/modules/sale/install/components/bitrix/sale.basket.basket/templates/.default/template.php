@@ -7,6 +7,7 @@ use Bitrix\Main\Localization\Loc;
  * @var array $arParams
  * @var array $arResult
  * @var string $templateFolder
+ * @var string $templateName
  * @var CMain $APPLICATION
  * @var CBitrixBasketComponent $component
  * @var CBitrixComponentTemplate $this
@@ -100,8 +101,12 @@ if ($arParams['USE_GIFTS'] === 'Y')
 		'HIDE_NOT_AVAILABLE' => $arParams['GIFTS_HIDE_NOT_AVAILABLE'],
 
 		'LINE_ELEMENT_COUNT' => $arParams['GIFTS_PAGE_ELEMENT_COUNT'],
+
+		'DETAIL_URL' => isset($arParams['GIFTS_DETAIL_URL']) ? $arParams['GIFTS_DETAIL_URL'] : null
 	);
 }
+
+\CJSCore::Init(array('fx', 'popup', 'ajax'));
 
 $this->addExternalCss('/bitrix/css/main/bootstrap.css');
 $this->addExternalCss($templateFolder.'/themes/'.$arParams['TEMPLATE_THEME'].'/style.css');
@@ -133,7 +138,7 @@ if (empty($arResult['ERROR_MESSAGE']))
 			'bitrix:sale.gift.basket',
 			'.default',
 			$giftParameters,
-			false
+			$component
 		);
 	}
 
@@ -241,6 +246,7 @@ if (empty($arResult['ERROR_MESSAGE']))
 	}
 
 	$signer = new \Bitrix\Main\Security\Sign\Signer;
+	$signedTemplate = $signer->sign($templateName, 'sale.basket.basket');
 	$signedParams = $signer->sign(base64_encode(serialize($arParams)), 'sale.basket.basket');
 	$messages = Loc::loadLanguageFile(__FILE__);
 	?>
@@ -249,6 +255,7 @@ if (empty($arResult['ERROR_MESSAGE']))
 		BX.Sale.BasketComponent.init({
 			result: <?=CUtil::PhpToJSObject($arResult, false, false, true)?>,
 			params: <?=CUtil::PhpToJSObject($arParams)?>,
+			template: '<?=CUtil::JSEscape($signedTemplate)?>',
 			signedParamsString: '<?=CUtil::JSEscape($signedParams)?>',
 			siteId: '<?=CUtil::JSEscape($component->getSiteId())?>',
 			ajaxUrl: '<?=CUtil::JSEscape($component->getPath().'/ajax.php')?>',
@@ -262,7 +269,7 @@ if (empty($arResult['ERROR_MESSAGE']))
 			'bitrix:sale.gift.basket',
 			'.default',
 			$giftParameters,
-			false
+			$component
 		);
 	}
 }

@@ -21,6 +21,14 @@ class BooleanField extends ScalarField
 	 */
 	protected $values;
 
+	/**
+	 * BooleanField constructor.
+	 *
+	 * @param       $name
+	 * @param array $parameters
+	 *
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	function __construct($name, $parameters = array())
 	{
 		parent::__construct($name, $parameters);
@@ -68,6 +76,11 @@ class BooleanField extends ScalarField
 		return $value;
 	}
 
+	/**
+	 * @return array|Validator\Base[]|callback[]
+	 * @throws \Bitrix\Main\ArgumentTypeException
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function getValidators()
 	{
 		$validators = parent::getValidators();
@@ -90,6 +103,12 @@ class BooleanField extends ScalarField
 		return (strval($value) === '' && $value !== false);
 	}
 
+	/**
+	 * @param mixed $value
+	 *
+	 * @return string
+	 * @throws \Bitrix\Main\SystemException
+	 */
 	public function convertValueToDb($value)
 	{
 		return $this->getConnection()->getSqlHelper()->convertToDbString(

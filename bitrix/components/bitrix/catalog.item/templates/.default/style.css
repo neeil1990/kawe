@@ -1,7 +1,7 @@
 
 .product-item-container { position: relative; }
 
-.product-item-container.hover { z-index: 200; }
+.product-item-container.hover { z-index: 17; }
 
 .product-item {
 	display: block;
@@ -94,10 +94,10 @@
 	transition: opacity 300ms linear;
 }
 
-.product-item-image-original { z-index: 110; }
+.product-item-image-original { z-index: 11; }
 
 .product-item-image-alternative {
-	z-index: 120;
+	z-index: 13;
 	opacity: 0;
 }
 
@@ -208,7 +208,7 @@
 	right: 0;
 	bottom: 10px;
 	left: 0;
-	z-index: 190;
+	z-index: 15;
 	padding: 0;
 	text-align: center;
 	opacity: 0;
@@ -237,7 +237,7 @@
 .product-item-label-text,
 .product-item-label-ring {
 	position: absolute;
-	z-index: 190;
+	z-index: 15;
 }
 
 .product-item-label-text span,

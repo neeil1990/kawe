@@ -650,7 +650,7 @@ class BasketComponentHelper
 			Compatible\DiscountCompatibility::stopUsageCompatible();
 		DiscountCouponsManager::freezeCouponStorage();
 		$basket->refreshData(array('PRICE', 'COUPONS'));
-		$discounts = Discount::loadByBasket($basket);
+		$discounts = Discount::buildFromBasket($basket, new Discount\Context\Fuser($basket->getFUserId(true)));
 		$discounts->calculate();
 		$discountResult = $discounts->getApplyResult();
 		DiscountCouponsManager::unFreezeCouponStorage();

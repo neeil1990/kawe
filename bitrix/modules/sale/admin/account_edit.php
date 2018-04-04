@@ -208,11 +208,9 @@ $context->Show();
 if ($errorMessage != '')
 	CAdminMessage::ShowMessage(Array("DETAILS"=>$errorMessage, "TYPE"=>"ERROR", "MESSAGE"=>GetMessage("SAE_ERROR"), "HTML"=>true));
 ?>
-<form method="POST" action="<?echo $APPLICATION->GetCurPage()?>?" name="form1">
+<form method="POST" action="<?echo $APPLICATION->GetCurPage()?>?ID=<?=$ID?>&lang=<?=LANGUAGE_ID ?>" name="form1">
 <?echo GetFilterHiddens("filter_");?>
 <input type="hidden" name="Update" value="Y">
-<input type="hidden" name="lang" value="<?echo LANGUAGE_ID ?>">
-<input type="hidden" name="ID" value="<?echo $ID ?>">
 <?=bitrix_sessid_post()?><?
 
 $aTabs = array(

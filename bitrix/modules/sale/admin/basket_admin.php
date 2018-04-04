@@ -189,7 +189,7 @@ if (is_array($filter_group_id) && count($filter_group_id) > 0)
 	}
 }
 
-if(!empty($arAccessibleSites) && count($arAccessibleSites) != count($siteName))
+if(!$USER->IsAdmin() && !empty($arAccessibleSites) && count($arAccessibleSites) != count($siteName))
 {
 	if(empty($arFilter["LID"]))
 		$arFilter["LID"] = $arAccessibleSites;

@@ -83,9 +83,10 @@ abstract class Field
 	);
 
 	/**
-	 * @param string      $name
-	 * @param array       $parameters
-	 * @throws \Exception
+	 * @param string $name
+	 * @param array  $parameters
+	 *
+	 * @throws SystemException
 	 */
 	public function __construct($name, $parameters = array())
 	{
@@ -127,6 +128,11 @@ abstract class Field
 		}
 	}
 
+	/**
+	 * @param Base $entity
+	 *
+	 * @throws SystemException
+	 */
 	public function setEntity(Base $entity)
 	{
 		if ($this->entity !== null)
@@ -187,6 +193,13 @@ abstract class Field
 		return $result;
 	}
 
+	/**
+	 * @param $value
+	 * @param $data
+	 *
+	 * @return mixed
+	 * @throws SystemException
+	 */
 	public function modifyValueBeforeSave($value, $data)
 	{
 		$modifiers = $this->getSaveDataModifiers();
@@ -201,7 +214,7 @@ abstract class Field
 
 	/**
 	 * @return callback[]|Validator\Base[]
-	 * @throws \Exception
+	 * @throws SystemException
 	 */
 	public function getValidators()
 	{
@@ -238,6 +251,8 @@ abstract class Field
 
 	/**
 	 * @param Validator\Base|callable $validator
+	 *
+	 * @throws SystemException
 	 */
 	public function addValidator($validator)
 	{
@@ -254,7 +269,8 @@ abstract class Field
 
 	/**
 	 * @param Validator\Base|callable $validator
-	 * @throws \Exception
+	 *
+	 * @throws SystemException
 	 */
 	protected function appendValidator($validator)
 	{
@@ -269,6 +285,10 @@ abstract class Field
 		$this->validators[] = $validator;
 	}
 
+	/**
+	 * @return array|callback[]|null
+	 * @throws SystemException
+	 */
 	public function getFetchDataModifiers()
 	{
 		if ($this->fetchDataModifiers === null)
@@ -302,6 +322,11 @@ abstract class Field
 		return $this->fetchDataModifiers;
 	}
 
+	/**
+	 * @param $modifier
+	 *
+	 * @throws SystemException
+	 */
 	public function addFetchDataModifier($modifier)
 	{
 		// append only when not null. and when is null - delay it
@@ -315,6 +340,11 @@ abstract class Field
 		}
 	}
 
+	/**
+	 * @param $modifier
+	 *
+	 * @throws SystemException
+	 */
 	protected function appendFetchDataModifier($modifier)
 	{
 		if (!is_callable($modifier))
@@ -328,6 +358,10 @@ abstract class Field
 		$this->fetchDataModifiers[] = $modifier;
 	}
 
+	/**
+	 * @return array|callback[]|null
+	 * @throws SystemException
+	 */
 	public function getSaveDataModifiers()
 	{
 		if ($this->saveDataModifiers === null)
@@ -361,6 +395,11 @@ abstract class Field
 		return $this->saveDataModifiers;
 	}
 
+	/**
+	 * @param $modifier
+	 *
+	 * @throws SystemException
+	 */
 	public function addSaveDataModifier($modifier)
 	{
 		// append only when not null. and when is null - delay it
@@ -374,6 +413,11 @@ abstract class Field
 		}
 	}
 
+	/**
+	 * @param $modifier
+	 *
+	 * @throws SystemException
+	 */
 	protected function appendSaveDataModifier($modifier)
 	{
 		if (!is_callable($modifier))
@@ -395,6 +439,9 @@ abstract class Field
 		return !empty($this->isSerialized);
 	}
 
+	/**
+	 * @throws SystemException
+	 */
 	public function setSerialized()
 	{
 		if (!$this->isSerialized)
@@ -512,6 +559,10 @@ abstract class Field
 		return null;
 	}
 
+	/**
+	 * @return \Bitrix\Main\DB\Connection
+	 * @throws SystemException
+	 */
 	public function getConnection()
 	{
 		if ($this->entity)

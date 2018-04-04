@@ -410,6 +410,8 @@ class SaleOrderAjax extends \CBitrixComponent
 			$arParams['BASKET_IMAGES_SCALING'] = 'adaptive';
 		}
 
+		$arParams['USE_PHONE_NORMALIZATION'] = isset($arParams['USE_PHONE_NORMALIZATION']) && $arParams['USE_PHONE_NORMALIZATION'] === 'N' ? 'N' : 'Y';
+
 		return $arParams;
 	}
 
@@ -478,6 +480,10 @@ class SaleOrderAjax extends \CBitrixComponent
 	{
 		$lastOrderData = array();
 
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+
 		$filter = array(
 			'filter' => array(
 				'USER_ID' => $order->getUserId(),
@@ -488,10 +494,10 @@ class SaleOrderAjax extends \CBitrixComponent
 			'limit' => 1
 		);
 
-		if ($arOrder = Order::getList($filter)->fetch())
+		if ($arOrder = $orderClassName::getList($filter)->fetch())
 		{
 			/** @var Order $lastOrder */
-			$lastOrder = Order::load($arOrder['ID']);
+			$lastOrder = $orderClassName::load($arOrder['ID']);
 			$lastOrderData['PERSON_TYPE_ID'] = $lastOrder->getPersonTypeId();
 
 			if ($payment = $this->getInnerPayment($lastOrder))
@@ -663,7 +669,7 @@ class SaleOrderAjax extends \CBitrixComponent
 			}
 			elseif ($arProperty['IS_PHONE'] === 'Y' && !empty($curVal))
 			{
-				$curVal = NormalizePhone($curVal, 5);
+				$curVal = $this->getNormalizedPhone($curVal);
 			}
 
 			if (empty($curVal))
@@ -1363,7 +1369,7 @@ class SaleOrderAjax extends \CBitrixComponent
 		if (empty($userEmail))
 		{
 			$newEmail = false;
-			$normalizedPhone = NormalizePhone((string)$userProps['PHONE'], 5);
+			$normalizedPhone = $this->getNormalizedPhone($userProps['PHONE']);
 
 			if (!empty($normalizedPhone))
 			{
@@ -1458,6 +1464,16 @@ class SaleOrderAjax extends \CBitrixComponent
 		);
 	}
 
+	protected function getNormalizedPhone($phone)
+	{
+		if ($this->arParams['USE_PHONE_NORMALIZATION'] === 'Y')
+		{
+			$phone = NormalizePhone((string)$phone, 3);
+		}
+
+		return $phone;
+	}
+
 	/**
 	 * Creating new user and logging in
 	 *
@@ -1480,7 +1496,7 @@ class SaleOrderAjax extends \CBitrixComponent
 			'GROUP_ID' => $userData['GROUP_ID'],
 			'ACTIVE' => 'Y',
 			'LID' => $this->context->getSite(),
-			'PERSONAL_PHONE' => isset($userProps['PHONE']) ? NormalizePhone($userProps['PHONE'], 5) : '',
+			'PERSONAL_PHONE' => isset($userProps['PHONE']) ? $this->getNormalizedPhone($userProps['PHONE']) : '',
 			'PERSONAL_ZIP' => isset($userProps['ZIP']) ? $userProps['ZIP'] : '',
 			'PERSONAL_STREET' => isset($userProps['ADDRESS']) ? $userProps['ADDRESS'] : ''
 		));
@@ -1560,7 +1576,7 @@ class SaleOrderAjax extends \CBitrixComponent
 
 			if ($existingUserId === 0 && !empty($userProps['PHONE']))
 			{
-				$normalizedPhone = NormalizePhone((string)$userProps['PHONE'], 5);
+				$normalizedPhone = $this->getNormalizedPhone($userProps['PHONE']);
 
 				if (!empty($normalizedPhone))
 				{
@@ -3353,17 +3369,20 @@ class SaleOrderAjax extends \CBitrixComponent
 
 		if (!empty($this->arDeliveryServiceAll))
 		{
-			if (array_key_exists($deliveryId, $this->arDeliveryServiceAll))
+			if (isset($this->arDeliveryServiceAll[$deliveryId]))
 			{
 				$deliveryObj = $this->arDeliveryServiceAll[$deliveryId];
 			}
 			else
 			{
 				$deliveryObj = reset($this->arDeliveryServiceAll);
-				if ($deliveryId != 0)
+
+				if (!empty($deliveryId))
 				{
 					$this->addWarning(Loc::getMessage("DELIVERY_CHANGE_WARNING"), self::DELIVERY_BLOCK);
 				}
+
+				$deliveryId = $deliveryObj->getId();
 			}
 
 			if ($deliveryObj->isProfile())
@@ -3378,14 +3397,14 @@ class SaleOrderAjax extends \CBitrixComponent
 			$order->isStartField();
 
 			$shipment->setFields(array(
-				'DELIVERY_ID' => $deliveryObj->getId(),
+				'DELIVERY_ID' => $deliveryId,
 				'DELIVERY_NAME' => $name,
 				'CURRENCY' => $order->getCurrency()
 			));
-			$this->arUserResult['DELIVERY_ID'] = $deliveryObj->getId();
+			$this->arUserResult['DELIVERY_ID'] = $deliveryId;
 
-			$deliveryStoreList = Delivery\ExtraServices\Manager::getStoresList($deliveryObj->getId());
-			if (count($deliveryStoreList) > 0)
+			$deliveryStoreList = Delivery\ExtraServices\Manager::getStoresList($deliveryId);
+			if (!empty($deliveryStoreList))
 			{
 				if ($this->arUserResult['BUYER_STORE'] <= 0 || !in_array($this->arUserResult['BUYER_STORE'], $deliveryStoreList))
 				{
@@ -3396,10 +3415,10 @@ class SaleOrderAjax extends \CBitrixComponent
 			}
 
 			$deliveryExtraServices = $this->arUserResult['DELIVERY_EXTRA_SERVICES'];
-			if (is_array($deliveryExtraServices) && !empty($deliveryExtraServices[$deliveryObj->getId()]))
+			if (is_array($deliveryExtraServices) && !empty($deliveryExtraServices[$deliveryId]))
 			{
-				$shipment->setExtraServices($deliveryExtraServices[$deliveryObj->getId()]);
-				$deliveryObj->getExtraServices()->setValues($deliveryExtraServices[$deliveryObj->getId()]);
+				$shipment->setExtraServices($deliveryExtraServices[$deliveryId]);
+				$deliveryObj->getExtraServices()->setValues($deliveryExtraServices[$deliveryId]);
 			}
 
 			$shipmentCollection->calculateDelivery();
@@ -3693,35 +3712,38 @@ class SaleOrderAjax extends \CBitrixComponent
 	protected function recalculatePayment(Order $order)
 	{
 		// one more delivery calculation for some cases when payment affects delivery price
-		$res = $order->getShipmentCollection()->calculateDelivery();
-		if (!$res->isSuccess())
+		if ($this->arParams['DELIVERY_TO_PAYSYSTEM'] === 'd2p')
 		{
-			$shipment = $this->getCurrentShipment($order);
-			if (!empty($shipment))
+			$res = $order->getShipmentCollection()->calculateDelivery();
+			if (!$res->isSuccess())
 			{
-				$errMessages = '';
-				$errors = $res->getErrorMessages();
-
-				if (!empty($errors))
+				$shipment = $this->getCurrentShipment($order);
+				if (!empty($shipment))
 				{
-					foreach ($errors as $message)
+					$errMessages = '';
+					$errors = $res->getErrorMessages();
+
+					if (!empty($errors))
 					{
-						$errMessages .= $message.'<br />';
+						foreach ($errors as $message)
+						{
+							$errMessages .= $message.'<br />';
+						}
 					}
-				}
-				else
-				{
-					$errMessages = Loc::getMessage('SOA_DELIVERY_CALCULATE_ERROR');
-				}
+					else
+					{
+						$errMessages = Loc::getMessage('SOA_DELIVERY_CALCULATE_ERROR');
+					}
 
-				$r = new Result();
-				$r->addError(new Sale\ResultWarning(
-					$errMessages,
-					'SALE_DELIVERY_CALCULATE_ERROR'
-				));
+					$r = new Result();
+					$r->addError(new Sale\ResultWarning(
+						$errMessages,
+						'SALE_DELIVERY_CALCULATE_ERROR'
+					));
 
-				Sale\EntityMarker::addMarker($order, $shipment, $r);
-				$shipment->setField('MARKED', 'Y');
+					Sale\EntityMarker::addMarker($order, $shipment, $r);
+					$shipment->setField('MARKED', 'Y');
+				}
 			}
 		}
 
@@ -3935,11 +3957,21 @@ class SaleOrderAjax extends \CBitrixComponent
 
 						$clonedShipment = $this->getCurrentShipment($orderClone);
 						$clonedShipment->setField('DELIVERY_ID', $deliveryId);
-						$orderClone->getShipmentCollection()->calculateDelivery();
+
+						$calculationResult = $orderClone->getShipmentCollection()->calculateDelivery();
+						if ($calculationResult->isSuccess())
+						{
+							$calcDeliveries = $calculationResult->get('CALCULATED_DELIVERIES');
+							$calcResult = reset($calcDeliveries);
+						}
+
+						if (empty($calcResult))
+						{
+							$calcResult = new Delivery\CalculationResult();
+						}
 
 						$orderClone->doFinalAction(true);
 
-						$calcResult = $deliveryObj->calculate($clonedShipment);
 						$calcOrder = $orderClone;
 					}
 				}
@@ -5311,8 +5343,11 @@ class SaleOrderAjax extends \CBitrixComponent
 	 */
 	protected function getOrder($userId)
 	{
-		/** @var Order $order */
-		$order = Order::create($this->context->getSite(), $userId);
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+
+		$order = $orderClassName::create($this->context->getSite(), $userId);
 		$order->isStartField();
 
 		$this->initLastOrderData($order);
@@ -5616,8 +5651,12 @@ class SaleOrderAjax extends \CBitrixComponent
 		$orderId = urldecode($this->request->get('ORDER_ID'));
 		$checkedBySession = false;
 
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+
 		/** @var Order $order */
-		if ($order = Order::loadByAccountNumber($orderId))
+		if ($order = $orderClassName::loadByAccountNumber($orderId))
 		{
 			$arOrder = $order->getFieldValues();
 			$arResult["ORDER_ID"] = $arOrder["ID"];

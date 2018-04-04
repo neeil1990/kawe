@@ -979,6 +979,10 @@ BX.Sale.Input = (function () {
 					options.push(settings.OPTIONS[code]);
 			}
 		}
+		else if (BX.type.isArray(settings.OPTIONS))
+		{
+			options = settings.OPTIONS
+		}
 
 		if (options === undefined || options === null || (options.constructor !== Object && options.constructor !== Array) || options.length === 0)
 		{
@@ -1287,6 +1291,7 @@ BX.Sale.Input = (function () {
 
 		button.type  = 'button';
 		button.value = BX.message('INPUT_FILE_BROWSE');
+		button.style.margin = '5px 10px';
 
 		Utils.addEventTo(button, 'click', function ()
 		{
@@ -1442,6 +1447,7 @@ BX.Sale.Input = (function () {
 		button.type     = 'button';
 		button.value    = BX.message('INPUT_DATE_SELECT');
 		button.disabled = this.disabled;
+		button.style.margin = '0 10px';
 
 		Utils.addEventTo(button, 'click', function ()
 		{

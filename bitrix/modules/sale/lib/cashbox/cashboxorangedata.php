@@ -3,6 +3,7 @@
 namespace Bitrix\Sale\Cashbox;
 
 use Bitrix\Main;
+use Bitrix\Main\Text;
 use Bitrix\Main\Localization;
 use Bitrix\Sale\Cashbox\Errors;
 use Bitrix\Sale\Result;
@@ -22,8 +23,8 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	const HANDLER_MODE_TEST = 'TEST';
 	const HANDLER_MODE_ACTIVE = 'ACTIVE';
 
-	const HANDLER_TEST_URL = 'https://apip.orangedata.ru:2443/api/v2';
-	const HANDLER_ACTIVE_URL = 'https://api.orangedata.ru:12003/api/v2';
+	const HANDLER_TEST_URL = 'ssl://apip.orangedata.ru:2443/api/v2';
+	const HANDLER_ACTIVE_URL = 'ssl://api.orangedata.ru:12003/api/v2';
 
 	private $pathToSslCertificate = '';
 	private $pathToSslCertificateKey = '';
@@ -68,6 +69,7 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @param Check $check
 	 * @return array
+	 * @throws Main\NotImplementedException
 	 */
 	public function buildCheckQuery(Check $check)
 	{
@@ -79,7 +81,9 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 		{
 			$phone = \NormalizePhone($checkInfo['client_phone']);
 			if ($phone[0] !== '7')
+			{
 				$phone = '7'.$phone;
+			}
 
 			$customerContact = '+'.$phone;
 		}
@@ -92,7 +96,7 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 			'id' => $checkInfo['unique_id'],
 			'inn' => $this->getValueFromSettings('SERVICE', 'INN'),
 			'group' => $this->getField('NUMBER_KKM') ?: null,
-			'key' => null,
+			'key' => $this->getValueFromSettings('SECURITY', 'KEY_SIGN') ?: null,
 			'content' => array(
 				'type' => $calculatedSignMap[$check::getCalculatedSign()],
 				'positions' => array(),
@@ -109,7 +113,9 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 		{
 			$vat = $this->getValueFromSettings('VAT', $item['vat']);
 			if ($vat === null)
+			{
 				$vat = $this->getValueFromSettings('VAT', 'NOT_VAT');
+			}
 
 			$result['content']['positions'][] = array(
 				'text' => $item['name'],
@@ -149,29 +155,27 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @param $url
 	 * @param $data
-	 * @return Result
+	 * @return string
 	 */
-	private function sendSignedQuery($url, $data)
+	private function getPrintQueryHeaders($url, $data)
 	{
-		$result = new Result();
 		$sign = $this->sign($data);
 		if ($sign === false)
 		{
-			$result->addError(new Errors\Error(Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_ERROR_SIGN')));
-			return $result;
+			return false;
 		}
 
-		$options = array(
-			CURLOPT_POST => true,
-			CURLOPT_POSTFIELDS => $data,
-			CURLOPT_HTTPHEADER => array(
-				'Accept: application/json',
-				'Content-Type: application/json',
-				'X-Signature: '.$sign
-			)
-		);
+		$urlObj = new Main\Web\Uri($url);
 
-		return $this->sendQuery($url, $options);
+		$header = "POST /api/v2/documents/ HTTP/1.0\r\n";
+		$header .= "Host: ".$urlObj->getHost()."\r\n";
+		$header .= "Accept: application/json\r\n";
+		$header .= "Content-Type: application/json\r\n";
+		$header .= "X-Signature: ".$sign."\r\n";
+		$header .= sprintf("Content-length: %s\r\n", Text\BinaryString::getLength($data));
+		$header .= "\r\n";
+
+		return $header;
 	}
 
 	/**
@@ -186,6 +190,8 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @param Check $check
 	 * @return Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\NotImplementedException
 	 */
 	public function printImmediately(Check $check)
 	{
@@ -196,7 +202,15 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 
 		$data = $this->buildCheckQuery($check);
 		$encodedData = $this->encode($data);
-		$queryResult = $this->sendSignedQuery($url, $encodedData);
+
+		$headers = $this->getPrintQueryHeaders($url, $encodedData);
+		if ($headers === false)
+		{
+			$result->addError(new Errors\Error(Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_ERROR_SIGN')));
+			return $result;
+		}
+
+		$queryResult = $this->sendQuery($url, $headers, $encodedData);
 
 		if (!$queryResult->isSuccess())
 		{
@@ -244,43 +258,63 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	private function getUrl()
 	{
 		if ($this->getValueFromSettings('INTERACTION', 'MODE_HANDLER') === static::HANDLER_MODE_ACTIVE)
+		{
 			return static::HANDLER_ACTIVE_URL;
+		}
 
 		return static::HANDLER_TEST_URL;
 	}
 
 	/**
 	 * @param $url
-	 * @param array $additionalOptions
+	 * @param $headers
+	 * @param string $data
 	 * @return Result
 	 */
-	private function sendQuery($url, array $additionalOptions = array())
+	private function sendQuery($url, $headers, $data = '')
 	{
-		$options = $this->getOptions();
-		if ($additionalOptions)
-			$options = $additionalOptions + $options;
+		$context = $this->createStreamContext();
 
-		$curl = curl_init($url);
-		curl_setopt_array($curl, $options);
-
-		$content = curl_exec($curl);
-		$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		$curlError = curl_error($curl);
-		curl_close($curl);
+		$errNumber = '';
+		$errString = '';
+		$client = stream_socket_client($url, $errNumber, $errString, 5, STREAM_CLIENT_CONNECT, $context);
 
 		$result = new Result();
-		$result->addData(array('http_code' => $httpCode, 'content' => $content));
-		if ($curlError)
+		if ($client !== false)
+		{
+			fputs($client, $headers.$data);
+			$response = stream_get_contents($client);
+			fclose($client);
+
+			list($responseHeaders, $content) = explode("\r\n\r\n", $response);
+			$httpCode = $this->extractResponseStatus($responseHeaders);
+			$result->addData(array('http_code' => $httpCode, 'content' => $content));
+		}
+		else
 		{
 			$result->addError(
-				new Errors\Error(Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_ERROR_SEND_QUERY'))
+				new Errors\Error(
+					Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_ERROR_SEND_QUERY')
+				)
 			);
 
-			$error = new Errors\Error($curlError);
+			$error = new Errors\Error($errNumber.': '.$errString);
 			Manager::writeToLog($this->getField('ID'), $error);
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @param $headers
+	 * @return int
+	 */
+	private function extractResponseStatus($headers)
+	{
+		$headers = explode("\n", $headers);
+		preg_match('#HTTP\S+ (\d+)#', $headers[0], $find);
+
+		return (int)$find[1];
 	}
 
 	/**
@@ -304,9 +338,9 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	}
 
 	/**
-	 * @return array
+	 * @return resource
 	 */
-	private function getOptions()
+	private function createStreamContext()
 	{
 		$sslCert = $this->getValueFromSettings('SECURITY', 'SSL_CERT');
 		$this->pathToSslCertificate = $this->createTmpFile($sslCert);
@@ -314,26 +348,13 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 		$sslKey = $this->getValueFromSettings('SECURITY', 'SSL_KEY');
 		$this->pathToSslCertificateKey = $this->createTmpFile($sslKey);
 
-		$options = array(
-			CURLOPT_HEADER => false,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_SSL_VERIFYPEER => false,
-			CURLOPT_SSL_VERIFYHOST => 0,
-			CURLOPT_SSLCERT => $this->pathToSslCertificate,
-			CURLOPT_SSLKEY => $this->pathToSslCertificateKey,
-			CURLOPT_HTTPHEADER => array(
-				'Accept: application/json',
-				'Content-Type: application/json'
+		return stream_context_create(array(
+			'ssl' => array(
+				'local_cert' => $this->pathToSslCertificate,
+				'local_pk' => $this->pathToSslCertificateKey,
+				'passphrase' => $this->getValueFromSettings('SECURITY', 'SSL_KEY_PASS'),
 			)
-		);
-
-		$sslKeyPass = $this->getValueFromSettings('SECURITY', 'SSL_KEY_PASS');
-		if ($sslKeyPass)
-		{
-			$options[CURLOPT_SSLCERTPASSWD] = $sslKeyPass;
-		}
-
-		return $options;
+		));
 	}
 
 	/**
@@ -346,14 +367,18 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 
 		$url = $this->getUrl();
 		$url .= '/documents/'.$this->getValueFromSettings('SERVICE', 'INN').'/status/'.$check->getField('EXTERNAL_UUID');
-		$queryResult = $this->sendQuery($url);
+
+		$header = $this->getCheckQueryHeaders($url);
+		$queryResult = $this->sendQuery($url, $header);
 
 		$data = $queryResult->getData();
 		if ($data['http_code'] !== static::RESPONSE_HTTP_CODE_200)
 		{
 			$error = Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_ERROR_RESPONSE_'.$data['http_code']);
 			if (!$error)
+			{
 				$error = implode("\n", $queryResult->getErrorMessages());
+			}
 
 			$result->addError(new Errors\Error($error));
 
@@ -367,19 +392,40 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 			return $result;
 		}
 
-		return static::applyCheckResult($response);
+		return static::applyCheckResult($response);}
+
+	/**
+	 * @param $url
+	 * @return string
+	 */
+	private function getCheckQueryHeaders($url)
+	{
+		$urlObj = new Main\Web\Uri($url);
+
+		$header = "GET ".$urlObj->getPath()." HTTP/1.0\r\n";
+		$header .= "Host: ".$urlObj->getHost()."\r\n";
+		$header .= "Accept: application/json\r\n";
+		$header .= "Content-Type: application/json\r\n";
+		$header .= "\r\n";
+
+		return $header;
 	}
 
 	/**
 	 * @param array $data
 	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\NotImplementedException
+	 * @throws Main\ObjectException
 	 */
 	protected static function extractCheckData(array $data)
 	{
 		$result = array();
 
 		if (!$data['id'])
+		{
 			return $result;
+		}
 
 		$checkInfo = CheckManager::getCheckInfoByExternalUuid($data['id']);
 
@@ -424,6 +470,7 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @param array $data
 	 * @return mixed
+	 * @throws Main\ArgumentException
 	 */
 	private function encode(array $data)
 	{
@@ -454,7 +501,9 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	{
 		$filePath = tempnam(sys_get_temp_dir(), 'orange_data');
 		if ($data !== null)
+		{
 			file_put_contents($filePath, $data);
+		}
 
 		return $filePath;
 	}
@@ -462,6 +511,10 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @param int $modelId
 	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\LoaderException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
 	 */
 	public static function getSettings($modelId = 0)
 	{
@@ -490,6 +543,10 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 					'SSL_KEY_PASS' => array(
 						'TYPE' => 'STRING',
 						'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_SETTINGS_SECURITY_SSL_KEY_PASS'),
+					),
+					'KEY_SIGN' => array(
+						'TYPE' => 'STRING',
+						'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_SETTINGS_SECURITY_KEY_SIGN'),
 					),
 				)
 			)
@@ -588,19 +645,12 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 
 		foreach ($settings['SECURITY'] as $fieldId => $field)
 		{
-			if (is_array($field) && $field['XXX'])
+			if ($files['error']['SECURITY'][$fieldId] === 0
+				&& $files['tmp_name']['SECURITY'][$fieldId]
+			)
 			{
-				$settings['SECURITY'][$fieldId] = $field['XXX'];
-			}
-			else
-			{
-				if ($files['error']['SECURITY'][$fieldId] === 0
-					&& $files['tmp_name']['SECURITY'][$fieldId]
-				)
-				{
-					$content = file_get_contents($files['tmp_name']['SECURITY'][$fieldId]);
-					$settings['SECURITY'][$fieldId] = $content ?: '';
-				}
+				$content = file_get_contents($files['tmp_name']['SECURITY'][$fieldId]);
+				$settings['SECURITY'][$fieldId] = $content ?: '';
 			}
 		}
 
@@ -613,24 +663,6 @@ class CashboxOrangeData extends Cashbox implements IPrintImmediately, ICheckable
 	public static function isSupportedFFD105()
 	{
 		return true;
-	}
-
-	/**
-	 * @return Result
-	 */
-	public static function checkMinimalRequirements()
-	{
-		$result = new Result();
-		if (!function_exists('curl_init'))
-		{
-			$result->addError(
-				new Errors\Error(
-					Localization\Loc::getMessage('SALE_CASHBOX_ORANGE_DATA_ERROR_CURL_ERROR')
-				)
-			);
-		}
-
-		return $result;
 	}
 
 }

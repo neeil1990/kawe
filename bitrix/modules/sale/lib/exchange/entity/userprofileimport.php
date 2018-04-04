@@ -9,27 +9,9 @@ use Bitrix\Sale\Exchange\EntityType;
 
 class UserProfileImport extends UserImportBase
 {
-	protected $entity = array();
-
 	public function __construct()
 	{
 		$this->fields = new Sale\Internals\Fields();
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getEntity()
-	{
-		return $this->entity;
-	}
-
-	/**
-	 * @param $entity
-	 */
-	public function setEntity($entity)
-	{
-		$this->entity = $entity;
 	}
 
 	/**
@@ -116,7 +98,6 @@ class UserProfileImport extends UserImportBase
 	 */
 	public function update(array $params)
 	{
-		/** @var static $entity */
 		$entity = $this->getEntity();
 
 		if($entity->getId()>0)
@@ -175,7 +156,6 @@ class UserProfileImport extends UserImportBase
 	 */
 	public function getId()
 	{
-		/** @var static $entity */
 		$entity = $this->getEntity();
 		if(!empty($entity))
 		{

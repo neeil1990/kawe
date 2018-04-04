@@ -495,6 +495,120 @@
 			});
 		},
 
+
+		createCustomDate: function(fieldData)
+		{
+			var group = {
+				block: 'main-ui-control-field-group',
+				type: fieldData.TYPE,
+				mix: this.parent.getParam('ENABLE_LABEL') ? [this.parent.settings.classFieldWithLabel, 'main-ui-filter-date-group'] : ['main-ui-filter-date-group'],
+				label: this.parent.getParam('ENABLE_LABEL') ? fieldData.LABEL : '',
+				dragTitle: this.parent.getParam('MAIN_UI_FILTER__DRAG_FIELD_TITLE'),
+				deleteTitle: this.parent.getParam('MAIN_UI_FILTER__REMOVE_FIELD'),
+				tabindex: 'TABINDEX' in fieldData ? fieldData.TABINDEX : '',
+				name: 'NAME' in fieldData ? fieldData.NAME : '',
+				deleteButton: true,
+				content: []
+			};
+
+			if (BX.type.isPlainObject(fieldData.VALUE.days))
+			{
+				fieldData.VALUE.days = Object.keys(fieldData.VALUE.days).map(function(index) {
+					return fieldData.VALUE.days[index];
+				});
+			}
+
+			var daysValue = fieldData.DAYS.filter(function(item) {
+				return fieldData.VALUE.days.some(function(value) {
+					return value === item.VALUE;
+				});
+			});
+
+			var days = {
+				block: 'main-ui-control-field',
+				mix: ['main-ui-control-custom-date'],
+				placeholder: fieldData.DAYS_PLACEHOLDER,
+				dragButton: false,
+				content: {
+					block: 'main-ui-multi-select',
+					name: fieldData.NAME + "_days",
+					tabindex: 'TABINDEX' in fieldData ? fieldData.TABINDEX : '',
+					items: fieldData.DAYS,
+					value: daysValue,
+					params: 'PARAMS' in fieldData ? fieldData.PARAMS : {isMulti: true},
+					valueDelete: true,
+					attrs: {"data-placeholder": fieldData.DAYS_PLACEHOLDER}
+				}
+			};
+
+
+			if (BX.type.isPlainObject(fieldData.VALUE.months))
+			{
+				fieldData.VALUE.months = Object.keys(fieldData.VALUE.months).map(function(index) {
+					return fieldData.VALUE.months[index];
+				});
+			}
+
+			var monthsValue = fieldData.MONTHS.filter(function(item) {
+				return fieldData.VALUE.months.some(function(value) {
+					return value === item.VALUE;
+				});
+			});
+
+			var months = {
+				block: 'main-ui-control-field',
+				mix: ['main-ui-control-custom-date'],
+				dragButton: false,
+				content: {
+					block: 'main-ui-multi-select',
+					name: fieldData.NAME + "_months",
+					tabindex: 'TABINDEX' in fieldData ? fieldData.TABINDEX : '',
+					items: fieldData.MONTHS,
+					value: monthsValue,
+					params: 'PARAMS' in fieldData ? fieldData.PARAMS : {isMulti: true},
+					valueDelete: true,
+					attrs: {"data-placeholder": fieldData.MONTHS_PLACEHOLDER}
+				}
+			};
+
+
+			if (BX.type.isPlainObject(fieldData.VALUE.years))
+			{
+				fieldData.VALUE.years = Object.keys(fieldData.VALUE.years).map(function(index) {
+					return fieldData.VALUE.years[index];
+				});
+			}
+
+			var yearsValue = fieldData.YEARS.filter(function(item) {
+				return fieldData.VALUE.years.some(function(value) {
+					return value === item.VALUE;
+				});
+			});
+
+			var years = {
+				block: 'main-ui-control-field',
+				mix: ['main-ui-control-custom-date'],
+				dragButton: false,
+				content: {
+					block: 'main-ui-multi-select',
+					name: fieldData.NAME + "_years",
+					tabindex: 'TABINDEX' in fieldData ? fieldData.TABINDEX : '',
+					items: fieldData.YEARS,
+					value: yearsValue,
+					params: 'PARAMS' in fieldData ? fieldData.PARAMS : {isMulti: true},
+					valueDelete: true,
+					attrs: {"data-placeholder": fieldData.YEARS_PLACEHOLDER}
+				}
+			};
+
+			group.content.push(days);
+			group.content.push(months);
+			group.content.push(years);
+
+			return BX.decl(group);
+		},
+
+
 		_onDateTypeChange: function(instance, data)
 		{
 			if (this.parent.getPopup().contentContainer.contains(instance.node))

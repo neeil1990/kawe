@@ -26,8 +26,8 @@ $_SESSION["VOTE"]["VOTES"] = (is_array($_SESSION["VOTE"]["VOTES"]) ? $_SESSION["
 CModule::AddAutoloadClasses("vote", array(
 	"CVoteAnswer" => "classes/".strtolower($DB->type)."/answer.php",
 	"CVoteEvent" => "classes/".strtolower($DB->type)."/event.php",
-	"CVoteQuestion" => "classes/".strtolower($DB->type)."/question.php",
-	"CVoteUser" => "classes/".strtolower($DB->type)."/user.php",
+	"CVoteQuestion" => "classes/".strtolower($DB->type)."/question.php", 
+	"CVoteUser" => "classes/".strtolower($DB->type)."/user.php", 
 	"CVote" => "classes/".strtolower($DB->type)."/vote.php",
 	"CVoteCacheManager" => "classes/general/functions.php",
 	"CVoteNotifySchema" => "classes/general/im.php",
@@ -41,6 +41,7 @@ CModule::AddAutoloadClasses("vote", array(
 	"bitrix\\vote\\attachment\\controller" => "lib/attachment/controller.php",
 	"bitrix\\vote\\attachment\\defaultconnector" => "lib/attachment/defaultconnector.php",
 	"bitrix\\vote\\attachment\\forummessageconnector" => "lib/attachment/forummessageconnector.php",
+	"bitrix\\vote\\attachment\\storable" => "lib/attachment/storage.php",
 	"bitrix\\vote\\base\\baseobject" => "lib/base/baseobject.php",
 	"bitrix\\vote\\base\\controller" => "lib/base/controller.php",
 	"bitrix\\vote\\base\\diag" => "lib/base/diag.php",
@@ -88,7 +89,7 @@ function VoteVoteEditFromArray($CHANNEL_ID, $VOTE_ID = false, $arFields = array(
 	$arFieldsVote = array(
 		"CHANNEL_ID" => $CHANNEL_ID,
 		"AUTHOR_ID" => $GLOBALS["USER"]->GetID(),
-		"UNIQUE_TYPE" => $params["UNIQUE_TYPE"],
+		"UNIQUE_TYPE" => $params["UNIQUE_TYPE"], 
 		"DELAY" => $params["DELAY"] ?: 10,
 		"DELAY_TYPE" => $params['DELAY_TYPE'] ?: "D");
 	if (!empty($arFields["DATE_START"]))
@@ -107,17 +108,17 @@ function VoteVoteEditFromArray($CHANNEL_ID, $VOTE_ID = false, $arFields = array(
 	if (!CVote::CheckFields("UPDATE", $arFieldsVote)):
 		$e = $GLOBALS['APPLICATION']->GetException();
 		$aMsg[] = array(
-			"id" => "VOTE_ID",
+			"id" => "VOTE_ID", 
 			"text" => $e->GetString());
 	elseif (intval($VOTE_ID) > 0):
 		$db_res = CVote::GetByID($VOTE_ID);
 		if (!($db_res && $res = $db_res->Fetch())):
 			$aMsg[] = array(
-				"id" => "VOTE_ID",
+				"id" => "VOTE_ID", 
 				"text" => GetMessage("VOTE_VOTE_NOT_FOUND", array("#ID#", $VOTE_ID)));
 		elseif ($res["CHANNEL_ID"] != $CHANNEL_ID):
 			$aMsg[] = array(
-				"id" => "CHANNEL_ID",
+				"id" => "CHANNEL_ID", 
 				"text" => GetMessage("VOTE_CHANNEL_ID_ERR"));
 		else:
 			$arVote = $res;
@@ -301,53 +302,53 @@ function VoteVoteEditFromArray($CHANNEL_ID, $VOTE_ID = false, $arFields = array(
 	return $arVote["ID"];
 /************** Actions/********************************************/
 /*	$arFields = array(
-		"ID" => 345,
-		"TITLE" => "test",
-		"...",
+		"ID" => 345, 
+		"TITLE" => "test", 
+		"...", 
 		"QUESTIONS" => array(
 			array(
-				"ID" => 348,
-				"QUESTION" => "test",
+				"ID" => 348, 
+				"QUESTION" => "test", 
 				"ANSWERS" => array(
 					array(
-						"ID" => 340,
-						"MESSAGE" => "test"),
+						"ID" => 340, 
+						"MESSAGE" => "test"), 
 					array(
-						"ID" => 0,
-						"MESSAGE" => "test"),
+						"ID" => 0, 
+						"MESSAGE" => "test"), 
 					array(
 						"ID" => 350,
-						"DEL" => "Y",
+						"DEL" => "Y",  
 						"MESSAGE" => "test")
 					)
-				),
+				), 
 			array(
-				"ID" => 351,
-				"DEL" => "Y",
-				"QUESTION" => "test",
+				"ID" => 351, 
+				"DEL" => "Y", 
+				"QUESTION" => "test", 
 				"ANSWERS" => array(
 					array(
-						"ID" => 0,
-						"MESSAGE" => "test"),
+						"ID" => 0, 
+						"MESSAGE" => "test"), 
 					array(
 						"ID" => 478,
-						"DEL" => "Y",
+						"DEL" => "Y",  
 						"MESSAGE" => "test")
 					)
-				),
+				), 
 			array(
-				"ID" => 0,
-				"QUESTION" => "test",
+				"ID" => 0, 
+				"QUESTION" => "test", 
 				"ANSWERS" => array(
 					array(
-						"ID" => 0,
-						"MESSAGE" => "test"),
+						"ID" => 0, 
+						"MESSAGE" => "test"), 
 					)
-				),
+				), 
 			)
 		);
 */
-
-
+	
+	
 }
 ?>

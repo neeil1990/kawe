@@ -647,7 +647,9 @@ CModule::AddAutoloadClasses(
 		'\Bitrix\Sale\Delivery\Requests\Result' => '/lib/delivery/requests/result.php',
 		'\Bitrix\Sale\Delivery\Requests\ResultFile' => '/lib/delivery/requests/resultfile.php',
 		
-		'\Bitrix\Sale\Delivery\Packing\Packer' => '/lib/delivery/packing/packer.php'
+		'\Bitrix\Sale\Delivery\Packing\Packer' => '/lib/delivery/packing/packer.php',
+
+		'\Bitrix\Sale\Recurring' => '/lib/recurring.php'
 	)
 );
 

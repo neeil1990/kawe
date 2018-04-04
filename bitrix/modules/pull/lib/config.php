@@ -26,21 +26,24 @@ class Config
 		$cache = $params['CACHE'] !== false;
 		$reopen = $params['REOPEN'] !== false;
 
-		$privateChannel = \CPullChannel::Get($userId, $cache, $reopen);
-		$sharedChannel = \CPullChannel::GetShared($cache, $reopen);
+		$privateChannelType = isset($params['CUSTOM_TYPE'])? $params['CUSTOM_TYPE']: \CPullChannel::TYPE_PRIVATE;
+		$sharedChannelType = isset($params['CUSTOM_TYPE'])? $params['CUSTOM_TYPE']: \CPullChannel::TYPE_SHARED;
+
+		$privateChannel = \CPullChannel::Get($userId, $cache, $reopen, $privateChannelType);
+		$sharedChannel = \CPullChannel::GetShared($cache, $reopen, $sharedChannelType);
 
 		$domain = defined('BX24_HOST_NAME')? BX24_HOST_NAME: $_SERVER['SERVER_NAME'];
 
 		$config['SERVER'] = Array(
 			'VERSION' => \CPullOptions::GetQueueServerVersion(),
 			'SERVER_ENABLED' => \CPullOptions::GetQueueServerStatus(),
-			'LONG_POLLING' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetListenUrl()).'?CHANNEL_ID=',
-			'LONG_POOLING_SECURE' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetListenSecureUrl()).'?CHANNEL_ID=',
-			'WEBSOCKET' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetWebSocketUrl()).'?CHANNEL_ID=',
-			'WEBSOCKET_SECURE' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetWebSocketSecureUrl()).'?CHANNEL_ID=',
+			'LONG_POLLING' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetListenUrl()),
+			'LONG_POOLING_SECURE' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetListenSecureUrl()),
+			'WEBSOCKET' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetWebSocketUrl()),
+			'WEBSOCKET_SECURE' => str_replace('#DOMAIN#', $domain, \CPullOptions::GetWebSocketSecureUrl()),
 		);
 		$config['API'] = Array(
-			'REVISION' => PULL_REVISION,
+			'REVISION_WEB' => PULL_REVISION_WEB,
 			'REVISION_MOBILE' => PULL_REVISION_MOBILE,
 		);
 

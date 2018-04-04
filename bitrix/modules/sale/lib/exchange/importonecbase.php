@@ -5,8 +5,10 @@ namespace Bitrix\Sale\Exchange;
 
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\Error;
+use Bitrix\Main\Event;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Exchange\Entity\EntityImport;
+use Bitrix\Sale\Exchange\Entity\OrderImport;
 use Bitrix\Sale\Exchange\Entity\ShipmentImport;
 use Bitrix\Sale\Exchange\Entity\UserProfileImport;
 use Bitrix\Sale\Exchange\OneC\DocumentImport;
@@ -15,10 +17,14 @@ use Bitrix\Sale\Result;
 
 abstract class ImportOneCBase extends ImportPattern
 {
+	const EVENT_ON_EXCHANGE_CONFIGURE_IMPORTER = 'OnExchangeConfigureImporter';
+
 	const DELIVERY_SERVICE_XMLID = 'ORDER_DELIVERY';
 
 	/** @var  Fields */
 	protected $fields;
+	/** @var  $rawData null */
+	protected $rawData;
 
 	/**
 	 * @param array $values
@@ -51,6 +57,22 @@ abstract class ImportOneCBase extends ImportPattern
 	}
 
 	/**
+	 * @param null $rawData
+	 */
+	public function setRawData($rawData)
+	{
+		$this->rawData = $rawData;
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getRawData()
+	{
+		return $this->rawData;
+	}
+
+	/**
 	 * @param array $items
 	 * @return Result
 	 */
@@ -78,8 +100,14 @@ abstract class ImportOneCBase extends ImportPattern
 		return new Result();
 	}
 
+	static public function configuration()
+	{
+		$event = new Event('sale', static::EVENT_ON_EXCHANGE_CONFIGURE_IMPORTER);
+		$event->send();
+	}
+
 	/**
-	 * @param Entity\EntityImport|ProfileImport $item
+	 * @param ImportBase $item
 	 * @return Result
 	 * @throws ArgumentException
 	 * @internal
@@ -152,12 +180,12 @@ abstract class ImportOneCBase extends ImportPattern
 	}
 
 	/**
-	 * @param OneC\DocumentImport $document
-	 * @return Entity\OrderImport|Entity\PaymentCardImport|Entity\PaymentCashImport|Entity\PaymentCashLessImport|ShipmentImport|UserProfileImport|ProfileImport
+	 * @param DocumentImport $document
+	 * @return ImportBase
 	 */
 	protected function convertDocument(DocumentImport $document)
 	{
-		$settings = Manager::getSettingsByType($document->getOwnerEntityTypeId());
+		$settings = ManagerImport::getSettingsByType($document->getOwnerEntityTypeId());
 
 		$convertor = OneC\Converter::getInstance($document->getOwnerEntityTypeId());
 		$convertor->loadSettings($settings);
@@ -174,7 +202,7 @@ abstract class ImportOneCBase extends ImportPattern
 		if(!empty($fieldsEntity['ID']))
 			$fields['TRAITS']['ID'] = $fieldsEntity['ID'];
 
-		$entityImport = Manager::createImport($document->getOwnerEntityTypeId());
+		$entityImport = ManagerImport::create($document->getOwnerEntityTypeId());
 		$entityImport->setFields($fields);
 
 		return $entityImport;
@@ -195,5 +223,30 @@ abstract class ImportOneCBase extends ImportPattern
 	protected static function getMessage()
 	{
 		return Loc::loadLanguageFile($_SERVER["DOCUMENT_ROOT"].'/bitrix/components/bitrix/sale.export.1c/component.php');
+	}
+
+	/**
+	 * @param ImportBase[] $items
+	 * @return Result
+	 */
+	protected function logger(array $items)
+	{
+		$result = new Result();
+
+		foreach ($items as $item)
+		{
+			if($item->hasLogging())
+			{
+				$logger = $item->getLogger();
+
+				$logger->setField('ENTITY_ID', $item->getId());
+				$logger->setField('ENTITY_TYPE_ID', $item->getOwnerTypeId());
+				$logger->setField('XML_ID', $item->getExternalId());
+				$logger->setField('DIRECTION', ManagerImport::getDirectionType());
+
+				$logger->save();
+			}
+		}
+		return $result;
 	}
 }

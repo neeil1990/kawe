@@ -457,7 +457,7 @@ class DocumentImport
                     'ATTRIBUTES' => !empty($item['REK_VALUES']['PROP_BASKET']) ? $item['REK_VALUES']['PROP_BASKET']:null,
                     'TAX' => array(
                         'VAT_RATE' => !empty($item['TAXES']['TAX_VALUE']) ? $item['TAXES']['TAX_VALUE']/100:null,
-                        'VAT_INCLUDED' => !empty($item['TAXES']['IN_PRICE']) ? $item['TAXES']['IN_PRICE']:null
+                        'VAT_INCLUDED' => !empty($item['TAXES']['IN_PRICE']) ? $item['TAXES']['IN_PRICE']:'Y'//if tax is null then always included by default
                     ),
                     'DISCOUNT' => array(
                         'PRICE' => $discountPrice

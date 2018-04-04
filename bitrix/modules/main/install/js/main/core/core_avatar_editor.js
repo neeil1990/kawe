@@ -781,13 +781,17 @@
 					files = result;
 				}
 				var file;
+				var loader = BX.findChild(BX(this.id), {
+					tagName : "DIV", className : "main-file-input-user-loader-item"}, true);
 				if ((file = files.pop()) && file && this.canvas && BX.UploaderUtils.isImage(file.name, file.type, file.size))
 				{
 					this.canvas.load(file);
 					this.tabs.show('canvas', 'file');
+					BX.hide(loader);
 				}
 				else
 				{
+					BX.show(loader);
 					// TODO Show some error
 				}
 			},

@@ -60,7 +60,10 @@ class MainMailConfirmComponent extends CBitrixComponent
 						),
 					),
 				),
-				'order' => array('ID' => 'ASC'),
+				'order' => array(
+					'USER_ID' => 'DESC',
+					'ID' => 'ASC',
+				),
 			));
 
 			while ($mailbox = $res->fetch())

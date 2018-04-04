@@ -83,6 +83,11 @@ function BxInterfaceForm(name, aTabs)
 		this.bExpandTabs = !this.bExpandTabs;
 
 		var a = document.getElementById('bxForm_'+this.name+'_expand_link');
+		if (!a)
+		{
+			return;
+		}
+
 		a.title = (this.bExpandTabs? this.vars.mess.collapseTabs : this.vars.mess.expandTabs);
 		a.className = (this.bExpandTabs? a.className.replace(/\s*bx-down/ig, ' bx-up') : a.className.replace(/\s*bx-up/ig, ' bx-down'));
 

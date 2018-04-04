@@ -1803,16 +1803,6 @@ class OrderCompatibility
 				return $result;
 			}
 
-			$order->setMathActionOnly(false);
-
-			/** @var Sale\Result $r */
-			$r = $orderCompatibility->fillPaymentCollectionFromRequest($fields);
-			if (!$r->isSuccess())
-			{
-				$result->addErrors($r->getErrors());
-				return $result;
-			}
-
 			if ($isStartField)
 			{
 				$hasMeaningfulFields = $order->hasMeaningfulField();
@@ -1824,6 +1814,16 @@ class OrderCompatibility
 					$result->addErrors($r->getErrors());
 					return $result;
 				}
+			}
+
+			$order->setMathActionOnly(false);
+
+			/** @var Sale\Result $r */
+			$r = $orderCompatibility->fillPaymentCollectionFromRequest($fields);
+			if (!$r->isSuccess())
+			{
+				$result->addErrors($r->getErrors());
+				return $result;
 			}
 
 			/** @var Sale\Result $r */
@@ -3484,9 +3484,7 @@ class OrderFetchAdapter implements FetchAdapter
 	 */
 	public function adapt(array $row)
 	{
-		\CTimeZone::Disable();
 		$data = OrderCompatibility::convertDateFieldsToOldFormat($row);
-		\CTimeZone::Enable();
 		return static::convertRowData($data);
 	}
 

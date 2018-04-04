@@ -40,11 +40,16 @@ class CAdminForm extends CAdminTabControl
 
 		//Parse customized labels
 		$this->arCustomLabels = array();
-		foreach (CAdminFormSettings::getTabsArray($this->name) as $arTab)
+
+		$arDisabled = CUserOptions::GetOption("form", $this->name."_disabled", "N");
+		if(!is_array($arDisabled) || $arDisabled["disabled"] !== "Y")
 		{
-			foreach ($arTab["FIELDS"] as $customID => $customName)
+			foreach (CAdminFormSettings::getTabsArray($this->name) as $arTab)
 			{
-				$this->arCustomLabels[$customID] = $customName;
+				foreach ($arTab["FIELDS"] as $customID => $customName)
+				{
+					$this->arCustomLabels[$customID] = $customName;
+				}
 			}
 		}
 		ob_start();

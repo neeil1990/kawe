@@ -44,6 +44,16 @@ function validImageSizes($width, $height, $fileArray)
 	$result = array("WIDTH" => "", "HEIGHT" => "");
 	$validSizes = getValidImageSizes();
 	
+//	if file smaller, then max sizes - we don't need resize them
+	if(!$width && !$height)
+		return array("WIDTH" => $fileArray["WIDTH"], "HEIGHT" => $fileArray["HEIGHT"]);
+	
+//	if not set one param - we can use original size
+	if(!$width)
+		$width = $fileArray["WIDTH"];
+	if(!$height)
+		$height = $fileArray["HEIGHT"];
+	
 //	try find sizes in valid array. If fail - need match new scaled sizes
 	if(array_key_exists($width, $validSizes["WIDTH"]) && array_key_exists($height, $validSizes["HEIGHT"]))
 	{

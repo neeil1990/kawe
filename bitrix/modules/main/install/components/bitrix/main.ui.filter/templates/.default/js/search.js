@@ -900,6 +900,18 @@
 						break;
 					}
 
+					case this.parent.types.CUSTOM_DATE : {
+						if (
+							(BX.type.isArray(current.VALUE.days) && current.VALUE.days.length) ||
+							(BX.type.isArray(current.VALUE.months) && current.VALUE.months.length) ||
+							(BX.type.isArray(current.VALUE.years) && current.VALUE.years.length)
+						)
+						{
+							value = current.LABEL;
+						}
+						break;
+					}
+
 					case this.parent.types.SELECT : {
 						if (BX.type.isPlainObject(current.VALUE) && current.VALUE.VALUE)
 						{

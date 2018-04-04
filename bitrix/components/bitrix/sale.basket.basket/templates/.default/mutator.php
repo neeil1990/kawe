@@ -23,7 +23,7 @@ foreach ($this->basketItems as $row)
 	$rowData = array(
 		'ID' => $row['ID'],
 		'PRODUCT_ID' => $row['PRODUCT_ID'],
-		'NAME' => $row['NAME'],
+		'NAME' => isset($row['~NAME']) ? $row['~NAME'] : $row['NAME'],
 		'QUANTITY' => $row['QUANTITY'],
 		'PROPS' => $row['PROPS'],
 		'PROPS_ALL' => $row['PROPS_ALL'],

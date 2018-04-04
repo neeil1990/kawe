@@ -96,5 +96,27 @@
 		return newNode;
 	};
 
+	BX.Main.UF.TypeMoney.prototype.focus = function(field)
+	{
+		var node = this.getNode(field);
+
+		if(!BX.isNodeInDom(node))
+		{
+			console.error('Node for field ' + field + ' is already removed from DOM');
+		}
+
+		var input = BX.findChild(node, {
+			tagName: 'INPUT',
+			attribute: {
+				type: 'text'
+			}
+		}, true);
+
+		if(input)
+		{
+			BX.focus(input);
+		}
+	};
+
 	BX.Main.UF.Factory.setTypeHandler(BX.Main.UF.TypeMoney.USER_TYPE_ID, BX.Main.UF.TypeMoney);
 })();

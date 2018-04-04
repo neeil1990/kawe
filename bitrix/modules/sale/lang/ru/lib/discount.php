@@ -22,4 +22,5 @@ $MESS["BX_SALE_DISCOUNT_ERR_SALE_DISCOUNT_MODULES_ABSENT"] = "Невозможн
 $MESS["BX_SALE_DISCOUNT_MESS_SIMPLE_DESCRIPTION_BASKET"] = "Изменение стоимости корзины";
 $MESS["BX_SALE_DISCOUNT_MESS_SIMPLE_DESCRIPTION_DELIVERY"] = "Изменение стоимости доставки";
 $MESS["BX_SALE_DISCOUNT_MESS_SIMPLE_DESCRIPTION_UNKNOWN"] = "Неизвестное правило";
+$MESS["BX_SALE_DISCOUNT_ERR_PARSE_ERROR"] = "Обнаружена ошибка в условиях или действиях правил корзины. Необходимо переиндексировать правила корзины на <a href=\"#LINK#\">странице настроек</a> модуля Интернет-магазин."
 ?>

@@ -14,4 +14,5 @@ $MESS["SALE_PROVIDER_SHIPMENT_SHIPPED_MORE_QUANTITY"] = "Количество о
 $MESS["SALE_PROVIDER_BASKET_ITEM_WRONG_AVAILABLE_QUANTITY"] = "Нет достаточного количества товара \"#PRODUCT_NAME#\"";
 $MESS["SALE_PROVIDER_WRONG_BASKET_ITEM"] = "Некорректный объект корзины";
 $MESS["SALE_PROVIDER_BASKET_ITEM_NOT_FOUND"] = "Отсутствует связанная с элементом отгрузки ##SHIPMENT_ID# позиция в корзине ##BASKET_ITEM_ID#.";
+$MESS["PROVIDER_UNRESERVE_SHIPMENT_ITEM_WRONG_AVAILABLE_QUANTITY"] = "Ошибка получения доступного количества товара при разрезервации";
 

@@ -338,6 +338,12 @@ class CMainUIGrid extends CBitrixComponent
 			false
 		);
 
+		if (is_array($this->arParams["ROW_LAYOUT"]) && !empty($this->arParams["ROW_LAYOUT"]))
+		{
+			$this->arParams["ALLOW_COLUMNS_SORT"] = false;
+			$this->arParams["ALLOW_SORT"] = false;
+		}
+
 		return $this->arParams;
 	}
 

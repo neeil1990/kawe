@@ -409,30 +409,29 @@ class CAllVote
 		return $db_res;
 	}
 
-	public static function UserAlreadyVote($VOTE_ID, $VOTE_USER_ID, $UNIQUE_TYPE, $KEEP_IP_SEC, $USER_ID = false)
+	public static function UserAlreadyVote($voteId, $VOTE_USER_ID, $UNIQUE_TYPE, $delay, $USER_ID = false)
 	{
 		global $DB, $USER;
 		$err_mess = (CAllVote::err_mess())."<br>Function: UserAlreadyVote<br>Line: ";
-		$VOTE_ID = intval($VOTE_ID);
+		$voteId = intval($voteId);
 		$UNIQUE_TYPE = intval($UNIQUE_TYPE);
 		$VOTE_USER_ID = intval($VOTE_USER_ID);
 		$USER_ID = intval($USER_ID);
 
-		if ($VOTE_ID <= 0)
-			return false;
-
-		if ($UNIQUE_TYPE <= 0)
+		if ($voteId <= 0 || $UNIQUE_TYPE <= 0)
 			return false;
 
 		//One session
-		if (($UNIQUE_TYPE & 1) && IsModuleInstalled('statistic') && array_key_exists($VOTE_ID, $_SESSION["VOTE"]["VOTES"]))
+		if (($UNIQUE_TYPE & 1) && IsModuleInstalled('statistic') && array_key_exists($voteId, $_SESSION["VOTE"]["VOTES"]))
 			return 1;
 
+
+		$return = array();
 		$arSqlSearch = array();
 		$arSqlSelect = array("VE.ID");
 
 		//Same cookie
-		if ($UNIQUE_TYPE & 2 && ($VOTE_USER_ID > 0) && ($UNIQUE_TYPE != 6))
+		if ($UNIQUE_TYPE & 2 && ($VOTE_USER_ID > 0))
 		{
 			$arSqlSelect[] = "VE.VOTE_USER_ID";
 			$arSqlSearch[] = "VE.VOTE_USER_ID='".$VOTE_USER_ID."'";
@@ -441,83 +440,68 @@ class CAllVote
 		// Same IP
 		if ($UNIQUE_TYPE & 4)
 		{
-			$tmp = CVote::CheckVotingIP($VOTE_ID, $_SERVER["REMOTE_ADDR"], $KEEP_IP_SEC, array("RETURN_SEARCH_ARRAY" => "Y"));
-			if (is_array($tmp))
-			{
-				$arSqlSelect[] = $tmp["select"];
-				$arSqlSearch[] = $tmp["search"];
-			}
-			else
-				return 4;
+			$tmp = \CVote::CheckVotingIP($voteId, $_SERVER["REMOTE_ADDR"], $delay, array("RETURN_SEARCH_ARRAY" => "Y"));
+			$arSqlSelect[] = $tmp["select"];
+			$arSqlSearch[] = $tmp["search"];
 		}
 
 		// Same ID
 		if ($UNIQUE_TYPE & 8)
 		{
-			if ($USER_ID <= 0 || $USER_ID == $USER->GetID() && isset($_SESSION["VOTE"]["VOTES"][$VOTE_ID]))
+			if ($USER_ID <= 0 || $USER_ID == $USER->GetID() && isset($_SESSION["VOTE"]["VOTES"][$voteId]))
 			{
-				return 8;
+				$return[] = 8;
 			}
 			else
 			{
-				if ($UNIQUE_TYPE & 16) // Register date
-				{
-					$rUser = CUser::GetByID($USER_ID);
-					if ($rUser && $arUser = $rUser->Fetch())
-					{
-						$userRegister = MakeTimeStamp($arUser['DATE_REGISTER']);
-						$rVote = CVote::GetByID($VOTE_ID);
-						if ($rVote && $arVote = $rVote->Fetch())
-						{
-							$voteStart = MakeTimeStamp($arVote['DATE_START']);
-							if ($userRegister > $voteStart)
-							{
-								return 16;
-							}
-						}
-					}
-				}
 				$arSqlSelect[] = "VU.AUTH_USER_ID";
 				$arSqlSearch[] = "VU.AUTH_USER_ID=".$USER_ID;
+			}
+			// Register date
+			if (($UNIQUE_TYPE & 16) &&
+				($arUser = \CUser::GetByID($USER_ID)->fetch()) &&
+				is_array($arUser) &&
+				($userRegister = MakeTimeStamp($arUser['DATE_REGISTER'])) &&
+				($vote = \CVote::GetByID($voteId)->Fetch()) &&
+				is_array($vote) &&
+				($voteStart = MakeTimeStamp($vote['DATE_START'])) &&
+				($userRegister > $voteStart)
+			)
+			{
+				$return[] = 16;
 			}
 		}
 
 		if (!empty($arSqlSearch))
 		{
-			$strSql = "SELECT ".implode(",", $arSqlSelect)."
+			$db_res = $DB->Query("SELECT ".implode(",", $arSqlSelect)."
 				FROM b_vote_event VE
 				LEFT JOIN b_vote_user VU ON (VE.VOTE_USER_ID = VU.ID)
-				WHERE VE.VOTE_ID=".$VOTE_ID." AND ((".implode(") OR (", $arSqlSearch)."))";
-			$db_res = $DB->Query($strSql, false, $err_mess.__LINE__);
-			if ($db_res && $res = $db_res->Fetch())
+				WHERE VE.VOTE_ID=".$voteId." AND ((".implode(") OR (", $arSqlSearch)."))", false, $err_mess.__LINE__);
+			while ($res = $db_res->Fetch())
 			{
-				$return = 16; $event_id = 0;
-				do {
-					if (($UNIQUE_TYPE & 2) && $res["VOTE_USER_ID"] == $VOTE_USER_ID)
-					{
-						$event_id = $res["ID"];
-						$return = min($return, 2);
-						break;
-					}
-					elseif (($UNIQUE_TYPE & 4) && $res["IP"] == $_SERVER["REMOTE_ADDR"] && (
-						$KEEP_IP_SEC <= 0 || $KEEP_IP_SEC > $res["KEEP_IP_SEC"]))
-					{
-						$event_id = ($event_id > 0 ? $event_id : $res["ID"]);
-						$return = min($return, 4);
-					}
-					elseif (($UNIQUE_TYPE & 8) && $res["AUTH_USER_ID"] == $USER_ID)
-					{
-						$return = min($return, 8);
-						$event_id = ($USER_ID == $USER->GetID() ? intval($res["ID"]) : $event_id);
-					}
-				} while ($res = $db_res->Fetch());
-				if ($event_id > 0)
-					$_SESSION["VOTE"]["VOTES"][$VOTE_ID] = $event_id;
-				return ($return != 16 ? $return : true);
+				if ($USER_ID > 0 && $USER_ID == $USER->GetID())
+					$_SESSION["VOTE"]["VOTES"][$voteId] = $res["ID"];
+				// $UNIQUE_TYPE & 2
+				if (isset($res["VOTE_USER_ID"]) && $res["VOTE_USER_ID"] == $VOTE_USER_ID)
+				{
+					$return[] = 2;
+				}
+				//$UNIQUE_TYPE & 4
+				if (isset($res["IP"]) && $res["IP"] == $_SERVER["REMOTE_ADDR"]
+					&& ($delay <= 0 || !isset($res["KEEP_IP_SEC"]) || $delay > $res["KEEP_IP_SEC"]))
+				{
+					$return[] = 4;
+				}
+				// $UNIQUE_TYPE & 8
+				if (isset($res["AUTH_USER_ID"]) && $res["AUTH_USER_ID"] == $USER_ID)
+				{
+					$return[] = 8;
+				}
 			}
 		}
-
-		return false;
+		$return = empty($return) ? 0 : min($return);
+		return ($return > 0 ? $return : false);
 	}
 
 	public static function UserGroupPermission($CHANNEL_ID)

@@ -419,10 +419,19 @@ class ProviderCreator
 				$r = $builder->$method($methodParameters);
 			}
 
-			if ($r->isSuccess())
+			if (!$r->isSuccess())
 			{
-				$data = $r->getData();
+				$result->addErrors($r->getErrors());
+			}
 
+			if ($r->hasWarnings())
+			{
+				$result->addWarnings($r->getWarnings());
+			}
+
+			$data = $r->getData();
+			if (!empty($data))
+			{
 				$providerName = null;
 
 				$providerClass = $builder->getProviderClass();
@@ -436,10 +445,6 @@ class ProviderCreator
 				{
 					$resultList[$providerName] = $data[$outputName];
 				}
-			}
-			else
-			{
-				$result->addErrors($r->getErrors());
 			}
 		}
 

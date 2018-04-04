@@ -655,6 +655,8 @@ abstract class Base
  */
 class StringInput extends Base // String reserved in php 7
 {
+	protected static $patternDelimiters = array('/', '#', '~');
+
 	public static function getEditHtmlSingle($name, array $input, $value)
 	{
 		if ($input['MULTILINE'] == 'Y')
@@ -698,8 +700,29 @@ class StringInput extends Base // String reserved in php 7
 		if ($input['MAXLENGTH'] && strlen($value) > $input['MAXLENGTH'])
 			$errors['MAXLENGTH'] = Loc::getMessage('INPUT_STRING_MAXLENGTH_ERROR', array("#NUM#" => $input['MAXLENGTH']));
 
-		if ($input['PATTERN'] && !preg_match($input['PATTERN'], $value))
-			$errors['PATTERN'] = Loc::getMessage('INPUT_STRING_PATTERN_ERROR');
+
+
+		if (strval(trim($input['PATTERN'])) != "")
+		{
+			$issetDelimiter = false;
+			$pattern = trim($input['PATTERN']);
+
+			if (isset($pattern[0]) && in_array($pattern[0], static::$patternDelimiters) && strrpos($pattern, $pattern[0]) !== false)
+			{
+				$issetDelimiter = true;
+			}
+
+			$matchPattern = $pattern;
+			if (!$issetDelimiter)
+			{
+				$matchPattern = "/".$pattern."/";
+			}
+
+			if (!preg_match($matchPattern, $value))
+				$errors['PATTERN'] = Loc::getMessage('INPUT_STRING_PATTERN_ERROR');
+		}
+
+
 
 		return $errors;
 	}
@@ -1228,12 +1251,12 @@ class File extends Base
 
 			$content = \CFile::IsImage($value['SRC'], $value['CONTENT_TYPE'])
 				? '<img src="'.$src.'" border="0" alt="" style="max-height:100px; max-width:100px">'
-				: $value['ORIGINAL_NAME'];
+				: htmlspecialcharsbx($value['ORIGINAL_NAME']);
 		}
 		else
 		{
 			$attributes = '';
-			$content = $value['ORIGINAL_NAME'];
+			$content = htmlspecialcharsbx($value['ORIGINAL_NAME']);
 		}
 
 		if (! $content)

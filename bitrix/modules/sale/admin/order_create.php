@@ -269,7 +269,7 @@ elseif($createWithProducts)
 					'ORDER_ID' => null,
 					'SET_PARENT_ID' => false,
 				),
-				'select' => array('PRODUCT_ID', 'QUANTITY', 'CAN_BUY', 'NAME', 'MODULE', 'PRODUCT_PROVIDER_CLASS', 'CALLBACK_FUNC', 'PAY_CALLBACK_FUNC'),
+				'select' => array('PRODUCT_ID', 'QUANTITY', 'CAN_BUY', 'NAME', 'MODULE', 'PRODUCT_PROVIDER_CLASS', 'CALLBACK_FUNC', 'PAY_CALLBACK_FUNC', 'PRICE', 'SUBSCRIBE'),
 				'order' => array('ID' => 'ASC'),
 			);
 
@@ -292,27 +292,8 @@ elseif($createWithProducts)
 				$basketFields = array(
 					'PRODUCT_ID' => $basketData['PRODUCT_ID'],
 					'QUANTITY' => $basketData['QUANTITY'],
+					'SUBSCRIBE' => $basketData['SUBSCRIBE'],
 				);
-
-				if (!empty($basketData['MODULE']))
-				{
-					$basketFields['MODULE'] = $basketData['MODULE'];
-				}
-
-				if (!empty($basketData['PRODUCT_PROVIDER_CLASS']))
-				{
-					$basketFields['PRODUCT_PROVIDER_CLASS'] = $basketData['PRODUCT_PROVIDER_CLASS'];
-				}
-
-				if (!empty($basketData['CALLBACK_FUNC']))
-				{
-					$basketFields['CALLBACK_FUNC'] = $basketData['CALLBACK_FUNC'];
-				}
-
-				if (!empty($basketData['PAY_CALLBACK_FUNC']))
-				{
-					$basketFields['PAY_CALLBACK_FUNC'] = $basketData['PAY_CALLBACK_FUNC'];
-				}
 
 				if (!empty($basketData['MODULE']))
 				{
@@ -387,7 +368,15 @@ elseif($createWithProducts)
 					}
 
 					$productId = $basketItem['PRODUCT_ID'];
-					$productParams = Blocks\OrderBasket::getProductsData(array($productId), $formData["SITE_ID"], array(), intval($_GET["USER_ID"]));
+					if ($basketItem['MODULE'] == 'catalog')
+					{
+						// Temporary fix for custom products
+						$productParams = Blocks\OrderBasket::getProductsData(array($productId), $formData["SITE_ID"], array(), intval($_GET["USER_ID"]));
+					}
+					elseif (empty($basketItem['PRODUCT_PROVIDER_CLASS']))
+					{
+						$productParams[$productId] = $basketItem;
+					}
 
 					if(!is_array($productParams[$productId]) || empty($productParams[$productId]))
 						continue;
@@ -688,8 +677,7 @@ elseif($isCopyingOrderOperation) // copy order
 			if(intval($originalStoreId) > 0)
 				$shipment->setStoreId($originalStoreId);
 
-			$shipment->setField('CUSTOM_PRICE_DELIVERY', $customPriceDelivery);
-			$shipment->setField('BASE_PRICE_DELIVERY', $basePrice);
+			$shipment->setBasePriceDelivery($basePrice, ($customPriceDelivery == 'Y'));
 		}
 
 		$order->getDiscount()->calculate();

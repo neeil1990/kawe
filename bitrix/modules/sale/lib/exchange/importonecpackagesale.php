@@ -54,7 +54,7 @@ class ImportOneCPackageSale extends ImportOneCPackage
 		}
 		else
 		{
-			$settingsShipment = Manager::getSettingsByType(EntityType::SHIPMENT);
+			$settingsShipment = ManagerImport::getSettingsByType(EntityType::SHIPMENT);
 
 			if($settingsShipment->canCreateOrder(EntityType::SHIPMENT)=='Y')
 			{

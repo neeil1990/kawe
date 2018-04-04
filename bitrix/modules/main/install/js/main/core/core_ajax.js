@@ -795,7 +795,10 @@ var prepareAjaxConfig = function(config)
 {
 	config = BX.type.isPlainObject(config) ? config : {};
 	config.data = BX.type.isPlainObject(config.data) ? config.data : {};
-	config.data.SITE_ID = BX.message('SITE_ID');
+	if (BX.message.SITE_ID)
+	{
+		config.data.SITE_ID = BX.message.SITE_ID;
+	}
 	config.data.sessid = BX.bitrix_sessid();
 	if (typeof config.signedParameters !== 'undefined')
 	{
@@ -809,13 +812,14 @@ var prepareAjaxConfig = function(config)
 	return config;
 };
 
-var buildAjaxPromiseToRestoreCsrf = function(config)
+var buildAjaxPromiseToRestoreCsrf = function(config, withoutRestoringCsrf)
 {
+	withoutRestoringCsrf = withoutRestoringCsrf || false;
 	var originalConfig = BX.clone(config);
 	var promise = BX.ajax.promise(config);
 
 	return promise.then(function(response) {
-		if (BX.type.isPlainObject(response) && BX.type.isArray(response.errors))
+		if (!withoutRestoringCsrf && BX.type.isPlainObject(response) && BX.type.isArray(response.errors))
 		{
 			var csrfProblem = false;
 			response.errors.forEach(function(error) {
@@ -830,8 +834,16 @@ var buildAjaxPromiseToRestoreCsrf = function(config)
 
 			if (csrfProblem)
 			{
-				return BX.ajax.promise(originalConfig);
+				return buildAjaxPromiseToRestoreCsrf(originalConfig, true);
 			}
+		}
+
+		if (!BX.type.isPlainObject(response) || response.status !== 'success')
+		{
+			var errorPromise = new BX.Promise();
+			errorPromise.reject(response);
+
+			return errorPromise;
 		}
 
 		return response;
@@ -845,6 +857,8 @@ var buildAjaxPromiseToRestoreCsrf = function(config)
  * @param {?string} [config.analyticsLabel]
  * @param {string} [config.method='POST']
  * @param {Object} [config.data]
+ * @param {?Object} [config.headers]
+ * @param {?Object} [config.timeout]
  * @param {Object} [config.navigation]
  * @param {number} [config.navigation.page]
  */
@@ -860,7 +874,9 @@ BX.ajax.runAction = function(action, config)
 		method: config.method,
 		dataType: 'json',
 		url: url,
-		data: config.data
+		data: config.data,
+		timeout: config.timeout,
+		headers: config.headers
 	});
 };
 
@@ -874,6 +890,8 @@ BX.ajax.runAction = function(action, config)
  * @param {string} [config.method='POST']
  * @param {string} [config.mode='ajax'] Ajax or class.
  * @param {Object} [config.data]
+ * @param {?array} [config.headers]
+ * @param {?number} [config.timeout]
  * @param {Object} [config.navigation]
  */
 BX.ajax.runComponentAction = function (component, action, config)
@@ -891,7 +909,9 @@ BX.ajax.runComponentAction = function (component, action, config)
 		method: config.method,
 		dataType: 'json',
 		url: url,
-		data: config.data
+		data: config.data,
+		timeout: config.timeout,
+		headers: config.headers
 	});
 };
 

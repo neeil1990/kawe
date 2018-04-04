@@ -12,16 +12,33 @@ abstract class ImportBase
 
 	protected $collisionErrors = false;
 	protected $collisionWarnings = false;
+	protected $logging = false;
 
     /** @var Sale\Internals\Fields */
     protected $fields;
     /** @var ISettings */
+
     protected $settings = null;
+
     /** @var Exchange\ICriterion */
     protected $loadCriterion = null;
-
+    /** @var Exchange\Internals\LoggerDiag  */
+    protected $loadLogger = null;
     /** @var ICollision  */
     protected $loadCollision = null;
+
+    /** @var  Exchange\Internals\LoggerDiag $logger */
+    protected $logger = array();
+
+	/**
+	 * @return string
+	 */
+    abstract public static function getFieldExternalId();
+
+	/**
+	 * @return Sale\Internals\Entity $entity|ImportBase|null
+	 */
+    abstract public function getEntity();
 
     /**
      * @return int
@@ -77,6 +94,8 @@ abstract class ImportBase
             $result = $this->add($params);
         }
 
+		$this->initLogger();
+
         return $result;
     }
 
@@ -84,6 +103,20 @@ abstract class ImportBase
      * @return int|null
      */
     abstract public function getId();
+
+	/**
+	 * @return null|string
+	 */
+	public function getExternalId()
+	{
+		$entity = $this->getEntity();
+		if(!empty($entity))
+		{
+			return $entity->getField(static::getFieldExternalId());
+		}
+
+		return null;
+	}
 
     /**
      * @return bool
@@ -208,6 +241,38 @@ abstract class ImportBase
         return $collision::getCurrent($typeId);
     }
 
+	public function loadLogger(Exchange\Internals\Logger $logger)
+	{
+		$this->loadLogger = $logger;
+	}
+
+	public function getLoadedLogger()
+	{
+		return $this->loadLogger;
+	}
+
+	public function getCurrentLogger()
+	{
+		$logger = $this->getLoadedLogger();
+		return $logger::getCurrent();
+	}
+
+	public function initLogger()
+	{
+		$this->logging = true;
+
+		$logger = $this->getCurrentLogger();
+		$this->logger = $logger;
+	}
+
+	/**
+	 * @return Internals\LoggerDiag
+	 */
+	public function getLogger()
+	{
+		return $this->logger;
+	}
+
 	/**
 	 * @return bool
 	 */
@@ -222,5 +287,10 @@ abstract class ImportBase
 	public function hasCollisionWarnings()
 	{
 		return $this->collisionWarnings;
+	}
+
+	public function hasLogging()
+	{
+		return $this->logging;
 	}
 }

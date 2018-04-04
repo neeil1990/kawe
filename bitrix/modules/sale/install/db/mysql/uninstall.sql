@@ -120,3 +120,5 @@ drop table if exists b_sale_buyer_stat;
 drop table if exists b_sale_order_product_stat;
 drop table if exists b_sale_delivery_req;
 drop table if exists b_sale_delivery_req_shp;
+drop table if exists b_sale_check_related_entities;
+drop table if exists b_sale_exchange_log

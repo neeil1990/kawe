@@ -581,7 +581,7 @@ class CBitrixComponentTemplate
 			"site_template" => "",
 		);
 
-		if (strlen($customTemplatePath) > 0 && $templatePageFile = $this->__SearchTemplateFile($customTemplatePath, $this->__page))
+		if ($customTemplatePath <> '' && $templatePageFile = $this->__SearchTemplateFile($customTemplatePath, $this->__page))
 		{
 			$this->__fileAlt = $customTemplatePath."/".$templatePageFile;
 
@@ -593,7 +593,7 @@ class CBitrixComponentTemplate
 					$this->__folder = $folder["path"]."/".$this->__name;
 				}
 
-				if (strlen($this->__file) > 0)
+				if ($this->__file <> '')
 				{
 					if(isset($folder["site_template"]))
 						$this->__siteTemplate = $folder["site_template"];
@@ -606,7 +606,7 @@ class CBitrixComponentTemplate
 					break;
 				}
 			}
-			return (strlen($this->__file) > 0);
+			return ($this->__file <> '');
 		}
 
 		static $cache = array();

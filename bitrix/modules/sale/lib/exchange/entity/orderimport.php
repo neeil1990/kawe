@@ -823,7 +823,8 @@ class OrderImport extends EntityImport
                     {
                         $needQuantity = $basketIndexQuantity-$systemBasketQuantity;
 
-                        $shipmentImport = Exchange\Manager::createImport(EntityType::SHIPMENT);
+                        /** @var ShipmentImport $shipmentImport */
+                        $shipmentImport = Exchange\ManagerImport::create(EntityType::SHIPMENT);
                         $shipmentImport->setParentEntity($order);
 
                         $r = $shipmentImport->synchronizeQuantityShipmentItems($foundedBasketItem, $needQuantity);

@@ -243,7 +243,8 @@ class CSaleYMHandler
 	/**
 	 * Returns Yandex-Market settings
 	 * @param bool $cached Return cached or ont value
-	 * @return array|bool
+	 * @return array
+	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function getSettings($cached = true)
 	{
@@ -257,7 +258,7 @@ class CSaleYMHandler
 
 			$settings = $settingsRes->fetch();
 
-			if(!$settings)
+			if(!$settings || !is_array($settings))
 				$settings = array();
 		}
 
@@ -1228,6 +1229,8 @@ class CSaleYMHandler
 									'=ENTITY_ID' => $order->getId(),
 									'=CODE' => 'YMARKET_BUYER_INFO_WAITING'
 								));
+
+								$order->setField('MARKED', 'N');
 							}
 						}
 
@@ -2201,7 +2204,7 @@ class CSaleYMHandler
 	 */
 	public static function getExistPaymentMethods()
 	{
-		return array('YANDEX', 'SHOP_PREPAID', 'CASH_ON_DELIVERY', 'CARD_ON_DELIVERY');
+		return array('YANDEX', 'CASH_ON_DELIVERY', 'CARD_ON_DELIVERY');
 	}
 
 	/** @deprecated */

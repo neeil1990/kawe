@@ -148,6 +148,32 @@ class Action implements Errorable
 	}
 
 	/**
+	 * Adds error to error collection.
+	 * @param Error $error Error.
+	 *
+	 * @return $this
+	 */
+	protected function addError(Error $error)
+	{
+		$this->errorCollection[] = $error;
+
+		return $this;
+	}
+
+	/**
+	 * Adds list of errors to error collection.
+	 * @param Error[] $errors Errors.
+	 *
+	 * @return $this
+	 */
+	protected function addErrors(array $errors)
+	{
+		$this->errorCollection->add($errors);
+
+		return $this;
+	}
+
+	/**
 	 * Getting array of errors.
 	 * @return Error[]
 	 */

@@ -3629,6 +3629,11 @@ abstract class CAllUser extends CDBResult
 			return;
 		}
 
+		if(!is_array($_SESSION["AUTH_ACTIONS_PERFORMED"]))
+		{
+			$_SESSION["AUTH_ACTIONS_PERFORMED"] = array();
+		}
+
 		$user_id = $this->GetID();
 
 		//calculate a session lifetime
@@ -3660,15 +3665,15 @@ abstract class CAllUser extends CDBResult
 				//clear expired records for the user
 				Main\UserAuthActionTable::deleteByFilter(array(
 					"=USER_ID" => $user_id,
-					"<=ACTION_DATE" => $now,
+					"<ACTION_DATE" => $date,
 				));
 				$deleted = true;
 			}
 
-			if($this->IsJustAuthorized())
+			if(isset($_SESSION["AUTH_ACTIONS_PERFORMED"][$action["ID"]]))
 			{
-				//no need to update the session
-				break;
+				//already processed the action in this session
+				continue;
 			}
 
 			/** @var Main\Type\DateTime() $actionDate */
@@ -3676,6 +3681,15 @@ abstract class CAllUser extends CDBResult
 
 			if($actionDate >= $date && $actionDate <= $now)
 			{
+				//remember that we already did the action
+				$_SESSION["AUTH_ACTIONS_PERFORMED"][$action["ID"]] = true;
+
+				if($this->IsJustAuthorized())
+				{
+					//no need to update the session
+					continue;
+				}
+
 				switch($action["ACTION"])
 				{
 					case Main\UserAuthActionTable::ACTION_LOGOUT:

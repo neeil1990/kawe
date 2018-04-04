@@ -425,6 +425,17 @@ abstract class Application
 	}
 
 	/**
+	 * Returns UF manager.
+	 *
+	 * @return \CUserTypeManager
+	 */
+	public static function getUserTypeManager()
+	{
+		global $USER_FIELD_MANAGER;
+		return $USER_FIELD_MANAGER;
+	}
+
+	/**
 	 * Returns true id server is in utf-8 mode. False - otherwise.
 	 *
 	 * @return bool

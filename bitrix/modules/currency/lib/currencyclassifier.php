@@ -66,6 +66,8 @@ final class CurrencyClassifier
 				$formatString = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_FORMAT_STRING', null, $languageId);
 				$decimalPoint = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_DEC_POINT', null, $languageId);
 				$thousandsVariant = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_THOUSANDS_VARIANT', null, $languageId);
+				if (!isset(self::$separators[$thousandsVariant]))
+					$thousandsVariant = null;
 				$decimals = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_DECIMALS', null, $languageId);
 
 				$defaultProperties = $value['DEFAULT'];

@@ -1056,8 +1056,16 @@ if(!empty($arUser))
 
 	//BUYERS VIEWED PRODUCT
 	$sTableID_tab5 = "t_stat_list_tab5";
-	$oSort_tab5 = new CAdminSorting($sTableID_tab5);
+	$oSort_tab5 = new CAdminSorting($sTableID_tab5, false, false, 'viewed_by', 'viewed_sort');
 	$lAdmin_tab5 = new CAdminList($sTableID_tab5, $oSort_tab5);
+
+	$viewedBy = (!empty($_REQUEST["viewed_by"]) ? trim($_REQUEST["viewed_by"]) : "DATE_VISIT");
+	$viewedSort = (!empty($_REQUEST["viewed_sort"]) ? trim($_REQUEST["viewed_sort"]) : "DESC");
+
+	if (!isset($_REQUEST["viewed_by"]))
+		$viewedProductsSort = array("DATE_VISIT" => "DESC", "SITE_ID" => "ASC");
+	else
+		$viewedProductsSort[$viewedBy] = $viewedSort;
 
 	//FILTER VIEWED
 	$arFilterFields = array(
@@ -1120,10 +1128,6 @@ if(!empty($arUser))
 		{
 			$newFilter['<DATE_VISIT'] = $value;
 		}
-		else
-		{
-			$newFilter[$key] = $value;
-		}
 	}
 
 	if(\Bitrix\Main\Loader::includeModule("catalog"))
@@ -1140,7 +1144,9 @@ if(!empty($arUser))
 			"CURRENCY" => "PRODUCT.CURRENCY",
 			"RATE" => "PRODUCT.CURRENT_CURRENCY_RATE",
 			"CURRENCY_RATE" => "PRODUCT.CURRENT_CURRENCY_RATE_CNT"
-		))->setfilter($newFilter);
+		))->setfilter($newFilter)
+		->setOrder($viewedProductsSort)
+		;
 		$viewedIterator = $viewedQuery->exec();
 	}
 	else

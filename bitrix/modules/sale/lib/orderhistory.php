@@ -24,6 +24,9 @@ class OrderHistory
 	const SALE_ORDER_HISTORY_LOG_LEVEL_0 = 0;
 	const SALE_ORDER_HISTORY_LOG_LEVEL_1 = 1;
 
+	const SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_0 = 0;
+	const SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_1 = 1;
+
 	protected function __construct()
 	{
 
@@ -85,9 +88,21 @@ class OrderHistory
 	 * @param null $id
 	 * @param null $entity
 	 * @param array $fields
+	 * @param null $level
+	 *
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
 	 */
-	public static function addAction($entityName, $orderId, $type, $id = null, $entity = null, array $fields = array())
+	public static function addAction($entityName, $orderId, $type, $id = null, $entity = null, array $fields = array(), $level = null)
 	{
+		if ($level === null)
+		{
+			$level = static::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_0;
+		}
+
+		if (!static::checkActionLogLevel($level))
+			return;
+
 		static::$pool[$entityName][$orderId][$id][$type][] = array(
 			'RECORD_TYPE' => static::SALE_ORDER_HISTORY_RECORD_TYPE_ACTION,
 			'ENTITY_NAME' => $entityName,
@@ -318,6 +333,9 @@ class OrderHistory
 	 * @param null $entity
 	 * @param array $fields
 	 * @param null $level
+	 *
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
 	 */
 	public static function addLog($entityName, $orderId, $type, $id = null, $entity = null, array $fields = array(), $level = null)
 	{
@@ -356,12 +374,30 @@ class OrderHistory
 	 *
 	 * @return bool
 	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
 	 */
 	public static function checkLogLevel($level)
 	{
 		$orderHistoryLogLevel = Main\Config\Option::get('sale', 'order_history_log_level', static::SALE_ORDER_HISTORY_LOG_LEVEL_0);
 
 		if ($level > $orderHistoryLogLevel)
+			return false;
+
+		return true;
+	}
+
+	/**
+	 * @param $level
+	 *
+	 * @return bool
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 */
+	public static function checkActionLogLevel($level)
+	{
+		$orderHistoryActionLogLevel = Main\Config\Option::get('sale', 'order_history_action_log_level', static::SALE_ORDER_HISTORY_ACTION_LOG_LEVEL_0);
+
+		if ($level > $orderHistoryActionLogLevel)
 			return false;
 
 		return true;

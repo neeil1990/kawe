@@ -45,7 +45,7 @@ if($saleOrder)
 }
 
 if(!$saleOrder || !$isAllowView)
-	LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+	LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID);
 
 $isUserResponsible = false;
 $isAllowCompany = false;
@@ -66,7 +66,7 @@ if ($saleModulePermissions == 'P')
 
 	if (!$isUserResponsible && !$isAllowCompany)
 	{
-		LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID);
 	}
 }
 
@@ -95,9 +95,9 @@ if(isset($_REQUEST['unlock']) && 'Y' == $_REQUEST['unlock'])
 	}
 
 	if(isset($_REQUEST['target']) && 'list' == $_REQUEST['target'])
-		LocalRedirect("sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		LocalRedirect("sale_order.php?lang=".LANGUAGE_ID);
 	else
-		LocalRedirect("sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		LocalRedirect("sale_order_view.php?ID=".$ID."&lang=".LANGUAGE_ID);
 }
 
 if ($boolLocked)
@@ -143,14 +143,14 @@ $aMenu[] = array(
 	"ICON" => "btn_list",
 	"TEXT" => Loc::getMessage("SALE_OVIEW_TO_LIST"),
 	"TITLE"=> Loc::getMessage("SALE_OVIEW_TO_LIST_TITLE"),
-	"LINK" => "/bitrix/admin/sale_order_view.php?unlock=Y&target=list&ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_")
+	"LINK" => "/bitrix/admin/sale_order_view.php?unlock=Y&target=list&ID=".$ID."&lang=".LANGUAGE_ID
 );
 
 if ($boolLocked && $saleModulePermissions >= 'W')
 {
 	$aMenu[] = array(
 			"TEXT" => GetMessage("SALE_OVIEW_UNLOCK"),
-			"LINK" => "/bitrix/admin/sale_order_view.php?ID=".$ID."&unlock=Y&lang=".LANGUAGE_ID.GetFilterParams("filter_"),
+			"LINK" => "/bitrix/admin/sale_order_view.php?ID=".$ID."&unlock=Y&lang=".LANGUAGE_ID,
 	);
 }
 
@@ -161,7 +161,7 @@ if(!$boolLocked && $isAllowUpdate)
 	$aMenu[] = array(
 		"TEXT" => Loc::getMessage("SALE_OVIEW_TO_EDIT"),
 		"TITLE"=> Loc::getMessage("SALE_OVIEW_TO_EDIT_TITLE"),
-		"LINK" => "/bitrix/admin/sale_order_edit.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_")
+		"LINK" => "/bitrix/admin/sale_order_edit.php?ID=".$ID."&lang=".LANGUAGE_ID
 	);
 }
 
@@ -238,7 +238,7 @@ foreach ($dirs as $dir)
 $aMenu[] = array(
 	"TEXT" => Loc::getMessage("SALE_OVIEW_TO_PRINT"),
 	"TITLE"=> Loc::getMessage("SALE_OVIEW_TO_PRINT_TITLE"),
-	"LINK" => "/bitrix/admin/sale_order_print.php?ID=".$ID."&lang=".LANGUAGE_ID.GetFilterParams("filter_"),
+	"LINK" => "/bitrix/admin/sale_order_print.php?ID=".$ID."&lang=".LANGUAGE_ID,
 	"MENU" => $arReports
 );
 
@@ -249,7 +249,7 @@ if ($isAllowUpdate)
 	$actionMenu[] = array(
 		"TEXT" => Loc::getMessage("SALE_OVIEW_ORDER_COPY"),
 		"TITLE"=> Loc::getMessage("SALE_OVIEW_ORDER_COPY_TITLE"),
-		"LINK" => '/bitrix/admin/sale_order_create.php?lang='.LANGUAGE_ID."&SITE_ID=".$saleOrder->getSiteId()."&ID=".$ID."&".bitrix_sessid_get().GetFilterParams("filter_")
+		"LINK" => '/bitrix/admin/sale_order_create.php?lang='.LANGUAGE_ID."&SITE_ID=".$saleOrder->getSiteId()."&ID=".$ID."&".bitrix_sessid_get()
 	);
 }
 
@@ -258,7 +258,7 @@ if($isAllowDelete)
 	$actionMenu[] = array(
 		"TEXT" => Loc::getMessage("SALE_OVIEW_TO_ARCHIVE"),
 		"TITLE"=> Loc::getMessage("SALE_OVIEW_TO_ARCHIVE_TITLE"),
-		"LINK" => "javascript:if(confirm('".GetMessageJS("SALE_CONFIRM_ARCHIVE_MESSAGE")."')) window.location='sale_order.php?lang=".LANGUAGE_ID."&SITE_ID=".$saleOrder->getSiteId()."&ID=".$ID."&action=archive&".bitrix_sessid_get().urlencode(GetFilterParams("filter_"))."'",
+		"LINK" => "javascript:if(confirm('".GetMessageJS("SALE_CONFIRM_ARCHIVE_MESSAGE")."')) window.location='sale_order.php?lang=".LANGUAGE_ID."&SITE_ID=".$saleOrder->getSiteId()."&ID=".$ID."&action=archive&".bitrix_sessid_get()."'",
 		"WARNING" => "Y"
 	);
 
@@ -267,7 +267,7 @@ if($isAllowDelete)
 		$actionMenu[] = array(
 			"TEXT" => Loc::getMessage("SALE_OVIEW_DELETE"),
 			"TITLE"=> Loc::getMessage("SALE_OVIEW_DELETE_TITLE"),
-			"LINK" => "javascript:if(confirm('".GetMessageJS("SALE_OVIEW_DEL_MESSAGE")."')) window.location='sale_order.php?ID=".$ID."&action=delete&lang=".LANGUAGE_ID."&".bitrix_sessid_get().urlencode(GetFilterParams("filter_"))."'",
+			"LINK" => "javascript:if(confirm('".GetMessageJS("SALE_OVIEW_DEL_MESSAGE")."')) window.location='sale_order.php?ID=".$ID."&action=delete&lang=".LANGUAGE_ID."&".bitrix_sessid_get()."'",
 			"WARNING" => "Y"
 		);
 	}

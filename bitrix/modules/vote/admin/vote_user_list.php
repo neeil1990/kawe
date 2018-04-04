@@ -185,7 +185,7 @@ while ($res = $rsData->getNext())
 	$row =& $lAdmin->AddRow($res["ID"], $res);
 
 	if ($res["AUTH_USER_ID"]>0)
-		$txt="[<a title=\"".GetMessage("VOTE_EDIT_USER")."\" href=\"user_admin.php?lang=".LANGUAGE_ID."&find_id={$res["AUTH_USER_ID"]}&set_filter=Y\">{$res["AUTH_USER_ID"]}</a>] ".CUser::FormatName($nameFormat, $res, true, false);
+		$txt="[<a title=\"".GetMessage("VOTE_EDIT_USER")."\" href=\"user_admin.php?lang=".LANGUAGE_ID."&ID={$res["AUTH_USER_ID"]}&apply_filter=Y\">{$res["AUTH_USER_ID"]}</a>] ".CUser::FormatName($nameFormat, $res, true, false);
 	else
 		$txt=GetMessage("VOTE_NOT_AUTHORIZED");
 	$row->AddViewField("AUTH_USER_ID", $txt);
