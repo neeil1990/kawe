@@ -331,7 +331,12 @@ if (!empty($arParams['LABEL_PROP_POSITION']))
 
 						<div class="basket-item-price-current">
 							<span class="basket-item-price-current-text" id="basket-item-price-{{ID}}">
-								{{{PRICE_FORMATED}}}
+								{{#PRICE}}
+									{{{PRICE_FORMATED}}}
+								{{/PRICE}}
+								{{^PRICE}}
+									Цена по запросу
+								{{/PRICE}}
 							</span>
 						</div>
 
