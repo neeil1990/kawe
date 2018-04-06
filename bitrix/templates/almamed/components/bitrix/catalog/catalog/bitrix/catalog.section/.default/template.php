@@ -17,43 +17,6 @@ if(empty($arResult['ITEMS']))
 
 
 ?>
-
-		<form class="filter">
-			<label class="filter__label filter__sort">
-				Сортировать по:
-				<select name="sort" class="iselect">
-					<option value="1">Сначала дешевле</option>
-					<option value="2">Сначала дешевле</option>
-					<option value="2">Название: А - Я</option>
-					<option value="2">По популярности</option>
-				</select>
-			</label>
-			<label class="filter__label">
-				<input type="checkbox" class="filter__checkbox"><i class="icon-checkbox"></i>
-				В наличии
-			</label>
-			<label class="filter__label">
-				<input type="checkbox" class="filter__checkbox"><i class="icon-checkbox"></i>
-				Со скидкой
-			</label>
-			<div class="filter__output">
-				<span>Выводить по:</span>
-				<a href="#" class="filter__output_link active">20</a>
-				<a href="#" class="filter__output_link">40</a>
-				<a href="#" class="filter__output_link">100</a>
-			</div>
-			<div class="filter__view">
-				<a href="#" class="filter__view_link active">
-					<svg class="icon icon-grid"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH;?>/img/sprite.svg#icon-grid"></use></svg>
-				</a>
-				<a href="#" class="filter__view_link">
-					<svg class="icon icon-list"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH;?>/img/sprite.svg#icon-list"></use></svg>
-				</a>
-			</div>
-		</form>
-
-		<hr class="hr">
-
 		<div class="goods__list">
 			<? foreach($arResult['ITEMS'] as $item):?>
 			<div class="goods__item">

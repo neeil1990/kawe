@@ -12,7 +12,23 @@ $APPLICATION->IncludeFile("/catalog/sidebar.php", Array(), Array(
 ));
 ?>
 
-<?$APPLICATION->IncludeComponent(
+<?
+if(empty($_REQUEST["ELEMENT_SORT_FIELD"])){
+	$_REQUEST["ELEMENT_SORT_FIELD"] = "catalog_PRICE_1";
+	$_REQUEST["ELEMENT_SORT_ORDER"] = "asc";
+}else{
+	$ELEMENT_SORT_FIELD = explode(":",$_REQUEST["ELEMENT_SORT_FIELD"]);
+	$_REQUEST["ELEMENT_SORT_FIELD"] = $ELEMENT_SORT_FIELD[0];
+	$_REQUEST["ELEMENT_SORT_ORDER"] = $ELEMENT_SORT_FIELD[1];
+}
+
+if(empty($_REQUEST['PAGE_ELEMENT_COUNT'])){
+	$_REQUEST['PAGE_ELEMENT_COUNT'] = 20;
+}
+if($_REQUEST['TEMPLATE_THEME'])
+$_SESSION['TEMPLATE_THEME'] = $_REQUEST['TEMPLATE_THEME'];
+
+$APPLICATION->IncludeComponent(
 	"bitrix:catalog", 
 	"catalog", 
 	array(
@@ -96,12 +112,10 @@ $APPLICATION->IncludeFile("/catalog/sidebar.php", Array(), Array(
 		"SECTION_TOP_DEPTH" => "1",
 		"SECTIONS_VIEW_MODE" => "TILE",
 		"SECTIONS_SHOW_PARENT_NAME" => "N",
-		"PAGE_ELEMENT_COUNT" => "16",
+		"PAGE_ELEMENT_COUNT" => $_REQUEST["PAGE_ELEMENT_COUNT"],
 		"LINE_ELEMENT_COUNT" => "3",
-		"ELEMENT_SORT_FIELD" => "desc",
-		"ELEMENT_SORT_ORDER" => "asc",
-		"ELEMENT_SORT_FIELD2" => "id",
-		"ELEMENT_SORT_ORDER2" => "desc",
+		"ELEMENT_SORT_FIELD" => $_REQUEST["ELEMENT_SORT_FIELD"],
+		"ELEMENT_SORT_ORDER" => $_REQUEST["ELEMENT_SORT_ORDER"],
 		"LIST_PROPERTY_CODE" => array(
 			0 => "",
 			1 => "NEWPRODUCT",

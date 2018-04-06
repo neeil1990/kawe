@@ -20,7 +20,7 @@ $this->setFrameMode(true);
 <div class="main overflow-hidden">
 
 <?
-	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE']));
+	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE'],'ELEMENT_SUBSECTIONS' => 'N'),true);
 	$arSection = $rsSections->Fetch();
 	if ($arSection) {
 	?>
@@ -67,9 +67,62 @@ else
 }
 
 $intSectionID = 0;
-?><?$intSectionID = $APPLICATION->IncludeComponent(
+?>
+
+	<? if($arSection['ELEMENT_CNT']): ?>
+
+	<form class="filter" method="get" action="">
+		<label class="filter__label filter__sort">
+			Сортировать по:
+			<select name="ELEMENT_SORT_FIELD" class="iselect" onchange="this.form.submit()">
+				<?
+				$ArOption = array(
+					'catalog_PRICE_1:asc' => 'Сначала дешевле',
+					'catalog_PRICE_1:desc' => 'Сначала дороже',
+					'name:asc' => 'Название: А - Я',
+					'shows:asc' => 'По популярности'
+				);
+				?>
+				<? foreach($ArOption as $value => $name):
+					$current_sort = $arParams["ELEMENT_SORT_FIELD"].':'.$arParams["ELEMENT_SORT_ORDER"];
+					?>
+					<option value="<?=$value?>" <?=($current_sort == $value) ? 'selected' : ''?>><?=$name?></option>
+				<? endforeach;?>
+			</select>
+		</label>
+		<label class="filter__label">
+			<input type="checkbox" class="filter__checkbox" checked><i class="icon-checkbox"></i>
+			В наличии
+		</label>
+		<!--<label class="filter__label">
+			<input type="checkbox" class="filter__checkbox"><i class="icon-checkbox"></i>
+			Со скидкой
+		</label>-->
+		<div class="filter__output">
+			<span>Выводить по:</span>
+			<?
+			$ArCount = array(20,40,100);
+			?>
+			<? foreach($ArCount as $c):?>
+				<a href="?<?=http_build_query(array_merge($GLOBALS['_GET'],array("PAGE_ELEMENT_COUNT" => $c)))?>" class="filter__output_link <?=($arParams['PAGE_ELEMENT_COUNT'] == $c) ? 'active' : ''?>"><?=$c?></a>
+			<? endforeach;?>
+		</div>
+		<div class="filter__view">
+			<a href="?<?=http_build_query(array_merge($GLOBALS['_GET'],array("TEMPLATE_THEME" => ".default")))?>" class="filter__view_link <?=($_SESSION['TEMPLATE_THEME'] == ".default" OR !$_SESSION['TEMPLATE_THEME']) ? 'active' : ''?>">
+				<svg class="icon icon-grid"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH;?>/img/sprite.svg#icon-grid"></use></svg>
+			</a>
+			<a href="?<?=http_build_query(array_merge($GLOBALS['_GET'],array("TEMPLATE_THEME" => "list")))?>" class="filter__view_link <?=($_SESSION['TEMPLATE_THEME'] == "list") ? 'active' : ''?>">
+				<svg class="icon icon-list"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="<?=SITE_TEMPLATE_PATH;?>/img/sprite.svg#icon-list"></use></svg>
+			</a>
+		</div>
+	</form>
+	<hr class="hr">
+
+	<? endif; ?>
+
+	<?$intSectionID = $APPLICATION->IncludeComponent(
 	"bitrix:catalog.section",
-	"",
+	$_SESSION['TEMPLATE_THEME'],
 	array(
 		"IBLOCK_TYPE" => $arParams["IBLOCK_TYPE"],
 		"IBLOCK_ID" => $arParams["IBLOCK_ID"],
