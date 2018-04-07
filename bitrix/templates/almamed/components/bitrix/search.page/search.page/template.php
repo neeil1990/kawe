@@ -58,11 +58,9 @@
 						<?if($arItem['PRICE']):?>
 							<?=$arItem['PRICE']?>
 						<?else:?>
-							цена по запросу
+							Цена по запросу
 						<?endif;?>
 					</div>
-
-					<div class="goods__price"><?=$arItem['PRICE'];?></div>
 					<span>за штуку</span>
 					<!--<div class="goods__article">Арт: <?/*=$arItem['ARTICLE'];*/?></div>-->
 					<div class="goods__counter">
