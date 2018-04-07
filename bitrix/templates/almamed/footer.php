@@ -76,6 +76,7 @@
 
 <script src="<?=SITE_TEMPLATE_PATH?>/js/main.js"></script>
 <script src="<?=SITE_TEMPLATE_PATH?>/js/alertify.js"></script>
+<script src="<?=SITE_TEMPLATE_PATH?>/js/jquery.maskinput.js"></script>
 <script src="<?=SITE_TEMPLATE_PATH?>/js/functions.js"></script>
 
 

@@ -8,65 +8,78 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 
 $APPLICATION->SetTitle("Страница не найдена");?>
 
-	<div class="bx-404-container">
-		<div class="bx-404-block"><img src="<?=SITE_DIR?>images/404.png" alt=""></div>
-		<div class="bx-404-text-block">Неправильно набран адрес, <br>или такой страницы на сайте больше не существует.</div>
-		<div class="">Вернитесь на <a href="<?=SITE_DIR?>">главную</a> или воспользуйтесь картой сайта.</div>
-	</div>
-	<div class="map-columns row">
-		<div class="col-sm-10 col-sm-offset-1">
-			<div class="bx-maps-title">Карта сайта:</div>
-		</div>
-	</div>
+	<div class="wrapper">
 
-	<div class="col-sm-offset-2 col-sm-4">
-		<div class="bx-map-title"><i class="fa fa-leanpub"></i> Каталог</div>
-		<?$APPLICATION->IncludeComponent(
-			"bitrix:catalog.section.list",
-			"tree",
-			array(
-				"COMPONENT_TEMPLATE" => "tree",
-				"IBLOCK_TYPE" => "catalog",
-				"IBLOCK_ID" => "2",
-				"SECTION_ID" => $_REQUEST["SECTION_ID"],
-				"SECTION_CODE" => "",
-				"COUNT_ELEMENTS" => "Y",
-				"TOP_DEPTH" => "2",
-				"SECTION_FIELDS" => array(
-					0 => "",
-					1 => "",
-				),
-				"SECTION_USER_FIELDS" => array(
-					0 => "",
-					1 => "",
-				),
-				"SECTION_URL" => "",
-				"CACHE_TYPE" => "A",
-				"CACHE_TIME" => "36000000",
-				"CACHE_GROUPS" => "Y",
-				"ADD_SECTIONS_CHAIN" => "Y"
-			),
-			false
-		);
-		?>
-	</div>
-
-	<div class="col-sm-offset-1 col-sm-4">
-		<div class="bx-map-title"><i class="fa fa-info-circle"></i> О магазине</div>
 		<?
-		$APPLICATION->IncludeComponent(
-			"bitrix:main.map",
-			".default",
-			array(
-				"CACHE_TYPE" => "A",
-				"CACHE_TIME" => "36000000",
-				"SET_TITLE" => "N",
-				"LEVEL" => "3",
-				"COL_NUM" => "2",
-				"SHOW_DESCRIPTION" => "Y",
-				"COMPONENT_TEMPLATE" => ".default"
+		$APPLICATION->IncludeFile("/catalog/sidebar.php", Array(), Array(
+			"MODE"      => "html",                                           // будет редактировать в веб-редакторе
+			"NAME"      => "Редактирование включаемой области раздела",      // текст всплывающей подсказки на иконке
+			"TEMPLATE"  => ""                    // имя шаблона для нового файла
+		));
+		?>
+
+		<div class="main">
+			<div class="title">404 Страница не найдена</div>
+			<p>Мы сожалеем, но категория или товар, который Вы запрашивали были удалены или распроданы.</p>
+			<p>Воспользуйтесь нашим поиском товаров, чтобы найти аналогичный</p>
+
+			<?$APPLICATION->IncludeComponent("bitrix:search.title", "search.live.404", Array(
+				"CATEGORY_0" => array(	// Ограничение области поиска
+						0 => "iblock_1c_catalog",
+					),
+					"CATEGORY_0_TITLE" => "",	// Название категории
+					"CATEGORY_0_iblock_1c_catalog" => array(	// Искать в информационных блоках типа "iblock_1c_catalog"
+						0 => "all",
+					),
+					"CHECK_DATES" => "N",	// Искать только в активных по дате документах
+					"CONTAINER_ID" => "title-search-404",	// ID контейнера, по ширине которого будут выводиться результаты
+					"CONVERT_CURRENCY" => "Y",	// Показывать цены в одной валюте
+					"INPUT_ID" => "title-search-input-404",	// ID строки ввода поискового запроса
+					"NUM_CATEGORIES" => "1",	// Количество категорий поиска
+					"ORDER" => "rank",	// Сортировка результатов
+					"PAGE" => "#SITE_DIR#search/index.php",	// Страница выдачи результатов поиска (доступен макрос #SITE_DIR#)
+					"PREVIEW_TRUNCATE_LEN" => "255",	// Максимальная длина анонса для вывода
+					"PRICE_CODE" => array(	// Тип цены
+						0 => "BASE",
+					),
+					"PRICE_VAT_INCLUDE" => "Y",	// Включать НДС в цену
+					"SHOW_INPUT" => "Y",	// Показывать форму ввода поискового запроса
+					"SHOW_OTHERS" => "N",	// Показывать категорию "прочее"
+					"SHOW_PREVIEW" => "Y",	// Показать картинку
+					"TOP_COUNT" => "10",	// Количество результатов в каждой категории
+					"USE_LANGUAGE_GUESS" => "Y",	// Включить автоопределение раскладки клавиатуры
+					"COMPONENT_TEMPLATE" => "search.live.404",
+					"PREVIEW_WIDTH" => "75",	// Ширина картинки
+					"PREVIEW_HEIGHT" => "75",	// Высота картинки
+					"CURRENCY_ID" => "RUB",	// Валюта, в которую будут сконвертированы цены
+					"COMPOSITE_FRAME_MODE" => "A",
+					"COMPOSITE_FRAME_TYPE" => "AUTO"
+				),
+				false
+			);?>
+
+			<p>Если Вы не смогли найти товар, то Вы можете оставить контактные данные и наш менеджер с вами свяжется.</p>
+
+			<?$APPLICATION->IncludeComponent("nbrains:main.feedback", "feedback", Array(
+				"EMAIL_TO" => "info@kawe.su",	// E-mail, на который будет отправлено письмо
+				"EVENT_MESSAGE_ID" => array(	// Почтовые шаблоны для отправки письма
+					0 => "52",
+				),
+				"IBLOCK_ID" => "36",	// Код информационного блока
+				"IBLOCK_TYPE" => "feedback",	// Тип информационного блока (используется только для проверки)
+				"OK_TEXT" => "Спасибо, ваше сообщение принято.",	// Сообщение, выводимое пользователю после отправки
+				"PROPERTY_CODE" => array(	// Поля формы
+					0 => "NAME",
+					1 => "PHONE",
+					2 => "QUERY",
+				),
+				"USE_CAPTCHA" => "N",	// Использовать защиту от автоматических сообщений (CAPTCHA) для неавторизованных пользователей
 			),
-			false
-		);?>
+				false
+			);?>
+
+		</div>
+
 	</div>
+
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

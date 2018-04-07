@@ -155,42 +155,42 @@ if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
             );?>
 
             <?$APPLICATION->IncludeComponent(
-	"bitrix:search.title", 
-	"search.live", 
-	array(
-		"CATEGORY_0" => array(
-			0 => "iblock_1c_catalog",
-		),
-		"CATEGORY_0_TITLE" => "",
-		"CATEGORY_0_iblock_1c_catalog" => array(
-			0 => "all",
-		),
-		"CHECK_DATES" => "N",
-		"CONTAINER_ID" => "title-search",
-		"CONVERT_CURRENCY" => "Y",
-		"INPUT_ID" => "title-search-input",
-		"NUM_CATEGORIES" => "1",
-		"ORDER" => "rank",
-		"PAGE" => "#SITE_DIR#search/index.php",
-		"PREVIEW_TRUNCATE_LEN" => "255",
-		"PRICE_CODE" => array(
-			0 => "BASE",
-		),
-		"PRICE_VAT_INCLUDE" => "Y",
-		"SHOW_INPUT" => "Y",
-		"SHOW_OTHERS" => "N",
-		"SHOW_PREVIEW" => "Y",
-		"TOP_COUNT" => "10",
-		"USE_LANGUAGE_GUESS" => "Y",
-		"COMPONENT_TEMPLATE" => "search.live",
-		"PREVIEW_WIDTH" => "75",
-		"PREVIEW_HEIGHT" => "75",
-		"CURRENCY_ID" => "RUB",
-		"COMPOSITE_FRAME_MODE" => "A",
-		"COMPOSITE_FRAME_TYPE" => "AUTO"
-	),
-	false
-);?>
+                "bitrix:search.title",
+                "search.live",
+                array(
+                    "CATEGORY_0" => array(
+                        0 => "iblock_1c_catalog",
+                    ),
+                    "CATEGORY_0_TITLE" => "",
+                    "CATEGORY_0_iblock_1c_catalog" => array(
+                        0 => "all",
+                    ),
+                    "CHECK_DATES" => "N",
+                    "CONTAINER_ID" => "title-search",
+                    "CONVERT_CURRENCY" => "Y",
+                    "INPUT_ID" => "title-search-input",
+                    "NUM_CATEGORIES" => "1",
+                    "ORDER" => "rank",
+                    "PAGE" => "#SITE_DIR#search/index.php",
+                    "PREVIEW_TRUNCATE_LEN" => "255",
+                    "PRICE_CODE" => array(
+                        0 => "BASE",
+                    ),
+                    "PRICE_VAT_INCLUDE" => "Y",
+                    "SHOW_INPUT" => "Y",
+                    "SHOW_OTHERS" => "N",
+                    "SHOW_PREVIEW" => "Y",
+                    "TOP_COUNT" => "10",
+                    "USE_LANGUAGE_GUESS" => "Y",
+                    "COMPONENT_TEMPLATE" => "search.live",
+                    "PREVIEW_WIDTH" => "75",
+                    "PREVIEW_HEIGHT" => "75",
+                    "CURRENCY_ID" => "RUB",
+                    "COMPOSITE_FRAME_MODE" => "A",
+                    "COMPOSITE_FRAME_TYPE" => "AUTO"
+                ),
+                false
+            );?>
 
             <a href="/personal/cart/" class="header__order">Оформить заказ</a>
         </div>

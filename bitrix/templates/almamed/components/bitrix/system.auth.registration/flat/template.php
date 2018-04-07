@@ -143,7 +143,7 @@ $APPLICATION->IncludeComponent(
 			<div class="bx-authform-label-container">
 			</div>
 			<div class="bx-authform-input-container">
-				<?$APPLICATION->IncludeComponent("bitrix:main.userconsent.request", "",
+				<?$APPLICATION->IncludeComponent("bitrix:main.userconsent.request", "userconsent.request",
 					array(
 						"ID" => 1,
 						"IS_CHECKED" => "Y",

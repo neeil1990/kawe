@@ -1,4 +1,6 @@
 
+$('input[name="PHONE"]').mask('+7(999) 999 99 99');
+
 var path = "/bitrix/templates/almamed/ajax/";
 
 function replaseBasketTop() {
