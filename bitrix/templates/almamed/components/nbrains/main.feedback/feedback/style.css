@@ -15,3 +15,9 @@ span.mf-req {color:red;}
     cursor: pointer;
 }
 
+.mfeedback .mf-ok-text{
+    color: #66b3d4;
+    font-size: 22px;
+    font-weight: bold;
+}
+

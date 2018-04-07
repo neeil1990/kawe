@@ -19,13 +19,13 @@ if(!defined("B_PROLOG_INCLUDED")||B_PROLOG_INCLUDED!==true)die();
 		ShowError($v);
 }
 
-if(strlen($arResult["OK_MESSAGE"]) > 0)
-{
-	?><div class="mf-ok-text"><?=$arResult["OK_MESSAGE"]?></div><?
-}
-?>
+if(strlen($arResult["OK_MESSAGE"]) > 0):?>
 
-<form action="<?=POST_FORM_ACTION_URI?>" method="POST" enctype="multipart/form-data">
+	<div class="mf-ok-text"><?=$arResult["OK_MESSAGE"]?></div>
+
+<? else: ?>
+
+	<form action="<?=POST_FORM_ACTION_URI?>" method="POST" enctype="multipart/form-data">
 
 <?=bitrix_sessid_post()?>
 
@@ -88,5 +88,6 @@ if(strlen($arResult["OK_MESSAGE"]) > 0)
 	<input type="submit" name="submit" class="subscribe__btn" value="<?=GetMessage("MFT_SUBMIT")?>">
 </form>
 
+<? endif; ?>
 
 </div>
