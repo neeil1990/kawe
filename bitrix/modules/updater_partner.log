@@ -1211,3 +1211,172 @@
 2018-04-04 10:16:37 -  - exec CUpdateClientPartner::GetHTTPPage
 2018-04-04 10:16:38 -  - TIME GetUpdatesList(request) 0.416 sec
 2018-04-04 10:16:38 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:29:41 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-04-06 16:29:41 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:29:41 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Casd.iblock%2Cdev2fun.imagecompress%2Casd.tplvars&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:29:41 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:29:41 -  - TIME GetUpdatesList(request) 0.292 sec
+2018-04-06 16:29:41 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:04 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-04-06 16:30:04 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:04 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Casd.iblock%2Cdev2fun.imagecompress%2Casd.tplvars&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:04 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:05 -  - TIME GetUpdatesList(request) 0.317 sec
+2018-04-06 16:30:05 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:26 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-04-06 16:30:26 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:26 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Casd.iblock%2Cdev2fun.imagecompress%2Casd.tplvars%2Cartrix.imageoptimizer&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:26 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:26 -  - TIME GetUpdatesList(request) 0.279 sec
+2018-04-06 16:30:26 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:35 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:35 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:35 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:35 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:36 -  - TIME LoadModulesUpdates(request) 0.314 sec
+2018-04-06 16:30:36 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:36 - S - STEP
+2018-04-06 16:30:36 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:36 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:36 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:36 -  - loadFile
+2018-04-06 16:30:36 - U - RETURN
+2018-04-06 16:30:36 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:36 -  - TIME UnGzipArchive 0.009 sec
+2018-04-06 16:30:36 -  - TIME UpdateStepModules 0.023 sec
+2018-04-06 16:30:36 - UPD_SUCCESS - Updated: artrix.imageoptimizer
+2018-04-06 16:30:36 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:36 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:36 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.0%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:36 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:37 -  - TIME LoadModulesUpdates(request) 0.418 sec
+2018-04-06 16:30:37 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:37 - S - STEP
+2018-04-06 16:30:37 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:37 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:37 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:37 -  - loadFile
+2018-04-06 16:30:37 - U - RETURN
+2018-04-06 16:30:37 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:37 -  - TIME UnGzipArchive 0.01 sec
+2018-04-06 16:30:37 - CSURUS1 - Run updater '/bitrix/updates/update_m1523021437/artrix.imageoptimizer/updater1.0.1.php'
+2018-04-06 16:30:37 -  - TIME UpdateStepModules 0.046 sec
+2018-04-06 16:30:37 - UPD_SUCCESS - Updated: artrix.imageoptimizer (1.0.1)<br>Обновление модуля \"Модуль оптимизации изображений под Google PageSpeed\"
+2018-04-06 16:30:37 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:37 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:37 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.1%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:37 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:38 -  - TIME LoadModulesUpdates(request) 0.314 sec
+2018-04-06 16:30:38 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:38 - S - STEP
+2018-04-06 16:30:38 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:38 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:38 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:38 -  - loadFile
+2018-04-06 16:30:38 - U - RETURN
+2018-04-06 16:30:38 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:38 -  - TIME UnGzipArchive 0.008 sec
+2018-04-06 16:30:38 -  - TIME UpdateStepModules 0.02 sec
+2018-04-06 16:30:38 - UPD_SUCCESS - Updated: artrix.imageoptimizer (1.0.2)<br>Обновление модуля \"Модуль оптимизации изображений под Google PageSpeed\": lang файлы
+2018-04-06 16:30:38 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:38 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:38 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.2%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:38 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:39 -  - TIME LoadModulesUpdates(request) 0.393 sec
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:39 - S - STEP
+2018-04-06 16:30:39 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:39 -  - loadFile
+2018-04-06 16:30:39 - U - RETURN
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:39 -  - TIME UnGzipArchive 0.003 sec
+2018-04-06 16:30:39 -  - TIME UpdateStepModules 0.005 sec
+2018-04-06 16:30:39 - UPD_SUCCESS - Updated: artrix.imageoptimizer (1.0.3)<br>Обновление модуля \"Модуль оптимизации изображений под Google PageSpeed\": lang файлы
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:39 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.3%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:39 -  - TIME LoadModulesUpdates(request) 0.303 sec
+2018-04-06 16:30:39 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:39 - S - STEP
+2018-04-06 16:30:39 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:40 -  - loadFile
+2018-04-06 16:30:40 - U - RETURN
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:40 -  - TIME UnGzipArchive 0.005 sec
+2018-04-06 16:30:40 - CSURUS1 - Run updater '/bitrix/updates/update_m1523021440/artrix.imageoptimizer/updater1.0.4.php'
+2018-04-06 16:30:40 -  - TIME UpdateStepModules 0.019 sec
+2018-04-06 16:30:40 - UPD_SUCCESS - Updated: artrix.imageoptimizer (1.0.4)<br>1) Подсчет изображений до начала обработки 2) Улучшен алгоритм поиска изображений 3) Библиотека CURL теперь необязательна 4) Увеличена скорость обработки изображений
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:40 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.4%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:40 -  - TIME LoadModulesUpdates(request) 0.311 sec
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:40 - S - STEP
+2018-04-06 16:30:40 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:40 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:40 -  - loadFile
+2018-04-06 16:30:41 - U - RETURN
+2018-04-06 16:30:41 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:41 -  - TIME UnGzipArchive 0.003 sec
+2018-04-06 16:30:41 -  - TIME UpdateStepModules 0.008 sec
+2018-04-06 16:30:41 - UPD_SUCCESS - Updated: artrix.imageoptimizer (1.0.5)<br>Обновление модуля \"Модуль оптимизации изображений под Google PageSpeed\": ошибка редактирования параметров настройки
+2018-04-06 16:30:41 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:41 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:41 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.5%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:41 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:41 -  - TIME LoadModulesUpdates(request) 0.344 sec
+2018-04-06 16:30:41 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:41 - S - STEP
+2018-04-06 16:30:41 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:42 -  - loadFile
+2018-04-06 16:30:42 - U - RETURN
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:42 -  - TIME UnGzipArchive 0.007 sec
+2018-04-06 16:30:42 -  - TIME UpdateStepModules 0.021 sec
+2018-04-06 16:30:42 - UPD_SUCCESS - Updated: artrix.imageoptimizer (1.0.6)<br>Обновление модуля \"Модуль оптимизации изображений под Google PageSpeed\": ошибка lang-файла
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:42 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.6%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:42 -  - TIME LoadModulesUpdates(request) 0.298 sec
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:42 - S - STEP
+2018-04-06 16:30:42 - LMU01 - LoadModulesUpdates-Step
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:42 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:42 -  - loadFile
+2018-04-06 16:30:43 - U - RETURN
+2018-04-06 16:30:43 -  - exec CUpdateClientPartner::UnGzipArchive
+2018-04-06 16:30:43 -  - TIME UnGzipArchive 0.005 sec
+2018-04-06 16:30:43 - CSURUS1 - Run updater '/bitrix/updates/update_m1523021443/artrix.imageoptimizer/updater1.0.7.php'
+2018-04-06 16:30:43 -  - TIME UpdateStepModules 0.026 sec
+2018-04-06 16:30:43 - UPD_SUCCESS - Updated: artrix.imageoptimizer (1.0.7)<br>Обновление модуля \"Модуль оптимизации изображений под Google PageSpeed\"
+2018-04-06 16:30:43 -  - exec CUpdateClientPartner::LoadModulesUpdates
+2018-04-06 16:30:43 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:43 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.7%2CN&reqm=artrix.imageoptimizer&lim=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:43 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:43 -  - TIME LoadModulesUpdates(request) 0.34 sec
+2018-04-06 16:30:43 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:43 - STEP - Finish - NOUPDATES
+2018-04-06 16:30:43 - STEP - Finish - NOUPDATES
+2018-04-06 16:30:46 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-04-06 16:30:46 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:46 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.7%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Casd.iblock%2Cdev2fun.imagecompress%2Casd.tplvars%2Cartrix.imageoptimizer&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:46 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:46 -  - TIME GetUpdatesList(request) 0.305 sec
+2018-04-06 16:30:46 -  - exec CUpdateClientPartner::ParseServerData
+2018-04-06 16:30:47 -  - exec CUpdateClientPartner::GetUpdatesList
+2018-04-06 16:30:47 -  - exec CUpdateClientPartner::__CollectRequestData
+2018-04-06 16:30:47 -  - utf=Y&lang=ru&stable=Y&CANGZIP=Y&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&LICENSE_KEY=X&SUPD_STS=1&SUPD_URS=0&SUPD_URSA=1&TYPENC=E&CLIENT_PHPVER=5.6.31&NGINX=Y&dbv=5.5.56&instm=main%2C17.5.13%2CN%3Babtest%2C17.5.0%2CN%3Bb24connector%2C17.5.0%2CN%3Bbitrix.eshop%2C16.5.4%2CN%3Bbitrix.sitecorporate%2C15.5.0%2CN%3Bbitrixcloud%2C17.5.0%2CN%3Bblog%2C17.5.8%2CN%3Bcatalog%2C17.5.15%2CN%3Bclouds%2C17.0.2%2CN%3Bcompression%2C16.0.0%2CN%3Bconversion%2C17.5.0%2CN%3Bcurrency%2C17.5.3%2CN%3Beshopapp%2C16.5.0%2CN%3Bfileman%2C17.5.9%2CN%3Bform%2C17.0.1%2CN%3Bforum%2C17.5.2%2CN%3Bhighloadblock%2C17.5.0%2CN%3Biblock%2C17.5.5%2CN%3Bmobileapp%2C17.5.0%2CN%3Bperfmon%2C17.0.1%2CN%3Bphotogallery%2C17.0.2%2CN%3Bpull%2C17.5.3%2CN%3Breport%2C17.0.0%2CN%3Bsale%2C17.8.14%2CN%3Bscale%2C17.5.0%2CN%3Bsearch%2C17.0.1%2CN%3Bsecurity%2C17.0.2%2CN%3Bsender%2C17.1.4%2CN%3Bseo%2C17.5.3%2CN%3Bsocialservices%2C17.5.4%2CN%3Bstoreassist%2C16.0.1%2CN%3Bsubscribe%2C17.5.0%2CN%3Btranslate%2C16.0.0%2CN%3Bui%2C17.5.5%2CN%3Bvote%2C17.5.1%2CN%3Basd.iblock%2C4.6.6%2CN%3Bdev2fun.imagecompress%2C0.1.10%2CN%3Basd.tplvars%2C1.5.1%2CN%3Badvertising%2C17.0.1%2CN%3Bstatistic%2C17.0.1%2CN%3Bsupport%2C16.0.0%2CN%3Bworkflow%2C17.0.1%2CN%3Bmail%2C17.5.5%2CN%3Bldap%2C17.0.1%2CN%3Blearning%2C17.5.0%2CN%3Bwebservice%2C17.0.0%2CN%3Bsocialnetwork%2C17.6.0%2CN%3Bbizproc%2C17.5.10%2CN%3Bbizprocdesigner%2C17.5.2%2CN%3Blists%2C17.0.16%2CN%3Bwiki%2C17.5.1%2CN%3Bcluster%2C17.0.1%2CN%3Bidea%2C17.5.0%2CN%3Bcalendar%2C17.5.9%2CN%3Bim%2C17.5.10%2CN%3Bartrix.imageoptimizer%2C1.0.7%2CN&reqm=bitrix.eshop%2Cbitrix.sitecorporate%2Casd.iblock%2Cdev2fun.imagecompress%2Casd.tplvars%2Cartrix.imageoptimizer&fullmoduleinfo=Y&SUPD_SRS=RU&SUPD_CMP=Y
+2018-04-06 16:30:47 -  - exec CUpdateClientPartner::GetHTTPPage
+2018-04-06 16:30:47 -  - TIME GetUpdatesList(request) 0.313 sec
+2018-04-06 16:30:47 -  - exec CUpdateClientPartner::ParseServerData

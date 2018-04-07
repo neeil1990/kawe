@@ -1,0 +1,1 @@
+DROP TABLE if exists artrix_image_settings;

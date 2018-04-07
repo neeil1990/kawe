@@ -1,0 +1,48 @@
+#express_result{
+	list-style: none;
+	margin: 0 0 0 25px;
+	padding: 0;
+}
+#express_result li{
+	margin: 7px 0;
+	padding: 0;
+}
+.section-tree{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.section-tree li{
+	margin: 0 0 7px;
+}
+.section-tree li input[type="checkbox"]{
+	float: left;
+	margin: 2px 7px 0 0;
+}
+.section-tree li ul{
+	margin: 7px 0 0 25px;
+}
+#image-result-ok, #image-result-error, #image-result-done, #image-file-optimize{
+	display: none;
+}
+#bx-admin-prefix .adm-info-message-grey .adm-info-message {
+    border-color: #D3D3D3 #C0C0C0 #D3D3D3 #C0C0C0;
+    background: #D3D3D3;
+    background: -webkit-linear-gradient(top, rgba(211,211,211,.3), rgba(192,192,192,.3), rgba(211,211,211,.3));
+    background: -moz-linear-gradient(top, rgba(211,211,211,.3), rgba(192,192,192,.3), rgba(211,211,211,.3));
+    background: -ms-linear-gradient(top, rgba(211,211,211,.3), rgba(192,192,192,.3), rgba(211,211,211,.3));
+    background: -o-linear-gradient(top, rgba(211,211,211,.3), rgba(192,192,192,.3), rgba(211,211,211,.3));
+    background: linear-gradient(top, rgba(211,211,211,.3), rgba(192,192,192,.3), rgba(211,211,211,.3));
+    color: #822f3b;
+    position: relative;
+}
+#bx-admin-prefix .adm-info-message-grey .adm-info-message p{
+	margin: 5px 0;
+}
+#scan-dirs-result{
+	display: none;
+}
+#scan-dirs-warning{
+	color: #ff0000;
+	font-size: 22px;
+}
