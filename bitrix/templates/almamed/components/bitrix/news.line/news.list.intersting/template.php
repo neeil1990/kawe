@@ -18,9 +18,13 @@ $this->setFrameMode(true);
 	<?foreach($arResult["ITEMS"] as $arItem): ?>
 	<div class="news__item">
 		<div class="news__item_date"><?=$arItem['DISPLAY_ACTIVE_FROM']?></div>
-		<div class="news__item_img"><img src="<?=$arItem['PREVIEW_PICTURE']['SRC']?>" alt="news"></div>
-		<a href="<?=$arItem['DETAIL_PAGE_URL']?>" class="news__item_name"><?=$arItem['NAME']?></a>
-		<div class="news__item_desc"><?=$arItem['PREVIEW_TEXT']?></div>
+		<div class="news__item_img">
+			<a href="<?echo $arItem["DETAIL_PAGE_URL"]?>">
+				<img src="<?=$arItem['PREVIEW_PICTURE']['SRC']?>" alt="news">
+			</a>
+		</div>
+		<a href="<?=$arItem['DETAIL_PAGE_URL']?>" class="news__item_name"><?=TruncateText($arItem['NAME'],60)?></a>
+		<div class="news__item_desc"><?=TruncateText($arItem['PREVIEW_TEXT'],110)?></div>
 		<a href="<?=$arItem['DETAIL_PAGE_URL']?>" class="news__item_more">Прочитать</a>
 	</div>
 	<?endforeach;?>
