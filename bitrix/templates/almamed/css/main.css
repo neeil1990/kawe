@@ -2092,6 +2092,11 @@ ol,ul
     font-size: 36px;
     font-weight: 500;
 }
+.cart_old_price{
+    color: #898989;
+    font-size: 18px;
+    text-decoration: line-through;
+}
 .cart__desc
 {
     color: #acacae;

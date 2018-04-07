@@ -69,6 +69,12 @@ $this->setFrameMode(true);
 			<? endif; ?>
 
 <!--			<div class="cart__availability">В наличии</div>-->
+			<? if($arResult['PRICES']['BASE']['DISCOUNT_DIFF']): ?>
+				<div class="cart_old_price">
+					<?=$arResult['PRICES']['BASE']['PRINT_VALUE']?>
+				</div>
+			<? endif; ?>
+
 			<div class="cart__price">
 				<?if($arResult['PRICES']['BASE']['DISCOUNT_VALUE']):?>
 					<?=$arResult['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
