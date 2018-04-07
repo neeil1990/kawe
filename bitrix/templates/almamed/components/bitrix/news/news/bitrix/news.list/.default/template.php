@@ -22,10 +22,14 @@ $this->setFrameMode(true);
 				<?if($arItem["DISPLAY_ACTIVE_FROM"]):?>
 				<div class="news__item_date"><?echo $arItem["DISPLAY_ACTIVE_FROM"]?></div>
 				<?endif?>
-				<div class="news__item_img"><img src="<?=$arItem["PREVIEW_PICTURE"]["SRC"]?>" alt="news"></div>
-				<a href="<?echo $arItem["DETAIL_PAGE_URL"]?>" class="news__item_name"><?echo $arItem["NAME"]?></a>
+				<div class="news__item_img">
+					<a href="<?echo $arItem["DETAIL_PAGE_URL"]?>">
+						<img src="<?=$arItem["PREVIEW_PICTURE"]["SRC"]?>" alt="news">
+					</a>
+				</div>
+				<a href="<?echo $arItem["DETAIL_PAGE_URL"]?>" class="news__item_name"><?echo TruncateText($arItem["NAME"], 60);?></a>
 				<?if($arParams["DISPLAY_PREVIEW_TEXT"]!="N" && $arItem["PREVIEW_TEXT"]):?>
-					<div class="news__item_desc"><?echo $arItem["PREVIEW_TEXT"];?></div>
+					<div class="news__item_desc"><?echo TruncateText($arItem["PREVIEW_TEXT"],110);?></div>
 				<?endif;?>
 				<a href="<?echo $arItem["DETAIL_PAGE_URL"]?>" class="news__item_more">Прочитать</a>
 			</div>
