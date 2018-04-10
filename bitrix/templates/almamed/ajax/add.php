@@ -14,9 +14,34 @@ if( !$id )
 CModule::IncludeModule( 'catalog' );
 CModule::IncludeModule( 'sale' );
 
-if( Add2BasketByProductID( $id, $quantity ) )
-    print 'Товар успешно добавлен в корзину';
-else
-    print 'Ошибка добавления товара в корзину';
+$FIELDS = [];
+$PROPS = [];
+if( !empty( $_GET["art"] ) ){
+    $arSelect = Array("ID", "IBLOCK_ID", "NAME","PROPERTY_*");
+    $arFilter = Array("IBLOCK_ID" => IBLOCK_CATALOG, "ID" => $id, "ACTIVE"=>"Y");
+    $res = CIBlockElement::GetList(Array(), $arFilter, false, false, $arSelect);
+    if($ob = $res->GetNextElement()){
+        $arProps = $ob->GetProperties();
+        $key_price = array_search(trim($_GET["art"]),$arProps['PRICES']['DESCRIPTION']);
+        if($key_price){
+            $FIELDS = ["PRICE" => $arProps['PRICES']['VALUE'][$key_price],"CUSTOM_PRICE" => "Y"];
+        }
+    }
+    $PROPS[] = ["NAME" => "Артикул","CODE" => "CML2_ARTICLE","VALUE" => $_GET["art"]];
+}
 
+if( !empty( $_GET["color"] ) )
+$PROPS[] = ["NAME" => "Вариант","CODE" => "CML2_OPTION","VALUE" => $_GET["color"]];
+
+if(Add2BasketByProductID(
+    $id,
+    $quantity,
+    $FIELDS,
+    $PROPS
+    )
+){
+    print 'Товар успешно добавлен в корзину';
+}else{
+    print 'Ошибка добавления товара в корзину';
+}
 ?>

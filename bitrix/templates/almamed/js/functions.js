@@ -1,6 +1,12 @@
 
 $('input[name="PHONE"]').mask('+7(999) 999 99 99');
 
+$('.cart__content .cart__radio').change(function(){
+    $('.cart__content > p.article').text("Арт: " + $(this).val());
+    $('.cart__content > .cart__price').text($(this).attr('data-price') + "₽");
+});
+
+
 var path = "/bitrix/templates/almamed/ajax/";
 
 function replaseBasketTop() {
@@ -25,11 +31,18 @@ function replaseBasketMobileTop() {
 
 
 function addToBasket2(idel, quantity,el) {
-    $href = path + "add.php?id="+idel;
+    $art = $(el).closest('.cart__content').find('.cart__radio:checked').val();
+    if(!$art){
+        $art = $(el).closest('.cart__content').find('.article').text().replace("Арт: ","");
+    }
+    $color = $.trim($(el).closest('.cart__content').find('.cart__radio:checked').parent().text());
+
+    $href = path + "add.php?id=" + idel + '&quantity=' + quantity + '&art=' + $art + '&color=' + $color;
     $.ajax({
-        url: $href + '&quantity=' + quantity,
+        url: $href,
         type: 'get',
         success: function (data) {
+            console.log(data);
             if (data == 'Товар успешно добавлен в корзину') {
                 replaseBasketTop();
                 replaseBasketMobileTop();

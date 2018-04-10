@@ -53,14 +53,14 @@ $this->setFrameMode(true);
 
 		<div class="cart__content">
 			<? if($arResult['PROPERTIES']['CML2_ARTICLE']['VALUE']): ?>
-			<p>Арт: <?=$arResult['PROPERTIES']['CML2_ARTICLE']['VALUE']?></p>
+			<p class="article">Арт: <?=$arResult['PROPERTIES']['CML2_ARTICLE']['VALUE']?></p>
 			<br>
 				<?if($arResult['PROPERTIES']['ARTICLS']['DESCRIPTION'][0]):?>
 				<p>Варианты:</p>
 				<div class="cart__wrapper">
 					<?foreach($arResult['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
 					<label class="cart__label">
-						<input type="radio" name="color" class="cart__radio" value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"><i></i>
+						<input type="radio" name="color" data-price="<?=$arResult['PROPERTIES']['PRICES']['VALUE'][$val]?>" class="cart__radio" <?=($val == 0) ? "checked" : "";?> value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"><i></i>
 						<?=$art?>
 					</label>
 					<?endforeach?>
