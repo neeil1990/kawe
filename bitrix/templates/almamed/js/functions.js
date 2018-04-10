@@ -3,7 +3,7 @@ $('input[name="PHONE"]').mask('+7(999) 999 99 99');
 
 $('.cart__content .cart__radio').change(function(){
     $('.cart__content > p.article').text("Арт: " + $(this).val());
-    $('.cart__content > .cart__price').text($(this).attr('data-price') + "₽");
+    $('.cart__content > .cart__price').text($(this).attr('data-price'));
 });
 
 
