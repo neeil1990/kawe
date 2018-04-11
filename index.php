@@ -206,33 +206,36 @@ $APPLICATION->SetTitle("АльмаМед - поставки медицинско
                 <div class="goods">
 
                     <?$APPLICATION->IncludeComponent(
-                    "bitrix:news.line",
-                    "new.product",
-                    array(
-                        "ACTIVE_DATE_FORMAT" => "d.m.Y",
-                        "CACHE_GROUPS" => "Y",
-                        "CACHE_TIME" => "300",
-                        "CACHE_TYPE" => "A",
-                        "DETAIL_URL" => "",
-                        "FIELD_CODE" => array(
-                            0 => "ID",
-                            1 => "CODE",
-                            2 => "NAME",
-                            3 => "PREVIEW_PICTURE",
-                            4 => "",
-                        ),
-                        "IBLOCKS" => array(
-                        ),
-                        "IBLOCK_TYPE" => "1c_catalog",
-                        "NEWS_COUNT" => "12",
-                        "SORT_BY1" => "TIMESTAMP_X",
-                        "SORT_BY2" => "ACTIVE_FROM",
-                        "SORT_ORDER1" => "DESC",
-                        "SORT_ORDER2" => "DESC",
-                        "COMPONENT_TEMPLATE" => "new.product"
-                    ),
-                    false
-                );?>
+	"bitrix:news.line", 
+	"new.product", 
+	array(
+		"ACTIVE_DATE_FORMAT" => "d.m.Y",
+		"CACHE_GROUPS" => "Y",
+		"CACHE_TIME" => "300",
+		"CACHE_TYPE" => "A",
+		"DETAIL_URL" => "",
+		"FIELD_CODE" => array(
+			0 => "ID",
+			1 => "CODE",
+			2 => "NAME",
+			3 => "PREVIEW_PICTURE",
+			4 => "",
+		),
+		"IBLOCKS" => array(
+			0 => "33",
+		),
+		"IBLOCK_TYPE" => "1c_catalog",
+		"NEWS_COUNT" => "12",
+		"SORT_BY1" => "TIMESTAMP_X",
+		"SORT_BY2" => "ACTIVE_FROM",
+		"SORT_ORDER1" => "DESC",
+		"SORT_ORDER2" => "DESC",
+		"COMPONENT_TEMPLATE" => "new.product",
+		"COMPOSITE_FRAME_MODE" => "A",
+		"COMPOSITE_FRAME_TYPE" => "AUTO"
+	),
+	false
+);?>
 
                 </div>
 
