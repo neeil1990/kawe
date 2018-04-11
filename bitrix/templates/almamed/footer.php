@@ -13,26 +13,32 @@
             </div>
             <div class="footer__col">
 
-                <?$APPLICATION->IncludeComponent("bitrix:sender.subscribe", "sender.subscribe", Array(
-                    "AJAX_MODE" => "N",	// Включить режим AJAX
-                    "AJAX_OPTION_ADDITIONAL" => "",	// Дополнительный идентификатор
-                    "AJAX_OPTION_HISTORY" => "N",	// Включить эмуляцию навигации браузера
-                    "AJAX_OPTION_JUMP" => "N",	// Включить прокрутку к началу компонента
-                    "AJAX_OPTION_STYLE" => "Y",	// Включить подгрузку стилей
-                    "CACHE_TIME" => "3600",	// Время кеширования (сек.)
-                    "CACHE_TYPE" => "A",	// Тип кеширования
-                    "CONFIRMATION" => "Y",	// Запрашивать подтверждение подписки по email
-                    "HIDE_MAILINGS" => "N",	// Скрыть список рассылок, и подписывать на все
-                    "SET_TITLE" => "N",	// Устанавливать заголовок страницы
-                    "SHOW_HIDDEN" => "N",	// Показать скрытые рассылки для подписки
-                    "USER_CONSENT" => "Y",	// Запрашивать согласие
-                    "USER_CONSENT_ID" => "1",	// Соглашение
-                    "USER_CONSENT_IS_CHECKED" => "Y",	// Галка по умолчанию проставлена
-                    "USER_CONSENT_IS_LOADED" => "N",	// Загружать текст сразу
-                    "USE_PERSONALIZATION" => "Y",	// Определять подписку текущего пользователя
-                ),
-                    false
-                );?>
+                <?$APPLICATION->IncludeComponent(
+	"bitrix:sender.subscribe", 
+	"sender.subscribe", 
+	array(
+		"AJAX_MODE" => "N",
+		"AJAX_OPTION_ADDITIONAL" => "",
+		"AJAX_OPTION_HISTORY" => "N",
+		"AJAX_OPTION_JUMP" => "N",
+		"AJAX_OPTION_STYLE" => "Y",
+		"CACHE_TIME" => "3600",
+		"CACHE_TYPE" => "A",
+		"CONFIRMATION" => "N",
+		"HIDE_MAILINGS" => "N",
+		"SET_TITLE" => "N",
+		"SHOW_HIDDEN" => "N",
+		"USER_CONSENT" => "Y",
+		"USER_CONSENT_ID" => "1",
+		"USER_CONSENT_IS_CHECKED" => "Y",
+		"USER_CONSENT_IS_LOADED" => "N",
+		"USE_PERSONALIZATION" => "Y",
+		"COMPONENT_TEMPLATE" => "sender.subscribe",
+		"COMPOSITE_FRAME_MODE" => "A",
+		"COMPOSITE_FRAME_TYPE" => "AUTO"
+	),
+	false
+);?>
 
             </div>
         </div>
