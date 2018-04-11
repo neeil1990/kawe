@@ -586,7 +586,6 @@ if ($arResult['MODULES']['currency'])
 	}
 }
 
-$arResult['PHOTO'][] = $arResult['DETAIL_PICTURE']['ID'];
 foreach($arResult['PROPERTIES']['MORE_PHOTO']['VALUE'] as $img){
 	$arResult['PHOTO'][] = $img;
 }
