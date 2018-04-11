@@ -1749,6 +1749,7 @@ ol,ul
 }
 .subscribe__input
 {
+    color: #000000;
     background-color: #fff;
     flex: 1;
     height: 53px;
@@ -1810,6 +1811,11 @@ ol,ul
 {
     display: none;
 }
+
+.bx-subscribe a{
+    color: white;
+}
+
 .toggle__menu
 {
     display: block;
