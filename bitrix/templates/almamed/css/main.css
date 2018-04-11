@@ -2954,12 +2954,12 @@ ol,ul
     }
     .goods__item:not(.goods__item_list)
     {
-        flex: 0 0 calc(100%/3);
-        max-width: calc(100%/3);
-        max-width: -webkit-calc(100%/3);
-        ms-flex: 0 0 calc(100%/3);
+        flex: 0 0 calc(100%/1);
+        max-width: calc(100%/1);
+        max-width: -webkit-calc(100%/1);
+        ms-flex: 0 0 calc(100%/1);
         webkit-box-flex: 0;
-        webkit-flex: 0 0 -webkit-calc(100%/3);
+        webkit-flex: 0 0 -webkit-calc(100%/1);
     }
 }
 @media (max-width:991px)

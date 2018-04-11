@@ -18,6 +18,7 @@ $(function() {
     }), $(".goods__slider").lightSlider({
         adaptiveHeight: !0,
         item: 4,
+        loop:true,
         slideMargin: 0,
         pager: !1,
         enableDrag: !1,

@@ -136,48 +136,60 @@ unset($basketAction);
 
 	<hr class="hr">
 
-	<div class="title">Рекомендуемые товары</div>
-
-	<div class="goods">
-		<ul class="goods__slider">
-
-			<li class="goods__item">
-				<div class="goods__item_wrapper">
-					<div class="goods__alert">-20%</div>
-					<!--<div class="goods__rate">
-						<i class="icon-star"></i>
-						<i class="icon-star"></i>
-						<i class="icon-star"></i>
-						<i class="icon-star"></i>
-						<i class="icon-star-o"></i>
-					</div>-->
-					<div class="goods__img">
-						<img src="<?=SITE_TEMPLATE_PATH?>/img/goods_2.jpg" alt="goods">
-					</div>
-					<a href="#" class="goods__name">Люминесцентная лампочка Вуда ОЛДД-01 светодиодной подсветкой.</a>
-					<div class="goods__desc">
-						<div class="goods__availability">В наличии</div>
-						<!--<div class="goods__article">Арт: 252023а</div>-->
-					</div>
-					<div class="goods__info">
-						<div class="goods__prices">
-							<div class="goods__price">17 124 Р</div>
-							<div class="goods__counter">
-								<div class="goods__counter_subtract">-</div>
-								<input type="text" class="goods__counter_input" value="1" readonly>
-								<div class="goods__counter_add">+</div>
-							</div>
-							<span>за штуку</span>
-						</div>
-						<a href="#" class="goods__basket icon-basket"></a>
-					</div>
-				</div>
-			</li>
-
-		</ul>
-	</div>
-
-
+	<? $APPLICATION->IncludeComponent("bitrix:catalog.recommended.products", "recommended.products", Array(
+		"ACTION_VARIABLE" => "action_crp",	// Название переменной, в которой передается действие
+		"ADDITIONAL_PICT_PROP_33" => "MORE_PHOTO",	// Дополнительная картинка
+		"ADD_PROPERTIES_TO_BASKET" => "Y",	// Добавлять в корзину свойства товаров и предложений
+		"BASKET_URL" => "/personal/cart/",	// URL, ведущий на страницу с корзиной покупателя
+		"CACHE_TIME" => "86400",	// Время кеширования (сек.)
+		"CACHE_TYPE" => "A",	// Тип кеширования
+		"CART_PROPERTIES_33" => array(	// Свойства для добавления в корзину
+			0 => "",
+		),
+		"CODE" => $_REQUEST["PRODUCT_CODE"],	// Код товара
+		"CONVERT_CURRENCY" => "N",	// Показывать цены в одной валюте
+		"DETAIL_URL" => "",	// URL, ведущий на страницу с содержимым элемента раздела
+		"ELEMENT_SORT_FIELD" => "SORT",	// По какому полю сортируем элементы
+		"ELEMENT_SORT_FIELD2" => "ID",	// Поле для второй сортировки элементов
+		"ELEMENT_SORT_ORDER" => "ASC",	// Порядок сортировки элементов
+		"ELEMENT_SORT_ORDER2" => "DESC",	// Порядок второй сортировки элементов
+		"HIDE_NOT_AVAILABLE" => "N",	// Скрыть недоступные товары
+		"IBLOCK_ID" => $arParams['IBLOCK_ID'],	// Идентификатор инфоблока товара
+		"IBLOCK_TYPE" => "1c_catalog",	// Тип инфоблока
+		"ID" => $ElementID,	// Идентификатор товара
+		"LABEL_PROP_33" => "-",	// Свойство меток товара
+		"LINE_ELEMENT_COUNT" => "3",	// Количество элементов, выводимых в одной строке
+		"MESS_BTN_BUY" => "Купить",	// Текст кнопки "Купить"
+		"MESS_BTN_DETAIL" => "Подробнее",	// Текст кнопки "Подробнее"
+		"MESS_BTN_SUBSCRIBE" => "Подписаться",	// Текст кнопки "Уведомить о поступлении"
+		"MESS_NOT_AVAILABLE" => "Нет в наличии",	// Сообщение об отсутствии товара
+		"OFFERS_PROPERTY_LINK" => "RECOMMEND",	// Свойство привязки для торговых предложений
+		"PAGE_ELEMENT_COUNT" => "30",	// Количество элементов на странице
+		"PARTIAL_PRODUCT_PROPERTIES" => "N",	// Разрешить частично заполненные свойства
+		"PRICE_CODE" => array(	// Тип цены
+			0 => "BASE",
+		),
+		"PRICE_VAT_INCLUDE" => "Y",	// Включать НДС в цену
+		"PRODUCT_DISPLAY_MODE" => "N",	// Схема отображения
+		"PRODUCT_ID_VARIABLE" => "id",	// Название переменной, в которой передается код товара для покупки
+		"PRODUCT_PROPS_VARIABLE" => "prop",	// Название переменной, в которой передаются характеристики товара
+		"PRODUCT_QUANTITY_VARIABLE" => "quantity",	// Название переменной, в которой передается количество товара
+		"PRODUCT_SUBSCRIPTION" => "N",	// Разрешить оповещения для отсутствующих товаров
+		"PROPERTY_CODE_33" => array(	// Свойства для отображения
+			0 => "",
+		),
+		"PROPERTY_LINK" => "RECOMMEND",	// Свойство привязки
+		"SHOW_DISCOUNT_PERCENT" => "N",	// Показывать процент скидки
+		"SHOW_IMAGE" => "Y",	// Показывать изображение
+		"SHOW_NAME" => "Y",	// Показывать название
+		"SHOW_OLD_PRICE" => "N",	// Показывать старую цену
+		"SHOW_PRICE_COUNT" => "1",	// Выводить цены для количества
+		"SHOW_PRODUCTS_33" => "N",	// Показывать товары каталога
+		"TEMPLATE_THEME" => "blue",	// Цветовая тема
+		"USE_PRODUCT_QUANTITY" => "N",	// Разрешить указание количества товара
+	),
+		false
+	);?>
 
 </div>
 
