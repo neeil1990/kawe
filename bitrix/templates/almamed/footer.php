@@ -12,15 +12,28 @@
                 </div>
             </div>
             <div class="footer__col">
-                <form action="#" class="subscribe__form">
-                    <input type="email" class="subscribe__input" placeholder="">
-                    <button class="subscribe__btn" type="submit">Подписаться</button>
-                    <label class="subscribe__label">
-                        <input type="checkbox" class="subscribe__checkbox" checked>
-                        <i class="icon-checkbox"></i>
-                        <span>Нажимая на эту кнопку, я даю свое <a href="/upload/compliance.pdf" target="_blank" class="footer__link">согласие на обработку персональных данных</a> и соглашаюсь с условиями <a href="/upload/politics.pdf" target="_blank" class="footer__link">политики конфиденциальности</a></span>
-                    </label>
-                </form>
+
+                <?$APPLICATION->IncludeComponent("bitrix:sender.subscribe", "sender.subscribe", Array(
+                    "AJAX_MODE" => "N",	// Включить режим AJAX
+                    "AJAX_OPTION_ADDITIONAL" => "",	// Дополнительный идентификатор
+                    "AJAX_OPTION_HISTORY" => "N",	// Включить эмуляцию навигации браузера
+                    "AJAX_OPTION_JUMP" => "N",	// Включить прокрутку к началу компонента
+                    "AJAX_OPTION_STYLE" => "Y",	// Включить подгрузку стилей
+                    "CACHE_TIME" => "3600",	// Время кеширования (сек.)
+                    "CACHE_TYPE" => "A",	// Тип кеширования
+                    "CONFIRMATION" => "Y",	// Запрашивать подтверждение подписки по email
+                    "HIDE_MAILINGS" => "N",	// Скрыть список рассылок, и подписывать на все
+                    "SET_TITLE" => "N",	// Устанавливать заголовок страницы
+                    "SHOW_HIDDEN" => "N",	// Показать скрытые рассылки для подписки
+                    "USER_CONSENT" => "Y",	// Запрашивать согласие
+                    "USER_CONSENT_ID" => "1",	// Соглашение
+                    "USER_CONSENT_IS_CHECKED" => "Y",	// Галка по умолчанию проставлена
+                    "USER_CONSENT_IS_LOADED" => "N",	// Загружать текст сразу
+                    "USE_PERSONALIZATION" => "Y",	// Определять подписку текущего пользователя
+                ),
+                    false
+                );?>
+
             </div>
         </div>
     </div>
@@ -59,7 +72,7 @@
                 </div>
             </div>
             <div class="footer__col flex-2">
-                <div class="footer__copy icon-copyright">2018 Все права защищены.</div>
+                <div class="footer__copy icon-copyright"><?=date("Y")?> Все права защищены.</div>
                 <a href="/upload/politics.pdf" target="_blank" class="footer__link">Политика конфиденциальности.</a>
                 <a href="/upload/compliance.pdf" target="_blank" class="footer__link">Согласие на обработку персональных данных.</a>
 
