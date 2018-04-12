@@ -20,7 +20,7 @@ $this->setFrameMode(true);
 <div class="main overflow-hidden">
 
 <?
-	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE'],'ELEMENT_SUBSECTIONS' => 'N'),true);
+	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE'],'ELEMENT_SUBSECTIONS' => 'N'),true,array('UF_*'));
 	$arSection = $rsSections->Fetch();
 	if ($arSection) {
 	?>
@@ -69,7 +69,7 @@ else
 $intSectionID = 0;
 ?>
 
-	<? if($arSection['ELEMENT_CNT']): ?>
+	<? if($arSection['ELEMENT_CNT'] OR $arSection['UF_SUBSECTIONS']): ?>
 
 	<form class="filter" method="get" action="">
 		<label class="filter__label filter__sort">
@@ -135,7 +135,7 @@ $intSectionID = 0;
 		"META_DESCRIPTION" => $arParams["LIST_META_DESCRIPTION"],
 		"BROWSER_TITLE" => $arParams["LIST_BROWSER_TITLE"],
 		"SET_LAST_MODIFIED" => $arParams["SET_LAST_MODIFIED"],
-		"INCLUDE_SUBSECTIONS" => $arParams["INCLUDE_SUBSECTIONS"],
+		"INCLUDE_SUBSECTIONS" => ($arSection['UF_SUBSECTIONS']) ? "A" : "N",
 		"BASKET_URL" => $arParams["BASKET_URL"],
 		"ACTION_VARIABLE" => $arParams["ACTION_VARIABLE"],
 		"PRODUCT_ID_VARIABLE" => $arParams["PRODUCT_ID_VARIABLE"],
