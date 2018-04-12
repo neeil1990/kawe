@@ -2,7 +2,7 @@
 
 <?if (!empty($arResult)):?>
 
-	<div class="catalog header__catalog">
+
 		<div class="catalog__head">
 			Каталог товаров
 			<i class="icon-arrow-o"></i>
@@ -12,6 +12,6 @@
 			<li class="catalog__item"><a href="<?=$arItem["LINK"]?>" class="catalog__link"><?=$arItem["TEXT"]?></a></li>
 		<?endforeach?>
 		</ul>
-	</div>
+
 	
 <?endif?>

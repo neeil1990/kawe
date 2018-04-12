@@ -12,17 +12,7 @@
 /** @var CBitrixComponent $component */
 ?>
 
-<div class="wrapper">
 
-	<?
-	$APPLICATION->IncludeFile("/catalog/sidebar.php", Array(), Array(
-		"MODE"      => "html",                                           // будет редактировать в веб-редакторе
-		"NAME"      => "Редактирование включаемой области раздела",      // текст всплывающей подсказки на иконке
-		"TEMPLATE"  => ""                    // имя шаблона для нового файла
-	));
-	?>
-
-	<div class="main">
 		<div class="title"><?=GetMessage("SEARCH")?>:</div>
 
 	<?if(count($arResult["SEARCH"])>0):?>
@@ -81,5 +71,4 @@
 		<?ShowNote(GetMessage("SEARCH_NOTHING_TO_FOUND"));?>
 	<?endif;?>
 
-	</div>
-</div>
+

@@ -11,11 +11,7 @@ $APPLICATION->SetTitle("Страница не найдена");?>
 	<div class="wrapper">
 
 		<?
-		$APPLICATION->IncludeFile("/catalog/sidebar.php", Array(), Array(
-			"MODE"      => "html",                                           // будет редактировать в веб-редакторе
-			"NAME"      => "Редактирование включаемой области раздела",      // текст всплывающей подсказки на иконке
-			"TEMPLATE"  => ""                    // имя шаблона для нового файла
-		));
+		require($_SERVER["DOCUMENT_ROOT"]."/catalog/sidebar.php");
 		?>
 
 		<div class="main">

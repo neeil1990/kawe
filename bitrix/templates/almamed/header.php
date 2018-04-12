@@ -117,22 +117,24 @@ if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
         </div>
         <div class="header__bottom">
 
-            <?$APPLICATION->IncludeComponent("bitrix:menu", "catalog.top.menu", Array(
-                "ALLOW_MULTI_SELECT" => "N",	// Разрешить несколько активных пунктов одновременно
-                "CHILD_MENU_TYPE" => "left",	// Тип меню для остальных уровней
-                "DELAY" => "N",	// Откладывать выполнение шаблона меню
-                "MAX_LEVEL" => "1",	// Уровень вложенности меню
-                "MENU_CACHE_GET_VARS" => "",	// Значимые переменные запроса
-                "MENU_CACHE_TIME" => "3600",	// Время кеширования (сек.)
-                "MENU_CACHE_TYPE" => "N",	// Тип кеширования
-                "MENU_CACHE_USE_GROUPS" => "Y",	// Учитывать права доступа
-                "MENU_THEME" => "site",
-                "ROOT_MENU_TYPE" => "catalog_top",	// Тип меню для первого уровня
-                "USE_EXT" => "N",	// Подключать файлы с именами вида .тип_меню.menu_ext.php
-                "COMPONENT_TEMPLATE" => "tree"
-            ),
-                false
-            );?>
+            <div class="catalog header__catalog">
+                <?$APPLICATION->IncludeComponent("bitrix:menu", "catalog.top.menu", Array(
+                    "ALLOW_MULTI_SELECT" => "N",	// Разрешить несколько активных пунктов одновременно
+                    "CHILD_MENU_TYPE" => "left",	// Тип меню для остальных уровней
+                    "DELAY" => "N",	// Откладывать выполнение шаблона меню
+                    "MAX_LEVEL" => "1",	// Уровень вложенности меню
+                    "MENU_CACHE_GET_VARS" => "",	// Значимые переменные запроса
+                    "MENU_CACHE_TIME" => "3600",	// Время кеширования (сек.)
+                    "MENU_CACHE_TYPE" => "N",	// Тип кеширования
+                    "MENU_CACHE_USE_GROUPS" => "Y",	// Учитывать права доступа
+                    "MENU_THEME" => "site",
+                    "ROOT_MENU_TYPE" => "catalog_top",	// Тип меню для первого уровня
+                    "USE_EXT" => "N",	// Подключать файлы с именами вида .тип_меню.menu_ext.php
+                    "COMPONENT_TEMPLATE" => "tree"
+                ),
+                    false
+                );?>
+            </div>
 
             <div class="header__contact_mobile icon-phone_2"></div>
 

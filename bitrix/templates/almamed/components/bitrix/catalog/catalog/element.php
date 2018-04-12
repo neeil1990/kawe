@@ -24,7 +24,6 @@ else
 }
 ?>
 
-<div class="main overflow-hidden">
 
 <?$ElementID = $APPLICATION->IncludeComponent(
 	"bitrix:catalog.element",
@@ -191,6 +190,6 @@ unset($basketAction);
 		false
 	);?>
 
-</div>
+
 
 

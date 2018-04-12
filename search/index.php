@@ -3,6 +3,14 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("Поиск");
 ?>
 
+<div class="wrapper">
+
+<?
+require($_SERVER["DOCUMENT_ROOT"]."/catalog/sidebar.php");
+?>
+
+	<div class="main">
+
 <?$APPLICATION->IncludeComponent(
 	"bitrix:search.page", 
 	"search.page", 
@@ -75,5 +83,8 @@ $APPLICATION->SetTitle("Поиск");
 	),
 	false
 );?>
+
+	</div>
+</div>
 
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

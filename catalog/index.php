@@ -5,12 +5,10 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 <div class="wrapper">
 
 <?
-$APPLICATION->IncludeFile("/catalog/sidebar.php", Array(), Array(
-	"MODE"      => "html",                                           // будет редактировать в веб-редакторе
-	"NAME"      => "Редактирование включаемой области раздела",      // текст всплывающей подсказки на иконке
-	"TEMPLATE"  => ""                    // имя шаблона для нового файла
-));
+require($_SERVER["DOCUMENT_ROOT"]."/catalog/sidebar.php");
 ?>
+
+<div class="main overflow-hidden">
 
 <?
 if(empty($_REQUEST["ELEMENT_SORT_FIELD"])){
@@ -310,6 +308,8 @@ $APPLICATION->IncludeComponent(
 	),
 	false
 );?>
+
+</div>
 
 </div>
 

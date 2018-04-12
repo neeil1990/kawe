@@ -17,7 +17,7 @@ $this->setFrameMode(true);
 
 ?>
 
-<div class="main overflow-hidden">
+
 
 <?
 	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE'],'ELEMENT_SUBSECTIONS' => 'N'),true,array('UF_*'));
@@ -230,4 +230,5 @@ unset($basketAction);
 	}
 	?>
 	</div>
-</div>
+
+
