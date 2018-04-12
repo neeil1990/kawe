@@ -7,6 +7,14 @@ $('.cart__content .cart__radio').change(function(){
 });
 
 
+$('.callback-btn').click(function(){
+    $('#callback').bPopup({
+        zIndex:1000
+    });
+});
+
+
+
 var path = "/bitrix/templates/almamed/ajax/";
 
 function replaseBasketTop() {

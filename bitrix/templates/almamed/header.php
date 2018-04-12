@@ -93,7 +93,7 @@ if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
                     <span>88005555550</span>
                 </div>
                 <div class="header__desc">Бесплатные звонки по РФ</div>
-                <a href="#" class="header__callback">Заказать звонок</a>
+                <a href="javascript:void(0);" class="header__callback callback-btn">Заказать звонок</a>
             </div>
 
             <?$APPLICATION->IncludeComponent("bitrix:sale.basket.basket.line", "basket.small", Array(

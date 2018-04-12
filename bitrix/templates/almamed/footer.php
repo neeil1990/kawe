@@ -71,7 +71,7 @@
                     <img src="<?=SITE_TEMPLATE_PATH?>/img/footer_phone.jpg">
                     <span>88005555550</span>
                 </div>
-                <a href="#" class="footer__callback footer__link">Заказать звонок</a>
+                <a href="javascript:void(0);" class="footer__callback footer__link callback-btn">Заказать звонок</a>
                 <div class="footer__email icon-email">
                     <a href="mailto:<?=tplvar('email');?>" class="footer__link"><?=tplvar('email', true);?></a>
                     (Для заказов)
@@ -93,9 +93,35 @@
 
 
 
+<?$APPLICATION->IncludeComponent(
+	"nbrains:main.feedback", 
+	"popup-callback", 
+	array(
+		"EMAIL_TO" => "info@kawe.su",
+		"EVENT_MESSAGE_ID" => array(
+			0 => "53",
+		),
+		"IBLOCK_ID" => "37",
+		"IBLOCK_TYPE" => "feedback",
+		"OK_TEXT" => "Спасибо, ваше сообщение принято.",
+		"PROPERTY_CODE" => array(
+			0 => "NAME",
+			1 => "PHONE",
+			2 => "QUERY",
+		),
+		"USE_CAPTCHA" => "N",
+		"COMPONENT_TEMPLATE" => "popup-callback"
+	),
+	false
+);?>
+
+
+
+
 <script src="<?=SITE_TEMPLATE_PATH?>/js/main.js"></script>
 <script src="<?=SITE_TEMPLATE_PATH?>/js/alertify.js"></script>
 <script src="<?=SITE_TEMPLATE_PATH?>/js/jquery.maskinput.js"></script>
+<script src="<?=SITE_TEMPLATE_PATH?>/js/jquery.bpopup.min.js"></script>
 <script src="<?=SITE_TEMPLATE_PATH?>/js/functions.js"></script>
 
 
