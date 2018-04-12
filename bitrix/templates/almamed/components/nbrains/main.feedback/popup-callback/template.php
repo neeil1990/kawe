@@ -37,9 +37,13 @@ if(strlen($arResult["OK_MESSAGE"]) > 0):?>
 
 	<? foreach($arResult['USER_FIELD'] as $field):?>
 
-		<?if($field['PROPERTY_TYPE'] == "S" and !$field["USER_TYPE"] and $field['CODE'] != "URL"):?>
+		<?if($field['PROPERTY_TYPE'] == "S" and !$field["USER_TYPE"]):?>
 		<div class="mf-name">
-			<input type="text" placeholder="<?=$field['NAME']?><?=($field['IS_REQUIRED'] == "Y") ? "*" : ""?>" name="<?=$field['CODE']?>" value="<?=$arResult[$field['CODE']]?>">
+			<? if($field['CODE'] == "URL"):?>
+				<input type="hidden" name="URL" value="<?=$_SERVER['SERVER_NAME'].$APPLICATION->GetCurPage();?>">
+			<?else:?>
+				<input type="text" placeholder="<?=$field['NAME']?><?=($field['IS_REQUIRED'] == "Y") ? "*" : ""?>" name="<?=$field['CODE']?>" value="<?=$arResult[$field['CODE']]?>">
+			<?endif;?>
 		</div>
 		<? else: ?>
 		<div class="mf-name">
@@ -74,7 +78,6 @@ if(strlen($arResult["OK_MESSAGE"]) > 0):?>
 
 		
 	<div class="mfeedback-p-footer">
-		<input type="hidden" name="URL" value="<?=$_SERVER['SERVER_NAME'].$APPLICATION->GetCurPage();?>">
 		<input type="hidden" name="PARAMS_HASH" value="<?=$arResult["PARAMS_HASH"]?>">
 		<input type="submit" name="submit" class="subscribe__btn" value="<?=GetMessage("MFT_SUBMIT")?>">
 	</div>
