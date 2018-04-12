@@ -108,6 +108,7 @@
 			0 => "NAME",
 			1 => "PHONE",
 			2 => "QUERY",
+			3 => "URL",
 		),
 		"USE_CAPTCHA" => "N",
 		"COMPONENT_TEMPLATE" => "popup-callback"
