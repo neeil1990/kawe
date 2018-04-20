@@ -5255,7 +5255,7 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 				]
 			});
 
-			if (currentDelivery.PRICE >= 0)
+			if (currentDelivery.PRICE > 0)
 			{
 				price = BX.create('LI', {
 					children: [
@@ -5452,17 +5452,18 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 			}
 			labelNodes.push(logoNode);
 
-			if (item.PRICE >= 0 || typeof item.DELIVERY_DISCOUNT_PRICE !== 'undefined')
+			if (item.PRICE > 0 || typeof item.DELIVERY_DISCOUNT_PRICE !== 'undefined')
 			{
 				labelNodes.push(
 					BX.create('DIV', {
 						props: {className: 'bx-soa-pp-delivery-cost'},
 						html: typeof item.DELIVERY_DISCOUNT_PRICE !== 'undefined'
 							? item.DELIVERY_DISCOUNT_PRICE_FORMATED
-							: item.PRICE_FORMATED})
+							: item.PRICE_FORMATED}
+					)
 				);
 			}
-			else if (deliveryCached && (deliveryCached.PRICE >= 0 || typeof deliveryCached.DELIVERY_DISCOUNT_PRICE !== 'undefined'))
+			else if (deliveryCached && (deliveryCached.PRICE > 0 || typeof deliveryCached.DELIVERY_DISCOUNT_PRICE !== 'undefined'))
 			{
 				labelNodes.push(
 					BX.create('DIV', {
@@ -5551,12 +5552,15 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 						children: arNodes
 					})
 				);
-				node.appendChild(
-					BX.create('DIV', {
-						props: {className: 'col-sm-3 bx-soa-pp-price'},
-						children: this.getDeliveryPriceNodes(selectedDelivery)
-					})
-				);
+				if(selectedDelivery.PRICE > 0){
+					node.appendChild(
+						BX.create('DIV', {
+							props: {className: 'col-sm-3 bx-soa-pp-price'},
+							children: this.getDeliveryPriceNodes(selectedDelivery)
+						})
+					);
+				}
+
 			}
 			else
 				node.appendChild(BX.create('STRONG', {text: BX.message('SOA_DELIVERY_SELECT_ERROR')}));
