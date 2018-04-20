@@ -44,7 +44,7 @@ $this->setFrameMode(true);
 					$arFileTmp = CFile::ResizeImageGet($photo, array("width" => 400, "height" => 400), BX_RESIZE_IMAGE_EXACT, true, $arWaterMark);
 					$arFileThumb = CFile::ResizeImageGet($photo, array("width" => 100, "height" => 100), BX_RESIZE_IMAGE_EXACT, true, false);
 					?>
-				<li class="cart__slider_item" data-thumb="<?=$arFileThumb['src']?>">
+				<li class="cart__slider_item" data-thumb="<?=$arFileThumb['src']?>" data-src="<?=$arFileTmp['src']?>">
 					<img src="<?=$arFileTmp['src']?>" alt="">
 				</li>
 				<?endforeach;?>

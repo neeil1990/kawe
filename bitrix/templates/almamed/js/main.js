@@ -43,11 +43,17 @@ $(function() {
     }), $(".cart__slider").lightSlider({
         prevHtml: '<i class="icon-arrow_prev"></i>',
         nextHtml: '<i class="icon-arrow_next"></i>',
-        gallery: !0,
+        gallery: true,
+        enableDrag: false,
         item: 1,
         thumbItem: 5,
         thumbMargin: 10,
         slideMargin: 0,
+        onSliderLoad: function(el) {
+            el.lightGallery({
+                selector: '.cart__slider .lslide',
+            });
+        },
         responsive: [{
             breakpoint: 991,
             settings: {

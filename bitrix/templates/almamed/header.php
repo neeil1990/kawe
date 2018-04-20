@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/main.css">
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/alertify.css">
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/default.css">
+    <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/lightgallery.css">
 
     <script src="<?=SITE_TEMPLATE_PATH?>/js/vendor.js"></script>
 </head>
