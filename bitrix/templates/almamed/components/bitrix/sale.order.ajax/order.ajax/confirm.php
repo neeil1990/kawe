@@ -81,6 +81,9 @@ if ($arParams["SET_TITLE"] == "Y")
 										<? else: ?>
 											<?=Loc::getMessage("SOA_PAY_BILL_EMAIL")?>
 											<?//=$arPaySystem["BUFFERED_OUTPUT"]?>
+											<br/>
+											<br/>
+											<br/>
 										<? endif ?>
 									</td>
 								</tr>
