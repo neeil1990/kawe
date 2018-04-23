@@ -66,12 +66,21 @@ if ($arParams["SET_TITLE"] == "Y")
 								<tr>
 									<td>
 										<? if (strlen($arPaySystem["ACTION_FILE"]) > 0 && $arPaySystem["NEW_WINDOW"] == "Y" && $arPaySystem["IS_CASH"] != "Y"): ?>
-											<?=Loc::getMessage("SOA_PAY_BILL_EMAIL")?>
-											<br>
-											<br>
-											<br>
+											<?
+											$orderAccountNumber = urlencode(urlencode($arResult["ORDER"]["ACCOUNT_NUMBER"]));
+											$paymentAccountNumber = $payment["ACCOUNT_NUMBER"];
+											?>
+											<script>
+												window.open('<?=$arParams["PATH_TO_PAYMENT"]?>?ORDER_ID=<?=$orderAccountNumber?>&PAYMENT_ID=<?=$paymentAccountNumber?>');
+											</script>
+										<?=Loc::getMessage("SOA_PAY_LINK", array("#LINK#" => $arParams["PATH_TO_PAYMENT"]."?ORDER_ID=".$orderAccountNumber."&PAYMENT_ID=".$paymentAccountNumber))?>
+										<? if (CSalePdf::isPdfAvailable() && $arPaySystem['IS_AFFORD_PDF']): ?>
+										<br/>
+											<?=Loc::getMessage("SOA_PAY_PDF", array("#LINK#" => $arParams["PATH_TO_PAYMENT"]."?ORDER_ID=".$orderAccountNumber."&pdf=1&DOWNLOAD=Y"))?>
+										<? endif ?>
 										<? else: ?>
-											<?=$arPaySystem["BUFFERED_OUTPUT"]?>
+											<?=Loc::getMessage("SOA_PAY_BILL_EMAIL")?>
+											<?//=$arPaySystem["BUFFERED_OUTPUT"]?>
 										<? endif ?>
 									</td>
 								</tr>
