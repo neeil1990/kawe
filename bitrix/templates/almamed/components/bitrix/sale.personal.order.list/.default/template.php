@@ -278,41 +278,7 @@ else
 										?>
 
 									</div>
-									<?
-									if ($payment['PAID'] === 'N' && $payment['IS_CASH'] !== 'Y')
-									{
-										if ($order['ORDER']['IS_ALLOW_PAY'] == 'N')
-										{
-											?>
-											<div class="col-md-3 col-sm-4 col-xs-12 sale-order-list-button-container">
-												<a class="sale-order-list-button inactive-button">
-													<?=Loc::getMessage('SPOL_TPL_PAY')?>
-												</a>
-											</div>
-											<?
-										}
-										elseif ($payment['NEW_WINDOW'] === 'Y')
-										{
-											?>
-											<div class="col-md-3 col-sm-4 col-xs-12 sale-order-list-button-container">
-												<a class="sale-order-list-button" target="_blank" href="<?=htmlspecialcharsbx($payment['PSA_ACTION_FILE'])?>">
-													<?=Loc::getMessage('SPOL_TPL_PAY')?>
-												</a>
-											</div>
-											<?
-										}
-										else
-										{
-											?>
-											<div class="col-md-3 col-sm-4 col-xs-12 sale-order-list-button-container">
-												<a class="sale-order-list-button ajax_reload" href="<?=htmlspecialcharsbx($payment['PSA_ACTION_FILE'])?>">
-													<?=Loc::getMessage('SPOL_TPL_PAY')?>
-												</a>
-											</div>
-											<?
-										}
-									}
-									?>
+									
 
 								</div>
 								<div class="col-lg-9 col-md-9 col-sm-10 col-xs-12 sale-order-list-inner-row-template">
