@@ -728,6 +728,7 @@ ol,ul
     flex-wrap: wrap;
     margin-right: -10px;
     margin-bottom: 30px;
+    margin-top: 7px;
 }
 .categories__item
 {
