@@ -16,7 +16,7 @@ $('.callback-btn').click(function(){
 
 
 
-var path = "/bitrix/templates/almamed/ajax/";
+var path = "/bitrix/templates/medical-templates/ajax/";
 
 function replaseBasketTop() {
     $.ajax({
