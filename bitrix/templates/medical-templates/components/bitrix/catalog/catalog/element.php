@@ -129,13 +129,11 @@ else
 );?><?
 $GLOBALS["CATALOG_CURRENT_ELEMENT_ID"] = $ElementID;
 unset($basketAction);
-
-
 ?>
 
 	<hr class="hr">
 
-	<? $APPLICATION->IncludeComponent("bitrix:catalog.recommended.products", "recommended.products", Array(
+	<? $APPLICATION->IncludeComponent("nbrains:catalog.recommended.products", "recommended.products", Array(
 		"ACTION_VARIABLE" => "action_crp",	// Название переменной, в которой передается действие
 		"ADDITIONAL_PICT_PROP_33" => "MORE_PHOTO",	// Дополнительная картинка
 		"ADD_PROPERTIES_TO_BASKET" => "Y",	// Добавлять в корзину свойства товаров и предложений
