@@ -4894,3 +4894,9 @@
 2018-04-07 21:37:56 -  - exec CUpdateClient::GetHTTPPage
 2018-04-07 21:37:56 -  - TIME GetUpdatesList(request) 0.447 sec
 2018-04-07 21:37:56 -  - exec CUpdateClient::ParseServerData
+2018-04-29 01:24:04 -  - exec CUpdateClient::GetUpdatesList
+2018-04-29 01:24:04 -  - exec CUpdateClient::CollectRequestData
+2018-04-29 01:24:04 -  - LICENSE_KEY=X&lang=ru&SUPD_VER=17.5.12&VERSION=17.5.13&TYPENC=E&SUPD_STS=1&SUPD_URS=0&SUPD_DBS=MYSQL&XE=N&CLIENT_SITE=kawe.su&CHHB=kawe.su&CSAB=82.146.46.237&SUID=96f95e977deb0deffdc1fbf7ca8634da&CANGZIP=Y&CLIENT_PHPVER=5.6.31&stable=Y&NGINX=Y&rerere=Y&bitm_main=17.5.13&bitm_abtest=17.5.0&bitm_b24connector=17.5.0&bitm_bitrixcloud=17.5.0&bitm_blog=17.5.8&bitm_catalog=17.5.15&bitm_clouds=17.0.2&bitm_compression=16.0.0&bitm_conversion=17.5.0&bitm_currency=17.5.3&bitm_eshopapp=16.5.0&bitm_fileman=17.5.9&bitm_form=17.0.1&bitm_forum=17.5.2&bitm_highloadblock=17.5.0&bitm_iblock=17.5.5&bitm_mobileapp=17.5.0&bitm_perfmon=17.0.1&bitm_photogallery=17.0.2&bitm_pull=17.5.3&bitm_report=17.0.0&bitm_sale=17.8.14&bitm_scale=17.5.0&bitm_search=17.0.1&bitm_security=17.0.2&bitm_sender=17.1.4&bitm_seo=17.5.3&bitm_socialservices=17.5.4&bitm_storeassist=16.0.1&bitm_subscribe=17.5.0&bitm_translate=16.0.0&bitm_ui=17.5.5&bitm_vote=17.5.1&bitm_advertising=17.0.1&bitm_statistic=17.0.1&bitm_support=16.0.0&bitm_workflow=17.0.1&bitm_mail=17.5.5&bitm_ldap=17.0.1&bitm_learning=17.5.0&bitm_webservice=17.0.0&bitm_socialnetwork=17.6.0&bitm_bizproc=17.5.10&bitm_bizprocdesigner=17.5.2&bitm_lists=17.0.16&bitm_wiki=17.5.1&bitm_cluster=17.0.1&bitm_idea=17.5.0&bitm_calendar=17.5.9&bitm_im=17.5.10&bitl_en=&bitl_ru=&SUPD_SRS=RU&SUPD_CMP=Y&SALE_15=Y
+2018-04-29 01:24:04 -  - exec CUpdateClient::GetHTTPPage
+2018-04-29 01:24:05 -  - TIME GetUpdatesList(request) 0.232 sec
+2018-04-29 01:24:05 -  - exec CUpdateClient::ParseServerData
