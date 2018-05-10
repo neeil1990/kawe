@@ -1041,6 +1041,7 @@ ol,ul
 .goods__content
 {
     padding: 4px 10px 10px 19px;
+    min-width: 56%;
 }
 .goods__main
 {
