@@ -933,7 +933,7 @@ ol,ul
     display: -ms-flexbox;
     display: -webkit-box;
     display: -webkit-flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     ms-flex-align: end;
     ms-flex-pack: justify;
     webkit-align-items: flex-end;
@@ -1751,7 +1751,7 @@ ol,ul
 {
     border: none;
     border-radius: 5px;
-    margin-bottom: 10px;
+    margin: 10px 0;
     webkit-border-radius: 5px;
 }
 .subscribe__input
@@ -1814,7 +1814,10 @@ ol,ul
     webkit-flex: 0 0 24px;
     webkit-justify-content: center;
 }
-.subscribe__checkbox,.toggle__menu.on~.top__account .top__login,.toggle__menu.on~.top__account .top__reg
+.subscribe__checkbox,
+.toggle__menu.on~.top__account .top__login,
+.toggle__menu.on~.top__account .top__reg,
+.toggle__menu.on~.top__account .icon-user
 {
     display: none;
 }
@@ -3300,6 +3303,9 @@ ol,ul
     {
         margin-bottom: 14px;
     }
+    .full-slider__info {
+        justify-content: flex-start;
+    }
     .hr
     {
         margin: 16px 0 24px;
@@ -3663,7 +3669,7 @@ ol,ul
         padding: 15px 118px 15px 15px;
         position: absolute;
         right: 10px;
-        z-index: 2;
+        z-index: 3;
     }
     .wrapper
     {
@@ -4130,6 +4136,9 @@ ol,ul
     {
         display: block;
         text-align: center;
+    }
+    .main-user-consent-request{
+        display: block;
     }
     .subscribe__input
     {

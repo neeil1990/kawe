@@ -20,7 +20,7 @@ if (empty($arResult["ALL_ITEMS"]))
 	<ul class="nav">
 		<? foreach($arResult["MENU_STRUCTURE"] as $key => $str):?>
 		<li class="nav__item">
-			<a href="<?=$arResult["ALL_ITEMS"][$key]['LINK']?>" class="nav__link">
+			<a href="<?=(!$str)?$arResult["ALL_ITEMS"][$key]['LINK']:"#"?>" class="nav__link">
 				<?=$arResult["ALL_ITEMS"][$key]['TEXT']?>
 				<?if($str):?>
 				<i class="icon-arrow_down"></i>
