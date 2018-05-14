@@ -1,6 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetTitle("АльмаМед - поставки медицинского оборудования по всей России");
+$APPLICATION->SetTitle("KAWE - поставки медицинской техники от производителя по всей России");
 ?>
 
 
