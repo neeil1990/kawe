@@ -3,6 +3,9 @@ $(function() {
     $(".slider__wrapper").lightSlider({
         adaptiveHeight: !0,
         item: 1,
+        auto:true,
+        loop:true,
+        pause:5000,
         slideMargin: 0,
         enableDrag: false,
         prevHtml: '<i class="icon-arrow_prev"></i>',

@@ -625,6 +625,7 @@ ol,ul
     font-weight: 500;
     letter-spacing: -.04em;
     line-height: 1.1;
+    min-height: 148px;
 }
 .slider__title span
 {
