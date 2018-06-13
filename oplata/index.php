@@ -1,6 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetTitle("оплата");
+$APPLICATION->SetTitle("Оплата");
 ?>
 
     <div class="wrapper">

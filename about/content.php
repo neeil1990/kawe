@@ -6,7 +6,11 @@
 	 Мы завозим только "белую" продукцию, получившую регистрационные удостоверения, гарантию, прошедшие таможню и поверку при необходимости. Все документы прикладываются к заказу и приборы пригодны для лицензирования кабинетов и клиники.
 </p>
  Всего ежегодно мы завозим около 6000 товарных единиц от популярных офтальмоскопов до более редких приборов <a href="/catalog/universalnye-apparaty-kosmetologicheskie-kombayny/swi-sto-ii-pribor-dlya-iontoforeza-kawe-germaniya/">SWI STO</a>. Являясь официальным партнером KaWe, мы можем предложить более низкую цену на их продукцию, так как имеем эксклюзивную закупочную цену от завода. <br>
-<h2>&nbsp;<img width="205" alt="12443567.jpg" src="/upload/medialibrary/80a/80aa96b067db42e7b27bef97e23e5f68.jpg" height="205" title="12443567.jpg"><img width="205" alt="photo_2018-03-12_101-31-22.jpg" src="/upload/medialibrary/333/33347ab67c1c26c2ed8fd976a655f60a.jpg" height="205" title="photo_2018-03-12_101-31-22.jpg"><img width="205" alt="photo_2018-03-12_10-311-22.jpg" src="/upload/medialibrary/603/60346ef1667ab175dd4194cbf8ac0cd2.jpg" height="205" title="photo_2018-03-12_10-311-22.jpg"></h2>
+<p>
+<img width="205"  src="/upload/medialibrary/80a/80aa96b067db42e7b27bef97e23e5f68.jpg" height="205" style="margin: 0px 40px 10px 0px;">
+<img width="205"  src="/upload/medialibrary/333/33347ab67c1c26c2ed8fd976a655f60a.jpg" height="205" style="margin: 0px 40px 10px 0px;">
+<img width="205"  src="/upload/medialibrary/603/60346ef1667ab175dd4194cbf8ac0cd2.jpg" height="205" style="margin: 0px 40px 10px 0px;">
+</p>
 <h2>Почему выбирают нас?</h2>
 <p>
  <br>
