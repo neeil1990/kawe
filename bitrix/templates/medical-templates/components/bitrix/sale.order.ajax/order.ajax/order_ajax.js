@@ -7901,10 +7901,7 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 			}
 			else if (params.free)
 			{
-				totalValue = [BX.create('SPAN', {
-					props: {className: 'bx-soa-price-free'},
-					html: value
-				})];
+				totalValue = false;
 			}
 			else
 			{
@@ -7924,7 +7921,7 @@ BX.namespace('BX.Sale.OrderAjaxComponent');
 			return BX.create('DIV', {
 				props: {className: className},
 				children: [
-					BX.create('SPAN', {props: {className: 'bx-soa-cart-t'}, text: name}),
+					(totalValue) ? BX.create('SPAN', {props: {className: 'bx-soa-cart-t'}, text: name}) : "",
 					BX.create('SPAN', {
 						props: {
 							className: 'bx-soa-cart-d' + (!!params.total && this.options.totalPriceChanged ? ' bx-soa-changeCostSign' : '')
