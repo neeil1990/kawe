@@ -45,7 +45,7 @@ $this->setFrameMode(true);
 				<a href="#" class="full-slider__title"><?=$arItem["PROPERTIES"]["NAME_PRODUCT"]["VALUE"]?></a>
 				<div class="full-slider__article"><?=$arItem["PROPERTIES"]["ARTICL"]["VALUE"]?></div>
 				<div class="full-slider__info">
-					<a href="#" class="subscribe__btn" style="text-decoration: none">Подробнее</a>
+					<a href="<?=$arItem['CODE']?>" class="subscribe__btn" style="text-decoration: none">Подробнее</a>
 				</div>
 			</div>
 		</div>
