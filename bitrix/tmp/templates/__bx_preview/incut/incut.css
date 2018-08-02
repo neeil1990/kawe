@@ -1,0 +1,81 @@
+/*@font-face {*/
+    /*font-family: roboto;*/
+    /*src: url('http://incut.prime-ltd.su/incut/Roboto-Regular.ttf');*/
+/*}*/
+/*@font-face {*/
+    /*font-family: roboto-bold;*/
+    /*src: url('http://incut.prime-ltd.su/incut/Roboto-Bold.ttf');*/
+/*}*/
+
+.prime-incut {
+    display: block;
+    height: 27px !important;
+    width: 145px !important;
+    /*overflow: hidden !important;*/
+    overflow: visible !important;
+    text-decoration: none !important;
+}
+.prime-incut:hover {
+    cursor: pointer !important;
+}
+
+.prime-incut p {
+    /*font-family: roboto;*/
+    font-family: Arial, Helvetica, sans-serif !important;
+    text-transform: uppercase !important;
+    font-weight: bold !important;
+    margin: 0 !important;
+    font-size: 9px !important;
+    margin-left: 33px !important;
+    display: block !important;
+    line-height: 12px !important;
+    margin-top: 2px !important;
+    text-align: left !important;
+    letter-spacing: 0px !important;
+}
+.prime-incut.white p {
+    color: white !important;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.prime-incut.black p {
+    color: #222 !important;
+}
+
+.prime-incut .small-logo {
+    width: 27px !important;
+    height: 27px !important;
+    float: left !important;
+    background-image: url('https://incut.prime-ltd.su/incut/small-logo.png') !important;
+}
+
+.prime-incut.black .small-logo {
+    background-position: -1px -1px !important;
+}
+
+.prime-incut.white .small-logo {
+    background-position: -1px 28px !important;
+}
+
+.prime-incut.colour .small-logo {
+    background-position: 28px -1px !important;
+}
+
+.prime-incut:hover .small-logo {
+    background-position: 28px -1px !important;
+}
+
+.prime-incut .marketing-and-developing {
+
+}
+.prime-incut .marketing-only {
+    display: none !important;
+}
+
+.prime-incut.marketing-only .marketing-and-developing {
+    display: none !important;
+}
+.prime-incut.marketing-only .marketing-only {
+    display: block !important;
+    /*padding-top: 5px !important;*/
+}

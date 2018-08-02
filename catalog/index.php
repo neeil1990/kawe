@@ -1,8 +1,7 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-?>
-
-<div class="wrapper">
+$APPLICATION->SetTitle("Медицинская техника KaWe -прямые поставки от производителя");
+?><div class="wrapper">
 
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/catalog/sidebar.php");

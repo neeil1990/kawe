@@ -26,7 +26,7 @@ $APPLICATION->IncludeComponent(
 		"PATH_TO_ORDER" => "/personal/order/make/",
 		"HIDE_COUPON" => "N",
 		"QUANTITY_FLOAT" => "N",
-		"PRICE_VAT_SHOW_VALUE" => "Y",
+		"PRICE_VAT_SHOW_VALUE" => "N",
 		"TEMPLATE_THEME" => "site",
 		"SET_TITLE" => "Y",
 		"AJAX_OPTION_ADDITIONAL" => "",
@@ -43,11 +43,11 @@ $APPLICATION->IncludeComponent(
 		"COLUMNS_LIST_EXT" => array(
 			0 => "PREVIEW_PICTURE",
 			1 => "DISCOUNT",
-			2 => "DELETE",
-			3 => "DELAY",
-			4 => "TYPE",
-			5 => "SUM",
-			6 => "PROPS",
+			2 => "PROPS",
+			3 => "DELETE",
+			4 => "DELAY",
+			5 => "TYPE",
+			6 => "SUM",
 		),
 		"COLUMNS_LIST_MOBILE" => array(
 			0 => "PREVIEW_PICTURE",
@@ -94,7 +94,9 @@ $APPLICATION->IncludeComponent(
 		"GIFTS_PAGE_ELEMENT_COUNT" => "4",
 		"GIFTS_CONVERT_CURRENCY" => "N",
 		"GIFTS_HIDE_NOT_AVAILABLE" => "N",
-		"USE_ENHANCED_ECOMMERCE" => "N"
+		"USE_ENHANCED_ECOMMERCE" => "N",
+		"COMPOSITE_FRAME_MODE" => "A",
+		"COMPOSITE_FRAME_TYPE" => "AUTO"
 	),
 	false
 );?>

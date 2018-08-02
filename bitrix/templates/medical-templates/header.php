@@ -25,6 +25,23 @@
     <link rel="stylesheet" href="<?=SITE_TEMPLATE_PATH?>/css/lightgallery.css">
 
     <script src="<?=SITE_TEMPLATE_PATH?>/js/vendor.js"></script>
+
+<script type="text/javascript" src="http://incut.prime-ltd.su/incut/incut.js" async></script>
+    <link rel="stylesheet" href="http://incut.prime-ltd.su/incut/incut.css">
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-121903941-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-121903941-1');
+</script>
+
+
+
 </head>
 
 <body class="<?=COption::GetOptionString("main", "color_theme", "schemes_1");?>">

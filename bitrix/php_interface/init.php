@@ -63,3 +63,23 @@ function EditData ($DATA){
     $newData = $d." ".$MES[$arData[1]]." ".$arData[2];
     return $newData;
 }
+
+
+
+AddEventHandler("sale", "OnOrderNewSendEmail", "bxModifySaleMails");
+
+function bxModifySaleMails($orderID, &$eventName, &$arFields)
+{
+  $arOrder = CSaleOrder::GetByID($orderID);
+  $order_props = CSaleOrderPropsValue::GetOrderProps($orderID);
+
+  $phone="";
+  while ($arProps = $order_props->Fetch())
+  {
+    if ($arProps["CODE"] == "PHONE")
+    {
+       $phone = htmlspecialchars($arProps["VALUE"]);
+    }
+  }
+  $arFields["PHONE"] =  $phone;
+}

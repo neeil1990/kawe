@@ -127,7 +127,6 @@
 <script src="<?=SITE_TEMPLATE_PATH?>/js/functions.js"></script>
 
 
-
 <!-- Yandex.Metrika counter от Prime -->
 <script type="text/javascript" >
     (function (d, w, c) {

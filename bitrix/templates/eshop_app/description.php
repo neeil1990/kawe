@@ -1,8 +1,8 @@
-<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?><?
-IncludeTemplateLangFile(__FILE__);
-$arTemplate = Array(
-	"NAME"=>GetMessage("M_TEMPLATE_NAME"), 
-	"DESCRIPTION"=>GetMessage("M_TEMPLATE_DESC"), 
+<?
+$arTemplate = array (
+  'NAME' => 'Мобильное приложение для магазина',
+  'DESCRIPTION' => 'Шаблон для мобильного приложения магазина',
+  'SORT' => '',
+  'TYPE' => '',
 );
-
 ?>

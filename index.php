@@ -1,5 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("title", "Инструменты и приборы KAWE (КаВе) от производителя - интернет магазин с доставкой по РФ");
 $APPLICATION->SetTitle("KAWE - поставки медицинской техники от производителя по всей России");
 ?>
 
