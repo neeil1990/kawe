@@ -1,0 +1,1 @@
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sotbit.bill/admin/settings_billsotbit.php");?>
