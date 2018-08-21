@@ -1343,13 +1343,13 @@ ol,ul
 }
 .goods__prices
 {
-    flex: 0 0 calc(100% - 80px);
+    flex: 0 0 calc(100% - 60px);
     margin-right: auto;
-    max-width: calc(100% - 80px);
-    max-width: -webkit-calc(100% - 80px);
-    ms-flex: 0 0 calc(100% - 80px);
+    max-width: calc(100% - 60px);
+    max-width: -webkit-calc(100% - 60px);
+    ms-flex: 0 0 calc(100% - 60px);
     webkit-box-flex: 0;
-    webkit-flex: 0 0 -webkit-calc(100% - 80px);
+    webkit-flex: 0 0 -webkit-calc(100% - 60px);
 }
 .goods__price
 {
@@ -1357,6 +1357,20 @@ ol,ul
     font-size: 19px;
     font-weight: 500;
     line-height: 1.1;
+}
+.goods__price.tooltip{
+    cursor:pointer;
+}
+.goods__price.tooltip::after{
+    content: "?";
+    display: inline-block;
+    background: #898989;
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 50px;
+    color: #FFF;
+    vertical-align: middle;
+    margin-left: 5px;
 }
 .goods__counter
 {
@@ -2111,6 +2125,20 @@ ol,ul
     font-size: 36px;
     font-weight: 500;
 }
+.cart__price.tooltip{
+    cursor:pointer;
+}
+.cart__price.tooltip::after{
+    content: "?";
+    display: inline-block;
+    background: #898989;
+    font-size: 20px;
+    padding: 3px 9px;
+    border-radius: 50px;
+    color: #FFF;
+    vertical-align: middle;
+}
+
 .cart_old_price{
     color: #898989;
     font-size: 18px;

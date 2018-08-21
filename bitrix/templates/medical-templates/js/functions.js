@@ -65,3 +65,17 @@ function addToBasket2(idel, quantity,el) {
 }
 
 
+$( function() {
+    $( ".cart__price.tooltip,.goods__price.tooltip" ).tooltip({
+        show: null,
+        content: "Цена зависит от комплектации прибора и/или наличия на складе. Для уточнения стоимости необходимо отправить запрос по электронной почте (запросить КП),  либо оформить заказ на сайте  и менеджер сам вам перезвонит. Если указанная цена вас не устроит, Вы можете отказаться от товара до момента его оплаты.",
+        items: "div[class]",
+        position: {
+            my: "left top",
+            at: "left bottom"
+        },
+        open: function( event, ui ) {
+            ui.tooltip.animate({ top: ui.tooltip.position().top + 10 }, "fast" );
+        }
+    });
+} );

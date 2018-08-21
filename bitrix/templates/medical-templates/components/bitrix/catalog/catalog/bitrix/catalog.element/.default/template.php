@@ -75,7 +75,7 @@ $this->setFrameMode(true);
 				</div>
 			<? endif; ?>
 
-			<div class="cart__price">
+			<div class="cart__price <?=(!$arResult['PRICES']['BASE']['DISCOUNT_VALUE']) ? "tooltip" : ""?>">
 				<?if($arResult['PRICES']['BASE']['DISCOUNT_VALUE']):?>
 					<?=$arResult['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
 				<?else:?>
