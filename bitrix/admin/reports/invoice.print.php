@@ -48,10 +48,13 @@ while ($ar_tax_list = $db_tax_list->Fetch())
 
 
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
 <head>
-    <title>Счет: №  <?=$ORDER_ID;?> </title>
+    <meta http-equiv=Content-Type content="text/html; charset=<?=LANG_CHARSET?>">
+    <meta name=ProgId content=Excel.Sheet>
+    <title langs="ru">Счет с печатью</title>
     <meta http-equiv=content-type content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -272,7 +275,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
             <div class="item-title">
                 <div class="title-line-title">
                     <div class="item-title-line-title">Счет:</div>
-                    <div class="item-title-line-title inline_edit" contenteditable="true">№  <?=$ORDER_ID;?> от <?=$arOrder['DATE_INSERT_FORMAT']?></div>
+                    <div class="item-title-line-title inline_edit" contenteditable="true">№  <?=$arOrder['ACCOUNT_NUMBER'];?> от <?=$arOrder['DATE_INSERT_FORMAT']?></div>
                 </div>
             </div>
             <div class="item-title">
@@ -301,7 +304,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
             <div class="item-title">
                 <div class="line-title">
                     <div class="item-line-title">Основание:</div>
-                    <div class="item-line-title inline_edit" contenteditable="true">Оплата заказа: №  <?=$ORDER_ID;?> от <?=$arOrder['DATE_INSERT_FORMAT']?></div>
+                    <div class="item-line-title inline_edit" contenteditable="true">Оплата заказа: №  <?=$arOrder['ACCOUNT_NUMBER'];?> от <?=$arOrder['DATE_INSERT_FORMAT']?></div>
                 </div>
             </div>
         </div>
