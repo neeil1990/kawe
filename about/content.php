@@ -1,15 +1,13 @@
 <h1>
 От завода KaWe - в клинику </h1>
 <p>
-	 Закупка медицинского оборудования, инструментов, приборов и их доставка в Россию, а далее в клиники, кабинеты, больницы - наше основное направление. Мы - официальный партнер KaWe более 7 лет и более 900 лечебных учреждений уже советуют нас своим коллегам. <br>
+	 Закупка медицинского оборудования, инструментов, приборов и их доставка в Россию, а далее в клиники, кабинеты, больницы - наше основное направление. Мы - партнер KaWe более 7 лет и более 900 лечебных учреждений уже советуют нас своим коллегам. <br>
  <br>
 	 Мы завозим только "белую" продукцию, получившую регистрационные удостоверения, гарантию, прошедшие таможню и поверку при необходимости. Все документы прикладываются к заказу и приборы пригодны для лицензирования кабинетов и клиники.
 </p>
- Всего ежегодно мы завозим около 6000 товарных единиц от популярных офтальмоскопов до более редких приборов <a href="/catalog/universalnye-apparaty-kosmetologicheskie-kombayny/swi-sto-ii-pribor-dlya-iontoforeza-kawe-germaniya/">SWI STO</a>. Являясь официальным партнером KaWe, мы можем предложить более низкую цену на их продукцию, так как имеем эксклюзивную закупочную цену от завода. <br>
+ Всего ежегодно мы завозим около 6000 товарных единиц от популярных офтальмоскопов до более редких приборов <a href="/catalog/universalnye-apparaty-kosmetologicheskie-kombayny/swi-sto-ii-pribor-dlya-iontoforeza-kawe-germaniya/">SWI STO</a>. Являясь&nbsp;партнером KaWe, мы можем предложить более низкую цену на их продукцию, так как имеем эксклюзивную закупочную цену от завода. <br>
 <p>
-<img width="205"  src="/upload/medialibrary/80a/80aa96b067db42e7b27bef97e23e5f68.jpg" height="205" style="margin: 0px 40px 10px 0px;">
-<img width="205"  src="/upload/medialibrary/333/33347ab67c1c26c2ed8fd976a655f60a.jpg" height="205" style="margin: 0px 40px 10px 0px;">
-<img width="205"  src="/upload/medialibrary/603/60346ef1667ab175dd4194cbf8ac0cd2.jpg" height="205" style="margin: 0px 40px 10px 0px;">
+ <img width="205" src="/upload/medialibrary/80a/80aa96b067db42e7b27bef97e23e5f68.jpg" height="205" style="margin: 0px 40px 10px 0px;"> <img width="205" src="/upload/medialibrary/333/33347ab67c1c26c2ed8fd976a655f60a.jpg" height="205" style="margin: 0px 40px 10px 0px;"> <img width="205" src="/upload/medialibrary/603/60346ef1667ab175dd4194cbf8ac0cd2.jpg" height="205" style="margin: 0px 40px 10px 0px;">
 </p>
 <h2>Почему выбирают нас?</h2>
 <p>
