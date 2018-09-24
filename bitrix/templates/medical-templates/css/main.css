@@ -557,6 +557,9 @@ ol,ul
     display: -webkit-flex;
     margin: 0 30px;
 }
+.search form{
+    width: 100%;
+}
 .search__input
 {
     background-color: #fff;
