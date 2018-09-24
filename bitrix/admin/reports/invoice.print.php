@@ -293,11 +293,12 @@ while ($ar_tax_list = $db_tax_list->Fetch())
                 <div class="line-title">
                     <div class="item-line-title">Плательщик:</div>
                     <div class="item-line-title inline_edit" contenteditable="true">
-                        <?=$arOrderProps['FIO']?>,
+                        <?=($arOrderProps['COMPANY']) ? $arOrderProps['COMPANY'] : $arOrderProps['FIO']?>,
                         <?=$arOrderProps['LOCATION_COUNTRY']?>
                         <?=$arOrderProps['ADDRESS']?>,
                         тел: <?=$arOrderProps['PHONE']?>,
                         <?=$arOrderProps['EMAIL']?>
+                        <?=($arOrderProps['INN']) ? ", ИНН: ".$arOrderProps['INN'] : "";?>
                     </div>
                 </div>
             </div>
