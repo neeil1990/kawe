@@ -100,7 +100,7 @@ function BeforeIndexHandler($arFields)
             array("sort" => "asc"),       // Сортировка (можно упустить)
             Array("CODE" => "CML2_ARTICLE")); // CODE свойства (в данном случае артикул)
         if($ar_props = $db_props->Fetch())
-            $arFields["TITLE"] .= " Артикул:".$ar_props["VALUE"];   // Добавим свойство в конец заголовка индексируемого элемента
+            $arFields["TITLE"] .= " Артикул: ".$ar_props["VALUE"];   // Добавим свойство в конец заголовка индексируемого элемента
     }
     return $arFields; // вернём изменения
 }
