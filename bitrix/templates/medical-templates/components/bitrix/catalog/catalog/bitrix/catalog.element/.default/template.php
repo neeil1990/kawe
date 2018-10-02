@@ -13,7 +13,7 @@
 $this->setFrameMode(true);
 ?>
 
-	<div class="title"><?=$arResult['NAME']?></div>
+	<div class="title"><?=htmlspecialchars_decode($arResult['NAME'])?></div>
 	<div class="cart">
 
 		<div class="cart__gallery">
@@ -112,7 +112,7 @@ $this->setFrameMode(true);
 				<? foreach($arResult['PROPERTIES']['CML2_ATTRIBUTES']['DESCRIPTION'] as $key => $attr): ?>
 				<tr>
 					<td><?=$attr?></td>
-					<td><?=$arResult['PROPERTIES']['CML2_ATTRIBUTES']['VALUE'][$key]?></td>
+					<td><?=$arResult['PROPERTIES']['CML2_ATTRIBUTES']['~VALUE'][$key]?></td>
 				</tr>
 				<?endforeach;?>
 			</table>
