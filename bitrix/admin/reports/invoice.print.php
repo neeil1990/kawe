@@ -211,7 +211,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
 </head>
 <body>
 <div class="invoice_menu no_print">
-    <span class="button green translate" onclick="window.print();">РАСПЕЧАТАТЬ</span>
+    <span class="button green translate" onclick="printPage();">РАСПЕЧАТАТЬ</span>
 </div>
 <div class="frame_form landscape">
     <div class="hend-top">
@@ -516,6 +516,10 @@ while ($ar_tax_list = $db_tax_list->Fetch())
             return false;
         });
     });
+    function printPage(){
+        $('title').text("Счет №<?=$ORDER_ID?>");
+        window.print();
+    }
 </script>
 </body>
 </html>

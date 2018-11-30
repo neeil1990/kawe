@@ -211,7 +211,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
 </head>
 <body>
 <div class="invoice_menu no_print">
-    <span class="button green translate" onclick="window.print();">РАСПЕЧАТАТЬ</span>
+    <span class="button green translate" onclick="printPage();">РАСПЕЧАТАТЬ</span>
 </div>
 <div class="frame_form landscape">
     <div class="hend-top">
@@ -452,9 +452,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
             <div class="item-invoice-total"></div>
         </div>
     </div>
-    <div class="draggable_block">
-        <div class="draggable"><img class="faximile_src" src="//almamed.su/wa-data/public/shop/easyinvoicephys/faximile_image.png?1523977516" /></div>
-    </div>
+
     <div class="bottom">
         <div class="block-bottom">
             <div class="item-bottom">Генеральный директор</div>
@@ -495,7 +493,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
 </div>
 <script type="text/javascript">
     $(document).ready(function(){
-        $( ".draggable" ).draggable();
+
         $(".addCols_742").click(function() {
             $('.RowAdd_742').append('<tr>'+
                 '<td><div class="remove no_print"><img src="https://almamed.su/wa-apps/shop/plugins/easyinvoicephys/img/mp.png"></div><div class="counter"></div></td>'+
@@ -514,6 +512,10 @@ while ($ar_tax_list = $db_tax_list->Fetch())
             return false;
         });
     });
+    function printPage(){
+        $('title').text("Счет №<?=$ORDER_ID?> без печати");
+        window.print();
+    }
 </script>
 </body>
 </html>
