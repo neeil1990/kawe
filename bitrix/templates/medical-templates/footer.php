@@ -106,12 +106,15 @@
 		"OK_TEXT" => "Спасибо, ваше сообщение принято.",
 		"PROPERTY_CODE" => array(
 			0 => "NAME",
-			1 => "PHONE",
-			2 => "QUERY",
-			3 => "URL",
+			1 => "URL",
+			2 => "PHONE",
+			3 => "MAIL",
+			4 => "QUERY",
 		),
 		"USE_CAPTCHA" => "N",
-		"COMPONENT_TEMPLATE" => "popup-callback"
+		"COMPONENT_TEMPLATE" => "popup-callback",
+		"COMPOSITE_FRAME_MODE" => "A",
+		"COMPOSITE_FRAME_TYPE" => "AUTO"
 	),
 	false
 );?>
