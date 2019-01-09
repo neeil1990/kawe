@@ -73,11 +73,16 @@ function bxModifySaleMails($orderID, &$eventName, &$arFields)
   $order_props = CSaleOrderPropsValue::GetOrderProps($orderID);
 
   $phone="";
+  $delivery="";
   while ($arProps = $order_props->Fetch())
   {
     if ($arProps["CODE"] == "PHONE")
     {
        $phone = htmlspecialchars($arProps["VALUE"]);
+    }
+    if ($arProps["CODE"] == "ADDRESS")
+    {
+        $delivery = htmlspecialchars($arProps["VALUE"]);
     }
   }
 
@@ -99,6 +104,7 @@ function bxModifySaleMails($orderID, &$eventName, &$arFields)
   }
 
   $arFields["PHONE"] =  $phone;
+  $arFields["DELIVERY"] =  $delivery;
 }
 
 AddEventHandler("sale", "OnOrderStatusSendEmail", "bxModifySaleStatusSendEmail");
@@ -109,11 +115,16 @@ function bxModifySaleStatusSendEmail($orderID, &$eventName, &$arFields, $status)
     $order_props = CSaleOrderPropsValue::GetOrderProps($orderID);
 
     $phone="";
+    $delivery="";
     while ($arProps = $order_props->Fetch())
     {
         if ($arProps["CODE"] == "PHONE")
         {
             $phone = htmlspecialchars($arProps["VALUE"]);
+        }
+        if ($arProps["CODE"] == "ADDRESS")
+        {
+            $delivery = htmlspecialchars($arProps["VALUE"]);
         }
     }
 
@@ -138,6 +149,7 @@ function bxModifySaleStatusSendEmail($orderID, &$eventName, &$arFields, $status)
     }
     $arFields["PHONE"] =  $phone;
     $arFields["ORDER_USER"] =  $arOrder['USER_NAME'].' '.$arOrder['USER_LAST_NAME'];
+    $arFields["DELIVERY"] =  $delivery;
 }
 
 
