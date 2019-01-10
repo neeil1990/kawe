@@ -108,7 +108,6 @@ function bxModifySaleMails($orderID, &$eventName, &$arFields)
 }
 
 AddEventHandler("sale", "OnOrderStatusSendEmail", "bxModifySaleStatusSendEmail");
-
 function bxModifySaleStatusSendEmail($orderID, &$eventName, &$arFields, $status){
 
     $arOrder = CSaleOrder::GetByID($orderID);
@@ -152,6 +151,99 @@ function bxModifySaleStatusSendEmail($orderID, &$eventName, &$arFields, $status)
     $arFields["DELIVERY"] =  $delivery;
 }
 
+AddEventHandler("sale", "OnOrderPaySendEmail", "bxModifySaleStatusPaySendEmail");
+function bxModifySaleStatusPaySendEmail($orderID, &$eventName, &$arFields){
+
+    $arOrder = CSaleOrder::GetByID($orderID);
+    $order_props = CSaleOrderPropsValue::GetOrderProps($orderID);
+
+    $phone="";
+    $delivery="";
+    while ($arProps = $order_props->Fetch())
+    {
+        if ($arProps["CODE"] == "PHONE")
+        {
+            $phone = htmlspecialchars($arProps["VALUE"]);
+        }
+        if ($arProps["CODE"] == "ADDRESS")
+        {
+            $delivery = htmlspecialchars($arProps["VALUE"]);
+        }
+    }
+
+    if(CModule::IncludeModule("sale") && CModule::IncludeModule("iblock"))
+    {
+        $strOrderList = "";
+        $dbBasketItems = CSaleBasket::GetList(
+            array("NAME" => "ASC"),
+            array("ORDER_ID" => $orderID),
+            false,
+            false,
+            array("PRODUCT_ID", "ID", "NAME", "QUANTITY", "PRICE", "CURRENCY")
+        );
+        $sum = 0;
+        while ($arProps = $dbBasketItems->Fetch())
+        {
+            $sum += $arProps['PRICE']*$arProps['QUANTITY'];
+            $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']."</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
+        }
+        $arFields["ORDER_LIST_TABLE"] = $strOrderList;
+        $arFields["PRICE"] = CurrencyFormat($sum,"RUB");
+    }
+    $arFields["PHONE"] =  $phone;
+    $arFields["ORDER_USER"] =  $arOrder['USER_NAME'].' '.$arOrder['USER_LAST_NAME'];
+    $arFields["DELIVERY"] =  $delivery;
+}
+
+AddEventHandler('main', 'OnBeforeEventAdd', array('MyClassTrack', 'OnTrack'));
+define("LOG_FILENAME", $_SERVER["DOCUMENT_ROOT"]."/log.txt");
+class MyClassTrack
+{
+    static function OnTrack(&$event, &$lid, &$arFields, &$message_id) {
+        if ($event == 'SALE_ORDER_TRACKING_NUMBER') {
+            $orderID = $arFields['ORDER_REAL_ID'];
+            $arOrder = CSaleOrder::GetByID($orderID);
+            $order_props = CSaleOrderPropsValue::GetOrderProps($orderID);
+
+            $phone="";
+            $delivery="";
+            while ($arProps = $order_props->Fetch())
+            {
+                if ($arProps["CODE"] == "PHONE")
+                {
+                    $phone = htmlspecialchars($arProps["VALUE"]);
+                }
+                if ($arProps["CODE"] == "ADDRESS")
+                {
+                    $delivery = htmlspecialchars($arProps["VALUE"]);
+                }
+            }
+
+            if(CModule::IncludeModule("sale") && CModule::IncludeModule("iblock"))
+            {
+                $strOrderList = "";
+                $dbBasketItems = CSaleBasket::GetList(
+                    array("NAME" => "ASC"),
+                    array("ORDER_ID" => $orderID),
+                    false,
+                    false,
+                    array("PRODUCT_ID", "ID", "NAME", "QUANTITY", "PRICE", "CURRENCY")
+                );
+                $sum = 0;
+                while ($arProps = $dbBasketItems->Fetch())
+                {
+                    $sum += $arProps['PRICE']*$arProps['QUANTITY'];
+                    $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']."</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
+                }
+                $arFields["ORDER_LIST_TABLE"] = $strOrderList;
+                $arFields["PRICE"] = CurrencyFormat($sum,"RUB");
+            }
+            $arFields["PHONE"] =  $phone;
+            $arFields["ORDER_USER"] =  $arOrder['USER_NAME'].' '.$arOrder['USER_LAST_NAME'];
+            $arFields["DELIVERY"] =  $delivery;
+        }
+    }
+}
 
 // регистрируем обработчик
 AddEventHandler("search", "BeforeIndex", "BeforeIndexHandler");
