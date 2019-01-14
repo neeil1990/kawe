@@ -196,7 +196,7 @@ function bxModifySaleStatusPaySendEmail($orderID, &$eventName, &$arFields){
 }
 
 AddEventHandler('main', 'OnBeforeEventAdd', array('MyClassTrack', 'OnTrack'));
-define("LOG_FILENAME", $_SERVER["DOCUMENT_ROOT"]."/log.txt");
+
 class MyClassTrack
 {
     static function OnTrack(&$event, &$lid, &$arFields, &$message_id) {
