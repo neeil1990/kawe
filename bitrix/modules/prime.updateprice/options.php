@@ -75,7 +75,7 @@ $module_id = 'prime.updateprice';
 					}
 				}
 				if($data_file){
-					$message = "Всего: " . $resElement->result->num_rows . " товаров. Подробнее: <a target='_blank' href='/bitrix/admin/fileman_file_view.php?path=/".$name_file."/&site=s1&lang=ru'>Файл: ".$name_file."</a>";
+					$message = "Всего: " . $resElement->result->num_rows . " товаров. Подробнее: <a target='_blank' href='/bitrix/admin/fileman_file_view.php?path=/upload/".$name_file."&site=s1&lang=ru'>Файл: ".$name_file."</a>";
 					CAdminMessage::ShowMessage(array(
 						"MESSAGE" => $message,
 						"HTML" => true,
