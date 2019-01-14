@@ -1,6 +1,7 @@
 <?php
 //IBlock catalog id
 define("IBLOCK_CATALOG","33");
+
 AddEventHandler("main", "OnBeforeEndBufferContent", "OnBeforeEndBufferContent", 100500);
 function OnBeforeEndBufferContent()
 {
