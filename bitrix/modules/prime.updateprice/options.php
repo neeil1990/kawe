@@ -65,7 +65,11 @@ $module_id = 'prime.updateprice';
 						$arFields = Array(
 							"PRODUCT_ID" => $PRODUCT_ID,
 							"CATALOG_GROUP_ID" => $PRICE_TYPE_ID,
+<<<<<<< HEAD
 							"PRICE" => ($percent > 0) ? CCurrencyLang::CurrencyFormat($arr['PRICE'] - (($arr['PRICE']*$percent)/100),$arr['CURRENCY'],false) : $arr['PRICE'],
+=======
+							"PRICE" => ($percent > 0 && $arr['PRICE'] > 0) ? $arr['PRICE'] - round(($arr['PRICE'] / 100) * $percent, 2) : $arr['PRICE'],
+>>>>>>> ac2b983abfc9722b48d5a5c0bdc83d5b92180dc7
 							"CURRENCY" => $arr['CURRENCY']
 						);
 						$result = CPrice::Update($arr["ID"], $arFields);
