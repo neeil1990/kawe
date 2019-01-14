@@ -31,6 +31,10 @@ Disallow: /*?bxajaxid=
 Disallow: /*&bxajaxid=
 Disallow: /*?view_result=
 Disallow: /*&view_result=
+Disallow: *rk.php?goto=
+Disallow: *rk.php?
+Disallow: *click.php
+Disallow: *redirect.php
 Allow: /bitrix/components/
 Allow: /bitrix/cache/
 Allow: /bitrix/js/

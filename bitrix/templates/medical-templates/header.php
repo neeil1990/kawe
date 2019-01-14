@@ -28,8 +28,8 @@
 
     <script src="<?=SITE_TEMPLATE_PATH?>/js/vendor.js"></script>
 
-<script type="text/javascript" src="http://incut.prime-ltd.su/incut/incut.js" async></script>
-    <link rel="stylesheet" href="http://incut.prime-ltd.su/incut/incut.css">
+<script type="text/javascript" src="https://incut.prime-ltd.su/incut/incut.js" async></script>
+    <link rel="stylesheet" href="https://incut.prime-ltd.su/incut/incut.css">
 
 
 <!-- Global site tag (gtag.js) - Google Analytics -->

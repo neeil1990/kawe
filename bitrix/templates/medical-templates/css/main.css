@@ -237,7 +237,7 @@ ol,ul
 {
     color: #fff;
     flex: 1;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.11;
     -ms-flex: 1;
     padding: 19px 5px 16px 15px;
@@ -484,7 +484,7 @@ ol,ul
     top: 100%;
     -webkit-box-shadow: 3.5px 6.1px 18.1px 2.9px rgba(9,7,5,.18);
     -webkit-flex-wrap: wrap;
-    width: 470px;
+    width: 570px;
     z-index: 100;
 }
 .header__catalog .catalog__menu.catalog__menu

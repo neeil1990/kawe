@@ -14,9 +14,9 @@ if(!defined("B_PROLOG_INCLUDED")||B_PROLOG_INCLUDED!==true)die();
 
 	<span class="button b-close"><span>&times;</span></span>
 
-	<h1 class="mfeedback-p-head">
+	<div class="mfeedback-p-head">
 		Заказать звонок
-	</h1>
+	</div>
 
 
 <?if(!empty($arResult["ERROR_MESSAGE"]))
