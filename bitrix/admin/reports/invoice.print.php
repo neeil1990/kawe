@@ -281,7 +281,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
             <div class="item-title">
                 <div class="line-title">
                     <div class="item-line-title">Поставщик:</div>
-                    <div class="item-line-title inline_edit" contenteditable="true">Индивидуальный Предприниматель Новикова Людмила Петровна, 394030 г.Воронеж, ул. Промышленная 4, офис 406,ИНН: 362903114143 , тел: 8-800-100-37-97 , info@almamed.su</div>
+                    <div class="item-line-title inline_edit" contenteditable="true">Индивидуальный Предприниматель Новикова Людмила Петровна, 394030 г.Воронеж, ул. Революции 1905 года, д. 31Е, офис 174, ИНН: 362903114143 , тел: 8-800-100-37-97 , info@almamed.su</div>
                 </div>
             </div>
 
