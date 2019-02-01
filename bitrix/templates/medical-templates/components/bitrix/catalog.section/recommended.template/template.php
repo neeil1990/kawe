@@ -43,7 +43,11 @@ $this->setFrameMode(true);
 				</div>
 				<div class="goods__info">
 					<div class="goods__prices">
-						<div class="goods__price"><?=$arItem['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
+						<?if($arItem['PRICES']['BASE']['VALUE']):?>
+							<div class="goods__price"><?=$arItem['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
+						<?else:?>
+							<div class="goods__price tooltip" style="font-size: 15px;">Цена по запросу</div>
+						<?endif;?>
 						<div class="goods__counter">
 							<div class="goods__counter_subtract">-</div>
 							<input type="text" class="goods__counter_input" id="goods__counter_input_<?=$arItem['ID']?>" value="1" readonly>
