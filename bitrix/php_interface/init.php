@@ -106,6 +106,7 @@ function bxModifySaleMails($orderID, &$eventName, &$arFields)
 
   $arFields["PHONE"] =  $phone;
   $arFields["DELIVERY"] =  $delivery;
+  $arFields["USER_DESCRIPTION"] =  $arOrder['USER_DESCRIPTION'];
 }
 
 AddEventHandler("sale", "OnOrderStatusSendEmail", "bxModifySaleStatusSendEmail");
