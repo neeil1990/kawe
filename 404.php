@@ -78,7 +78,9 @@ $APPLICATION->SetTitle("Страница не найдена");?>
 
 	</div>
 
-<?if(!empty($_REQUEST['ELEMENT_SORT_FIELD'])):?>
+<?
+global $USER;
+if(!empty($_REQUEST['ELEMENT_SORT_FIELD']) && !$USER->IsAuthorized()):?>
 	<script>
 		$(function(){
 			$all = $('.wrapper').get(0);
