@@ -78,4 +78,21 @@ $APPLICATION->SetTitle("Страница не найдена");?>
 
 	</div>
 
+<?if(!empty($_REQUEST['ELEMENT_SORT_FIELD'])):?>
+	<script>
+		$(function(){
+			$all = $('.wrapper').get(0);
+			$($all).find('.sidebar').get(0).remove();
+			$($all).find('.main.overflow-hidden').removeClass('main');
+			$($all).removeClass('wrapper');
+			$('.bx-form-control').attr('onkeyup','title_search_result()');
+		});
+		function title_search_result(){
+			$('.title-search-result').remove();
+		}
+	</script>
+
+
+<? endif; ?>
+
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
