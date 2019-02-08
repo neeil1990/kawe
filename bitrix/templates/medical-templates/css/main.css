@@ -2339,7 +2339,7 @@ ol,ul
     display: none;
 }
 .tabs__content.text ol{
-    margin-left: 30px;
+    margin-left: 35px;
     list-style-type:decimal!important;
 }
 .content
