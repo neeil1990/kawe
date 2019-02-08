@@ -1333,7 +1333,7 @@ ol,ul
     font-size: 13px;
     font-weight: 500;
 }
-.goods__info,.text ul li
+.goods__info,.text ul > li
 {
     align-items: flex-start;
     display: flex;
