@@ -2338,6 +2338,9 @@ ol,ul
 {
     display: none;
 }
+.tabs__content.text ol{
+    margin-left: 30px;
+}
 .content
 {
     line-height: 1.5;
