@@ -1525,7 +1525,7 @@ ol,ul
 {
     margin: 6px 0;
 }
-.text ul li:before
+.text ul > li:before
 {
     background-color: #545d6f;
     border: solid 1px #555d6f;
