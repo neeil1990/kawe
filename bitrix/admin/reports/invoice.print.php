@@ -422,11 +422,16 @@ while ($ar_tax_list = $db_tax_list->Fetch())
                 <td colspan="5">Скидка:</td>
                 <td colspan="1" class="inline_edit" contenteditable="true">-0,00</td>
             </tr>
-            <tr class="hide">
-                <td colspan="5">Сумма счета c НДС:</td>
+            <tr class="">
+                <td colspan="5">Итого без НДС:</td>
                 <td colspan="1" class="inline_edit" contenteditable="true">
                     <?=CCurrencyLang::CurrencyFormat($total_sum, $arOrder["CURRENCY"], false);?>
                 </td>
+            </tr>
+
+            <tr class="">
+                <td colspan="5">Итого НДС:</td>
+                <td colspan="1" class="inline_edit" contenteditable="true">0.00</td>
             </tr>
 
 
@@ -449,7 +454,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
             <div class="item-invoice-total inline_edit" contenteditable="true">
                 <?=$mi?>,
                 на сумму: <?=CCurrencyLang::CurrencyFormat($total_sum, $arOrder["CURRENCY"], false);?> руб.,
-                c НДС</div>
+                без НДС</div>
         </div>
         <div class="invoice-total">
             <div class="item-invoice-total"></div>
