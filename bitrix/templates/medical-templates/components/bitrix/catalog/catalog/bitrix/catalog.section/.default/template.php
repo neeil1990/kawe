@@ -41,6 +41,7 @@ if(empty($arResult['ITEMS']))
 						<div class="goods__article">Арт: <?/*=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12)*/?></div>
 						<?/* endif; */?>
 					</div>-->
+					<input type="hidden" name="color" data-price="<?=CurrencyFormat($item['PROPERTIES']['PRICES']['VALUE'][0],$item['PRICES']['BASE']['CURRENCY'])?>" class="article" value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
 					<div class="goods__info">
 						<div class="goods__prices">
 

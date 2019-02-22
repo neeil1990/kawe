@@ -43,6 +43,7 @@ $this->setFrameMode(true);
 					<div class="goods__price">
 							<?=$price['DISCOUNT_PRICE']?>
 					</div>
+					<input type="hidden" name="color" data-price="<?=$price['DISCOUNT_PRICE']?>" class="article" value="<?=$arItem['PROPERTIES']['CML2_ARTICLE']['VALUE']?>">
 
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>

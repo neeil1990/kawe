@@ -42,7 +42,7 @@ function replaseBasketMobileTop() {
 function addToBasket2(idel, quantity,el) {
     $art = $(el).closest('.cart__content').find('.cart__radio:checked').val();
     if(!$art){
-        $art = $(el).closest('.cart__content').find('.article').text().replace("Арт: ","");
+        $art = $(el).closest('.goods__item').find('.article').val();
     }
     $color = $.trim($(el).closest('.cart__content').find('.cart__radio:checked').parent().text());
 
