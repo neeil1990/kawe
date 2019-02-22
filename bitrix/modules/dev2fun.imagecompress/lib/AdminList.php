@@ -1,7 +1,8 @@
 <?php
 /**
  * @author darkfriend <hi@darkfriend.ru>
- * @version 0.1.8
+ * @copyright dev2fun
+ * @version 0.2.1
  */
 namespace Dev2fun\ImageCompress;
 
@@ -425,23 +426,38 @@ class AdminList {
 
 	public function compressAll() {
 	    global $APPLICATION, $recCompress;
+		$navPageCount= 0;
         if($_REQUEST['compress_all']) {
             \CJSCore::Init(array('ajax'));
             echo '<div id="compressAllStatus">';
             if($_REQUEST['AJAX_IC']) {
                 $APPLICATION->RestartBuffer();
                 ob_start();
-                $rsRes = Compress::getInstance()->getFileList(array(), array(
-                    'COMRESSED' => 'N',
-                    '@CONTENT_TYPE' => array(
-                        'image/jpeg',
-                        'image/png',
+                $rsRes = Compress::getInstance()->getFileList(
+                    array(),
+                    array(
+                        'COMRESSED' => 'N',
+                        '@CONTENT_TYPE' => array(
+                            'image/jpeg',
+                            'image/png',
+                        )
                     )
-                ));
-                $rsRes->NavStart(30,false,$_REQUEST['PAGEN_1']);
+                );
+				$pageSize = Option::get('dev2fun.imagecompress', "cnt_step", 30);
+                $rsRes->NavStart($pageSize,false,$_REQUEST['PAGEN_1']);
+                if(empty($_SESSION['DEV2FUN_COMPRESS_NAVPAGECOUNT'])) {
+					$_SESSION['DEV2FUN_COMPRESS_NAVPAGECOUNT'] = $rsRes->NavPageCount;
+					$navPageCount = $rsRes->NavPageCount;
+					if(!$navPageCount) $navPageCount = 0;
+					$recCompress=true;
+                } else {
+					$navPageCount = $_SESSION['DEV2FUN_COMPRESS_NAVPAGECOUNT'];
+                }
                 $stepOnPage = 0;
                 while($arFile = $rsRes->NavNext(true)) {
+//                    var_dump($arFile);
                     $strFilePath = \CFile::GetPath($arFile["ID"]);
+					$stepOnPage++;
                     if(!file_exists($_SERVER['DOCUMENT_ROOT'].$strFilePath)) {
                         Compress::getInstance()->addCompressTable($arFile['ID'],Array(
                             'FILE_ID' => $arFile['ID'],
@@ -451,10 +467,10 @@ class AdminList {
                         continue;
                     }
                     $recCompress = Compress::getInstance()->compressImageByID($arFile['ID']);
-                    $stepOnPage++;
 //                    $recCompress = true;
                 }
-                $progressValue = (100/$rsRes->NavPageCount)*$rsRes->NavPageNomer;
+                $progressValue = (100/$navPageCount)*$rsRes->NavPageNomer;
+//                $progressValue = (100/$rsRes->NavPageCount)*$rsRes->NavPageNomer;
             }
             if($recCompress===false) {
                 $msgError = Compress::getInstance()->LAST_ERROR;
@@ -463,27 +479,38 @@ class AdminList {
                     "MESSAGE"=> $msgError,
                     "TYPE"=> "ERROR",
                 ));
-            } else {
+            } elseif($navPageCount>0) {
                 $admFields = array(
                     "MESSAGE" => Loc::getMessage('D2F_IMAGECOMPRESS_COMPRESS_IMAGE_PROGRESSBAR'),
                     "DETAILS" => "#PROGRESS_BAR#",
                     "HTML" => true,
                     "TYPE" => "PROGRESS",
-                    "PROGRESS_TOTAL" => $rsRes->NavPageCount,
+                    "PROGRESS_TOTAL" => $navPageCount,
+//                    "PROGRESS_TOTAL" => $rsRes->NavPageCount,
                     "PROGRESS_VALUE" => $rsRes->NavPageNomer,
                 );
                 if($rsRes->NavPageCount) {
                     $admFields['PROGRESS_TEMPLATE'] = '<span>Шаг: #PROGRESS_VALUE# из #PROGRESS_TOTAL# (#PROGRESS_PERCENT#)</span>';
                 }
                 \CAdminMessage::ShowMessage($admFields);
+            } else {
+				\CAdminMessage::ShowMessage(array(
+					"MESSAGE"=> Loc::getMessage('D2F_IMAGECOMPRESS_COMPRESS_IMAGE_STATUS_SUCCESS'),
+					"TYPE"=> "OK",
+				));
             }
+			if($rsRes->NavPageNomer>=$navPageCount) {
+				$_SESSION['DEV2FUN_COMPRESS_NAVPAGECOUNT'] = false;
+				unset($_SESSION['DEV2FUN_COMPRESS_NAVPAGECOUNT']);
+			}
             if($_REQUEST['AJAX_IC']) {
                 $html = ob_get_clean();
                 echo \CUtil::PhpToJSObject(array(
                     'html' => $html,
                     'error' => (($recCompress===false)?true:false),
                     'step' => ($rsRes->NavPageNomer+1),
-                    'allStep' => $rsRes->NavPageCount,
+                    'allStep' => $navPageCount,
+//                    'allStep' => $rsRes->NavPageCount,
                     'pageCount' => $stepOnPage,
                     'count' => $rsRes->SelectedRowsCount(),
                     'progressValue' => $progressValue,

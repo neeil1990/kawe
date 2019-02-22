@@ -1,5 +1,6 @@
 /**
  * Created by darkfriend
+ * @version 0.2.1
  */
 function SendPropcess(step) {
     BX.ajax({
@@ -28,6 +29,7 @@ function SendPropcess(step) {
         },
         onfailure: function(){
             BX.closeWait('compressAllStatus');
+			BX('compressAllStatus').innerHTML = 'Error!';
         }
     });
 }

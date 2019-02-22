@@ -1,10 +1,11 @@
 <?
 /**
  * @author darkfriend <hi@darkfriend.ru>
- * @version 0.1.8
+ * @copyright dev2fun
+ * @version 0.2.1
  */
 defined('B_PROLOG_INCLUDED') and (B_PROLOG_INCLUDED === true) or die();
-IncludeModuleLangFile(__FILE__);
+\Bitrix\Main\Localization\Loc::loadMessages(__FILE__);
 
 use Bitrix\Main\ModuleManager,
     Bitrix\Main\EventManager,
@@ -23,6 +24,9 @@ Loader::registerAutoLoadClasses(
         'Dev2fun\ImageCompress\Check' => 'lib/Check.php',
         'Dev2fun\ImageCompress\Compress' => 'lib/Compress.php',
         "Dev2funImageCompress" => 'include.php',
+
+		"Dev2fun\ImageCompress\Jpegoptim" => 'lib/Jpegoptim.php',
+		"Dev2fun\ImageCompress\Optipng" => 'lib/Optipng.php',
     )
 );
 
@@ -57,7 +61,7 @@ class dev2fun_imagecompress extends CModule
     function DoInstall() {
         global $APPLICATION;
 //        ini_set('display_errors',true);
-        if(!check_bitrix_sessid()) return;
+        if(!check_bitrix_sessid()) return false;
         try {
             if($_REQUEST['STEP']==1||!$_REQUEST['D2F_FIELDS']) {
                 $APPLICATION->IncludeAdminFile(
@@ -65,14 +69,14 @@ class dev2fun_imagecompress extends CModule
                     __DIR__ . "/step1.php"
                 );
             } else {
-                $this->saveFields();
-                $this->check();
-                $this->installFiles();
-                $this->installDB();
-                $this->registerEvents();
-                ModuleManager::registerModule($this->MODULE_ID);
-            }
-        } catch (Exception $e) {
+				$this->saveFields();
+				$this->check();
+				$this->installFiles();
+				$this->installDB();
+				$this->registerEvents();
+				ModuleManager::registerModule($this->MODULE_ID);
+			}
+		} catch (Exception $e) {
             $GLOBALS['D2F_COMPRESSIMAGE_ERROR'] = $e->getMessage();
             $GLOBALS['D2F_COMPRESSIMAGE_ERROR_NOTES'] = Loc::getMessage('D2F_IMAGECOMPRESS_ERROR_CHECK_NOFOUND_NOTES');
             $APPLICATION->IncludeAdminFile(
@@ -89,43 +93,57 @@ class dev2fun_imagecompress extends CModule
      
     function DoUninstall() {
         global $APPLICATION;
+//        $request = Application::getInstance()->getContext()->getRequest();
 //        ModuleManager::unRegisterModule($this->MODULE_ID);
         if(!check_bitrix_sessid()) return;
-        $this->deleteFiles();
-        $this->unInstallDB();
-        $this->unRegisterEvents();
-        ModuleManager::unRegisterModule($this->MODULE_ID);
-        $admMsg = new CAdminMessage(false);
-        $admMsg->ShowMessage(array(
-            "MESSAGE"=>Loc::getMessage('D2F_IMAGECOMPRESS_UNINSTALL_SUCCESS'),
-            "TYPE"=>"OK"
-        ));
-        echo BeginNote();
-        echo Loc::getMessage("D2F_IMAGECOMPRESS_UNINSTALL_LAST_MSG");
-        EndNote();
+		if(empty($_REQUEST['UNSTEP'])||$_REQUEST['UNSTEP']==1) {
+			$APPLICATION->IncludeAdminFile(
+				Loc::getMessage("D2F_MODULE_IMAGECOMPRESS_UNSTEP1"),
+				__DIR__ . "/unstep1.php"
+			);
+		} else {
+			$this->deleteFiles();
+			if(!empty($_REQUEST['D2F_UNSTEP_FIELDS']['DB'])) {
+				$this->unInstallDB();
+			}
+			$this->unRegisterEvents();
+			ModuleManager::unRegisterModule($this->MODULE_ID);
+			$admMsg = new CAdminMessage(false);
+			$admMsg->ShowMessage(array(
+				"MESSAGE"=>Loc::getMessage('D2F_IMAGECOMPRESS_UNINSTALL_SUCCESS'),
+				"TYPE"=>"OK"
+			));
+			echo BeginNote();
+			echo Loc::getMessage("D2F_IMAGECOMPRESS_UNINSTALL_LAST_MSG");
+			EndNote();
+		}
     }
 
     public function saveFields() {
         if($pthJpeg = $_REQUEST['D2F_FIELDS']['path_to_jpegoptim']) {
             Option::set($this->MODULE_ID,'path_to_jpegoptim',$pthJpeg);
+			Option::set($this->MODULE_ID,'opti_algorithm_jpeg','jpegoptim');
         }
         if($pthPng = $_REQUEST['D2F_FIELDS']['path_to_optipng']) {
             Option::set($this->MODULE_ID,'path_to_optipng',$pthPng);
+			Option::set($this->MODULE_ID,'opti_algorithm_png','optipng');
         }
     }
 
     public function check() {
-        if(!Dev2fun\ImageCompress\Check::isJPEGOptim()) {
+        if(!Dev2fun\ImageCompress\Check::isJPEGOptim('jpegoptim')) {
             throw new Exception(Loc::getMessage('D2F_IMAGECOMPRESS_ERROR_CHECK_NOFOUND',array('#MODULE#'=>'jpegoptim')));
         }
 
-        if(!Dev2fun\ImageCompress\Check::isPNGOptim()) {
+        if(!Dev2fun\ImageCompress\Check::isPNGOptim('optipng')) {
             throw new Exception(Loc::getMessage('D2F_IMAGECOMPRESS_ERROR_CHECK_NOFOUND', array('#MODULE#' => 'optipng')));
         }
     }
 
     public function installDB() {
-        ImageCompressTable::getEntity()->createDbTable();
+		if(!ImageCompressTable::getEntity()->getConnection()->isTableExists(ImageCompressTable::getTableName())) {
+			ImageCompressTable::getEntity()->createDbTable();
+		}
 //        Option::set($this->MODULE_ID,'path_to_optipng','/usr/bin');
 //        Option::set($this->MODULE_ID,'path_to_jpegoptim','/usr/bin');
 
@@ -136,7 +154,7 @@ class dev2fun_imagecompress extends CModule
 
         Option::set($this->MODULE_ID,'jpegoptim_compress','80');
         Option::set($this->MODULE_ID,'jpeg_progressive','Y');
-        Option::set($this->MODULE_ID,'optipng_compress','5');
+        Option::set($this->MODULE_ID,'optipng_compress','3');
         return true;
     }
 

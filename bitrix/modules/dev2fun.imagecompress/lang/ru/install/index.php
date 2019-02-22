@@ -17,3 +17,6 @@ $MESS["D2F_MODULE_IMAGECOMPRESS_STEP_ERROR"] = "Ошибка при устано
 $MESS["D2F_IMAGECOMPRESS_ERROR_CHECK_NOFOUND"] = "Не найден #MODULE#. Установите на сервере #MODULE#";
 $MESS["D2F_IMAGECOMPRESS_ERROR_CHECK_NOFOUND_HEADING"] = "Установка модуля не возможна!";
 $MESS["D2F_IMAGECOMPRESS_ERROR_CHECK_NOFOUND_NOTES"] = "<b>Установка модуля dev2fun.imagecompress не возможна.</b><br>На сервере не хватает ключевых компонентов.<br>Без этих компонентов оптимизация картинок не возможна.<br>Требуются компоненты: <b>jpegoptim</b> и <b>optipng</b>";
+
+
+$MESS["D2F_MODULE_IMAGECOMPRESS_UNSTEP1"] = "Удаление модуля dev2fun.imagecompress. Шаг 1.";

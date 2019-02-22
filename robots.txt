@@ -35,6 +35,8 @@ Disallow: *rk.php?goto=
 Disallow: *rk.php?
 Disallow: *click.php
 Disallow: *redirect.php
+Disallow: /?
+Disallow: /*?
 Allow: /bitrix/components/
 Allow: /bitrix/cache/
 Allow: /bitrix/js/

@@ -1,9 +1,10 @@
 <?
 /**
- * Created by PhpStorm.
- * User: darkfriend <hi@darkfriend.ru>
- * Date: 04.05.2017
+ * @author darkfriend <hi@darkfriend.ru>
+ * @copyright dev2fun
+ * @version 0.2.1
  */
+
 defined('B_PROLOG_INCLUDED') and (B_PROLOG_INCLUDED === true) or die();
 if(!check_bitrix_sessid()) return;
 
@@ -23,7 +24,10 @@ Loader::registerAutoLoadClasses(
         'Dev2fun\ImageCompress\AdminList' => 'lib/AdminList.php',
         'Dev2fun\ImageCompress\Check' => 'lib/Check.php',
         'Dev2fun\ImageCompress\Compress' => 'lib/Compress.php',
-        "Dev2funImageCompress" => 'include.php'
+        "Dev2funImageCompress" => 'include.php',
+
+		"Dev2fun\ImageCompress\Jpegoptim" => 'lib/Jpegoptim.php',
+		"Dev2fun\ImageCompress\Optipng" => 'lib/Optipng.php',
     )
 );
 echo BeginNote();
@@ -38,7 +42,7 @@ echo EndNote();
                 <label for="path_to_jpegoptim"><?= Loc::getMessage('D2F_COMPRESS_REFERENCES_PATH_JPEGOPTI')?>:</label>
             </td>
             <td>
-                <input type="text" name="D2F_FIELDS[path_to_jpegoptim]" value="<?=Option::get($moduleName, "path_to_jpegoptim", '/usr/bin');?>">
+                <input type="text" name="D2F_FIELDS[path_to_jpegoptim]" value="<?=Option::get($moduleName, "path_to_jpegoptim", '/usr/bin');?>"> /jpegoptim
             </td>
         </tr>
         <tr>
@@ -46,7 +50,7 @@ echo EndNote();
                 <label for="path_to_optipng"><?= Loc::getMessage('D2F_COMPRESS_REFERENCES_PATH_PNGOPTI')?>:</label>
             </td>
             <td>
-                <input type="text" name="D2F_FIELDS[path_to_optipng]" value="<?=Option::get($moduleName, "path_to_optipng", '/usr/bin');?>">
+                <input type="text" name="D2F_FIELDS[path_to_optipng]" value="<?=Option::get($moduleName, "path_to_optipng", '/usr/bin');?>"> /optipng
             </td>
         </tr>
         <tr>

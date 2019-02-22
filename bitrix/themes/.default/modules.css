@@ -2877,6 +2877,15 @@ div.float-form-shadow {position:absolute; background-color:#797979; z-index:1; o
 #currency_menu_icon {background-image:url(icons/currency/mnu_currency.gif);}
 #currency_page_icon {background-image:url(icons/currency/title.gif);}
 /*Menu icon*/
+.dev2fun_compressimage_menu_icon {
+    background-image:url('icons/dev2fun.imagecompress/dev2fun_imagecompress.png');
+    background-position: 9px 4px;
+}
+#dev2fun_compressimage_menu_icon {
+    background-image:url('icons/dev2fun.imagecompress/dev2fun_imagecompress.png');
+}
+
+/*Menu icon*/
 #fileman_menu_icon {background-image:url(icons/fileman/mnu_fileman.gif);}
 #fileman_page_icon {background-image:url(icons/fileman/title.gif);}
 #fileman_menu_icon_sections {background-image:url(icons/fileman/mnu_folder.gif);}

@@ -26,6 +26,16 @@ RewriteCond %{REQUEST_URI} !^/bitrix/admin/1c_exchange.php
 RewriteCond %{REQUEST_URI} !^/hand1CtoSite.php
 RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L]
   
+#добавить / если его нет 
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !(.*)/$
+RewriteRule ^(.*[^/])$ $1/ [L,R=301]
+
+#убрать //
+RewriteCond %{REQUEST_URI} ^(.*)/{2,}(.*)$
+RewriteRule (.*) %1/%2 [R=301,L]    
+    
   
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
