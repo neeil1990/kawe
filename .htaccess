@@ -24,7 +24,7 @@ RewriteEngine On
 RewriteCond %{HTTPS} =off
 RewriteCond %{REQUEST_URI} !^/bitrix/admin/1c_exchange.php
 RewriteCond %{REQUEST_URI} !^/hand1CtoSite.php
-RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L]
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
   
 #добавить / если его нет 
 RewriteBase /
