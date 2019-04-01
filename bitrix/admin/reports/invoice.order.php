@@ -48,7 +48,6 @@ while ($ar_tax_list = $db_tax_list->Fetch())
 $arDeliv = CSaleDelivery::GetByID($arOrder['DELIVERY_ID']);
 $arPaySys = CSalePaySystem::GetByID($arOrder['PAY_SYSTEM_ID']);
 $arPersType = CSalePersonType::GetByID($arOrder['PERSON_TYPE_ID']);
-
 ?>
 
 <html>
@@ -209,6 +208,12 @@ $arPersType = CSalePersonType::GetByID($arOrder['PERSON_TYPE_ID']);
                 <?endif;?>
             </strong>
         </h3>
+
+        <?if($arPersType["ID"] == 1 && $arOrderProps['PASSPORT']):?>
+        <h3><span class="gray">Паспорт —</span>
+            <strong><?=$arOrderProps['PASSPORT']?></strong>
+        </h3>
+        <? endif; ?>
 
         <div class="clear-right"></div>
 
