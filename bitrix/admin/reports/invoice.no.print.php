@@ -365,11 +365,15 @@ while ($ar_tax_list = $db_tax_list->Fetch())
                 }
                 $total_nds += $nds_val*$arQuantities[$mi];
 
+                $article = array_filter($arBasket['PROPS'],function($data){
+                    return ($key = array_search('CML2_ARTICLE', $data));
+                });
+
                 ?>
 
                 <tr>
                     <td><div class="counter"></div></td>
-                    <td class="inline_edit" contenteditable="true"><?echo $arBasket["NAME"]; ?></td>
+                    <td class="inline_edit" contenteditable="true"><?echo $arBasket["NAME"]; ?> (<?=(is_array($article)) ? current($article)["VALUE"] : ""?>)</td>
                     <td class="inline_edit" contenteditable="true">шт.</td>
                     <td class="inline_edit" contenteditable="true"><?echo Bitrix\Sale\BasketItem::formatQuantity($arQuantities[$mi]); ?></td>
                     <td class="inline_edit" contenteditable="true"><?echo CCurrencyLang::CurrencyFormat($arBasket["PRICE"], $arOrder["CURRENCY"], false) ?></td>
