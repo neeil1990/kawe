@@ -18,10 +18,9 @@
 	<?if(count($arResult["SEARCH"])>0):?>
 
 		<div class="goods__list goods__list-2">
-
-
 			<?foreach($arResult["SEARCH"] as $arItem):?>
 			<div class="goods__item goods__item_list">
+				<input type="hidden" name="article" class="article" value="<?=$arItem['ARTICLE']?>">
 				<? if($arItem['DISCOUNT']): ?>
 				<div class="goods__alert"><?=$arItem['DISCOUNT'];?>%</div>
 				<? endif; ?>
