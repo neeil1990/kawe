@@ -65,6 +65,10 @@ $this->setFrameMode(true);
 					</label>
 					<?endforeach?>
 				</div>
+				<?else:?>
+					<span>
+						<input type="radio" name="color" data-price="<?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][0],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" checked value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
+					</span>
 				<? endif; ?>
 			<? endif; ?>
 
