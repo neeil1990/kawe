@@ -104,7 +104,14 @@ function bxModifySaleMails($orderID, &$eventName, &$arFields)
         );
         while ($arProps = $dbBasketItems->Fetch())
         {
-            $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']."</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
+            $db_res_props = CSaleBasket::GetPropsList(array(),array("BASKET_ID" => $arProps['ID'],"CODE" => "CML2_ARTICLE"));
+            if ($ar_res_props = $db_res_props->Fetch())
+            {
+                $arProps['ARTICLE'] = trim($ar_res_props['VALUE']);
+            }else
+                unset($arProps['ARTICLE']);
+
+            $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']." (".$arProps['ARTICLE'].")</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
         }
     $arFields["ORDER_LIST_TABLE"] = $strOrderList;
   }
@@ -147,8 +154,15 @@ function bxModifySaleStatusSendEmail($orderID, &$eventName, &$arFields, $status)
         $sum = 0;
         while ($arProps = $dbBasketItems->Fetch())
         {
+            $db_res_props = CSaleBasket::GetPropsList(array(),array("BASKET_ID" => $arProps['ID'],"CODE" => "CML2_ARTICLE"));
+            if ($ar_res_props = $db_res_props->Fetch())
+            {
+                $arProps['ARTICLE'] = trim($ar_res_props['VALUE']);
+            }else
+                unset($arProps['ARTICLE']);
+
             $sum += $arProps['PRICE']*$arProps['QUANTITY'];
-            $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']."</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
+            $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']." (".$arProps['ARTICLE'].")</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
         }
         $arFields["ORDER_LIST_TABLE"] = $strOrderList;
         $arFields["PRICE"] = CurrencyFormat($sum,"RUB");
@@ -191,8 +205,15 @@ function bxModifySaleStatusPaySendEmail($orderID, &$eventName, &$arFields){
         $sum = 0;
         while ($arProps = $dbBasketItems->Fetch())
         {
+            $db_res_props = CSaleBasket::GetPropsList(array(),array("BASKET_ID" => $arProps['ID'],"CODE" => "CML2_ARTICLE"));
+            if ($ar_res_props = $db_res_props->Fetch())
+            {
+                $arProps['ARTICLE'] = trim($ar_res_props['VALUE']);
+            }else
+                unset($arProps['ARTICLE']);
+
             $sum += $arProps['PRICE']*$arProps['QUANTITY'];
-            $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']."</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
+            $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']." (".$arProps['ARTICLE'].")</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
         }
         $arFields["ORDER_LIST_TABLE"] = $strOrderList;
         $arFields["PRICE"] = CurrencyFormat($sum,"RUB");
@@ -239,8 +260,15 @@ class MyClassTrack
                 $sum = 0;
                 while ($arProps = $dbBasketItems->Fetch())
                 {
+                    $db_res_props = CSaleBasket::GetPropsList(array(),array("BASKET_ID" => $arProps['ID'],"CODE" => "CML2_ARTICLE"));
+                    if ($ar_res_props = $db_res_props->Fetch())
+                    {
+                        $arProps['ARTICLE'] = trim($ar_res_props['VALUE']);
+                    }else
+                        unset($arProps['ARTICLE']);
+
                     $sum += $arProps['PRICE']*$arProps['QUANTITY'];
-                    $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']."</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
+                    $strOrderList .= "<tr><td style='text-align: left;padding: 5px 0;'>".$arProps['NAME']." (".$arProps['ARTICLE'].")</td><td style='padding: 5px 10px;'>".$arProps['QUANTITY']."</td><td style='padding: 5px 0;'>".CurrencyFormat($arProps['PRICE'], $arProps['CURRENCY'])."</td><tr>";
                 }
                 $arFields["ORDER_LIST_TABLE"] = $strOrderList;
                 $arFields["PRICE"] = CurrencyFormat($sum,"RUB");
