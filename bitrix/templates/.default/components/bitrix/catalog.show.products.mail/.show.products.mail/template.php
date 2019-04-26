@@ -11,7 +11,7 @@ $skuTemplate = array();
 ?>
 <? if(isset($arResult['ITEMS_COLS'])): ?>
 
-    <table width="" cellpadding="0" cellspacing="0">
+    <table width="" valign="top" cellpadding="0" cellspacing="0">
 
         <tbody>
 
@@ -20,7 +20,7 @@ $skuTemplate = array();
         <?for($i = 0; $i <= $arResult['ITEMS_ROWS']; $i++):?>
         <tr>
             <? foreach ($arResult['ITEMS_COLS'][$i] as $item):?>
-            <td>
+            <td style="vertical-align: top">
                 <table cellpadding="0" cellspacing="0" valign="top" style="display: inline-block">
                     <tbody>
                     <tr>
