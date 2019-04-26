@@ -48,7 +48,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                             <a href="<?=$v['DETAIL_PAGE_URL']?>"><?=$v['NAME']?></a>
                         </td>
                         <td style='padding: 5px 10px;'><?=$v['QUANTITY']?></td>
-                        <td style='padding: 5px 0;'><?=$v['PRICE_FORMATED']?></td>
+                        <td style='padding: 5px 0;white-space: nowrap;'><?=$v['PRICE_FORMATED']?></td>
                     </tr>
                     <?
                     $total_sum += $v['SUM_VALUE'];
@@ -68,7 +68,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
-                        <span style="color:#2BA2E1;font-weight: bold;"><?=CurrencyFormat($total_sum,"RUB")?></span>
+                        <span style="color:#2BA2E1;font-weight: bold;white-space: nowrap;"><?=CurrencyFormat($total_sum,"RUB")?></span>
                     </td>
                 </tr>
 
@@ -117,7 +117,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                             <a href="<?=$v['DETAIL_PAGE_URL']?>"><?=$v['NAME']?></a>
                         </td>
                         <td style='padding: 5px 10px;'><?=$v['QUANTITY']?></td>
-                        <td style='padding: 5px 0;'><?=$v['PRICE_FORMATED']?></td>
+                        <td style='padding: 5px 0;white-space: nowrap;'><?=$v['PRICE_FORMATED']?></td>
                     </tr>
                     <?
                     $total_sum += $v['SUM_VALUE'];
@@ -137,7 +137,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
-                        <span style="color:#2BA2E1;font-weight: bold;"><?=CurrencyFormat($total_sum,"RUB")?></span>
+                        <span style="color:#2BA2E1;font-weight: bold;white-space: nowrap;"><?=CurrencyFormat($total_sum,"RUB")?></span>
                     </td>
                 </tr>
 
@@ -181,7 +181,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                             <a href="<?=$v['DETAIL_PAGE_URL']?>"><?=$v['NAME']?></a>
                         </td>
                         <td style='padding: 5px 10px;'><?=$v['QUANTITY']?></td>
-                        <td style='padding: 5px 0;'><?=$v['PRICE_FORMATED']?></td>
+                        <td style='padding: 5px 0;white-space: nowrap;'><?=$v['PRICE_FORMATED']?></td>
                     </tr>
                     <?
                     $total_sum += $v['SUM_VALUE'];
@@ -201,7 +201,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
-                        <span style="color:#2BA2E1;font-weight: bold;"><?=CurrencyFormat($total_sum,"RUB")?></span>
+                        <span style="color:#2BA2E1;font-weight: bold;white-space: nowrap;"><?=CurrencyFormat($total_sum,"RUB")?></span>
                     </td>
                 </tr>
 
@@ -240,7 +240,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                             <a href="<?=$v['DETAIL_PAGE_URL']?>"><?=$v['NAME']?></a>
                         </td>
                         <td style='padding: 5px 10px;'><?=$v['QUANTITY']?></td>
-                        <td style='padding: 5px 0;'><?=$v['PRICE_FORMATED']?></td>
+                        <td style='padding: 5px 0;white-space: nowrap;'><?=$v['PRICE_FORMATED']?></td>
                     </tr>
                     <?
                     $total_sum += $v['SUM_VALUE'];
@@ -260,7 +260,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
-                        <span style="color:#2BA2E1;font-weight: bold;"><?=CurrencyFormat($total_sum,"RUB")?></span>
+                        <span style="color:#2BA2E1;font-weight: bold;white-space: nowrap;"><?=CurrencyFormat($total_sum,"RUB")?></span>
                     </td>
                 </tr>
 
