@@ -163,6 +163,10 @@ ol,ul
     text-decoration: underline;
     text-transform: uppercase;
 }
+.nav>li>a{
+    display: flex;
+    padding: 18px 20px;
+}
 .nav__submenu
 {
     background: #fff;
