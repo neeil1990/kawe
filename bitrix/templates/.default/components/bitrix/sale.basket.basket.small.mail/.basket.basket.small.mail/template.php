@@ -64,7 +64,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                 </tr>
 
                 <tr>
-                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;">Общая стоимость заказа</td>
+                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;white-space: nowrap;">Общая стоимость заказа</td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
@@ -133,7 +133,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                 </tr>
 
                 <tr>
-                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;">Общая стоимость заказа</td>
+                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;white-space: nowrap;">Общая стоимость заказа</td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
@@ -197,7 +197,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                 </tr>
 
                 <tr>
-                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;">Общая стоимость заказа</td>
+                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;white-space: nowrap;">Общая стоимость заказа</td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
@@ -256,7 +256,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                 </tr>
 
                 <tr>
-                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;">Общая стоимость заказа</td>
+                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;white-space: nowrap;">Общая стоимость заказа</td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
