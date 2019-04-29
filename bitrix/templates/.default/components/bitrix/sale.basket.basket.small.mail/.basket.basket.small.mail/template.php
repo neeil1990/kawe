@@ -15,17 +15,17 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 ?><table class="sale_basket_small"><?
 	if ($arResult["ShowReady"]=="Y")
 	{
-		?><tr><td align="center"><? echo GetMessage("TSBS_READY"); ?></td></tr>
+	?><tr><td align="center" style="color: #9b9b9b;"><? echo GetMessage("TSBS_READY"); ?></td></tr>
         <tr>
 
         <td>
 
             <table cellpadding="0" cellspacing="0" width="100%" style="text-align: right;font-size: 14px;">
                 <tr style="opacity: 0.5;">
-                    <td style="text-align: left;padding: 5px 0;">Наименование</td>
+                    <td style="text-align: left;padding: 5px 0;color: #9b9b9b;">Наименование</td>
                     <td style="text-align: left;padding: 5px 0;"></td>
-                    <td style="padding: 5px 10px;">Количество</td>
-                    <td style="padding: 5px 0;">Стоимость</td>
+                    <td style="padding: 5px 10px;color: #9b9b9b;">Количество</td>
+                    <td style="padding: 5px 0;color: #9b9b9b;">Стоимость</td>
                 </tr>
 
                 <tr>
@@ -64,7 +64,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
                 </tr>
 
                 <tr>
-                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;white-space: nowrap;">Общая стоимость заказа</td>
+                    <td style="text-align: left;padding: 5px 0;opacity: 0.5;white-space: nowrap;color: #9b9b9b;">Общая стоимость заказа</td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;"></td>
                     <td style="padding: 5px 0;">
