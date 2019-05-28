@@ -85,7 +85,7 @@ if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
                     <a href="?logout=yes" class="top__reg">Выйти</a>
                 <?else:?>
                     <a href="<?=SITE_DIR."login/"?>?login=yes" class="top__login">Войти</a>
-                    <a href="<?=SITE_DIR."login/"?>?register=yes" class="top__reg">Регистация</a>
+                    <a href="<?=SITE_DIR."login/"?>?register=yes" class="top__reg">Регистрация</a>
                 <?endif?>
             </div>
         </div>
