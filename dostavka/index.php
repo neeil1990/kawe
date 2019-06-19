@@ -1,6 +1,7 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetTitle("Доставка							");
+$APPLICATION->SetPageProperty("title", "Условия доставки интернет-магазина kawe.su");
+$APPLICATION->SetTitle("Доставка");
 ?>
 
     <div class="wrapper">
