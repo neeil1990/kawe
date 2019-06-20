@@ -74,16 +74,7 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 
             </table>
         </td></tr><?
-		if ('' != $arParams["PATH_TO_BASKET"])
-		{
-			?><tr><td align="center"><a href="<?=$arParams["PATH_TO_BASKET"]?>"><?= GetMessage("TSBS_2BASKET") ?></a>
-			</td></tr><?
-		}
-		if ('' != $arParams["PATH_TO_ORDER"])
-		{
-			?><tr><td align="center"><a href="<?=$arParams["PATH_TO_ORDER"]?>"><?= GetMessage("TSBS_2ORDER") ?></a>
-			</td></tr><?
-		}
+
 	}
 	if ($arResult["ShowDelay"]=="Y")
 	{
@@ -143,11 +134,6 @@ if ($arResult["ShowReady"]=="Y" || $arResult["ShowDelay"]=="Y" || $arResult["Sho
 
             </table>
             </td></tr><?
-		if ('' != $arParams["PATH_TO_BASKET"])
-		{
-			?><tr><td align="center"><a href="<?=$arParams["PATH_TO_BASKET"]?>"><?= GetMessage("TSBS_2BASKET") ?></a>
-			</td></tr><?
-		}
 	}
 	if ($arResult["ShowSubscribe"]=="Y")
 	{
