@@ -73,6 +73,14 @@ $module_id = 'prime.updateprice';
 						if($result)
 							$data_file .= "ID:" . $PRODUCT_ID . " " . $arFieldsElm['NAME'] . " Старая цена:" .$arr['PRICE']. " Новая цена:" .$arFields['PRICE']. "\r\n";
 					}
+
+                    $el = new CIBlockElement;
+                    $PROP_PRICE = array();
+                    $resPropPrice = CIBlockElement::GetProperty(33, 10244, "sort", "asc", array("CODE" => "PRICES"));
+                    while ($ob = $resPropPrice->GetNext())
+                        $PROP_PRICE[$ob['PROPERTY_VALUE_ID']] = ($percent > 0 && $ob['VALUE'] > 0) ? $ob['VALUE'] - round(($ob['VALUE'] / 100) * $percent, 2) : $ob['VALUE'];
+
+                    CIBlockElement::SetPropertyValues($PRODUCT_ID, $IBLOCK_ID, $PROP_PRICE, "PRICES");
 				}
 				if($data_file){
 					$message = "Всего: " . $resElement->result->num_rows . " товаров. Подробнее: <a target='_blank' href='/bitrix/admin/fileman_file_view.php?path=/upload/".$name_file."&site=s1&lang=ru'>Файл: ".$name_file."</a>";
