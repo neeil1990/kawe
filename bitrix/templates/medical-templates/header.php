@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <?$APPLICATION->ShowMeta("robots")?>
+    <?$APPLICATION->ShowMeta("keywords")?>
+    <?$APPLICATION->ShowMeta("description")?>
     <?$APPLICATION->ShowCSS()?>
     <?$APPLICATION->ShowHeadStrings()?>
     <?$APPLICATION->ShowHeadScripts()?>
