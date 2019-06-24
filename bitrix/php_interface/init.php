@@ -285,17 +285,23 @@ AddEventHandler("search", "BeforeIndex", "BeforeIndexHandler");
 // создаем обработчик события "BeforeIndex"
 function BeforeIndexHandler($arFields)
 {
+
     if(!CModule::IncludeModule("iblock")) // подключаем модуль
         return $arFields;
     if($arFields["MODULE_ID"] == "iblock")
     {
+        $VALUES = [];
         $db_props = CIBlockElement::GetProperty(                        // Запросим свойства индексируемого элемента
             $arFields["PARAM2"],         // BLOCK_ID индексируемого свойства
             $arFields["ITEM_ID"],          // ID индексируемого свойства
             array("sort" => "asc"),       // Сортировка (можно упустить)
-            Array("CODE" => "CML2_ARTICLE")); // CODE свойства (в данном случае артикул)
-        if($ar_props = $db_props->Fetch())
-            $arFields["TITLE"] .= " Артикул: ".$ar_props["VALUE"];   // Добавим свойство в конец заголовка индексируемого элемента
+            Array("CODE" => "ARTICLS")); // CODE свойства (в данном случае артикул)
+        while ($ar_props = $db_props->Fetch())
+            $VALUES[] = $ar_props['VALUE'];
+
+        if(is_array($VALUES) && count($VALUES) > 0)
+        $arFields["TITLE"] .= " Артикул: ".implode(', ',$VALUES);   // Добавим свойство в конец заголовка индексируемого элемента
     }
+
     return $arFields; // вернём изменения
 }
