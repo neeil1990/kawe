@@ -111,7 +111,7 @@
 			3 => "MAIL",
 			4 => "QUERY",
 		),
-		"USE_CAPTCHA" => "N",
+		"USE_CAPTCHA" => "Y",
 		"COMPONENT_TEMPLATE" => "popup-callback",
 		"COMPOSITE_FRAME_MODE" => "A",
 		"COMPOSITE_FRAME_TYPE" => "AUTO"
