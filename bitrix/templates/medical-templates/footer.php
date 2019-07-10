@@ -73,7 +73,7 @@
                 </div>
                 <a href="javascript:void(0);" class="footer__callback footer__link callback-btn">Заказать звонок</a>
                 <div class="footer__email icon-email">
-                    <a href="mailto:<?=tplvar('email');?>" class="footer__link"><?=tplvar('email', true);?></a>
+                    <a href="mailto:<?=tplvar('email');?>" class="footer__link roi_visit"><?=tplvar('email', true);?></a>
                     (Для заказов)
                 </div>
             </div>
@@ -93,7 +93,8 @@
 
 
 
-<?$APPLICATION->IncludeComponent(
+<?
+$APPLICATION->IncludeComponent(
 	"nbrains:main.feedback", 
 	"popup-callback", 
 	array(

@@ -119,6 +119,8 @@ function bxModifySaleMails($orderID, &$eventName, &$arFields)
   $arFields["PHONE"] =  $phone;
   $arFields["DELIVERY"] =  $delivery;
   $arFields["USER_DESCRIPTION"] =  $arOrder['USER_DESCRIPTION'];
+  if($_COOKIE['roistat_visit'])
+    $arFields["ROI_VISIT"] = $_COOKIE['roistat_visit'];
 }
 
 AddEventHandler("sale", "OnOrderStatusSendEmail", "bxModifySaleStatusSendEmail");

@@ -81,6 +81,8 @@ $( function() {
 } );
 
 window.roistatVisitCallback = function(visitId) {
-
-    console.log(window.location);
+    var mail = visitId + "@" + window.location.hostname;
+    var roi = $('.roi_visit');
+    roi.text(mail);
+    roi.attr('href','mailto:' + mail);
 };

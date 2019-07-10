@@ -1,7 +1,7 @@
 <p>
 	Мы осуществляем доставку по всей России, подробнее об этом в <a href="/dostavka/">Доставка</a>.&nbsp;<br>
 	<br>
-	E-mail для заказов и справки: <a href="mailto:info@kawe.su">info@kawe.su</a>
+	E-mail для заказов и справки: <a href="mailto:info@kawe.su" class="roi_visit">info@kawe.su</a>
 </p>
 <p>
 	Письмо директору: <a href="mailto:director@kawe.su">director@kawe.su</a>
