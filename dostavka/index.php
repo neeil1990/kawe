@@ -1,6 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetPageProperty("title", "Условия доставки интернет-магазина kawe.su");
+$APPLICATION->SetPageProperty("titlePage", "Условия доставки интернет-магазина kawe.su");
 $APPLICATION->SetTitle("Доставка");
 ?>
 
@@ -38,7 +38,7 @@ $APPLICATION->SetTitle("Доставка");
         </div>
 
         <div class="main text">
-            <div class="title"><?$APPLICATION->ShowTitle()?></div>
+            <div class="title"><?=$APPLICATION->GetPageProperty("titlePage");?></div>
             <div class="content">
 
                 <?
