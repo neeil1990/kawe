@@ -79,3 +79,8 @@ $( function() {
         }
     });
 } );
+
+window.roistatVisitCallback = function(visitId) {
+
+    console.log(window.location);
+};
