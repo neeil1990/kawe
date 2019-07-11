@@ -103,6 +103,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["submit"] <> '' && (!isset($_P
 		if(empty($arResult["ERROR_MESSAGE"]))
 		{
 			$arFields = Array();
+			if(isset($arParams['ROI_VISIT']) && $arParams['ROI_VISIT'])
+			    $arFields['ROI_VISIT'] = $arParams['ROI_VISIT'];
+
 			foreach($arPropertyField as $field){
 				if($field['CODE'] == "PRODUCT_CART"){
 					$arFields[$field['CODE']] = $_POST[$field['CODE']];
