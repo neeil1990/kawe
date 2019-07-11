@@ -169,7 +169,7 @@ $APPLICATION->IncludeComponent(
     var p = d.location.protocol == "https:" ? "https://" : "http://";
     var u = /^.*roistat_visit=[^;]+(.*)?$/.test(d.cookie) ? "/dist/module.js" : "/api/site/1.0/"+id+"/init";
     var js = d.createElement(s); js.charset="UTF-8"; js.async = 1; js.src = p+h+u; var js2 = d.getElementsByTagName(s)[0]; js2.parentNode.insertBefore(js, js2);
-})(window, document, 'script', 'cloud.roistat.com', '2222896ded6b5c182de39d328046c0bb');
+})(window, document, 'script', 'cloud.roistat.com', 'f9ea7cf125b5fc005166d4e260fec644');
 </script>
 
 
