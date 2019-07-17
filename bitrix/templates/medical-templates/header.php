@@ -44,6 +44,7 @@
   gtag('config', 'UA-62115054-57');
 </script>
 
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 
 <body class="<?=COption::GetOptionString("main", "color_theme", "schemes_1");?>">

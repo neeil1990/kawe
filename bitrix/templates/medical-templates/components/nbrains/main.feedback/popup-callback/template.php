@@ -53,15 +53,9 @@ if(strlen($arResult["OK_MESSAGE"]) > 0):?>
 
 	<? endforeach; ?>
 
-    <? if($arParams["USE_CAPTCHA"] == "Y"):?>
+    <?if($arParams["USE_CAPTCHA"] == "Y"):?>
         <div class="mf-name">
-            <div class="mf-text"><?=GetMessage("MFT_CAPTCHA")?></div>
-            <div><img src="/bitrix/tools/captcha.php?captcha_sid=<?=$arResult["capCode"]?>" width="180" height="40" alt="CAPTCHA"></div>
-        </div>
-        <div class="mf-name">
-            <input type="hidden" name="captcha_sid" value="<?=$arResult["capCode"]?>">
-            <div class="mf-text"><?=GetMessage("MFT_CAPTCHA_CODE")?><span class="mf-req">*</span></div>
-            <input type="text" name="captcha_word" size="30" maxlength="50" value="">
+            <div class="g-recaptcha" data-sitekey="6LdmHK4UAAAAAGzcV1Ttdz-_C1sR9a0XEVNZn36u"></div>
         </div>
     <?endif;?>
 
