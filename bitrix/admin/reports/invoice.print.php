@@ -154,6 +154,7 @@ while ($ar_tax_list = $db_tax_list->Fetch())
         .order-items th:nth-child(6) span:nth-child(2){border-right:1px solid;}
         .order-items td{border:1px solid;padding:1px 2px;white-space: nowrap;}
         .order-items td:nth-child(1){text-align:center;font-weight:700;}
+		.order-items td:nth-child(2){white-space: unset;}
         .order-items td:nth-child(5){text-align:right;}
         .order-items td:nth-child(6){text-align:center;width:50px;}
         .invoice_table_bottom td:nth-child(1){border:none;text-align:right;font-weight:100;padding:0 2px;}
