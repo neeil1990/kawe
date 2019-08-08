@@ -221,11 +221,11 @@ $intSectionID = 0;
 <?
 $GLOBALS['CATALOG_CURRENT_SECTION_ID'] = $intSectionID;
 unset($basketAction);
-
 ?>
+
 	<div class="catalog-text">
 	<?
-	if($arSection['DESCRIPTION']){
+	if($arSection['DESCRIPTION'] && $arSection['UF_DESC_SECTION']){
 		print $arSection['DESCRIPTION'];
 	}
 	?>
