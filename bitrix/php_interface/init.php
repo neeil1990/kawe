@@ -24,6 +24,7 @@ function OnBeforeEndBufferContent()
                                 array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_8')", 'TEXT' => "schemes_8"),
                                 array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_9')", 'TEXT' => "schemes_9"),
                                 array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_10')", 'TEXT' => "schemes_10"),
+                                array('ACTION' => "jsUtils.Redirect([], '/?THEME=schemes_11')", 'TEXT' => "schemes_11"),
                             ),
                         );
                     }
