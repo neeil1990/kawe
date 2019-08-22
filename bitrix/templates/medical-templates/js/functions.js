@@ -7,6 +7,9 @@ $('.cart__content .cart__radio').change(function(){
     $('.cart__content > .cart__price').text($(this).attr('data-price'));
 });
 
+$('.cart__content > p.article').text("Арт: " + $('.cart__content .cart__radio:checked').val());
+$('.cart__content > .cart__price').text($('.cart__content .cart__radio:checked').attr('data-price'));
+
 
 $('.callback-btn').click(function(){
     $('#callback').bPopup({
