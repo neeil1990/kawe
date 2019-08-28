@@ -35,13 +35,24 @@ if(empty($arResult['ITEMS']))
 						<a href="<?=$item['DETAIL_PAGE_URL'];?>"><img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>"></a>
 					</div>
 					<a href="<?=$item['DETAIL_PAGE_URL'];?>" class="goods__name"><?=$item['NAME']?></a>
-					<!--<div class="goods__desc">
-						<div class="goods__availability">В наличии</div>
-						<?/* if($item['PROPERTIES']['CML2_ARTICLE']['VALUE']): */?>
-						<div class="goods__article">Арт: <?/*=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12)*/?></div>
-						<?/* endif; */?>
-					</div>-->
-					<input type="hidden" name="color" data-price="<?=CurrencyFormat($item['PROPERTIES']['PRICES']['VALUE'][0],$item['PRICES']['BASE']['CURRENCY'])?>" class="article" value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
+					<div class="goods__desc">
+						<!--<div class="goods__availability">В наличии</div>-->
+						<? if($item['PROPERTIES']['CML2_ARTICLE']['VALUE']): ?>
+						    <div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12);?></div>
+						<? endif; ?>
+					</div>
+                    <div class="goods__article_list">
+                        <select name="color" class="article">
+                            <?foreach($item['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
+                                <option
+                                        value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"
+                                        data-price="<?=CurrencyFormat($item['PROPERTIES']['PRICES']['VALUE'][$val],$item['PRICES']['BASE']['CURRENCY'])?>"
+                                        <?if($val == 0):?> selected="selected" <?endif;?>
+                                ><?=$art?></option>
+                            <?endforeach?>
+                        </select>
+                    </div>
+
 					<div class="goods__info">
 						<div class="goods__prices">
 

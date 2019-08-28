@@ -47,7 +47,18 @@ if(empty($arResult['ITEMS']))
 						<div class="goods__price tooltip" style="font-size: 15px;">Цена по запросу</div>
 					<?endif;?>
 					<span>за штуку</span>
-					<!--<div class="goods__article">Арт: 252023а</div>-->
+					<div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12);?></div>
+                    <div class="goods__article_list">
+                        <select name="color" class="article">
+                            <?foreach($item['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
+                                <option
+                                        value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"
+                                        data-price="<?=CurrencyFormat($item['PROPERTIES']['PRICES']['VALUE'][$val],$item['PRICES']['BASE']['CURRENCY'])?>"
+                                    <?if($val == 0):?> selected="selected" <?endif;?>
+                                ><?=$art?></option>
+                            <?endforeach?>
+                        </select>
+                    </div>
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
 						<input type="text" class="goods__counter_input" id="goods__counter_input_<?=$item['ID']?>" value="1" readonly>
