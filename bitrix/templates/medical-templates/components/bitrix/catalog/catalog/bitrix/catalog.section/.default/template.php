@@ -35,12 +35,16 @@ if(empty($arResult['ITEMS']))
 						<a href="<?=$item['DETAIL_PAGE_URL'];?>"><img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>"></a>
 					</div>
 					<a href="<?=$item['DETAIL_PAGE_URL'];?>" class="goods__name"><?=$item['NAME']?></a>
+
+                    <? if($item['PROPERTIES']['ARTICLS']['DESCRIPTION'][0]): ?>
 					<div class="goods__desc">
 						<!--<div class="goods__availability">В наличии</div>-->
 						<? if($item['PROPERTIES']['CML2_ARTICLE']['VALUE']): ?>
 						    <div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12);?></div>
 						<? endif; ?>
 					</div>
+                    <?endif;?>
+                    
                     <? if($item['PROPERTIES']['ARTICLS']['DESCRIPTION'][0]): ?>
                     <div class="goods__article_list">
                         <select name="color" class="article">
