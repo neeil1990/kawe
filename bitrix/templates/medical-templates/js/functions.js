@@ -11,27 +11,6 @@ $('.cart__content > p.article').text("Арт: " + $('.cart__content .cart__radio
 $('.cart__content > .cart__price').text($('.cart__content .cart__radio:checked').attr('data-price'));
 
 
-$('.goods__article_list .article').change(function(){
-    $art = $(this).find("option:selected").val();
-    $price = $(this).find("option:selected").attr('data-price');
-
-    if($art)
-        $(this).closest('.goods__item').find('.goods__article').text("Арт: " + $art);
-    if($price)
-        $(this).closest('.goods__item').find('.goods__price').text($price);
-});
-
-$('.goods__item').each(function (li, el) {
-    $item = $(el);
-    if($item){
-        $art = $item.find("option:selected").val();
-        $price = $item.find("option:selected").attr('data-price');
-        $item.find('.goods__article').text("Арт: " + $art);
-        $item.find('.goods__price').text($price);
-    }
-});
-
-
 $('.callback-btn').click(function(){
     $('#callback').bPopup({
         zIndex:1000
@@ -64,16 +43,14 @@ function replaseBasketMobileTop() {
 
 
 function addToBasket2(idel, quantity,el) {
-    $art = $(el).closest('.cart__content').find('.cart__radio:checked').val();
-    if(!$art){
-        $art = $(el).closest('.goods__item').find('.article').val();
-    }
-    $color = $.trim($(el).closest('.cart__content').find('.cart__radio:checked').parent().text());
-    if(!$color){
-        $color = $.trim($(el).closest('.goods__item').find('.article option:selected').text());
-    }
 
-    console.log($art);
+    $art = $(el).closest('.cart__content').find('.cart__radio:checked').val();
+    if(!$art)
+        $art = $(el).closest('.goods__item').find('input[name="article"]').val();
+
+    $color = $.trim($(el).closest('.cart__content').find('.cart__radio:checked').parent().text());
+    if(!$color)
+        $color = $(el).closest('.goods__item').find('input[name="color"]').val();
 
     $href = path + "add.php?id=" + idel + '&quantity=' + quantity + '&art=' + $art + '&color=' + $color;
     $.ajax({
