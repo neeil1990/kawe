@@ -44,7 +44,7 @@ if(empty($arResult['ITEMS']))
 						<? endif; ?>
 					</div>
                     <?endif;?>
-                    
+
                     <? if($item['PROPERTIES']['ARTICLS']['DESCRIPTION'][0]): ?>
                     <div class="goods__article_list">
                         <select name="color" class="article">
@@ -57,6 +57,8 @@ if(empty($arResult['ITEMS']))
                             <?endforeach?>
                         </select>
                     </div>
+                    <?else:?>
+                        <input type="hidden" name="color" data-price="<?=CurrencyFormat($item['PROPERTIES']['PRICES']['VALUE'][0],$item['PRICES']['BASE']['CURRENCY'])?>" class="article" value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
                     <?endif;?>
 
 					<div class="goods__info">
