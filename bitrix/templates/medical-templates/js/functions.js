@@ -66,12 +66,14 @@ function replaseBasketMobileTop() {
 function addToBasket2(idel, quantity,el) {
     $art = $(el).closest('.cart__content').find('.cart__radio:checked').val();
     if(!$art){
-        $art = $(el).closest('.goods__item').find('.article option:selected').val();
+        $art = $(el).closest('.goods__item').find('.article').val();
     }
     $color = $.trim($(el).closest('.cart__content').find('.cart__radio:checked').parent().text());
     if(!$color){
         $color = $.trim($(el).closest('.goods__item').find('.article option:selected').text());
     }
+
+    console.log($art);
 
     $href = path + "add.php?id=" + idel + '&quantity=' + quantity + '&art=' + $art + '&color=' + $color;
     $.ajax({

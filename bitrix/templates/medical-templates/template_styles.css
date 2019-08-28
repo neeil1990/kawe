@@ -1,5 +1,6 @@
 .goods__item .goods__article_list {
     margin-bottom: 13px;
+    display: none;
 }
 .goods__item .goods__article_list select.article{
     border: solid 1px #d8d9d9;
@@ -8,4 +9,11 @@
     font-weight: 500;
     width: 100%;
     padding: 0px 5px;
+}
+
+.goods__item:hover .goods__article_list{
+    display: flex;
+    display: -ms-flexbox;
+    display: -webkit-box;
+    display: -webkit-flex;
 }

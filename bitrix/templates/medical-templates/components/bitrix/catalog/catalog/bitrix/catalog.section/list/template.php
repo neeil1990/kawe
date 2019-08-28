@@ -47,7 +47,8 @@ if(empty($arResult['ITEMS']))
 						<div class="goods__price tooltip" style="font-size: 15px;">Цена по запросу</div>
 					<?endif;?>
 					<span>за штуку</span>
-					<div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12);?></div>
+                    <? if($item['PROPERTIES']['ARTICLS']['DESCRIPTION'][0]): ?>
+                    <div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12);?></div>
                     <div class="goods__article_list">
                         <select name="color" class="article">
                             <?foreach($item['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
@@ -59,6 +60,9 @@ if(empty($arResult['ITEMS']))
                             <?endforeach?>
                         </select>
                     </div>
+                    <?else:?>
+                        <input type="hidden" name="color" data-price="<?=CurrencyFormat($item['PROPERTIES']['PRICES']['VALUE'][0],$item['PRICES']['BASE']['CURRENCY'])?>" class="article" value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
+                    <?endif;?>
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
 						<input type="text" class="goods__counter_input" id="goods__counter_input_<?=$item['ID']?>" value="1" readonly>
