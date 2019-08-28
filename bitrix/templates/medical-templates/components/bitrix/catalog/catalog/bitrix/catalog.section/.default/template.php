@@ -41,6 +41,7 @@ if(empty($arResult['ITEMS']))
 						    <div class="goods__article">Арт: <?=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12);?></div>
 						<? endif; ?>
 					</div>
+                    <? if($item['PROPERTIES']['ARTICLS']['DESCRIPTION'][0]): ?>
                     <div class="goods__article_list">
                         <select name="color" class="article">
                             <?foreach($item['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
@@ -52,6 +53,7 @@ if(empty($arResult['ITEMS']))
                             <?endforeach?>
                         </select>
                     </div>
+                    <?endif;?>
 
 					<div class="goods__info">
 						<div class="goods__prices">
