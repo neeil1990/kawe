@@ -30,10 +30,10 @@ class CKDAExportProfileAll {
 	private $pid = null;
 	private $errors = array();
 	
-	public static function getInstance()
+	public static function getInstance($suffix='')
 	{
 		if (!isset(static::$instance))
-			static::$instance = new static();
+			static::$instance = new static($suffix);
 
 		return static::$instance;
 	}

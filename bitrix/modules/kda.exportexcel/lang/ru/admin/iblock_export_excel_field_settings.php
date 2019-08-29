@@ -19,6 +19,8 @@ $MESS["KDA_EE_SETTINGS_AT_PRICE"] = "при цене";
 $MESS["KDA_EE_SETTINGS_FROM"] = "от";
 $MESS["KDA_EE_SETTINGS_TO"] = "до";
 $MESS["KDA_EE_SETTINGS_DELETE"] = "Удалить";
+$MESS["KDA_EE_SETTINGS_UP"] = "Выше";
+$MESS["KDA_EE_SETTINGS_DOWN"] = "Ниже";
 $MESS["KDA_EE_SETTINGS_ADD_MARGIN_DISCOUNT"] = "Добавить Наценку/Скидку";
 $MESS["KDA_EE_PICTURE_SCALE"] = "Уменьшать если большая";
 $MESS["KDA_EE_PICTURE_WIDTH"] = "Максимальная ширина";
@@ -176,4 +178,7 @@ $MESS["KDA_EE_FIELD_LOGIN"] = "Логин";
 $MESS["KDA_EE_FIELD_EMAIL"] = "Email";
 $MESS["KDA_EE_FIELD_LAST_NAME_NAME"] = "Фамилия Имя";
 $MESS["KDA_EE_SETTINGS_QRCODE_CODE"] = "Размер QR-кода";
+$MESS["KDA_EE_SETTINGS_PRICE_USE_EXT"] = "Выгружать цену для заданного количества товара";
+$MESS["KDA_EE_SETTINGS_PRICE_QUANTITY_FROM"] = "от";
+$MESS["KDA_EE_SETTINGS_PRICE_QUANTITY_TO"] = "до";
 ?>

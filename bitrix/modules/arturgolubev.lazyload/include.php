@@ -1,1 +1,233 @@
-<? $GLOBALS['____457545748']= array(base64_decode('ZG'.'VmaW5l'),base64_decode('c3RycmV2'),base64_decode('c3Ry'.'dG91cHBlcg=='),base64_decode('c3Bya'.'W5'.'0Zg=='),base64_decode('c3ByaW'.'50'.'Zg'.'=='),base64_decode('c3Vic3Ry'),base64_decode('c3Rycm'.'V'.'2'),base64_decode(''.'YmFzZ'.'T'.'Y'.'0'.'X2RlY'.'29kZQ=='),base64_decode('c3Vic3Ry'),base64_decode('c3'.'RybGVu'),base64_decode('c3RybGVu'),base64_decode('Y2h'.'y'),base64_decode('b3Jk'),base64_decode('b'.'3Jk'),base64_decode(''.'b'.'Wt0aW1l'),base64_decode('aW50dmFs'),base64_decode('aW50dmFs'),base64_decode('aW5'.'0dm'.'F'.'s'),base64_decode('a3N'.'vcnQ='),base64_decode(''.'c3Vic'.'3Ry'),base64_decode('a'.'W1wbG'.'9kZQ=='),base64_decode('ZG'.'VmaW5lZ'.'A=='),base64_decode('YmF'.'zZ'.'TY0X2R'.'lY29kZQ=='),base64_decode('Y'.'29'.'uc3RhbnQ='),base64_decode(''.'c'.'3Ryc'.'mV'.'2'),base64_decode('c'.'3B'.'y'.'aW'.'50Zg'.'='.'='),base64_decode('c3RybGVu'),base64_decode('c'.'3Ryb'.'G'.'Vu'),base64_decode('Y'.'2'.'hy'),base64_decode(''.'b3'.'J'.'k'),base64_decode('b'.'3Jk'),base64_decode('bW'.'t0'.'aW1l'),base64_decode('aW50dm'.'F'.'s'),base64_decode(''.'aW50d'.'mFs'),base64_decode('aW'.'5'.'0d'.'mF'.'s'),base64_decode('c3V'.'i'.'c'.'3R'.'y'),base64_decode(''.'c3V'.'i'.'c3R'.'y'),base64_decode(''.'dGl'.'tZQ=='),base64_decode(''.'bWt0aW1l'),base64_decode('bWt0aW1l'),base64_decode('Z'.'GF'.'0ZQ=='),base64_decode('ZGF0ZQ=='),base64_decode('Z'.'GV'.'maW5l'),base64_decode('ZGVmaW5l'),base64_decode('Y2x'.'hc3'.'N'.'fZXhpc3R'.'z'),base64_decode(''.'Y2xhc3NfZXhpc3Rz'),base64_decode('ZGVma'.'W5l'.'ZA'.'=='),base64_decode('ZGVmaW5lZA=='),base64_decode('c3'.'Ry'.'cG9z'),base64_decode('c3RydG9'.'sb3dl'.'cg='.'='),base64_decode(''.'c3Ryb'.'GVu'),base64_decode('c3RydG9sb3dlc'.'g=='),base64_decode(''.'dHJpbQ='.'='),base64_decode('c3'.'RyX3J'.'lcGxhY2U='),base64_decode('Z'.'XhwbG'.'9kZ'.'Q=='),base64_decode('d'.'H'.'Jp'.'bQ='.'='),base64_decode('c3RyX3J'.'lcGxhY2U='),base64_decode('cHJlZ19t'.'YXRja'.'A=='),base64_decode('cH'.'Jl'.'Z1'.'9'.'t'.'YXRjaA='.'='),base64_decode('Y'.'2'.'x'.'h'.'c3NfZX'.'hpc3'.'R'.'z'),base64_decode(''.'c'.'H'.'JlZ19'.'tYXRjaF9'.'hbGw'.'='),base64_decode('c3Ryc3'.'R'.'y'),base64_decode(''.'c3R'.'yc3'.'R'.'y'),base64_decode('c'.'3RyX3Jlc'.'GxhY'.'2U='),base64_decode('c'.'H'.'JlZ1'.'9yZXB'.'sYWN'.'l'),base64_decode('ZG'.'Vm'.'aW'.'5'.'lZ'.'A='.'='),base64_decode('c'.'3Ry'.'bGVu'));if(!function_exists(__NAMESPACE__.'\\___1799524930')){function ___1799524930($_1170471714){static $_1851539727= false; if($_1851539727 == false) $_1851539727=array('ZX'.'hwaXJlX21l'.'c3N'.'fY3VzdG9tMg==','YXJ0dXJn'.'b'.'2x1YmV2X2xh'.'enlsb2Fk'.'Xw==','b21lZA==',''.'WQ==',''.'ZHJtX3N0Z'.'XJn'.'b'.'2tj','JTAxMHMK','d'.'XJnb2x1','YXJ0dXJnb'.'2x1YmV2Lmxhenls'.'b2'.'Fk','J'.'XM'.'lcw==','fmJz','Z'.'XR'.'hZF'.'9'.'wbw==','YWRtaW4=','bW9kd'.'Wxlcw='.'=','dX'.'N'.'lcl9kYXRl'.'X2Jz'.'bS'.'5waHA=',''.'Y'.'XJ0dXJn'.'b2x1Y'.'m'.'V2L'.'mxhenlsb2Fk','Yml'.'0'.'cml4','Ukh1cmdv'.'bHU=',''.'MDcy'.'YTk4'.'N'.'2U5Mj'.'hoe'.'XR'.'v'.'cw==','','OG'.'Qy','YWIwZGU4Y'.'WRlY2JiY'.'zU'.'3Mj'.'Q4','Mjgz'.'Zj'.'U'.'2Mg==','aHR0cDo'.'vL'.'2'.'J'.'pdHJ'.'p'.'eHN'.'vZnQuY'.'29t'.'L2JpdHJpeC9icy5w'.'aH'.'A=',''.'YXJ'.'0','YmV2'.'X2x'.'henlsb2FkX'.'09'.'MRFNJV'.'EVFWFBJUkVE'.'QV'.'RFUw==',''.'RE9D'.'VU'.'1FTlRfUk'.'9PVA'.'==',''.'Lw'.'==','Lw==','Y'.'XJ0d'.'XJnb2x1Y'.'mV2X2x'.'h'.'enl'.'sb2Fk'.'X1RFT'.'VBPUk'.'FSW'.'V9D'.'QUNIR'.'Q==','YXJ0dXJnb2x1YmV2X2xhenlsb2'.'FkX1RFTVBP'.'UkF'.'SWV9'.'D'.'QUNIRQ'.'==','','M'.'mU3N'.'GQ=','JX'.'Mlcw==',''.'YzQzMz'.'h'.'i'.'Ym'.'JmOTBiY'.'j'.'g1ZTQ5ZmM=','YXJ0','YmV2X2x'.'h'.'e'.'nls'.'b'.'2F'.'kX1'.'N'.'J'.'VEVFWFB'.'JUkV'.'EQV'.'RFTUFQRVI=','bQ==',''.'ZA==','WQ'.'==','U2l0ZUV4cGlyZURhd'.'GVf'.'YXJ0'.'d'.'XJnb2x1YmV2X2xhe'.'n'.'lsb2Fk','cGhwUXVlcnk=','RE9NRG9jdW1'.'lb'.'nQ=',''.'bG'.'liL3BocFF'.'1ZX'.'J5LW9u'.'ZWZp'.'bGUucG'.'hw','TE9DS1'.'9MQVpZTE9BR'.'A==','Q'.'UR'.'NS'.'U5fU'.'0VDVElPTg='.'=','UkVRVUV'.'TVF9N'.'RVRIT'.'0Q=','UE9T'.'VA==','U'.'E'.'hQX'.'1NFTEY=',''.'L2FkbWlu',''.'YWp'.'he'.'A==','e'.'Q'.'==','Y'.'nhhamF'.'4aWQ=','Yn'.'hha'.'m'.'F4'.'aW'.'Q=','SFRUUF'.'9Y'.'X'.'1J'.'FUVVF'.'U1'.'RFRF'.'9XS'.'VRI','SF'.'RUUF'.'9YX1'.'JFUVVF'.'U1RFRF9XSVRI','eG1saHR'.'0cH'.'JlcXVlc'.'3Q=','DQo=','DQ'.'==','Cg==','','cGFnZV9l'.'eG'.'NlcHRpb'.'25z',''.'Cg'.'==','L1'.'4=','L'.'w'.'='.'=','K'.'g='.'=','XC'.'8=',''.'L'.'i'.'o=','JC9'.'zVQ==','ZW5hYmx'.'l','W'.'Q'.'==',''.'RE9'.'NRG'.'9jdW1'.'lbnQ=','c2V'.'sZWN0b3J'.'z','LmFnbGxp'.'bWFnZSwg',''.'c2VsZ'.'WN0'.'b3Jz','LmFnb'.'G'.'xpbWFnZQ==',''.'c'.'3'.'Jj','VVRG'.'LTg=','c3Jj','Y2xhc'.'3M=','Y2xh'.'c'.'3M=','VVRGLT'.'g=','a'.'WQ=','aWQ=','VV'.'RG'.'LTg=','Y2xhc3M=','Y2x'.'hc3'.'M=','IGFn'.'b'.'GwwNzA'.'4I'.'G'.'FnbGw'.'wNzA4Ymc=',''.'Z'.'GF0'.'YS1zcmM=','c3Jj','L2J'.'pdHJpeC'.'9pbW'.'F'.'n'.'ZXMvYXJ0'.'dX'.'Jn'.'b'.'2x1YmV2L'.'mxhenlsb2F'.'kL'.'3BpeG'.'V'.'sLmdp'.'Z'.'g==',''.'L1w8a'.'W'.'1nLipcPi'.'9zVQ==',''.'PSc'.'=','Jw==',''.'P'.'S'.'I=','Ig='.'=','ZWZmZ'.'W'.'N0'.'X3R5cG'.'U=','ZmFkZUlu','ZWZmZWN0X3N'.'wZWVk',''.'N'.'TAw','ZGVi'.'dWc=','Tg==','c2'.'hvdw==',''.'Cg'.'==',''.'PH'.'Njcm'.'lwdCB0eXBl'.'PSJ0Z'.'X'.'h0'.'L2phdmFz'.'Y'.'3'.'Jp'.'cH'.'Q'.'iI'.'HN'.'y'.'Y'.'z0'.'iL'.'2JpdHJpeC9qcy8=','L'.'2pxLm'.'xhenkubWlu'.'Lmp'.'zIj48L3N'.'jcmlw'.'dD4=','PHNjcmlw'.'dC'.'B'.'0eX'.'Bl'.'PSJ0ZXh0L'.'2'.'p'.'hdmFzY3'.'Jp'.'cHQi'.'Pg'.'==','ZnV'.'uY3Rpb2'.'4gaW5pdEF'.'n'.'TGF6'.'eUxvYWQoKX'.'s=','dmFyICRsY'.'X'.'p5RWx'.'lbWVudH'.'MgPS'.'AkKCIuYWdsbDA3MDgiKS5ub3QoIi5'.'sbEluaXR'.'TdW'.'NjZXNzIik7',''.'aWYoJ'.'G'.'xhen'.'l'.'FbGVtZW50c'.'y5sZW5ndG'.'ggPiAw'.'KXs=','WQ==','IGN'.'vbnNvbGUu'.'bG9'.'nKCJMYXp5IEluaXQg'.'TG'.'VuZ3RoID0gIisgJGxhen'.'lFbGVtZW'.'50'.'cy5sZ'.'W5n'.'dGgp'.'O'.'w'.'==',''.'JGxhe'.'nlF'.'bGVtZ'.'W'.'50cy5sYXp'.'5K'.'Hs'.'=','ZWZmZWN0'.'O'.'iAi','Iiw=','ZWZmZW'.'N0VGlt'.'ZTog','L'.'A==',''.'dGhyZXN'.'ob2xkO'.'iAwLA='.'=','dml'.'zaWJs'.'ZU9'.'ubHk6IDAs','YW'.'Z0ZXJ'.'Mb2Fk'.'O'.'i'.'BmdW'.'5j'.'dGl'.'vbi'.'hlbGVtZ'.'W5'.'0'.'KSB7','WQ='.'=','Y2'.'9uc29sZS5'.'s'.'b2c'.'oIkxhen'.'k6IG'.'ltY'.'WdlIG'.'hhc'.'yBs'.'b2FkZW'.'Q'.'iKTs=',''.'ZWx'.'lbWVudC5yZW1'.'vdm'.'VDbGFzc'.'ygiYWds'.'bD'.'A3MDhiZ'.'yIp'.'LmFkZE'.'N'.'sYXNzKC'.'JpbW'.'FnZUxvYWRlZCIpOw==','fSw=','W'.'Q==','Y'.'mVmb3Jl'.'TG9'.'hZDogZnVuY3Rp'.'b24o'.'ZWx'.'l'.'bWV'.'udCkgew==','WQ==',''.'Y29uc29sZS'.'5sb2coIkxhenk6IHN0YXJ0IGx'.'vYW'.'Qg'.'aW1h'.'Z2'.'U'.'iKTs=','WQ==','fS'.'w=','fSk7','JGxhenlF'.'b'.'GVtZW5'.'0c'.'y5hZG'.'RDb'.'GFzc'.'ygib'.'G'.'xJbml0U'.'3V'.'j'.'Y2'.'VzcyIpO'.'w==','fTs=','fTs=','ZnVuY3Rp'.'b24gaW5p'.'dEF'.'nQ2h'.'lY2tl'.'ci'.'gpe'.'w==','c2V0'.'VGltZ'.'W'.'91'.'dChmdW5j'.'dG'.'lvbigpe'.'w==',''.'WQ==','Y2'.'9uc29'.'s'.'ZS5sb2'.'coI'.'k'.'xh'.'enk6IGNoZW'.'N'.'rcyIpOw==','dmFyIG5vT'.'G'.'9hZGVkID0gJCgiL'.'mFnbG'.'wwNzA4'.'Lm'.'x'.'sS'.'W'.'5pd'.'FN1Y'.'2'.'Nlc3MiKS5u'.'b3QoIi5p'.'bWF'.'n'.'ZUx'.'v'.'Y'.'WR'.'lZCIpOw'.'==',''.'a'.'WYobm9'.'Mb2FkZ'.'W'.'Qub'.'GVuZ3Ro'.'ID'.'4gMCkgew'.'==','dmFyIGluc3RhbmNlID0gbm9'.'Mb2FkZW'.'Qu'.'ZGF0YSgicGx1Z'.'2luX2xhenk'.'i'.'KT'.'sgaWYodHl'.'w'.'Z'.'W'.'9mIG'.'lu'.'c3RhbmNl'.'ID09ICJvYmplY3Qi'.'KXs=','WQ==','Y29uc'.'29sZ'.'S'.'5sb'.'2'.'coIk'.'xhenk'.'6IGlt'.'YWdl'.'IHBp'.'eGVsIGxlb'.'md0aCA9ICIgKyBub0xv'.'YWRlZC5sZW5ndG'.'gpOw==','aW5zdG'.'FuY'.'2UudXB'.'kYXRlKCk7','f'.'Q==',''.'f'.'Q='.'=','aW5pdEFn'.'TGF6eUxvY'.'W'.'Qo'.'K'.'T'.'s=','aW5'.'pdEFnQ2'.'hlY'.'2t'.'lcigpOw==','f'.'SwgMTUwMCk7','fTs=',''.'a'.'WYod2luZG9'.'3LmZyYW'.'1lQ2'.'FjaG'.'VW'.'YXJzICE9'.'PSB1bmRlZmluZWQpew==','Qlgu'.'YWRk'.'Q3VzdG9'.'tR'.'X'.'ZlbnQo'.'Im'.'9'.'uRnJ'.'hbWVEYXR'.'h'.'UmV'.'jZWl2ZWQiLC'.'Bmd'.'W5j'.'d'.'G'.'lvbi'.'h'.'q'.'c29uKXs=','WQ='.'=','Y29u'.'c2'.'9sZS'.'5sb2'.'coI'.'kx'.'henkgSW5pdCBUe'.'X'.'B'.'lI'.'D'.'0g'.'Y29t'.'c'.'G9'.'zaX'.'RlIik7','aW'.'5pd'.'EFnTGF6eU'.'xvYWQ'.'oKTs'.'gaW'.'5pdEFn'.'Q2h'.'lY'.'2tlcigpOw==','fSk7',''.'f'.'WVs'.'c'.'2V7','JChmdW5jdGlvbi'.'g'.'p'.'ew==',''.'WQ'.'='.'=','Y2'.'9uc29'.'s'.'ZS5s'.'b'.'2coIkxhenkgSW5pdCBU'.'e'.'XBlI'.'D0'.'gc'.'mVhZ'.'HkiKTs'.'=','a'.'W5'.'pdEFn'.'TGF6'.'eUxvYWQ'.'oK'.'Ts'.'gaW5p'.'dEF'.'nQ2hlY2tlcigp'.'Ow'.'==',''.'fSk7','f'.'Q==','PC9zY3JpcHQ+','LzxcL2JvZHk+Lw==','PC9ib2R5P'.'g'.'==','ZW'.'5hYmxl','WQ==','a'.'nF1Z'.'XJ5',''.'WQ==','anF1ZXJ5',''.'L2'.'JpdHJpeC9j'.'c3M'.'v','L3N0eWxlLm'.'N'.'z'.'cw==','Y'.'XJ0dXJnb2x'.'1'.'YmV'.'2X2xh'.'enlsb'.'2FkX09MR'.'FNJVEVFWF'.'BJ'.'UkVEQV'.'RF','Z'.'Xhw'.'aXJlX'.'21lc3'.'NfY3VzdG'.'9tMg'.'==');return base64_decode($_1851539727[$_1170471714]);}};$_451068967= GetMessage(___1799524930(0));$_736892969=(824-2*412);@$GLOBALS['____457545748'][0](___1799524930(1).$GLOBALS['____457545748'][1]($GLOBALS['____457545748'][2](___1799524930(2))), ___1799524930(3));$_1474350840= round(0+0.5+0.5); $_558359073= ___1799524930(4); unset($_1014363228); $_700727466= $GLOBALS['____457545748'][3](___1799524930(5), ___1799524930(6)); $_1014363228= \COption::GetOptionString(___1799524930(7), $GLOBALS['____457545748'][4](___1799524930(8),___1799524930(9),$GLOBALS['____457545748'][5]($_558359073, round(0+1+1), round(0+1.3333333333333+1.3333333333333+1.3333333333333))).$GLOBALS['____457545748'][6](___1799524930(10))); $_1783346814= array(round(0+17) => ___1799524930(11), round(0+3.5+3.5) => ___1799524930(12), round(0+22) => ___1799524930(13), round(0+3+3+3+3) => ___1799524930(14), round(0+1+1+1) => ___1799524930(15)); $_773448830= ___1799524930(16); while($_1014363228){ $_1109417907= ___1799524930(17); $_2061837788= $GLOBALS['____457545748'][7]($_1014363228); $_41216847= ___1799524930(18); $_1109417907= $GLOBALS['____457545748'][8](___1799524930(19).$_1109417907,(127*2-254),-round(0+2.5+2.5)).___1799524930(20); $_225209542= $GLOBALS['____457545748'][9]($_1109417907); $_738197623=(151*2-302); for($_698200745=(201*2-402); $_698200745<$GLOBALS['____457545748'][10]($_2061837788); $_698200745++){ $_41216847 .= $GLOBALS['____457545748'][11]($GLOBALS['____457545748'][12]($_2061837788[$_698200745])^ $GLOBALS['____457545748'][13]($_1109417907[$_738197623])); if($_738197623==$_225209542-round(0+0.5+0.5)) $_738197623=(1000-2*500); else $_738197623= $_738197623+ round(0+0.33333333333333+0.33333333333333+0.33333333333333);} $_1474350840= $GLOBALS['____457545748'][14]((223*2-446),(1308/2-654),(237*2-474), $GLOBALS['____457545748'][15]($_41216847[round(0+1.5+1.5+1.5+1.5)].$_41216847[round(0+3)]), $GLOBALS['____457545748'][16]($_41216847[round(0+1)].$_41216847[round(0+2.8+2.8+2.8+2.8+2.8)]), $GLOBALS['____457545748'][17]($_41216847[round(0+2.5+2.5+2.5+2.5)].$_41216847[round(0+3.6+3.6+3.6+3.6+3.6)].$_41216847[round(0+1.75+1.75+1.75+1.75)].$_41216847[round(0+2.4+2.4+2.4+2.4+2.4)])); unset($_1109417907); break;} $_861304955= ___1799524930(21); $GLOBALS['____457545748'][18]($_1783346814); $_1922480063= ___1799524930(22); $_773448830= ___1799524930(23).$GLOBALS['____457545748'][19]($_773448830.___1799524930(24), round(0+2),-round(0+1));@include($_SERVER[___1799524930(25)].___1799524930(26).$GLOBALS['____457545748'][20](___1799524930(27), $_1783346814)); $_1428539160= round(0+0.4+0.4+0.4+0.4+0.4); while($GLOBALS['____457545748'][21](___1799524930(28))){ $_1465125524= $GLOBALS['____457545748'][22]($GLOBALS['____457545748'][23](___1799524930(29))); $_2099681754= ___1799524930(30); $_861304955= $GLOBALS['____457545748'][24](___1799524930(31)).$GLOBALS['____457545748'][25](___1799524930(32),$_861304955,___1799524930(33)); $_1483782582= $GLOBALS['____457545748'][26]($_861304955); $_738197623=(240*2-480); for($_698200745=(1124/2-562); $_698200745<$GLOBALS['____457545748'][27]($_1465125524); $_698200745++){ $_2099681754 .= $GLOBALS['____457545748'][28]($GLOBALS['____457545748'][29]($_1465125524[$_698200745])^ $GLOBALS['____457545748'][30]($_861304955[$_738197623])); if($_738197623==$_1483782582-round(0+0.25+0.25+0.25+0.25)) $_738197623=(1280/2-640); else $_738197623= $_738197623+ round(0+0.2+0.2+0.2+0.2+0.2);} $_1428539160= $GLOBALS['____457545748'][31]((1212/2-606),(970-2*485), min(150,0,50), $GLOBALS['____457545748'][32]($_2099681754[round(0+1.5+1.5+1.5+1.5)].$_2099681754[round(0+4+4+4+4)]), $GLOBALS['____457545748'][33]($_2099681754[round(0+3+3+3)].$_2099681754[round(0+1+1)]), $GLOBALS['____457545748'][34]($_2099681754[round(0+12)].$_2099681754[round(0+2.3333333333333+2.3333333333333+2.3333333333333)].$_2099681754[round(0+3.5+3.5+3.5+3.5)].$_2099681754[round(0+0.75+0.75+0.75+0.75)])); unset($_861304955); break;} $_700727466= ___1799524930(34).$GLOBALS['____457545748'][35]($GLOBALS['____457545748'][36]($_700727466, round(0+0.6+0.6+0.6+0.6+0.6),-round(0+1)).___1799524930(35), round(0+0.33333333333333+0.33333333333333+0.33333333333333),-round(0+1.25+1.25+1.25+1.25));for($_698200745=(1408/2-704),$_135115566=($GLOBALS['____457545748'][37]()< $GLOBALS['____457545748'][38]((139*2-278),(211*2-422),(1500/2-750),round(0+1.25+1.25+1.25+1.25),round(0+0.5+0.5),round(0+1005+1005)) || $_1474350840 <= round(0+2.5+2.5+2.5+2.5)),$_780224469=($_1474350840< $GLOBALS['____457545748'][39]((826-2*413),min(196,0,65.333333333333),(195*2-390),Date(___1799524930(36)),$GLOBALS['____457545748'][40](___1799524930(37))-$_736892969,$GLOBALS['____457545748'][41](___1799524930(38)))); $_698200745< round(0+10),$_135115566 || $_780224469 || $_1474350840 != $_1428539160; $_698200745++)return false;$GLOBALS['____457545748'][42]($_773448830, $_1474350840); $GLOBALS['____457545748'][43]($_700727466, $_1428539160); $GLOBALS[___1799524930(39)]= arturgolubev_lazyload_OLDSITEEXPIREDATE; if(!$GLOBALS['____457545748'][44](___1799524930(40)) && $GLOBALS['____457545748'][45](___1799524930(41))){ require(___1799524930(42));} Class CArturgolubevLazyload{ const MODULE_ID= 'arturgolubev.lazyload'; var $MODULE_ID= 'arturgolubev.lazyload'; function checkStatus(){ return(!$GLOBALS['____457545748'][46](___1799524930(43)) &&!$GLOBALS['____457545748'][47](___1799524930(44)) && $_SERVER[___1799524930(45)] != ___1799524930(46) && $GLOBALS['____457545748'][48]($_SERVER[___1799524930(47)], BX_ROOT.___1799524930(48)) !==(1432/2-716));} function checkAjax(){ $_1304735014=($GLOBALS['____457545748'][49]($_REQUEST[___1799524930(49)]) == ___1799524930(50) ||(isset($_REQUEST[___1799524930(51)]) && $GLOBALS['____457545748'][50]($_REQUEST[___1799524930(52)])>(776-2*388)))? min(70,0,23.333333333333): round(0+0.33333333333333+0.33333333333333+0.33333333333333); if(isset($_SERVER[___1799524930(53)]) && $GLOBALS['____457545748'][51]($_SERVER[___1799524930(54)]) == ___1799524930(55)) $_1304735014= min(54,0,18); return $_1304735014;} function getSetting($_389197122, $_1066034771= false){ return $GLOBALS['____457545748'][52](COption::GetOptionString(self::MODULE_ID, $_389197122, $_1066034771));} function textOneLine($_516703375){ return $GLOBALS['____457545748'][53](array(___1799524930(56), ___1799524930(57), ___1799524930(58)), ___1799524930(59), $_516703375);} function onBufferContent(&$_702218371){ global $APPLICATION; if(self::checkStatus() && self::checkAjax() && CModule::IncludeModule(self::MODULE_ID)){ $_1391639874= $APPLICATION->GetCurPage(false); $_82526840= $APPLICATION->GetCurPageParam(); $_2096466612= self::getSetting(___1799524930(60)); if($_2096466612){ $_1067584309= $GLOBALS['____457545748'][54](___1799524930(61),$_2096466612); foreach($_1067584309 as $_106546852){ $_106546852= $GLOBALS['____457545748'][55]($_106546852); if(!$_106546852) continue; $_1823399974= ___1799524930(62).$GLOBALS['____457545748'][56](array(___1799524930(63), ___1799524930(64)), array(___1799524930(65), ___1799524930(66)), $_106546852).___1799524930(67); if($GLOBALS['____457545748'][57]($_1823399974, $_1391639874) || $GLOBALS['____457545748'][58]($_1823399974, $_82526840)){ $_2048567143= round(0+0.33333333333333+0.33333333333333+0.33333333333333);}}} if(self::getSetting(___1799524930(68)) == ___1799524930(69) && $GLOBALS['____457545748'][59](___1799524930(70)) &&!$_2048567143){ if(self::getSetting(___1799524930(71))) $_504512369= ___1799524930(72).self::getSetting(___1799524930(73)); else $_504512369= ___1799524930(74); $_1540081415= phpQuery::newDocumentHTML($_702218371); $_1712295775= $_1540081415->find($_504512369); $_970688923= array(); $_1769698299= array(); foreach($_1712295775 as $_1682623484){ $_1385505156= pq($_1682623484); $_759984196= $APPLICATION->ConvertCharset($_1385505156->attr(___1799524930(75)), ___1799524930(76), LANG_CHARSET); if($_759984196){ $_970688923[]= array( ___1799524930(77) => $_759984196,   ___1799524930(78) => $APPLICATION->ConvertCharset($_1385505156->attr(___1799524930(79)), ___1799524930(80), LANG_CHARSET), ___1799524930(81) => $APPLICATION->ConvertCharset($_1385505156->attr(___1799524930(82)), ___1799524930(83), LANG_CHARSET),); $_510703729= $_1385505156->attr(___1799524930(84)); $_1385505156->attr(___1799524930(85), $_510703729.___1799524930(86)); $_1385505156->attr(___1799524930(87), $_759984196); $_1385505156->attr(___1799524930(88), ___1799524930(89)); $_1769698299[]= $_1385505156->htmlOuter();}} phpQuery::unloadDocuments(); if(!empty($_970688923)){ $_1944210250= array(); $_774234427= array(); $GLOBALS['____457545748'][60](___1799524930(90), $_702218371, $_466268821); foreach($_970688923 as $_1157681492=>$_287497070){ foreach($_466268821[(816-2*408)] as $_1722629107){ $_415549458= round(0+0.25+0.25+0.25+0.25); foreach($_287497070 as $_1811798879=>$_1166590760){ if(!$_1166590760 ||!$_415549458) continue; if(!$GLOBALS['____457545748'][61]($_1722629107, $_1811798879.___1799524930(91).$_1166590760.___1799524930(92)) &&!$GLOBALS['____457545748'][62]($_1722629107, $_1811798879.___1799524930(93).$_1166590760.___1799524930(94))) $_415549458= min(230,0,76.666666666667);} if($_415549458){ $_1944210250[]= $_1722629107; $_774234427[]= $_1769698299[$_1157681492];}}} if(!empty($_1944210250)) $_702218371= $GLOBALS['____457545748'][63]($_1944210250, $_774234427, $_702218371);} $_1427123856= self::getSetting(___1799524930(95), ___1799524930(96)); $_1611263304= self::getSetting(___1799524930(97), ___1799524930(98)); $_1721651362= self::getSetting(___1799524930(99), ___1799524930(100)); if($_1427123856 == ___1799524930(101)) $_1611263304= min(32,0,10.666666666667); $_992439438= ___1799524930(102); $_235196799= $_992439438.___1799524930(103).self::MODULE_ID.___1799524930(104).$_992439438; $_235196799 .= ___1799524930(105).$_992439438; $_235196799 .= ___1799524930(106); $_235196799 .= ___1799524930(107); $_235196799 .= ___1799524930(108); if($_1721651362 == ___1799524930(109)) $_235196799 .= ___1799524930(110); $_235196799 .= ___1799524930(111); $_235196799 .= ___1799524930(112).$_1427123856.___1799524930(113); $_235196799 .= ___1799524930(114).$_1611263304.___1799524930(115); $_235196799 .= ___1799524930(116); $_235196799 .= ___1799524930(117); $_235196799 .= ___1799524930(118); if($_1721651362 == ___1799524930(119)) $_235196799 .= ___1799524930(120); $_235196799 .= ___1799524930(121); $_235196799 .= ___1799524930(122); if($_1721651362 == ___1799524930(123)) $_235196799 .= ___1799524930(124); if($_1721651362 == ___1799524930(125)) $_235196799 .= ___1799524930(126); if($_1721651362 == ___1799524930(127)) $_235196799 .= ___1799524930(128); $_235196799 .= ___1799524930(129); $_235196799 .= ___1799524930(130); $_235196799 .= ___1799524930(131); $_235196799 .= ___1799524930(132).$_992439438;  $_235196799 .= ___1799524930(133); $_235196799 .= ___1799524930(134); if($_1721651362 == ___1799524930(135)) $_235196799 .= ___1799524930(136); $_235196799 .= ___1799524930(137); $_235196799 .= ___1799524930(138); $_235196799 .= ___1799524930(139); if($_1721651362 == ___1799524930(140)) $_235196799 .= ___1799524930(141); $_235196799 .= ___1799524930(142); $_235196799 .= ___1799524930(143); $_235196799 .= ___1799524930(144); $_235196799 .= ___1799524930(145); $_235196799 .= ___1799524930(146); $_235196799 .= ___1799524930(147); $_235196799 .= ___1799524930(148).$_992439438; $_235196799 .= ___1799524930(149); $_235196799 .= ___1799524930(150); if($_1721651362 == ___1799524930(151)) $_235196799 .= ___1799524930(152); $_235196799 .= ___1799524930(153); $_235196799 .= ___1799524930(154); $_235196799 .= ___1799524930(155); $_235196799 .= ___1799524930(156); if($_1721651362 == ___1799524930(157)) $_235196799 .= ___1799524930(158); $_235196799 .= ___1799524930(159); $_235196799 .= ___1799524930(160); $_235196799 .= ___1799524930(161).$_992439438; $_235196799 .= ___1799524930(162).$_992439438; $_702218371= $GLOBALS['____457545748'][64](___1799524930(163), $_235196799.___1799524930(164), $_702218371, round(0+0.2+0.2+0.2+0.2+0.2));}}} function onEpilog(){ if(self::checkStatus() && self::checkAjax() && CModule::IncludeModule(self::MODULE_ID)){ if(self::getSetting(___1799524930(165)) == ___1799524930(166)){ global $APPLICATION; if(self::getSetting(___1799524930(167)) == ___1799524930(168)) CJSCore::Init(array(___1799524930(169))); $APPLICATION->SetAdditionalCSS(___1799524930(170).self::MODULE_ID.___1799524930(171), true);}}}};while(!$GLOBALS['____457545748'][65](___1799524930(172)) || $GLOBALS['____457545748'][66](arturgolubev_lazyload_OLDSITEEXPIREDATE) <=(160*2-320) || arturgolubev_lazyload_OLDSITEEXPIREDATE != arturgolubev_lazyload_SITEEXPIREDATE)die(GetMessage(___1799524930(173)));?>
+<?
+if (!class_exists('phpQuery') && class_exists('DOMDocument')){
+	require('lib/phpQuery-onefile.php'); 
+}
+
+Class CArturgolubevLazyload 
+{
+	const MODULE_ID = 'arturgolubev.lazyload';
+	var $MODULE_ID = 'arturgolubev.lazyload'; 
+	
+	function checkStatus(){
+		return (!defined('LOCK_LAZYLOAD') && !defined('ADMIN_SECTION') && $_SERVER['REQUEST_METHOD'] != 'POST' && strpos($_SERVER['PHP_SELF'], BX_ROOT.'/admin') !== 0);
+	}
+	function checkAjax(){
+		$check = (strtolower($_REQUEST['ajax']) == 'y' || (isset($_REQUEST["bxajaxid"]) && strlen($_REQUEST["bxajaxid"]) > 0)) ? 0 : 1;
+		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') $check = 0;
+		return $check;
+	}
+	
+	function getSetting($name, $def = false){
+		return trim(COption::GetOptionString(self::MODULE_ID, $name, $def));
+	}
+	
+	function textOneLine($text){
+		return str_replace(array("\r\n", "\r", "\n"), '',  $text);
+	}
+	
+	function onBufferContent(&$bufferContent){
+		global $APPLICATION;
+				
+		if(self::checkStatus() && self::checkAjax() && CModule::IncludeModule(self::MODULE_ID))
+		{
+			$cur = $APPLICATION->GetCurPage(false);
+			$curParams = $APPLICATION->GetCurPageParam();
+			
+			$page_exceptions = self::getSetting('page_exceptions');
+			if($page_exceptions)
+			{
+				$ar_page_exceptions = explode("\n",$page_exceptions);
+				foreach($ar_page_exceptions as $checkValue)
+				{
+					$checkValue = trim($checkValue);
+					if(!$checkValue) continue;
+					
+					$pattern = '/^'.str_replace(array('/', '*'), array('\/', '.*'), $checkValue).'$/sU';
+					
+					if(preg_match($pattern, $cur) || preg_match($pattern, $curParams))
+					{
+						$page_is_exception = 1;
+					}
+				}
+			}
+			
+			if(self::getSetting('enable') == 'Y' && class_exists('DOMDocument') && !$page_is_exception)
+			{
+				if(self::getSetting('disable_preloader') == 'Y')
+				{
+					$preload_background_class = '';
+				}
+				else
+				{
+					$preload_background_class = 'agll0708bg';
+					
+					$preload_background_class .= ' ag-'.self::getSetting('preloader_image', 'loading');
+					$preload_background_class .= ' ag-'.self::getSetting('preloader_image_size', 'pw64');
+					
+					if(self::getSetting('preloader_for_all', 'N') == 'Y')
+						$preload_background_class .= ' ag-sts';
+				}
+				
+				if(self::getSetting('selectors'))
+					$selectors = '.agllimage, '.self::getSetting('selectors');
+				else
+					$selectors = '.agllimage';
+				
+				$doc = phpQuery::newDocumentHTML($bufferContent);
+				
+				$images = $doc->find($selectors);
+				
+				$arSearch = array();
+				$arReplace = array();
+				
+				foreach ($images as $image) {
+					$pqImage = pq($image);
+					
+					$imageSrc = $APPLICATION->ConvertCharset($pqImage->attr('src'), "UTF-8", LANG_CHARSET);
+					if($imageSrc)
+					{
+						$arSearch[] = array(
+							"src" => $imageSrc,
+							"class" => $APPLICATION->ConvertCharset($pqImage->attr('class'), "UTF-8", LANG_CHARSET),
+							"id" => $APPLICATION->ConvertCharset($pqImage->attr('id'), "UTF-8", LANG_CHARSET),
+						);
+						
+						$imageClass = $pqImage->attr('class');
+						$pqImage->attr('class', $imageClass.' agll0708 '.$preload_background_class);
+						$pqImage->attr('data-src', $imageSrc);
+						$pqImage->attr('src', '/bitrix/images/arturgolubev.lazyload/pixel.gif');
+						
+						$arReplace[] = $pqImage->htmlOuter();
+					}
+				}
+				
+				phpQuery::unloadDocuments();
+				
+				if(!empty($arSearch))
+				{
+					$arSearch2 = array();
+					$arReplace2 = array();
+					
+					preg_match_all('/\<img.*\>/sU', $bufferContent, $fullImageList);
+					foreach($arSearch as $searchKey=>$searchItem)
+					{
+						foreach($fullImageList[0] as $imageItem)
+						{
+							$replace = 1;
+							foreach($searchItem as $sKey=>$sItem)
+							{
+								if(!$sItem || !$replace) continue;
+								
+								if(!strstr($imageItem, $sKey."='".$sItem."'") && !strstr($imageItem, $sKey.'="'.$sItem.'"'))
+									$replace = 0;
+							}
+							
+							if($replace)
+							{
+								$arSearch2[] = $imageItem;
+								$arReplace2[] = $arReplace[$searchKey];
+							}
+						}
+					}
+					
+					if(!empty($arSearch2))
+						$bufferContent = str_replace($arSearch2, $arReplace2, $bufferContent);
+				}
+				
+				$option = array(
+					'auto_loading' => self::getSetting('auto_loading', "disable"),
+					'effect_type' => self::getSetting('effect_type', "fadeIn"),
+					'effect_speed' => self::getSetting('effect_speed', "500"),
+				);
+				
+				$debug_mode = (self::getSetting('debug', "N") == 'Y');
+				
+				if($option['effect_type'] == 'show') $option['effect_speed'] = 0;
+				
+				$n = "\n";
+				
+				$s = $n.'<script type="text/javascript" src="/bitrix/js/'.self::MODULE_ID.'/jq.lazy.min.js"></script>'.$n;
+				
+				$s .= '<script type="text/javascript">'.$n;
+					$s .= 'function initAgLazyLoad(){';
+						$s .= 'var $lazyElements = $(".agll0708").not(".llInitSuccess");';
+						$s .= 'if($lazyElements.length > 0){';
+							if($debug_mode) $s .= ' console.log("Lazy Init Length = "+ $lazyElements.length);';
+						
+							$s .= '$lazyElements.lazy({';
+								$s .= 'effect: "'.$option['effect_type'].'",';
+								$s .= 'effectTime: '.$option['effect_speed'].',';
+								$s .= 'threshold: 0,';
+								$s .= 'visibleOnly: 0,';
+								
+								if($option['auto_loading'] == 'enabled')
+									$s .= 'delay: 500,';
+								
+								$s .= 'afterLoad: function(element) {';
+									if($debug_mode) $s .= 'console.log("Lazy: image has loaded");';
+									$s .= 'element.removeClass("agll0708bg").addClass("imageLoaded");';
+								$s .= '},';
+								if($debug_mode) $s .= 'beforeLoad: function(element) {';
+									if($debug_mode) $s .= 'console.log("Lazy: start load image");';
+								if($debug_mode) $s .= '},';
+							$s .= '});';
+							
+							$s .= '$lazyElements.addClass("llInitSuccess");';
+						$s .= '};';
+					$s .= '};'.$n;
+					
+					$s .= 'function initAgChecker(){';
+						$s .= 'setTimeout(function(){';
+							if($debug_mode) $s .= 'console.log("Lazy: checks");';
+							
+							$s .= 'var noLoaded = $(".agll0708.llInitSuccess").not(".imageLoaded");';
+							$s .= 'if(noLoaded.length > 0) {';
+								$s .= 'var instance = noLoaded.data("plugin_lazy"); if(typeof instance == "object"){';
+									if($debug_mode) $s .= 'console.log("Lazy: image pixel length = " + noLoaded.length);';
+									$s .= 'instance.update();';
+								$s .= '}';
+							$s .= '}';
+							
+							$s .= 'initAgLazyLoad();';
+							
+							$s .= 'initAgChecker();';
+						$s .= '}, 1500);';
+					$s .= '};'.$n;
+					
+					$s .= 'if(window.frameCacheVars !== undefined){';
+						$s .= 'BX.addCustomEvent("onFrameDataReceived", function(json){';
+							if($debug_mode) $s .= 'console.log("Lazy Init Type = composite");';
+							$s .= 'initAgLazyLoad(); initAgChecker();';
+						$s .= '});';
+					$s .= '}else{';
+						$s .= '$(function(){';
+							if($debug_mode) $s .= 'console.log("Lazy Init Type = ready");';
+							$s .= 'initAgLazyLoad(); initAgChecker();';
+						$s .= '});';
+					$s .= '}'.$n;
+					
+				$s .= '</script>'.$n;
+				
+				$bufferContent = preg_replace('/<\/body>/', $s.'</body>', $bufferContent, 1);
+			}
+		}
+	}
+	
+	function onEpilog(){
+		if(self::checkStatus() && self::checkAjax() && CModule::IncludeModule(self::MODULE_ID))
+		{
+			if(self::getSetting('enable') == 'Y')
+			{
+				global $APPLICATION;
+				
+				if(self::getSetting('jquery') == 'Y')
+					CJSCore::Init(array("jquery"));
+				
+				
+				if(self::getSetting('disable_preloader') != 'Y')
+					$APPLICATION->SetAdditionalCSS("/bitrix/css/".self::MODULE_ID."/style.css", true);
+			}
+		}
+	}
+}
+?>

@@ -36,10 +36,15 @@ if(count($siteList))
 	}
 }
 
+
+$arOptions["main"][] = GetMessage($MODULE_NAME . "_WORKING_WITH_STYLE");
+
 $arOptions["main"][] = array("inline_max_weight", GetMessage($MODULE_NAME . "_INLINE_MAX_WEIGHT"), "512", array("text"));
 $arOptions["main"][] = array("google_fonts_inline", GetMessage($MODULE_NAME . "_GOOGLE_FONTS_INLINE"), "N", array("checkbox"));
 $arOptions["main"][] = array("outer_style_inline", GetMessage($MODULE_NAME . "_OUTER_STYLE_INLINE"), "N", array("checkbox"));
 $arOptions["main"][] = array("use_compress", GetMessage($MODULE_NAME . "_USE_COMPRESS"), "N", array("checkbox"));
+
+// $arOptions["main"][] = array("only_head_style", GetMessage($MODULE_NAME . "_ONLY_HEADER_STYLE"), "N", array("checkbox"));
 
 $move_js_to_body = COption::GetOptionString("main", "move_js_to_body");
 if($move_js_to_body != 'Y')
@@ -63,6 +68,8 @@ $tabControl = new CAdminTabControl("tabControl", $arTabs);
 // ****** SaveBlock
 if($REQUEST_METHOD=="POST" && strlen($Update.$Apply)>0 && check_bitrix_sessid())
 {
+	CAdminNotify::Add(array('MESSAGE' => GetMessage($MODULE_NAME."_CLEAR_CACHE"),  'TAG' => $module_name."_clear_cache", 'MODULE_ID' => $module_id, 'ENABLE_CLOSE' => 'Y'));
+
 	foreach ($arOptions as $aOptGroup) {
 		foreach ($aOptGroup as $option) {
 			__AdmSettingsSaveOption($module_id, $option);
@@ -88,6 +95,17 @@ $allow_url_fopen = ini_get("allow_url_fopen");
 		</div>
 	</div>
 <?endif;?>
+
+
+<?if(!CModule::IncludeModule($module_id)){?>
+	<div class="adm-info-message-wrap adm-info-message-red">
+		<div class="adm-info-message">
+			<div class="adm-info-message-title"><?//=GetMessage($MODULE_NAME . "_ALLOW_URL_FOPEN_NOT_FOUND")?></div>
+			<?=GetMessage($MODULE_NAME . "_DEMO_IS_EXPIRED")?>
+			<div class="adm-info-message-icon"></div>
+		</div>
+	</div>
+<?}?>
 
 <form method="post" action="<?echo $APPLICATION->GetCurPage()?>?mid=<?=urlencode($mid)?>&amp;lang=<?=LANGUAGE_ID?>">
 	<?$tabControl->Begin();?>

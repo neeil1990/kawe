@@ -43,6 +43,7 @@ $MESS['KDA_EE_ISECT_FI_PICTURE'] = "Изображение (путь)";
 $MESS['KDA_EE_ISECT_FI_DETAIL_PICTURE'] = "Детальная картинка (путь)";
 $MESS['KDA_EE_ISECT_FI_DESCRIPTION'] = "Описание";
 $MESS['KDA_EE_ISECT_FI_SECTION_PAGE_URL'] = "URL страницы раздела";
+$MESS['KDA_EE_ISECT_FI_ELEMENT_CNT'] = "Количество элементов в разделе";
 $MESS['KDA_EE_ISECT_FI_SECTION_IBLOCK_SECTION_ID'] = "ID родительского раздела";
 $MESS['KDA_EE_ISECT_FI_SECTION_DEPTH_LEVEL'] = "Уровень вложенности раздела";
 $MESS['KDA_EE_ISECT_FI_SECTION_PATH_NAMES'] = "Путь к разделу";
@@ -156,4 +157,9 @@ $MESS['KDA_EE_FI_SET2_ITEM'] = "Товары в комплекте";
 $MESS['KDA_EE_FI_SET2_QUANTITY'] = "Количество товаров";
 $MESS['KDA_EE_FI_SET2_DISCOUNT_PERCENT'] = "Процент распределения скидки";
 $MESS['KDA_EE_FI_SET2_SORT'] = "Сортировка";
+$MESS['KDA_EE_GROUP_CONTENT_TABLE'] = "Оглавление";
+$MESS['KDA_EE_FI_SHEET_NUMBER'] = "Номер листа";
+$MESS['KDA_EE_FI_SHEET_NAME'] = "Заголовок листа";
+$MESS['KDA_EE_FI_SHEET_LINK'] = "Ссылка на лист";
+$MESS['KDA_EE_FI_SHEET_POS_NUMBER'] = "Количество позиций в листе";
 ?>

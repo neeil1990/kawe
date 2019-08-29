@@ -47,7 +47,7 @@ class CKDAExportProfileDB extends CKDAExportProfileAll {
 	
 	public function CheckStorage()
 	{
-		$optionName = 'DB_STRUCT_VERSION_'.(strlen($this->suffix) > 0 ? ToUpper($this->suffix) : 'IBLOCK');
+		$optionName = ToUpper(static::$moduleSubDir).'DB_STRUCT_VERSION_'.(strlen($this->suffix) > 0 ? ToUpper($this->suffix) : 'IBLOCK');
 		$moduleVersion = false;
 		if(is_callable(array('\Bitrix\Main\ModuleManager', 'getVersion')))
 		{

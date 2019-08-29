@@ -169,13 +169,16 @@ class CKDAExportExcelWriterXlsx {
 			}
 			
 			$this->linkCells = array();
-			foreach($this->fparams as $k=>$v)
+			if(is_array($this->fparams))
 			{
-				if(isset($v['CONVERSION']) && is_array($v['CONVERSION']))
+				foreach($this->fparams as $k=>$v)
 				{
-					foreach($v['CONVERSION'] as $k2=>$v2)
+					if(isset($v['CONVERSION']) && is_array($v['CONVERSION']))
 					{
-						if($v2['THEN']=='ADD_LINK') $this->linkCells[$k] = $k;
+						foreach($v['CONVERSION'] as $k2=>$v2)
+						{
+							if($v2['THEN']=='ADD_LINK') $this->linkCells[$k] = $k;
+						}
 					}
 				}
 			}
@@ -427,7 +430,7 @@ class CKDAExportExcelWriterXlsx {
 								{
 									foreach($m[1] as $letter)
 									{
-										if(($index = array_search($letter, $this->arColLetters))!==false)
+										if(($index = array_search($letter, $this->arColLetters))!==false && (!isset($arCellTypes[$index]) || $arCellTypes[$index]!=='FORMULA'))
 										{
 											$arCellTypes[$index] = 'NUMBER';
 										}
@@ -1150,10 +1153,18 @@ class CKDAExportExcelWriterXlsx {
 	
 	public function addRelLink($cellName, $link)
 	{
-		$rid = 'rId'.($this->curRelationshipIndex);
-		$this->writeWorksheetRels('<Relationship Id="'.$rid.'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="'.$this->getValueForXml(trim($link)).'" TargetMode="External"/>');
-		$this->arHyperLinks[] = '<hyperlink ref="'.$cellName.'" r:id="'.$rid.'"/>';
-		$this->curRelationshipIndex++;
+		$link = trim($link);
+		if(preg_match("/^'.*'!A1$/", $link))
+		{
+			$this->arHyperLinks[] = '<hyperlink ref="'.$cellName.'" location="'.$this->getValueForXml($link).'" display="'.$this->getValueForXml($link).'"/>';
+		}
+		else
+		{
+			$rid = 'rId'.($this->curRelationshipIndex);
+			$this->writeWorksheetRels('<Relationship Id="'.$rid.'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="'.$this->getValueForXml($link).'" TargetMode="External"/>');
+			$this->arHyperLinks[] = '<hyperlink ref="'.$cellName.'" r:id="'.$rid.'"/>';
+			$this->curRelationshipIndex++;
+		}
 	}
 
 	public function writeWorksheetRels($str)

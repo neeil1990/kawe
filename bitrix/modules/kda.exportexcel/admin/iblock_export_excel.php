@@ -267,10 +267,11 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 			$iblockId = $SETTINGS['LIST_IBLOCK_ID'][$list];
 		}
 		$arFieldParams = array();
-		if($SETTINGS['SHOW_ONLY_SECTION_PROPERTY'][$list]=='Y')
+		if($SETTINGS['SHOW_ONLY_SECTION_PROPERTY'][$list]=='Y' || $SETTINGS['SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK'][$list]=='Y')
 		{
 			$arFieldParams = array(
-				'SHOW_ONLY_SECTION_PROPERTY' => true,
+				'SHOW_ONLY_SECTION_PROPERTY' => ($SETTINGS['SHOW_ONLY_SECTION_PROPERTY'][$list]=='Y'),
+				'SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK' => ($SETTINGS['SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK'][$list]=='Y'),
 				'SECTIONS' => $SETTINGS['FILTER'][$list]['find_section_section'],
 				'ISSUBSECTIONS' => (bool)($SETTINGS['FILTER'][$list]['find_el_subsections']=='Y')
 			);
@@ -416,6 +417,13 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 						<td>
 							<input type="hidden" name="SETTINGS[ENABLE_PROTECTION][<?echo $list;?>]" value="N">
 							<input type="checkbox" name="SETTINGS[ENABLE_PROTECTION][<?echo $list;?>]" value="Y" <?if($SETTINGS['ENABLE_PROTECTION'][$list]=='Y'){echo 'checked';}?>>
+						</td>
+					</tr>
+					<tr>
+						<td><?echo GetMessage("KDA_EE_SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK"); ?>:</td>
+						<td>
+							<input type="hidden" name="SETTINGS[SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK][<?echo $list;?>]" value="N">
+							<input type="checkbox" name="SETTINGS[SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK][<?echo $list;?>]" value="Y" <?if($SETTINGS['SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK'][$list]=='Y'){echo 'checked';}?> onchange="EList.SetSectionProperties(this);">
 						</td>
 					</tr>
 					<tr>

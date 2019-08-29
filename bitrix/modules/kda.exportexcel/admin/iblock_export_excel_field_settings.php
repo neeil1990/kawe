@@ -11,6 +11,7 @@ $MODULE_RIGHT = $APPLICATION->GetGroupRight($moduleId);
 if($MODULE_RIGHT < "W") $APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 $IBLOCK_ID = $_REQUEST['IBLOCK_ID'];
+$fieldName = htmlspecialcharsex($_GET['field_name']);
 
 $oProfile = new CKDAExportProfile();
 $arProfile = $oProfile->GetByID($_REQUEST['PROFILE_ID']);
@@ -59,7 +60,7 @@ if(isset($_POST['POSTEXTRA']))
 	}
 	$arFieldParams = CUtil::JsObjectToPhp($postExtra);
 	if(!$arFieldParams) $arFieldParams = array();
-	$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name']));
+	$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName);
 	$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 	eval('$arFieldsParamsInArray = &$P'.$fNameEval.';');
 	$arFieldsParamsInArray = $arFieldParams;
@@ -147,7 +148,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_PROPLIST_PROPS_LIST");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[PROPLIST_PROPS_LIST]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[PROPLIST_PROPS_LIST]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					if(!is_array($val)) $val = array();
@@ -167,7 +168,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_PROPLIST_PROPS_SEP_VALS");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[PROPLIST_PROPS_SEP_VALS]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[PROPLIST_PROPS_SEP_VALS]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					?>
@@ -178,7 +179,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_PROPLIST_PROPS_SEP_NAMEVAL");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[PROPLIST_PROPS_SEP_NAMEVAL]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[PROPLIST_PROPS_SEP_NAMEVAL]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					?>
@@ -189,7 +190,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_PROPLIST_PROPS_SHOW_EMPTY");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[PROPLIST_PROPS_SHOW_EMPTY]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[PROPLIST_PROPS_SHOW_EMPTY]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					?>
@@ -203,7 +204,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_DISCOUNT_USER_GROUP");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[USER_GROUP]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[USER_GROUP]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					
@@ -239,7 +240,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_DISCOUNT_SITE");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[SITE_ID]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[SITE_ID]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					$dbRes = CIBlock::GetList(array(), array('ID'=>$IBLOCK_ID));
@@ -263,7 +264,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_SECTION_PATH_SEPARATOR");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[SECTION_PATH_SEPARATOR]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[SECTION_PATH_SEPARATOR]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					?>
@@ -277,7 +278,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_SETTINGS_REL_ELEMENT_FIELD");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[REL_ELEMENT_FIELD]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[REL_ELEMENT_FIELD]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					$val = '';
 					if(is_array($PEXTRASETTINGS))
@@ -297,7 +298,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_SETTINGS_REL_SECTION_FIELD");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[REL_SECTION_FIELD]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[REL_SECTION_FIELD]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					$val = '';
 					if(is_array($PEXTRASETTINGS))
@@ -317,7 +318,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_SETTINGS_REL_USER_FIELD");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[REL_USER_FIELD]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[REL_USER_FIELD]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					$val = '';
 					if(is_array($PEXTRASETTINGS))
@@ -341,7 +342,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_QRCODE_CODE");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[QRCODE_SIZE]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[QRCODE_SIZE]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					$arSizes = array();
@@ -404,10 +405,10 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_CHANGE_MULTIPLE_SEPARATOR");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[CHANGE_MULTIPLE_SEPARATOR]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[CHANGE_MULTIPLE_SEPARATOR]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
-					$fName2 = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[MULTIPLE_SEPARATOR]';
+					$fName2 = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[MULTIPLE_SEPARATOR]';
 					$fNameEval2 = strtr($fName2, array("["=>"['", "]"=>"']"));
 					eval('$val2 = $P'.$fNameEval2.';');
 					?>
@@ -420,7 +421,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_MULTIPLE_SEPARATE_BY_ROWS");?>:</td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[MULTIPLE_SEPARATE_BY_ROWS]';
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[MULTIPLE_SEPARATE_BY_ROWS]';
 					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
 					eval('$val = $P'.$fNameEval.';');
 					?>
@@ -432,11 +433,11 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_MULTIPLE_FROM_VALUE");?>:<br><small><?echo GetMessage("KDA_EE_SETTINGS_MULTIPLE_FROM_VALUE_COMMENT");?></small></td>
 				<td class="adm-detail-content-cell-r">
 					<?
-					$fName1 = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[MULTIPLE_FROM_VALUE]';
+					$fName1 = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[MULTIPLE_FROM_VALUE]';
 					$fNameEval1 = strtr($fName1, array("["=>"['", "]"=>"']"));
 					eval('$val1 = $P'.$fNameEval1.';');
 					
-					$fName2 = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsex($_GET['field_name'])).'[MULTIPLE_TO_VALUE]';
+					$fName2 = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[MULTIPLE_TO_VALUE]';
 					$fNameEval2 = strtr($fName2, array("["=>"['", "]"=>"']"));
 					eval('$val2 = $P'.$fNameEval2.';');
 					?>
@@ -540,13 +541,15 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 									'<option value="EXPRESSION" '.($v['THEN']=='EXPRESSION' ? 'selected' : '').'>'.GetMessage("KDA_EE_SETTINGS_CONVERSION_THEN_EXPRESSION").'</option>'.
 								'</optgroup>'.
 							'</select> '.
-							'<input type="text" name="'.$fName.'[TO][]" value="'.htmlspecialcharsbx($v['TO']).'">'.
+							'<input type="text" class="field_to" name="'.$fName.'[TO][]" value="'.htmlspecialcharsbx($v['TO']).'">'.
 							'<input class="choose_val" value="..." type="button" onclick="ESettings.ShowChooseVal(this)">'.
+							'<a href="javascript:void(0)" onclick="ESettings.ConversionUp(this)" title="'.GetMessage("KDA_EE_SETTINGS_UP").'" class="up"></a>'.
+							'<a href="javascript:void(0)" onclick="ESettings.ConversionDown(this)" title="'.GetMessage("KDA_EE_SETTINGS_DOWN").'" class="down"></a>'.
 							'<a href="javascript:void(0)" onclick="ESettings.RemoveConversion(this)" title="'.GetMessage("KDA_EE_SETTINGS_DELETE").'" class="delete"></a>'.
 						 '</div>';
 				}
 				?>
-				<a href="javascript:void(0)" onclick="ESettings.AddConversion(this)"><?echo GetMessage("KDA_EE_SETTINGS_CONVERSION_ADD_VALUE");?></a>
+				<a href="javascript:void(0)" onclick="return ESettings.AddConversion(this);"><?echo GetMessage("KDA_EE_SETTINGS_CONVERSION_ADD_VALUE");?></a>
 			</td>
 		</tr>
 		
@@ -606,6 +609,41 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 					</select>
 				</td>
 			</tr>
+			
+			<?if($field!="ICAT_PURCHASING_PRICE"){?>
+				<tr>
+					<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_SETTINGS_PRICE_USE_EXT");?>:</td>
+					<td class="adm-detail-content-cell-r">
+						<?
+						$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[PRICE_USE_EXT]';
+						$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+						eval('$val = $P'.$fNameEval.';');
+						$priceExt = $val;
+						?>
+						<input type="checkbox" name="<?=$fName?>" value="Y" <?echo ($val=='Y' ? 'checked' : '')?> onchange="$('#price_ext').css('display', (this.checked ? '' : 'none'));">
+					</td>
+				</tr>
+				<tr id="price_ext" <?if($priceExt!='Y'){echo 'style="display: none;"';}?>>
+					<td class="adm-detail-content-cell-l"></td>
+					<td class="adm-detail-content-cell-r">
+						<?
+						$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[PRICE_QUANTITY_FROM]';
+						$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+						eval('$val = $P'.$fNameEval.';');
+						?>
+						<?echo GetMessage("KDA_EE_SETTINGS_PRICE_QUANTITY_FROM");?>
+						<input type="text" name="<?=$fName?>" value="<?echo htmlspecialcharsbx($val)?>" size="5">
+						&nbsp; &nbsp;
+						<?
+						$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[PRICE_QUANTITY_TO]';
+						$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+						eval('$val = $P'.$fNameEval.';');
+						?>
+						<?echo GetMessage("KDA_EE_SETTINGS_PRICE_QUANTITY_TO");?>
+						<input type="text" name="<?=$fName?>" value="<?echo htmlspecialcharsbx($val)?>" size="5">
+					</td>
+				</tr>
+			<?}?>
 		<?}?>
 		
 		<tr class="heading">

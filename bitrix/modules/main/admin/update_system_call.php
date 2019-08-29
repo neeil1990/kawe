@@ -137,7 +137,8 @@ if ($queryType == "M")
 
 	if (strlen($errorMessage) <= 0)
 	{
-		if (!CUpdateClient::UpdateStepModules($temporaryUpdatesDir, $errorMessage, defined("US_BITRIX24_MODE") && US_BITRIX24_MODE))
+		$isB24Mode = defined("US_BITRIX24_MODE") && US_BITRIX24_MODE;
+		if (!CUpdateClient::UpdateStepModules($temporaryUpdatesDir, $errorMessage, $isB24Mode, $isB24Mode))
 		{
 			$errorMessage .= "[CL04] ".GetMessage("SUPC_ME_UPDATE").". ";
 			CUpdateClient::AddMessage2Log(GetMessage("SUPC_ME_UPDATE"), "CL04");
@@ -176,6 +177,8 @@ if ($queryType == "M")
 			echo ($bFirst ? "" : ", ").$arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["NAME"].(($arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"] != "0") ? " (".$arUpdateDescription["DATA"]["#"]["ITEM"][$i]["@"]["VALUE"].")" : "");
 			$bFirst = False;
 		}
+
+		CUpdateClient::finalizeModuleUpdate($arUpdateDescription["DATA"]["#"]["ITEM"]);
 	}
 }
 elseif ($queryType == "L")
@@ -346,6 +349,8 @@ elseif ($queryType == "L")
 					echo ($bFirst ? "" : ", ").$key.((StrLen($value) > 0) ? "(".$value.")" : "");
 					$bFirst = False;
 				}
+
+				CUpdateClient::finalizeLanguageUpdate($arItemsUpdated);
 			}
 		}
 	}

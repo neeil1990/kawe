@@ -987,7 +987,9 @@ class CKDAExportUtils {
 							"TABLE_ID" => $sTableID,
 						),
 					));
-				elseif($arProp["PROPERTY_TYPE"]=='S'):?>
+				elseif($arProp["PROPERTY_TYPE"]=='S'):
+					if(is_array($arFields["find_el_property_".$arProp["ID"]]) && isset($arFields["find_el_property_".$arProp["ID"]]['TYPE'])) $arFields["find_el_property_".$arProp["ID"]] = '';
+				?>
 					<select name="SETTINGS[FILTER][<?=$listIndex?>][find_el_property_<?=$arProp["ID"]?>_comp]">
 						<option value="eq" <?if($arFields['find_el_property_'.$arProp["ID"].'_comp']=='eq'){echo 'selected';}?>><?=Loc::getMessage('KDA_EE_COMPARE_EQ')?></option>
 						<option value="neq" <?if($arFields['find_el_property_'.$arProp["ID"].'_comp']=='neq'){echo 'selected';}?>><?=Loc::getMessage('KDA_EE_COMPARE_NEQ')?></option>
@@ -1036,6 +1038,27 @@ class CKDAExportUtils {
 						<option value="N"<?if($arFields["find_el_property_".$arProp["ID"]]=="N")echo " selected"?>><?=htmlspecialcharsex(Loc::getMessage("KDA_EE_IS_EMPTY"))?></option>
 					</select>
 				<?
+				elseif(array_key_exists("GetPropertyFieldHtml", $arProp["PROPERTY_USER_TYPE"])):
+					$inputHTML = call_user_func_array($arProp["PROPERTY_USER_TYPE"]["GetPropertyFieldHtml"], array(
+						$arProp,
+						array(
+							"VALUE" =>  $arFields["find_el_property_".$arProp["ID"]],
+							"DESCRIPTION" => '',
+						),
+						array(
+							"VALUE" => "filter_".$listIndex."_find_el_property_".$arProp["ID"],
+							"DESCRIPTION" => '',
+							"MODE"=>"iblock_element_admin",
+							"FORM_NAME"=>"dataload"
+						),
+					));
+					$inputHTML = '<table style="margin: 0 0 5px 12px;"><tr id="tr_PROPERTY_'.$arProp["ID"].'"><td>'.$inputHTML.'</td></tr></table>';
+					//$inputHTML = '<span class="adm-select-wrap">'.$inputHTML.'</span>';
+					if(class_exists('\Bitrix\Main\Page\Asset') && class_exists('\Bitrix\Main\Page\AssetShowTargetType'))
+					{
+						$inputHTML = \Bitrix\Main\Page\Asset::getInstance()->GetJs(\Bitrix\Main\Page\AssetShowTargetType::TEMPLATE_PAGE).\Bitrix\Main\Page\Asset::getInstance()->GetCss(\Bitrix\Main\Page\AssetShowTargetType::TEMPLATE_PAGE).$inputHTML;
+					}
+					echo $inputHTML;
 				endif;
 				?>
 			</td>
@@ -1206,7 +1229,9 @@ class CKDAExportUtils {
 									"TABLE_ID" => $sTableID,
 								),
 							));
-						elseif($arProp["PROPERTY_TYPE"]=='S'):?>
+						elseif($arProp["PROPERTY_TYPE"]=='S'):
+							if(is_array($arFields["find_sub_el_property_".$arProp["ID"]]) && isset($arFields["find_sub_el_property_".$arProp["ID"]]['TYPE'])) $arFields["find_sub_el_property_".$arProp["ID"]] = '';
+						?>
 						<select name="SETTINGS[FILTER][<?=$listIndex?>][find_sub_el_property_<?=$arProp["ID"]?>_comp]">
 							<option value="eq" <?if($arFields['find_sub_el_property_'.$arProp["ID"].'_comp']=='eq'){echo 'selected';}?>><?=Loc::getMessage('KDA_EE_COMPARE_EQ')?></option>
 							<option value="neq" <?if($arFields['find_sub_el_property_'.$arProp["ID"].'_comp']=='neq'){echo 'selected';}?>><?=Loc::getMessage('KDA_EE_COMPARE_NEQ')?></option>
@@ -1247,6 +1272,27 @@ class CKDAExportUtils {
 						<?
 						elseif($arProp["PROPERTY_TYPE"]=='G'):
 							echo self::ShowGroupPropertyField2('SETTINGS[FILTER]['.$listIndex.'][find_sub_el_property_'.$arProp["ID"].']', $arProp, $arFields["find_sub_el_property_".$arProp["ID"]]);
+						elseif(array_key_exists("GetPropertyFieldHtml", $arProp["PROPERTY_USER_TYPE"])):
+							$inputHTML = call_user_func_array($arProp["PROPERTY_USER_TYPE"]["GetPropertyFieldHtml"], array(
+								$arProp,
+								array(
+									"VALUE" =>  $arFields["find_sub_el_property_".$arProp["ID"]],
+									"DESCRIPTION" => '',
+								),
+								array(
+									"VALUE" => "filter_".$listIndex."_find_sub_el_property_".$arProp["ID"],
+									"DESCRIPTION" => '',
+									"MODE"=>"iblock_element_admin",
+									"FORM_NAME"=>"dataload"
+								),
+							));
+							$inputHTML = '<table style="margin: 0 0 5px 12px;"><tr id="tr_PROPERTY_'.$arProp["ID"].'"><td>'.$inputHTML.'</td></tr></table>';
+							//$inputHTML = '<span class="adm-select-wrap">'.$inputHTML.'</span>';
+							if(class_exists('\Bitrix\Main\Page\Asset') && class_exists('\Bitrix\Main\Page\AssetShowTargetType'))
+							{
+								$inputHTML = \Bitrix\Main\Page\Asset::getInstance()->GetJs(\Bitrix\Main\Page\AssetShowTargetType::TEMPLATE_PAGE).\Bitrix\Main\Page\Asset::getInstance()->GetCss(\Bitrix\Main\Page\AssetShowTargetType::TEMPLATE_PAGE).$inputHTML;
+							}
+							echo $inputHTML;
 						endif;
 						?>
 					</td>
@@ -1307,7 +1353,20 @@ class CKDAExportUtils {
 		{
 			if($arUserField["SHOW_FILTER"]!="N" && $arUserField["USER_TYPE"]["BASE_TYPE"]!="file")
 			{
-				echo $USER_FIELD_MANAGER->GetFilterHTML($arUserField, 'SETTINGS[FILTER]['.$listIndex.'][find_'.$FIELD_NAME.']', $arFields['find_'.$FIELD_NAME]);
+				if(in_array($arUserField["USER_TYPE_ID"], array('date', 'datetime')))
+				{
+					$GLOBALS["SETTINGS[FILTER][".$listIndex."][find_".$FIELD_NAME."]_from"] = $arFields['find_'.$FIELD_NAME.'_from'];
+					$GLOBALS["SETTINGS[FILTER][".$listIndex."][find_".$FIELD_NAME."]_to"] = $arFields['find_'.$FIELD_NAME.'_to'];
+					$GLOBALS["SETTINGS[FILTER][".$listIndex."][find_".$FIELD_NAME."]_from_FILTER_PERIOD"] = $arFields['find_'.$FIELD_NAME.'_from_FILTER_PERIOD'];
+					$GLOBALS["SETTINGS[FILTER][".$listIndex."][find_".$FIELD_NAME."]_from_FILTER_DIRECTION"] = $arFields['find_'.$FIELD_NAME.'_from_FILTER_DIRECTION'];
+					$inputHTML = $USER_FIELD_MANAGER->GetFilterHTML($arUserField, 'SETTINGS[FILTER]['.$listIndex.'][find_'.$FIELD_NAME.']', $arFields['find_'.$FIELD_NAME]);
+					$inputHTML = preg_replace('/(name="[^"]*)\](_[^\]]*)"/Uis', '$1$2]"', $inputHTML);
+				}
+				else
+				{
+					$inputHTML = $USER_FIELD_MANAGER->GetFilterHTML($arUserField, 'SETTINGS[FILTER]['.$listIndex.'][find_'.$FIELD_NAME.']', $arFields['find_'.$FIELD_NAME]);
+				}
+				echo $inputHTML;
 			}
 		}
 	

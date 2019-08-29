@@ -31,9 +31,10 @@ if($changeIblockId && $SETTINGS['LIST_IBLOCK_ID'][$listIndex])
 $fl = new CKDAEEFieldList($SETTINGS_DEFAULT);
 
 $arFieldParams = array('MULTIPLE' => true);
-if($_POST['onlysectionprops'])
+if($_POST['onlysectionprops'] || $_POST['onlysectionpropswoiblock'])
 {
-	$arFieldParams['SHOW_ONLY_SECTION_PROPERTY'] = true; 
+	if($_POST['onlysectionprops']) $arFieldParams['SHOW_ONLY_SECTION_PROPERTY'] = true; 
+	if($_POST['onlysectionpropswoiblock']) $arFieldParams['SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK'] = true; 
 	$arFieldParams['SECTIONS'] = $_POST['sections'];
 	$arFieldParams['ISSUBSECTIONS'] = (bool)($_POST['issubsections']);
 }

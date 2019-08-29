@@ -159,6 +159,9 @@ class CKDAEEFieldList {
 			'ISECT'.$i.'_SECTION_PAGE_URL' => array(
 				"name" => Loc::getMessage("KDA_EE_ISECT_FI_SECTION_PAGE_URL"),
 			),
+			/*'ISECT'.$i.'_ELEMENT_CNT' => array(
+				"name" => Loc::getMessage("KDA_EE_ISECT_FI_ELEMENT_CNT")
+			),*/
 			'ISECT'.$i.'_IPROP_TEMP_SECTION_META_TITLE' => array(
 				"name" => Loc::getMessage("KDA_EE_ISECT_FI_SECTION_META_TITLE"),
 			) ,
@@ -402,14 +405,45 @@ class CKDAEEFieldList {
 		if(Loader::includeModule('iblock'))
 		{
 			$arPropIds = false;
-			if($arParams['SHOW_ONLY_SECTION_PROPERTY'])
+			if($arParams['SHOW_ONLY_SECTION_PROPERTY'] || $arParams['SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK'])
 			{
 				$arSections = $arParams['SECTIONS'];
 				if(!is_array($arSections)) $arSections = array();
 				$arSections = array_diff($arSections, array(-1));
 				if(!empty($arSections))
 				{
-					if(!in_array(0, $arSections)) $arSections[] = 0;
+					if($arParams['SHOW_ONLY_SECTION_PROPERTY'])
+					{
+						if(!in_array(0, $arSections)) $arSections[] = 0;
+					}
+					else
+					{
+						$arSections = array_diff($arSections, array(0));
+					}
+					/*Parents*/
+					$dbRes = \Bitrix\Iblock\SectionTable::getList(array(
+						"runtime" => array(
+							new \Bitrix\Main\Entity\ReferenceField(
+								'SECTION2',
+								'\Bitrix\Iblock\SectionTable',
+								array(
+									'>this.LEFT_MARGIN' => 'ref.LEFT_MARGIN',
+									'<this.RIGHT_MARGIN' => 'ref.RIGHT_MARGIN'
+								)
+							)
+						),
+						"select" => array("CID" => "SECTION2.ID"),
+						"filter" => array(
+							"=SECTION2.IBLOCK_ID" => $IBLOCK_ID,
+							"=ID" => $arSections
+						),
+					));
+					while($arr = $dbRes->Fetch())
+					{
+						if(!in_array($arr['CID'], $arSections)) $arSections[] = $arr['CID'];
+					}
+					/*/Parents*/
+					/*Childs*/
 					if($arParams['ISSUBSECTIONS'])
 					{
 						$dbRes = \Bitrix\Iblock\SectionTable::getList(array(
@@ -434,6 +468,7 @@ class CKDAEEFieldList {
 							if(!in_array($arr['CID'], $arSections)) $arSections[] = $arr['CID'];
 						}
 					}
+					/*/Childs*/
 					$arPropIds = array();
 					$dbRes = \Bitrix\Iblock\SectionPropertyTable::getList(array(
 						"select" => array("PROPERTY_ID"),
@@ -640,10 +675,10 @@ class CKDAEEFieldList {
 					"name" => Loc::getMessage("KDA_EE_FI_CAN_BUY_ZERO"),
 				);
 				
-				$arCatalogFields[] = array(
+				/*$arCatalogFields[] = array(
 					"value" => "ICAT_NEGATIVE_AMOUNT_TRACE",
 					"name" => Loc::getMessage("KDA_EE_FI_NEGATIVE_AMOUNT_TRACE"),
-				);
+				);*/
 				
 				$arCatalogFields[] = array(
 					"value" => "ICAT_SUBSCRIBE",
@@ -702,6 +737,24 @@ class CKDAEEFieldList {
 			}
 		}
 		return (!empty($arOrderFields) ? $arOrderFields : false);
+	}
+	
+	public static function GetContentTableFields()
+	{
+		return array(
+			"CT_SHEET_NUMBER" => array(
+				"name" => Loc::getMessage("KDA_EE_FI_SHEET_NUMBER")
+			),
+			"CT_SHEET_NAME" => array(
+				"name" => Loc::getMessage("KDA_EE_FI_SHEET_NAME"),
+			),
+			"CT_SHEET_LINK" => array(
+				"name" => Loc::getMessage("KDA_EE_FI_SHEET_LINK"),
+			),
+			"CT_SHEET_POS_NUMBER" => array(
+				"name" => Loc::getMessage("KDA_EE_FI_SHEET_POS_NUMBER"),
+			),
+		);
 	}
 	
 	public function GetFields($IBLOCK_ID, $offers = false, $arParams = array())
@@ -857,6 +910,21 @@ class CKDAEEFieldList {
 		return $this->aFields[$ikey];
 	}
 	
+	public function GetExtraFields()
+	{
+		$aFields = array();
+		$aFields['content_table'] = array(
+			'title' => Loc::getMessage("KDA_EE_GROUP_CONTENT_TABLE"),
+			'items' => array()
+		);
+		foreach(self::GetContentTableFields() as $k=>$ar)
+		{
+			$aFields['content_table']['items'][$k] = $ar["name"];
+		}
+	
+		return $aFields;
+	}
+	
 	public function GetSortableFields($IBLOCK_ID)
 	{
 		if(!$this->aSortableFields) $this->aSortableFields = array();
@@ -985,6 +1053,7 @@ class CKDAEEFieldList {
 			$arOffer = CKDAExportUtils::GetOfferIblock($IBLOCK_ID, true);
 			if($arOffer) $arGroupsOffers = $this->GetFields($arOffer['OFFERS_IBLOCK_ID'], $arOffer['OFFERS_PROPERTY_ID']);
 		}
+		$arGroupsExtra = $this->GetExtraFields();
 		if($arParams['MULTIPLE']){?><select name="<?echo $fname;?>" multiple><?}
 		else{?><select name="<?echo $fname;?>"><option value=""><?echo Loc::getMessage("KDA_EE_CHOOSE_FIELD");?></option><?}
 		foreach($arGroups as $k2=>$v2)
@@ -1005,6 +1074,15 @@ class CKDAEEFieldList {
 			}
 			?></optgroup><?
 		}
+		foreach($arGroupsExtra as $k2=>$v2)
+		{
+			?><optgroup label="<?echo $v2['title']?>"><?
+			foreach($v2['items'] as $k=>$v)
+			{
+				?><option value="<?echo $k; ?>" <?if($k==$value){echo 'selected';}?>><?echo htmlspecialcharsbx($v); ?></option><?
+			}
+			?></optgroup><?
+		}
 		?></select><?
 	}
 
@@ -1017,6 +1095,7 @@ class CKDAEEFieldList {
 			$arOffer = CKDAExportUtils::GetOfferIblock($IBLOCK_ID, true);
 			if($arOffer) $arGroupsOffers = $this->GetFields($arOffer['OFFERS_IBLOCK_ID'], $arOffer['OFFERS_PROPERTY_ID']);
 		}
+		$arGroupsExtra = $this->GetExtraFields();
 		
 		$arFields = array();
 		foreach($arGroups as $k2=>$v2)
@@ -1034,6 +1113,18 @@ class CKDAEEFieldList {
 		foreach($arGroupsOffers as $k2=>$v2)
 		{
 			$key = 'OFFERS_'.ToUpper($k2);
+			$arFields[$key] = array(
+				'TITLE' => $v2['title'],
+				'FIELDS' => array()
+			); 
+			foreach($v2['items'] as $k=>$v)
+			{
+				$arFields[$key]['FIELDS'][$k] = $v;
+			}
+		}
+		foreach($arGroupsExtra as $k2=>$v2)
+		{
+			$key = ToUpper($k2);
 			$arFields[$key] = array(
 				'TITLE' => $v2['title'],
 				'FIELDS' => array()

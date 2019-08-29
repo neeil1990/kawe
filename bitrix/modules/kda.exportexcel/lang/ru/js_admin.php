@@ -28,4 +28,5 @@ $MESS["KDA_EE_POPUP_RESTORE_PROFILES_TITLE"] = "Восстановление п�
 $MESS["KDA_EE_POPUP_RESTORE_PROFILES_SAVE_BTN"] = "Восстановить";
 $MESS["KDA_EE_SELECT_FAST_VIEW"] = "Включить быстрый поиск по списку";
 $MESS["KDA_EE_SELECT_STANDARD_VIEW"] = "Включить стандартное отображение списка";
+$MESS["KDA_EE_SELECT_NOT_CHOSEN"] = "- не выбрано -";
 ?>

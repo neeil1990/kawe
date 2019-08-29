@@ -28,4 +28,5 @@ $MESS["KDA_EE_POPUP_RESTORE_PROFILES_TITLE"] = "Restore profiles";
 $MESS["KDA_EE_POPUP_RESTORE_PROFILES_SAVE_BTN"] = "Restore";
 $MESS["KDA_EE_SELECT_FAST_VIEW"] = "Enable quick list search";
 $MESS["KDA_EE_SELECT_STANDARD_VIEW"] = "Enable standard list display";
+$MESS["KDA_EE_SELECT_NOT_CHOSEN"] = "- not chosen -";
 ?>

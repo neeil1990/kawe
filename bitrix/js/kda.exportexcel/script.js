@@ -405,6 +405,7 @@ var EList = {
 					var parentDiv = $(this).closest('div, td');
 					if(parentDiv.find('.kda-ee-select-view-mode').length == 0)
 					{
+						parentDiv.addClass('kda-ee-filter-select-wrap');
 						parentDiv.prepend('<a href="javascript:void(0)" onclick="EList.ChangeSelectViewMode(this)" class="kda-ee-select-view-mode" title="'+BX.message("KDA_EE_SELECT_FAST_VIEW")+'"></a>');
 					}
 				});
@@ -488,7 +489,7 @@ var EList = {
 		{
 			if($(a).attr('mode')!='chosen')
 			{
-				select.chosen({search_contains: true});
+				select.chosen({search_contains: true, placeholder_text: BX.message("KDA_EE_SELECT_NOT_CHOSEN")});
 				$(a).attr('title', BX.message("KDA_EE_SELECT_STANDARD_VIEW"));
 				$(a).attr('mode', 'chosen');
 			}
@@ -863,7 +864,9 @@ var EList = {
 			$('input[type=checkbox]', this.DIV).each(function(){
 				BX.adminFormTools.modifyCheckbox(this);
 			});
-			ESettings.BindConversionEvents();
+			setTimeout(function(){
+				ESettings.BindConversionEvents();
+			}, 500);
 		});
 			
 		dialog.Show();
@@ -983,10 +986,12 @@ var EList = {
 		}
 		var filterWrap = table.prev('.find_form_inner');
 		var onlySectionProps = $('input[type=checkbox][name="SETTINGS[SHOW_ONLY_SECTION_PROPERTY]['+listIndex+']"]:checked', table);
+		var onlySectionPropsWoIblock = $('input[type=checkbox][name="SETTINGS[SHOW_ONLY_SECTION_PROPERTY_WO_IBLOCK]['+listIndex+']"]:checked', table);
 		var sectOptions = $('select[name="SETTINGS[FILTER]['+listIndex+'][find_section_section][]"] option', filterWrap);
-		if(onlySectionProps.length > 0 && sectOptions.length > 0)
+		if((onlySectionProps.length > 0 || onlySectionPropsWoIblock.length > 0) && sectOptions.length > 0)
 		{
-			params.onlysectionprops = 1;
+			if(onlySectionProps.length > 0) params.onlysectionprops = 1;
+			if(onlySectionPropsWoIblock.length > 0) params.onlysectionpropswoiblock = 1;
 			params.sections = [];
 			for(var i=0; i<sectOptions.length; i++)
 			{
@@ -2344,10 +2349,31 @@ var ESettings = {
 		return false;
 	},
 	
+	GetFieldNames: function()
+	{
+		if(!this.fieldNames)
+		{
+			this.fieldNames = {};
+			if(typeof admKDASettingMessages=='object')
+			{
+				for(var k in admKDASettingMessages)
+				{
+					for(var k2 in admKDASettingMessages[k].FIELDS)
+					{
+						this.fieldNames[k2] = admKDASettingMessages[k].FIELDS[k2]+' ('+admKDASettingMessages[k].TITLE+')';
+					}
+				}
+			}
+		}
+		return this.fieldNames;
+	},
+	
 	BindConversionEvents: function()
 	{
-		$('.kda-ee-settings-conversion').each(function(){
+		var obj = this;
+		$('.kda-ee-settings-conversion:not([data-events-init])').each(function(){
 			var parent = this;
+			$(this).attr('data-events-init', 1);
 			$('select.field_cell', parent).bind('change', function(){
 				if(this.value=='ELSE')
 				{
@@ -2359,6 +2385,24 @@ var ESettings = {
 					$('select.field_when', parent).show();
 					$('input.field_from', parent).show();
 				}
+			}).trigger('change');
+			$('input.field_to', parent).bind('change', function(){
+				var arVals = this.value.match(/(#[A-Za-z0-9\_]+#)/g);
+				var title = '';
+				if(arVals && (typeof arVals=='object') && arVals.length > 0)
+				{
+					var fieldNames = obj.GetFieldNames();
+					var fieldKey;
+					for(var i=0; i<arVals.length; i++)
+					{
+						fieldKey = arVals[i].substring(1, arVals[i].length - 1);
+						if(fieldNames[fieldKey])
+						{
+							title += (title.length > 0 ? "\r\n" : '')+arVals[i]+' - '+fieldNames[fieldKey];
+						}
+					}
+				}
+				this.title = title;
 			}).trigger('change');
 		});
 	},
@@ -2373,10 +2417,21 @@ var ESettings = {
 		else
 		{
 			var div = prevDiv.clone();
-			$('select, input', div).not('.choose_val').val('');
+			div.removeAttr('data-events-init');
+			if(typeof event == 'object' && (event.ctrlKey || event.shiftKey))
+			{
+				$('select, input', prevDiv).each(function(){
+					$(this.tagName.toLowerCase()+'[name="'+this.name+'"]', div).val(this.value);
+				});
+			}
+			else
+			{
+				$('select, input', div).not('.choose_val').val('').attr('title', '');
+			}
 			$(link).before(div);
 		}
 		ESettings.BindConversionEvents();
+		return false;
 	},
 	
 	RemoveConversion: function(link)
@@ -2390,6 +2445,26 @@ var ESettings = {
 		{
 			$('select, input', div).not('.choose_val').val('');
 			div.hide();
+		}
+	},
+	
+	ConversionUp: function(link)
+	{
+		var div = $(link).closest('.kda-ee-settings-conversion');
+		var prev = div.prev('.kda-ee-settings-conversion');
+		if(prev.length > 0)
+		{
+			div.insertBefore(prev);
+		}
+	},
+	
+	ConversionDown: function(link)
+	{
+		var div = $(link).closest('.kda-ee-settings-conversion');
+		var next = div.next('.kda-ee-settings-conversion');
+		if(next.length > 0)
+		{
+			div.insertAfter(next);
 		}
 	},
 	

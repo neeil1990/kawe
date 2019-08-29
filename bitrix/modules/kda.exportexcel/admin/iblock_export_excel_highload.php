@@ -430,13 +430,13 @@ $aMenu = array(
 		"TITLE"=>GetMessage("KDA_EE_MENU_HELP"),
 		"ONCLICK" => "EHelper.ShowHelp();",
 		"ICON" => "",
-	)/*,
+	),
 	array(
 		"TEXT"=>GetMessage("KDA_EE_SHOW_CRONTAB"),
 		"TITLE"=>GetMessage("KDA_EE_SHOW_CRONTAB"),
 		"ONCLICK" => "EProfile.ShowCron();",
 		"ICON" => "btn_green",
-	)*/
+	)
 );
 $context = new CAdminContextMenu($aMenu);
 $context->Show();

@@ -19,6 +19,8 @@ $MESS["KDA_EE_SETTINGS_AT_PRICE"] = "at the price";
 $MESS["KDA_EE_SETTINGS_FROM"] = "from";
 $MESS["KDA_EE_SETTINGS_TO"] = "to";
 $MESS["KDA_EE_SETTINGS_DELETE"] = "Remove";
+$MESS["KDA_EE_SETTINGS_UP"] = "Up";
+$MESS["KDA_EE_SETTINGS_DOWN"] = "Down";
 $MESS["KDA_EE_SETTINGS_ADD_MARGIN_DISCOUNT"] = "Add Margin/Discount";
 $MESS["KDA_EE_PICTURE_SCALE"] = "Reduce if large";
 $MESS["KDA_EE_PICTURE_WIDTH"] = "Max width";
@@ -176,4 +178,7 @@ $MESS["KDA_EE_FIELD_LOGIN"] = "Login";
 $MESS["KDA_EE_FIELD_EMAIL"] = "Email";
 $MESS["KDA_EE_FIELD_LAST_NAME_NAME"] = "Last Name First Name";
 $MESS["KDA_EE_SETTINGS_QRCODE_CODE"] = "Size of QR code";
+$MESS["KDA_EE_SETTINGS_PRICE_USE_EXT"] = "Export price for a given quantity of products";
+$MESS["KDA_EE_SETTINGS_PRICE_QUANTITY_FROM"] = "from";
+$MESS["KDA_EE_SETTINGS_PRICE_QUANTITY_TO"] = "to";
 ?>

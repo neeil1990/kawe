@@ -770,12 +770,13 @@ class CKDAExportExcelHighload {
 				$arFieldsHlbl = $this->fl->GetHigloadBlockFields($hlblId);
 				foreach($arFieldsHlbl as $FIELD_NAME=>$arUserField)
 				{
-					if(
-						isset($arAddFilter["find_".$FIELD_NAME])
-						&& ((!is_array($arAddFilter["find_".$FIELD_NAME]) && strlen($arAddFilter["find_".$FIELD_NAME])>0) || count(array_diff($arAddFilter["find_".$FIELD_NAME], array(''))) > 0)
-						&& $arUserField["SHOW_FILTER"] != "N"
-						&& $arUserField["USER_TYPE"]["BASE_TYPE"] != "file"
-					)
+					if($arUserField["SHOW_FILTER"] == "N"
+						|| $arUserField["USER_TYPE"]["BASE_TYPE"] == "file") continue;
+					if(in_array($arUserField["USER_TYPE_ID"], array('date', 'datetime')))
+					{
+						$this->AddDateFilter($arFilter, $arAddFilter, '>='.$FIELD_NAME, '<='.$FIELD_NAME, "find_".$FIELD_NAME);
+					}
+					elseif(!$this->IsEmptyFilterVal($arAddFilter, "find_".$FIELD_NAME))
 					{
 						$value = $arAddFilter["find_".$FIELD_NAME];
 						if($arUserField["SHOW_FILTER"]=="I")
@@ -1038,6 +1039,30 @@ class CKDAExportExcelHighload {
 			$this->hlbl[$HIGHLOADBLOCK_ID] = $entity->getDataClass();
 		}
 		return $this->hlbl[$HIGHLOADBLOCK_ID];
+	}
+	
+	public function IsEmptyFilterVal($arFilter, $name)
+	{
+		return (bool)(!isset($arFilter[$name])
+		|| !((!is_array($arFilter[$name]) && strlen($arFilter[$name])>0) || (is_array($arFilter[$name]) && count(array_diff($arFilter[$name], array(''))) > 0)));
+	}
+	
+	public function AddDateFilter(&$arFilter, $arAddFilter, $field1, $field2, $addField)
+	{
+		/*if(isset($arAddFilter[$addField.'_from_FILTER_PERIOD']) && in_array($arAddFilter[$addField.'from_FILTER_PERIOD'], array('day', 'week', 'month', 'quarter', 'year'))
+			&& isset($arAddFilter[$addField.'_from_FILTER_DIRECTION']) && in_array($arAddFilter[$addField.'from_FILTER_PERIOD'], array('previous', 'current', 'next')))
+		{}*/
+		if($arAddFilter[$addField.'_from_FILTER_PERIOD']=='last_days'
+			&& isset($arAddFilter[$addField.'_from_FILTER_LAST_DAYS']) && strlen(trim($arAddFilter[$addField.'_from_FILTER_LAST_DAYS'])) > 0)
+		{
+			$days = (int)trim($arAddFilter[$addField.'_from_FILTER_LAST_DAYS']);
+			$arFilter[$field1] = $arAddFilter[$addField.'_from'] = ConvertTimeStamp(time()-$days*24*60*60, "FULL");
+		}
+		else
+		{
+			if(!empty($arAddFilter[$addField.'_from'])) $arFilter[$field1] = $arAddFilter[$addField.'_from'];
+			if(!empty($arAddFilter[$addField.'_to'])) $arFilter[$field2] = \CIBlock::isShortDate($arAddFilter[$addField.'_to'])? ConvertTimeStamp(AddTime(MakeTimeStamp($arAddFilter[$addField.'_to']), 1, "D"), "FULL"): $arAddFilter[$addField.'_to'];
+		}
 	}
 	
 	public function GetCalculatedValue($val)

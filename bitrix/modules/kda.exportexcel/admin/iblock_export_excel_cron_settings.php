@@ -5,7 +5,15 @@ $moduleFileSuffix = '';
 CModule::IncludeModule('iblock');
 CModule::IncludeModule($moduleId);
 IncludeModuleLangFile(__FILE__);
+
+$suffix = '';
 $cronFrame = 'cron_frame'.(strlen($moduleFileSuffix) > 0 ? '_'.$moduleFileSuffix : '').'.php';
+if($_GET['suffix']=='highload') 
+{
+	$suffix = 'highload';
+	$cronFrame = 'cron_frame'.(strlen($moduleFileSuffix) > 0 ? '_'.$moduleFileSuffix : '').'_highload.php';
+}
+
 define("KDA_EE_PATH2EXPORTS", "/bitrix/php_interface/include/".$moduleId."/");
 
 if ($_REQUEST["action"]=="save")
@@ -161,7 +169,7 @@ if ($_REQUEST["action"]=="save")
 /*$obJSPopup = new CJSPopup();
 $obJSPopup->ShowTitlebar(GetMessage("KDA_EE_CRON_TITLE"));*/
 
-$oProfile = new CKDAExportProfile();
+$oProfile = new CKDAExportProfile($suffix);
 $arProfiles = $oProfile->GetList();
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_admin.php");
 ?>

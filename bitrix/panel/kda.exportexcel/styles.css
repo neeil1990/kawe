@@ -71,6 +71,14 @@
 .kda-ee-settings-conversion a.delete:hover {display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin: 0px 0px 0px 20px; background: url(images/sprite.png) -36px 0px no-repeat;}
 .kda-ee-settings-conversion a.delete,
 .kda-ee-settings-conversion a.delete:hover {margin-left: 10px;}
+.kda-ee-settings-conversion a.up,
+.kda-ee-settings-conversion a.up:hover {display: inline-block; border-bottom: 10px solid #565656; border-left: 6px solid transparent; border-right: 6px solid transparent; margin-left: 7px; vertical-align: middle;}
+.kda-ee-settings-conversion a.down,
+.kda-ee-settings-conversion a.down:hover {display: inline-block; border-top: 10px solid #565656; border-left: 6px solid transparent; border-right: 6px solid transparent; margin-left: 3px; vertical-align: middle;}
+.kda-ee-settings-conversion:first-of-type a.up,
+.kda-ee-settings-conversion:first-of-type a.up:hover,
+.kda-ee-settings-conversion:last-of-type a.down,
+.kda-ee-settings-conversion:last-of-type a.down:hover {visibility: hidden;}
 .kda-ee-file-preloader {text-align: center; padding: 50px 0px 70px 0px; background: url(images/preloader.gif) center 80px no-repeat;}
 .kda-ee-settings-header-links {position: relative;}
 .kda-ee-settings-header-links-inner {position: absolute; right: 0px; font-size: 12px; padding-right: 10px;}
@@ -163,6 +171,9 @@ textarea.kda-ee-text-block {width: 100%; width: -moz-calc(100% - 12px); width: -
 .kda-ee-s1-form .chosen-container {min-width: 100px; max-width: 400px;}
 .kda-ee-s1-form .chosen-container#PROFILE_ID_chosen {min-width: 100px;}
 .kda-ee-select-view-mode {display: block; position: absolute; margin: 7px 0px 0px -18px; width: 17px; height: 17px; background: url(images/sprite.png?2) no-repeat -223px 0px;}
+.kda-ee-s1-form .kda-ee-filter-select-wrap .chosen-container,
+.kda-ee-s1-form .kda-ee-filter-select-wrap select {min-width: 300px; max-width: 300px;}
+.kda-ee-s1-form .adm-select-wrap-multiple {border: 0px;}
 .kda-ee-bx24-struct-item a {text-decoration: none; border-bottom: 1px dashed #2675d7; display: inline-block; margin: 0px 0px 0px 5px; position: relative;}
 .kda-ee-bx24-struct-list {margin: 2px 0px 2px 20px;}
 .kda-ee-bx24-struct-list.kda-ee-bx24-struct-list-hidden {display: none;}

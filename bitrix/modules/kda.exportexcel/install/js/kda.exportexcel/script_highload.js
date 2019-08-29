@@ -1123,7 +1123,7 @@ var EProfile = {
 	{
 		var dialog = new BX.CAdminDialog({
 			'title':BX.message("KDA_EE_POPUP_CRON_TITLE"),
-			'content_url':'/bitrix/admin/'+kdaIEModuleFilePrefix+'_cron_settings.php',
+			'content_url':'/bitrix/admin/'+kdaIEModuleFilePrefix+'_cron_settings.php?suffix=highload',
 			'width':'800',
 			'height':'350',
 			'resizable':true});

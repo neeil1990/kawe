@@ -43,6 +43,7 @@ $MESS['KDA_EE_ISECT_FI_PICTURE'] = "Picture (path)";
 $MESS['KDA_EE_ISECT_FI_DETAIL_PICTURE'] = "Detail picture (path)";
 $MESS['KDA_EE_ISECT_FI_DESCRIPTION'] = "Description";
 $MESS['KDA_EE_ISECT_FI_SECTION_PAGE_URL'] = "Section page URL";
+$MESS['KDA_EE_ISECT_FI_ELEMENT_CNT'] = "Number of elements in the section";
 $MESS['KDA_EE_ISECT_FI_SECTION_IBLOCK_SECTION_ID'] = "ID of parent section";
 $MESS['KDA_EE_ISECT_FI_SECTION_DEPTH_LEVEL'] = "Section depth level";
 $MESS['KDA_EE_ISECT_FI_SECTION_PATH_NAMES'] = "Section path";
@@ -156,4 +157,9 @@ $MESS['KDA_EE_FI_SET2_ITEM'] = "Products in set";
 $MESS['KDA_EE_FI_SET2_QUANTITY'] = "Quantity";
 $MESS['KDA_EE_FI_SET2_DISCOUNT_PERCENT'] = "Percentage of discount";
 $MESS['KDA_EE_FI_SET2_SORT'] = "Sort";
+$MESS['KDA_EE_GROUP_CONTENT_TABLE'] = "Table of contents";
+$MESS['KDA_EE_FI_SHEET_NUMBER'] = "Sheet number";
+$MESS['KDA_EE_FI_SHEET_NAME'] = "Sheet title";
+$MESS['KDA_EE_FI_SHEET_LINK'] = "Hyperlink on sheet";
+$MESS['KDA_EE_FI_SHEET_POS_NUMBER'] = "Positions count in the sheet";
 ?>
