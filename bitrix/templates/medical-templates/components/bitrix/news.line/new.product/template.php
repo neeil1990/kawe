@@ -41,7 +41,6 @@ $this->setFrameMode(true);
 				<div class="goods__prices">
 
 					<div class="goods__price"><?=$price['DISCOUNT_PRICE']?></div>
-					<input type="hidden" name="color" data-price="<?=$price['DISCOUNT_PRICE']?>" class="article" value="<?=$arItem['ARTICLE']?>">
 
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
@@ -50,13 +49,31 @@ $this->setFrameMode(true);
 					</div>
 					<span>за штуку</span>
 				</div>
-				<a href="javascript:void(0)" class="goods__basket icon-basket" onclick="addToBasket2(<?=$arItem['ID']?>, $('#goods__counter_input_<?=$arItem['ID']?>').val(),this);"></a>
+                <? if(count($arItem['ARTICLS']['VALUE']) > 1): ?>
+                    <a href="javascript:void(0)" class="goods__basket icon-basket" onclick="$('#more_option_<?=$arItem[ID]?>').bPopup({zIndex:1000});"></a>
+                <?else:?>
+                    <input type="hidden" name="article" value="<?=$arItem['ARTICLS']['VALUE'][0]?>">
+                    <a href="javascript:void(0)" class="goods__basket icon-basket" onclick="addToBasket2(<?=$arItem['ID']?>, $('#goods__counter_input_<?=$arItem['ID']?>').val(),this);"></a>
+                <?endif;?>
 			</div>
 		</div>
 	</li>
 	<?endforeach;?>
 
 </ul>
+
+<?foreach($arResult["ITEMS"] as $arItem):?>
+    <!--popup more options-->
+    <?$APPLICATION->IncludeComponent("nbrains:popup.product",
+        "",
+        Array(
+            "IBLOCK_ID" => $arItem['IBLOCK_ID'],
+            "ID" => $arItem['ID'],
+        ),
+        false
+    );?>
+    <!--popup more options end-->
+<?endforeach;?>
 
 
 

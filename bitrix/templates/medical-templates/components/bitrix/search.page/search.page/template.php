@@ -20,7 +20,6 @@
 		<div class="goods__list goods__list-2">
 			<?foreach($arResult["SEARCH"] as $arItem):?>
 			<div class="goods__item goods__item_list">
-				<input type="hidden" name="article" class="article" value="<?=$arItem['ARTICLE']?>">
 				<? if($arItem['DISCOUNT']): ?>
 				<div class="goods__alert"><?=$arItem['DISCOUNT'];?>%</div>
 				<? endif; ?>
@@ -57,12 +56,30 @@
 						<input type="text" class="goods__counter_input" id="goods__counter_input_<?=$arItem['ITEM_ID']?>" value="1" readonly>
 						<div class="goods__counter_add">+</div>
 					</div>
-					<a href="javascript:void(0)" onclick="addToBasket2(<?=$arItem['ITEM_ID']?>, $('#goods__counter_input_<?=$arItem['ITEM_ID']?>').val(),this);" class="goods__buy">Купить</a>
+                    <? if(count($arItem['ARTICLS']['VALUE']) > 1): ?>
+                        <a href="javascript:void(0)" class="goods__buy" onclick="$('#more_option_<?=$arItem[ITEM_ID]?>').bPopup({zIndex:1000});">Купить</a>
+                    <?else:?>
+                        <input type="hidden" name="article" value="<?=$arItem['ARTICLS']['VALUE'][0]?>">
+                        <a href="javascript:void(0)" onclick="addToBasket2(<?=$arItem['ITEM_ID']?>, $('#goods__counter_input_<?=$arItem['ITEM_ID']?>').val(),this);" class="goods__buy">Купить</a>
+                    <?endif;?>
 				</div>
 			</div>
-			<?endforeach;?>
+			<? endforeach;?>
 
 		</div>
+
+        <?foreach($arResult["SEARCH"] as $arItem): ?>
+            <!--popup more options-->
+            <?$APPLICATION->IncludeComponent("nbrains:popup.product",
+                "",
+                Array(
+                    "IBLOCK_ID" => $arItem['PARAM2'],
+                    "ID" => $arItem['ITEM_ID'],
+                ),
+                false
+            );?>
+            <!--popup more options end-->
+        <?endforeach;?>
 
 		<?if($arParams["DISPLAY_BOTTOM_PAGER"] != "N") echo $arResult["NAV_STRING"]?>
 

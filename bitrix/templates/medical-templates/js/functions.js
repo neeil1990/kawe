@@ -52,6 +52,9 @@ function addToBasket2(idel, quantity,el) {
     if(!$color)
         $color = $(el).closest('.goods__item').find('input[name="color"]').val();
 
+    if($color == undefined)
+        $color = 0;
+
     $href = path + "add.php?id=" + idel + '&quantity=' + quantity + '&art=' + $art + '&color=' + $color;
     $.ajax({
         url: $href,
