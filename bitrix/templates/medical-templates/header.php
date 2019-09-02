@@ -111,7 +111,7 @@ if(substr($APPLICATION->GetCurPage(),-3) == "-r/"){
             <div class="header__contact">
                 <div class="header__title">
                     <img src="<?=SITE_TEMPLATE_PATH?>/img/header_phone.jpg">
-                    <span>88005555550</span>
+                    <span></span>
                 </div>
                 <div class="header__desc">Бесплатные звонки по РФ</div>
                 <a href="javascript:void(0);" class="header__callback callback-btn">Заказать звонок</a>
