@@ -68,18 +68,6 @@ if(empty($arResult['ITEMS']))
 					</div>
 				</div>
 			</div>
-
-            <!--popup more options-->
-            <?$APPLICATION->IncludeComponent("nbrains:popup.product",
-                "",
-                Array(
-                    "IBLOCK_ID" => $item['IBLOCK_ID'],
-                    "ID" => $item['ID'],
-                ),
-                false
-            );?>
-            <!--popup more options end-->
-
 			<? endforeach; ?>
 		</div>
 

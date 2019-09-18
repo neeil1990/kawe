@@ -61,14 +61,14 @@ $this->setFrameMode(true);
 				<div class="cart__wrapper">
 					<?foreach($arResult['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
 					<label class="cart__label">
-						<input type="radio" name="color" data-price="<?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][$val],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" <?=($val == 0) ? "checked" : "";?> value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"><i></i>
+						<input type="radio" name="color" data-old-price="<?=CurrencyFormat($arResult['PRICES']['BASE']['OLD'][$val],"RUB");?>" data-price="<?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][$val],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" <?=($val == 0) ? "checked" : "";?> value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"><i></i>
 						<?=$art?>
 					</label>
 					<?endforeach?>
 				</div>
 				<?else:?>
 					<span>
-						<input type="radio" name="color" data-price="<?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][0],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" checked value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
+						<input type="radio" name="color" data-old-price="<?=CurrencyFormat($arResult['PRICES']['BASE']['OLD'][0],"RUB");?>" data-price="<?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][0],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" checked value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
 					</span>
 				<? endif; ?>
 			<? endif; ?>
@@ -76,7 +76,7 @@ $this->setFrameMode(true);
 <!--			<div class="cart__availability">В наличии</div>-->
 			<? if($arResult['PRICES']['BASE']['DISCOUNT_DIFF']): ?>
 				<div class="cart_old_price">
-					<?=$arResult['PRICES']['BASE']['PRINT_VALUE']?>
+					<?=CurrencyFormat($arResult['PRICES']['BASE']['OLD'][0],"RUB");?>
 				</div>
 			<? endif; ?>
 

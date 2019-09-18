@@ -21,8 +21,8 @@ $this->setFrameMode(true);
 
 		<li class="goods__item">
 			<div class="goods__item_wrapper">
-				<? if($arItem['PRICES']['BASE']['DISCOUNT_DIFF']): ?>
-				<div class="goods__alert"><?=$arItem['PRICES']['BASE']['DISCOUNT_DIFF']?>%</div>
+				<? if($arItem['PRICES']['BASE']['DISCOUNT_DIFF_PERCENT']): ?>
+				<div class="goods__alert"><?=$arItem['PRICES']['BASE']['DISCOUNT_DIFF_PERCENT']?>%</div>
 				<? endif; ?>
 				<!--<div class="goods__rate">
                     <i class="icon-star"></i>

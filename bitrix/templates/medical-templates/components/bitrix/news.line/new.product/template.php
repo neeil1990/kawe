@@ -23,8 +23,8 @@ $this->setFrameMode(true);
 	?>
 	<li class="goods__item">
 		<div class="goods__item_wrapper">
-			<? if($price['DISCOUNT']): ?>
-			<div class="goods__alert"><?=$price['DISCOUNT']?>%</div>
+			<? if($price['RESULT_PRICE']['PERCENT']): ?>
+			<div class="goods__alert"><?=round($price['RESULT_PRICE']['PERCENT'])?>%</div>
 			<? endif; ?>
 			<!--<div class="goods__rate">
 				<i class="icon-star"></i>
@@ -40,7 +40,7 @@ $this->setFrameMode(true);
 			<div class="goods__info">
 				<div class="goods__prices">
 
-					<div class="goods__price"><?=$price['DISCOUNT_PRICE']?></div>
+					<div class="goods__price"><?=$price['DISCOUNT_PRICE']?> ₽</div>
 
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
@@ -62,18 +62,6 @@ $this->setFrameMode(true);
 
 </ul>
 
-<?foreach($arResult["ITEMS"] as $arItem):?>
-    <!--popup more options-->
-    <?$APPLICATION->IncludeComponent("nbrains:popup.product",
-        "",
-        Array(
-            "IBLOCK_ID" => $arItem['IBLOCK_ID'],
-            "ID" => $arItem['ID'],
-        ),
-        false
-    );?>
-    <!--popup more options end-->
-<?endforeach;?>
 
 
 

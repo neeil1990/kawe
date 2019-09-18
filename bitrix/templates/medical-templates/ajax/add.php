@@ -23,7 +23,15 @@ if( !empty( $_GET["art"] ) ){
     if($ob = $res->GetNextElement()){
         $arProps = $ob->GetProperties();
         $key_price = array_search(trim($_GET["art"]),$arProps['PRICES']['DESCRIPTION']);
-        if($key_price){
+        if($arProps['PRICES']['VALUE'][$key_price]){
+
+            $arDiscounts = CCatalogDiscount::GetDiscount($id, IBLOCK_CATALOG);
+            $discountPrice = CCatalogProduct::CountPriceWithDiscount(
+                $arProps['PRICES']['VALUE'][$key_price],
+                "RUB",
+                $arDiscounts
+            );
+            $arProps['PRICES']['VALUE'][$key_price] = ($discountPrice) ? $discountPrice : $arProps['PRICES']['VALUE'][$key_price];
             $FIELDS = ["PRICE" => $arProps['PRICES']['VALUE'][$key_price],"CUSTOM_PRICE" => "Y"];
         }
     }

@@ -23,3 +23,18 @@ if (isset($templateData['TEMPLATE_LIBRARY']) && !empty($templateData['TEMPLATE_L
 	}
 }
 ?>
+
+<!--popup more options-->
+<?
+foreach($arResult['ITEMS'] as $item){
+    $APPLICATION->IncludeComponent("nbrains:popup.product",
+        "",
+        Array(
+            "IBLOCK_ID" => $item['IBLOCK_ID'],
+            "ID" => $item['ID'],
+        ),
+        false
+    );
+}
+?>
+<!--popup more options end-->

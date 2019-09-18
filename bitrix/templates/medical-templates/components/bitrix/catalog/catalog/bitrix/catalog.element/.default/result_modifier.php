@@ -590,4 +590,17 @@ foreach($arResult['PROPERTIES']['MORE_PHOTO']['VALUE'] as $img){
 	$arResult['PHOTO'][] = $img;
 }
 
+foreach ($arResult['PROPERTIES']['PRICES']['VALUE'] as $key => &$price){
+
+    $arResult['PRICES']['BASE']['OLD'][$key] = $price;
+
+    $arDiscounts = CCatalogDiscount::GetDiscount($arResult['ID'], $arResult['IBLOCK_ID']);
+    $discountPrice = CCatalogProduct::CountPriceWithDiscount(
+        $price,
+        "RUB",
+        $arDiscounts
+    );
+    $price = ($discountPrice) ? $discountPrice : $price;
+}
+
 ?>

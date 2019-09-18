@@ -16,5 +16,16 @@ if($ob = $res->GetNextElement()){
     $arResult['ITEM'] = $arFields;
 }
 
+foreach($arResult['ITEM']['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => &$art){
+
+    $arDiscounts = CCatalogDiscount::GetDiscount($arParams['ID'], $arParams['IBLOCK_ID']);
+    $discountPrice = CCatalogProduct::CountPriceWithDiscount(
+        $arResult['ITEM']['PROPERTIES']['PRICES']['VALUE'][$val],
+        "RUB",
+        $arDiscounts
+    );
+    $arResult['ITEM']['PROPERTIES']['PRICES']['VALUE'][$val] = ($discountPrice) ? $discountPrice : $arResult['ITEM']['PROPERTIES']['PRICES']['VALUE'][$val];
+}
+
 
 $this->IncludeComponentTemplate();

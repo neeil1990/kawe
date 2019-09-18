@@ -10,3 +10,10 @@ foreach($arResult["ITEMS"] as &$arItem){
     }
 
 }
+
+global $APPLICATION;
+$cp = $this->__component; // объект компонента
+if (is_object($cp))
+{
+    $cp->SetResultCacheKeys(array('ITEMS'));
+}

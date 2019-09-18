@@ -5,10 +5,12 @@ $('input[autocomplete="tel"]').mask('+7 (999) 999 99 99');
 $('.cart__content .cart__radio').change(function(){
     $('.cart__content > p.article').text("Арт: " + $(this).val());
     $('.cart__content > .cart__price').text($(this).attr('data-price'));
+    $('.cart__content > .cart_old_price').text($(this).attr('data-old-price'));
 });
 
 $('.cart__content > p.article').text("Арт: " + $('.cart__content .cart__radio:checked').val());
 $('.cart__content > .cart__price').text($('.cart__content .cart__radio:checked').attr('data-price'));
+$('.cart__content > .cart_old_price').text($('.cart__content .cart__radio:checked').attr('data-old-price'));
 
 
 $('.callback-btn').click(function(){
