@@ -12,6 +12,16 @@ if (!$USER->IsAdmin()) return;
 
 $APPLICATION->SetAdditionalCSS("/bitrix/css/arturgolubev.lazyload/style.css");
 
+$siteList = array();
+$rsSites = CSite::GetList($by="sort", $order="asc", Array());
+while($arRes = $rsSites->Fetch())
+{
+	$siteList[] = array(
+		"ID" => $arRes["ID"],
+		"NAME" => $arRes["NAME"],
+	);
+}
+
 $arEffects = array(
 	"fadeIn" => GetMessage($MODULE_NAME . "_FADE_IN_ENABLE"),
 	"show" => GetMessage($MODULE_NAME . "_FADE_IN_DISABLED"),
@@ -20,6 +30,15 @@ $arEffects = array(
 $arAutoLoading = array(
 	"disabled" => GetMessage($MODULE_NAME . "_SIMPLE_DISABLE"),
 	"enabled" => GetMessage($MODULE_NAME . "_SIMPLE_ENABLE"),
+);
+
+$arPreLoading = array(
+	"1" => GetMessage($MODULE_NAME . "_PRELOADING_1"),
+	"100" => GetMessage($MODULE_NAME . "_PRELOADING_100"),
+	"200" => GetMessage($MODULE_NAME . "_PRELOADING_200"),
+	"300" => GetMessage($MODULE_NAME . "_PRELOADING_300"),
+	"400" => GetMessage($MODULE_NAME . "_PRELOADING_400"),
+	"500" => GetMessage($MODULE_NAME . "_PRELOADING_500"),
 );
 
 $arPreloaderImage = array();
@@ -36,39 +55,73 @@ $arPreloaderImageSize = array(
 );
 
 $arOptions = array(
-    "main" => array(
-        array("enable", GetMessage($MODULE_NAME . "_ENABLE"), "N", array("checkbox")),
-        array("jquery", GetMessage($MODULE_NAME . "_JQUERY"), "N", array("checkbox")),
-        array("selectors", GetMessage($MODULE_NAME . "_SELECTORS"), "", array("textarea", 5, 40)),
-        // array("active_buttons", GetMessage($MODULE_NAME . "_ACTIVE_BUTTONS"), "", array("textarea", 5, 40)),
-        // array("note" =>  GetMessage($MODULE_NAME . "_ACTIVE_BUTTONS_NOTE")),
-        array("page_exceptions", GetMessage($MODULE_NAME . "_PAGE_EXCEPTION"), "", array("textarea", 5, 40)),
-    ),
+    "main" => array(),
 	"visual" => array(
+		GetMessage($MODULE_NAME . "_IMAGE_VIEW_EFFECT"),
 		array("effect_type", GetMessage($MODULE_NAME . "_EFFECT_TYPE"), "", array("selectbox", $arEffects)),
 		array("effect_speed", GetMessage($MODULE_NAME . "_EFFECT_SPEED"), "500", array("text")),
 		
 		GetMessage($MODULE_NAME . "_PRELOADER_SETTING"),
         array("disable_preloader", GetMessage($MODULE_NAME . "_DISABLE_PRELOADER"), "N", array("checkbox")),
-        array("preloader_image", GetMessage($MODULE_NAME . "_PRELOADER_IMAGE"), "N", array("selectbox", $arPreloaderImage)),
-        array("preloader_image_size", GetMessage($MODULE_NAME . "_PRELOADER_IMAGE_SIZE"), "N", array("selectbox", $arPreloaderImageSize)),
         array("preloader_for_all", GetMessage($MODULE_NAME . "_SHOW_PRELOADER_FOR_ALL"), "N", array("checkbox")),
+        array("preloader_image_size", GetMessage($MODULE_NAME . "_PRELOADER_IMAGE_SIZE"), "pw32", array("selectbox", $arPreloaderImageSize)),
+        array("preloader_image", GetMessage($MODULE_NAME . "_PRELOADER_IMAGE"), "loading", array("selectbox", $arPreloaderImage)),
 		
-		GetMessage($MODULE_NAME . "_ADDITIONAL_FEATURES"),
-		array("auto_loading", GetMessage($MODULE_NAME . "_AUTO_LOADING"), "disabled", array("selectbox", $arAutoLoading)),
 	),
-	"system" => array(
-        array("debug", GetMessage($MODULE_NAME . "_DEBUG"), "N", array("checkbox")),
-	),
+	"system" => array(),
 );
 
+$arOptions["main"][] = array("enable", GetMessage($MODULE_NAME . "_ENABLE"), "N", array("checkbox"));
+
+if(COption::GetOptionString($module_id, "jquery") == 'Y')
+	$arOptions["main"][] = array("jquery", GetMessage($MODULE_NAME . "_JQUERY"), "N", array("checkbox"));
+
+if(COption::GetOptionString($module_id, "selectors"))
+	$arOptions["main"][] = array("selectors", GetMessage($MODULE_NAME . "_SELECTORS"), "", array("textarea", 5, 40));
+
+if(COption::GetOptionString($module_id, "page_exceptions"))
+	$arOptions["main"][] = array("page_exceptions", GetMessage($MODULE_NAME . "_PAGE_EXCEPTION"), "", array("textarea", 5, 40));
+
+
+
+
+$arOptions["system"][] = GetMessage($MODULE_NAME . "_ADDITIONAL_FEATURES");
+$arOptions["system"][] = array("auto_loading", GetMessage($MODULE_NAME . "_AUTO_LOADING"), "disabled", array("selectbox", $arAutoLoading));
+$arOptions["system"][] = array("preloading", GetMessage($MODULE_NAME . "_PRELOADING"), "300", array("selectbox", $arPreLoading));
+$arOptions["system"][] = array("note" => GetMessage($MODULE_NAME . "_PRELOADING_NOTE"));
+
+$arOptions["system"][] = GetMessage($MODULE_NAME . "_SYSTEM_SETTINGS");
+$arOptions["system"][] = array("debug", GetMessage($MODULE_NAME . "_DEBUG"), "N", array("checkbox"));
+
+$arOptions["help"][] = array("help_card", GetMessage($MODULE_NAME . "_CARD_TEXT"), GetMessage($MODULE_NAME . "_CARD_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_install", GetMessage($MODULE_NAME . "_INSTALL_TEXT"), GetMessage($MODULE_NAME . "_INSTALL_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_install_video", GetMessage($MODULE_NAME . "_INSTALL_VIDEO_TEXT"), GetMessage($MODULE_NAME . "_INSTALL_VIDEO_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_faq", GetMessage($MODULE_NAME . "_FAQ_TEXT"), GetMessage($MODULE_NAME . "_FAQ_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_faq_main", GetMessage($MODULE_NAME . "_FAQ_MAIN_TEXT"), GetMessage($MODULE_NAME . "_FAQ_MAIN_TEXT_VALUE"), array("statictext"));
 
 
 $arTabs = array(
-    array("DIV" => "edit_main", "TAB" => GetMessage("MAIN_TAB_SET"), "TITLE" => GetMessage("MAIN_TAB_TITLE_SET"), "OPTIONS"=>"main"),
-    array("DIV" => "edit_visual", "TAB" => GetMessage($MODULE_NAME."_VISUAL_TAB_SET"), "TITLE" => GetMessage($MODULE_NAME."_VISUAL_TAB_SET"), "OPTIONS"=>"visual"),
-    array("DIV" => "edit_system", "TAB" => GetMessage($MODULE_NAME."_SYSTEM_SETTINGS"), "TITLE" => GetMessage($MODULE_NAME."_SYSTEM_SETTINGS"), "OPTIONS"=>"system"),
+    array("DIV" => "edit_main", "TAB" => GetMessage($MODULE_NAME ."_MAIN_TAB_SET"), "TITLE" => GetMessage($MODULE_NAME."_MAIN_TAB_TITLE_SET"), "OPTIONS"=>"main"),
 );
+
+foreach($siteList as $arSite){
+	$optionKey = "setting_".$arSite["ID"];
+	$arTabs[] = array("DIV" => "site_setting_".$arSite["ID"], "TAB" => GetMessage($MODULE_NAME."_SITE_SETTING").' "'.$arSite["NAME"].'"', "TITLE" => GetMessage($MODULE_NAME."_SITE_SETTING").' "'.$arSite["NAME"].'" ['.$arSite["ID"].']', "OPTIONS"=>$optionKey);
+	
+	$arOptions[$optionKey] = array();
+	$arOptions[$optionKey][] = array("disabled_".$arSite["ID"], GetMessage($MODULE_NAME . "_DISABLED_SITE")." <b>".$arSite["NAME"]." [".$arSite["ID"]."]</b>", "N", array("checkbox"));
+	$arOptions[$optionKey][] = array("jquery_".$arSite["ID"], GetMessage($MODULE_NAME . "_JQUERY"), "N", array("checkbox"));
+	$arOptions[$optionKey][] = array("enable_iframe_".$arSite["ID"], GetMessage($MODULE_NAME . "_ENABLE_IFRAME"), "N", array("checkbox"));
+	
+	$arOptions[$optionKey][] = array("selectors_".$arSite["ID"], GetMessage($MODULE_NAME . "_SELECTORS"), "", array("textarea", 5, 40));
+	$arOptions[$optionKey][] = array("page_exceptions_".$arSite["ID"], GetMessage($MODULE_NAME . "_PAGE_EXCEPTION"), "", array("textarea", 5, 40));
+}
+
+$arTabs[] = array("DIV" => "edit_visual", "TAB" => GetMessage($MODULE_NAME."_VISUAL_TAB_SET"), "TITLE" => GetMessage($MODULE_NAME."_VISUAL_TAB_SET"), "OPTIONS"=>"visual");
+$arTabs[] = array("DIV" => "edit_system", "TAB" => GetMessage($MODULE_NAME."_ADDITIONAL_FEATURES"), "TITLE" => GetMessage($MODULE_NAME."_ADDITIONAL_FEATURES"), "OPTIONS"=>"system");
+
+$arTabs[] = array("DIV" => "edit_system_help", "TAB" => GetMessage($MODULE_NAME."_HELP_TAB_NAME"), "TITLE" => GetMessage($MODULE_NAME."_HELP_TAB_TITLE"), "OPTIONS"=>"help");
+
 $tabControl = new CAdminTabControl("tabControl", $arTabs);
 
 // ****** SaveBlock
@@ -99,7 +152,7 @@ if($REQUEST_METHOD=="POST" && strlen($Update.$Apply)>0 && check_bitrix_sessid())
 	</div>
 <?}?>
 
-<form method="post" action="<?echo $APPLICATION->GetCurPage()?>?mid=<?=urlencode($mid)?>&amp;lang=<?=LANGUAGE_ID?>">
+<form class="lazy-setting-form" method="post" action="<?echo $APPLICATION->GetCurPage()?>?mid=<?=urlencode($mid)?>&amp;lang=<?=LANGUAGE_ID?>">
 	<?$tabControl->Begin();?>
 	
 	<?foreach($arTabs as $key=>$tab):
@@ -119,25 +172,38 @@ if($REQUEST_METHOD=="POST" && strlen($Update.$Apply)>0 && check_bitrix_sessid())
 			$settingList = $arOptions[$tab["OPTIONS"]];
 			
 			foreach ($settingList as $Option) {
-				if($Option[0] == 'preloader_image'):
-					$optionValue = COption::GetOptionString($module_id,$Option[0]);
-				?>
-				<tr>
-					<td class="adm-detail-content-cell-l"><?=$Option[1]?></td>
-					<td class="adm-detail-content-cell-r">
-						<?foreach($Option["3"]["1"] as $bg_key=>$bg_src):?>
-							<div style="display:inline-block; text-align:center;">
-								<label for="<?=$Option[0]?>_<?=$bg_key?>" class="ag-pw32 agll0708bg" style="width: 48px; height: 48px; margin: 5px; display: inline-block; background-image: url(<?=$bg_src?>);"></label>
-								<br>
-								<input type="radio" <?if($optionValue == $bg_key) echo 'checked';?> id="<?=$Option[0]?>_<?=$bg_key?>" value="<?=$bg_key?>" name="<?=$Option[0]?>">
-							</div>
-						<?endforeach;?>
-					</td>
-				</tr>
-				<?
-				else:
-					__AdmSettingsDrawRow($module_id, $Option);
-				endif;
+				if($tab["OPTIONS"] == 'help'){
+					?>
+					<tr>
+						<td class="adm-detail-valign-top adm-detail-content-cell-l" width="50%">
+							<?=$Option["1"]?>
+						</td>
+						<td class="adm-detail-content-cell-r" width="50%">
+							<?=htmlspecialchars_decode($Option["2"])?>
+						</td>
+					</tr>
+					<?
+				}else{
+					if($Option[0] == 'preloader_image'):
+						$optionValue = COption::GetOptionString($module_id,$Option[0]);
+					?>
+					<tr>
+						<td class="adm-detail-content-cell-l"><?=$Option[1]?></td>
+						<td class="adm-detail-content-cell-r">
+							<?foreach($Option["3"]["1"] as $bg_key=>$bg_src):?>
+								<div style="display:inline-block; text-align:center;">
+									<label for="<?=$Option[0]?>_<?=$bg_key?>" class="ag-pw32 agll0708bg" style="width: 48px; height: 48px; margin: 5px; display: inline-block; background-image: url(<?=$bg_src?>);"></label>
+									<br>
+									<input type="radio" <?if($optionValue == $bg_key) echo 'checked';?> id="<?=$Option[0]?>_<?=$bg_key?>" value="<?=$bg_key?>" name="<?=$Option[0]?>">
+								</div>
+							<?endforeach;?>
+						</td>
+					</tr>
+					<?
+					else:
+						__AdmSettingsDrawRow($module_id, $Option);
+					endif;
+				}
 			}
 	endforeach;?>
 	
@@ -153,6 +219,16 @@ if($REQUEST_METHOD=="POST" && strlen($Update.$Apply)>0 && check_bitrix_sessid())
 		<?=bitrix_sessid_post();?>
 	<?$tabControl->End();?>
 </form>
+
+<style>
+.lazy-setting-form .adm-info-message {
+	padding: 4px 10px !important;
+	color: #333 !important;
+	text-align: left !important;
+	margin-top: 5px !important;
+	box-shadow: none !important;
+}
+</style>
 
 <?=BeginNote();?>
 	<?=GetMessage($MODULE_NAME."_SETTING_DOP_INFO");?>

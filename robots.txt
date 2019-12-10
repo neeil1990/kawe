@@ -37,6 +37,21 @@ Disallow: *click.php
 Disallow: *redirect.php
 Disallow: /?
 Disallow: /*?
+########################
+Disallow: /googlee84fbc11d340a0de.html
+Disallow: /googleff0da0f1125cc1fa.html
+Disallow: /sect_bottom.php
+Disallow: /sect_sidebar.php
+Disallow: /yandex_a7bd185cfbda2fb4.html
+Disallow: /yandex_f8f022bdeef810b3.html
+Disallow: /about/content.php
+Disallow: /catalog/sidebar.php
+Disallow: /personal/*
+Disallow: /personal/cart/
+Disallow: /catalog/prochee/
+Disallow: /catalog/lampy-dlya-priborov/
+Disallow: /catalog/lampy-kawe-germaniya/
+########################
 Allow: /bitrix/components/
 Allow: /bitrix/cache/
 Allow: /bitrix/js/

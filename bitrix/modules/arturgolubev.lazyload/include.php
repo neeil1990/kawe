@@ -1,4 +1,6 @@
 <?
+use \Arturgolubev\Lazyload\Tools as Tools;
+
 if (!class_exists('phpQuery') && class_exists('DOMDocument')){
 	require('lib/phpQuery-onefile.php'); 
 }
@@ -6,80 +8,97 @@ if (!class_exists('phpQuery') && class_exists('DOMDocument')){
 Class CArturgolubevLazyload 
 {
 	const MODULE_ID = 'arturgolubev.lazyload';
-	var $MODULE_ID = 'arturgolubev.lazyload'; 
-	
-	function checkStatus(){
-		return (!defined('LOCK_LAZYLOAD') && !defined('ADMIN_SECTION') && $_SERVER['REQUEST_METHOD'] != 'POST' && strpos($_SERVER['PHP_SELF'], BX_ROOT.'/admin') !== 0);
-	}
-	function checkAjax(){
-		$check = (strtolower($_REQUEST['ajax']) == 'y' || (isset($_REQUEST["bxajaxid"]) && strlen($_REQUEST["bxajaxid"]) > 0)) ? 0 : 1;
-		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') $check = 0;
-		return $check;
-	}
-	
-	function getSetting($name, $def = false){
-		return trim(COption::GetOptionString(self::MODULE_ID, $name, $def));
-	}
+	var $MODULE_ID = 'arturgolubev.lazyload';
 	
 	function textOneLine($text){
 		return str_replace(array("\r\n", "\r", "\n"), '',  $text);
 	}
 	
+	function chechEnable(){
+		return (Tools::getSetting('enable') == 'Y' && Tools::getSiteSetting('disabled') != 'Y' && class_exists('DOMDocument')) ? 1 : 0;
+	}
+	
+	function getBackgroundClass(){
+		$class = 'agll0708';
+		$disable_preloader = (Tools::getSetting('disable_preloader') == "Y");
+		
+		if(!$disable_preloader)
+		{
+			$class .= ' agll0708bg';
+			$class .= ' ag-'.Tools::getSetting('preloader_image', 'loading');
+			$class .= ' ag-'.Tools::getSetting('preloader_image_size', 'pw64');
+			
+			if(Tools::getSetting('preloader_for_all', 'N') == 'Y')
+				$class .= ' ag-sts';
+		}
+		
+		return $class;
+	}
+	
 	function onBufferContent(&$bufferContent){
 		global $APPLICATION;
-				
-		if(self::checkStatus() && self::checkAjax() && CModule::IncludeModule(self::MODULE_ID))
+		
+		if(Tools::checkStatus() && Tools::checkAjax() && CModule::IncludeModule(self::MODULE_ID))
 		{
-			$cur = $APPLICATION->GetCurPage(false);
-			$curParams = $APPLICATION->GetCurPageParam();
+			$stop = 0;
 			
-			$page_exceptions = self::getSetting('page_exceptions');
-			if($page_exceptions)
+			if(!self::chechEnable())
+				$stop = 1;
+			
+			if(!$stop && stripos($bufferContent, '<!DOCTYPE') === false)
+				$stop = 1;
+			
+			if(!$stop)
 			{
-				$ar_page_exceptions = explode("\n",$page_exceptions);
-				foreach($ar_page_exceptions as $checkValue)
+				$cur = $APPLICATION->GetCurPage(false);
+				$curParams = $APPLICATION->GetCurPageParam();
+				
+				$page_exceptions = Tools::getSiteSettingEx('page_exceptions');
+				if($page_exceptions)
 				{
-					$checkValue = trim($checkValue);
-					if(!$checkValue) continue;
-					
-					$pattern = '/^'.str_replace(array('/', '*'), array('\/', '.*'), $checkValue).'$/sU';
-					
-					if(preg_match($pattern, $cur) || preg_match($pattern, $curParams))
+					$ar_page_exceptions = explode("\n",$page_exceptions);
+					foreach($ar_page_exceptions as $checkValue)
 					{
-						$page_is_exception = 1;
+						$checkValue = trim($checkValue);
+						if(!$checkValue) continue;
+						
+						$pattern = '/^'.str_replace(array('/', '*'), array('\/', '.*'), $checkValue).'$/sU';
+						
+						if(preg_match($pattern, $cur) || preg_match($pattern, $curParams))
+						{
+							$stop = 1;
+						}
 					}
 				}
 			}
 			
-			if(self::getSetting('enable') == 'Y' && class_exists('DOMDocument') && !$page_is_exception)
+			if(!$stop)
 			{
-				if(self::getSetting('disable_preloader') == 'Y')
-				{
-					$preload_background_class = '';
-				}
-				else
-				{
-					$preload_background_class = 'agll0708bg';
-					
-					$preload_background_class .= ' ag-'.self::getSetting('preloader_image', 'loading');
-					$preload_background_class .= ' ag-'.self::getSetting('preloader_image_size', 'pw64');
-					
-					if(self::getSetting('preloader_for_all', 'N') == 'Y')
-						$preload_background_class .= ' ag-sts';
-				}
+				$option = array(
+					'default_image_path' => '/bitrix/images/arturgolubev.lazyload/pixel.gif',
+					'default_iframe_path' => '/bitrix/images/arturgolubev.lazyload/pixel.php',
+					'iframe' => (Tools::getSiteSetting('enable_iframe') == 'Y' ? 1 : 0),
+					'auto_loading' => Tools::getSetting('auto_loading', "disable"),
+					'effect_type' => Tools::getSetting('effect_type', "fadeIn"),
+					'effect_speed' => Tools::getSetting('effect_speed', "500"),
+					'preloading' => IntVal(Tools::getSetting('preloading', "1")),
+					'selectors_setting' => Tools::getSiteSettingEx('selectors'),
+					'preload_background_class' => self::getBackgroundClass(),
+				);
 				
-				if(self::getSetting('selectors'))
-					$selectors = '.agllimage, '.self::getSetting('selectors');
-				else
-					$selectors = '.agllimage';
+				if($option['effect_type'] == 'show') $option['effect_speed'] = 0;
+				if($option['preloading'] <= 0) $option['preloading'] = 1;
+				
+				$option['selectors'] = ($option["selectors_setting"]) ? '.agllimage, '.$option["selectors_setting"] : '.agllimage';
+												
+				$debug_mode = (Tools::getSetting('debug', "N") == 'Y');
+				
+				$arSearch = array(); $arReplace = array();
+				$arSearch2 = array(); $arReplace2 = array();
 				
 				$doc = phpQuery::newDocumentHTML($bufferContent);
 				
-				$images = $doc->find($selectors);
-				
-				$arSearch = array();
-				$arReplace = array();
-				
+				$images = $doc->find($option['selectors']);
 				foreach ($images as $image) {
 					$pqImage = pq($image);
 					
@@ -93,21 +112,19 @@ Class CArturgolubevLazyload
 						);
 						
 						$imageClass = $pqImage->attr('class');
-						$pqImage->attr('class', $imageClass.' agll0708 '.$preload_background_class);
+						$pqImage->attr('class', $imageClass.' '.$option['preload_background_class']);
 						$pqImage->attr('data-src', $imageSrc);
-						$pqImage->attr('src', '/bitrix/images/arturgolubev.lazyload/pixel.gif');
+						$pqImage->attr('src', $option["default_image_path"]);
 						
 						$arReplace[] = $pqImage->htmlOuter();
 					}
 				}
-				
 				phpQuery::unloadDocuments();
+				unset($images); unset($doc);
+				
 				
 				if(!empty($arSearch))
 				{
-					$arSearch2 = array();
-					$arReplace2 = array();
-					
 					preg_match_all('/\<img.*\>/sU', $bufferContent, $fullImageList);
 					foreach($arSearch as $searchKey=>$searchItem)
 					{
@@ -129,24 +146,60 @@ Class CArturgolubevLazyload
 							}
 						}
 					}
-					
-					if(!empty($arSearch2))
-						$bufferContent = str_replace($arSearch2, $arReplace2, $bufferContent);
+				}
+				unset($fullImageList); unset($arSearch); unset($arReplace);
+				
+				
+				
+				if($option['iframe']){
+					preg_match_all('/\<iframe.*\>/sU', $bufferContent, $frames);
+					if(!empty($frames[0]))
+					{
+						// global $USER; if($USER->IsAdmin()){
+							// echo '<pre>'; print_r($frames); echo '</pre>';
+						// }
+						
+						$newSrcTemplate = 'src="'.$option["default_iframe_path"].'" data-src';
+						
+						foreach($frames[0] as $frame){
+							if(strstr($frame, 'www.googletagmanager.com')) continue;
+							
+							$newFrame = $frame;
+							if(strstr($frame, 'class'))
+							{
+								preg_match_all('/class=[\",\'](.*)[\",\']/sU', $frame, $class_match);
+								if($class_match[1][0])
+									$newFrame = str_replace(array($class_match[1][0], "src"), array($class_match[1][0]." agll0708", $newSrcTemplate), $newFrame);
+								elseif($class_match[0][0])
+									$newFrame = str_replace(array($class_match[0][0], "src"), array('class="agll0708"', $newSrcTemplate), $newFrame);
+							}
+							else
+							{
+								$newFrame = str_replace("src", 'class="agll0708" '.$newSrcTemplate, $newFrame);
+							}
+							
+							if($frame != $newFrame)
+							{
+								$arSearch2[] = $frame;
+								$arReplace2[] = $newFrame;
+							}
+						}
+					}
+					unset($frames); unset($class_match);
 				}
 				
-				$option = array(
-					'auto_loading' => self::getSetting('auto_loading', "disable"),
-					'effect_type' => self::getSetting('effect_type', "fadeIn"),
-					'effect_speed' => self::getSetting('effect_speed', "500"),
-				);
+				// echo '<pre>'; print_r($option); echo '</pre>';
+				// echo '<pre>'; print_r($arSearch2); echo '</pre>';
+				// echo '<pre>'; print_r($arReplace2); echo '</pre>';
 				
-				$debug_mode = (self::getSetting('debug', "N") == 'Y');
-				
-				if($option['effect_type'] == 'show') $option['effect_speed'] = 0;
+				if(!empty($arSearch2))
+					$bufferContent = str_replace($arSearch2, $arReplace2, $bufferContent);
 				
 				$n = "\n";
-				
 				$s = $n.'<script type="text/javascript" src="/bitrix/js/'.self::MODULE_ID.'/jq.lazy.min.js"></script>'.$n;
+				
+				if($option['iframe'])
+					$s .= $n.'<script type="text/javascript" src="/bitrix/js/'.self::MODULE_ID.'/jquery.lazy.iframe.min.js"></script>'.$n;
 				
 				$s .= '<script type="text/javascript">'.$n;
 					$s .= 'function initAgLazyLoad(){';
@@ -157,8 +210,8 @@ Class CArturgolubevLazyload
 							$s .= '$lazyElements.lazy({';
 								$s .= 'effect: "'.$option['effect_type'].'",';
 								$s .= 'effectTime: '.$option['effect_speed'].',';
-								$s .= 'threshold: 0,';
-								$s .= 'visibleOnly: 0,';
+								$s .= 'threshold: '.$option['preloading'].',';
+								$s .= 'visibleOnly: false,';
 								
 								if($option['auto_loading'] == 'enabled')
 									$s .= 'delay: 500,';
@@ -194,6 +247,8 @@ Class CArturgolubevLazyload
 						$s .= '}, 1500);';
 					$s .= '};'.$n;
 					
+					if($debug_mode) $s .= 'console.debug("jQuery "+ (jQuery ? $().jquery : "NOT") +" loaded");';
+					
 					$s .= 'if(window.frameCacheVars !== undefined){';
 						$s .= 'BX.addCustomEvent("onFrameDataReceived", function(json){';
 							if($debug_mode) $s .= 'console.log("Lazy Init Type = composite");';
@@ -209,23 +264,27 @@ Class CArturgolubevLazyload
 				$s .= '</script>'.$n;
 				
 				$bufferContent = preg_replace('/<\/body>/', $s.'</body>', $bufferContent, 1);
+				
+				unset($arSearch2);unset($arReplace2);
+				unset($s);unset($option);
 			}
 		}
 	}
 	
 	function onEpilog(){
-		if(self::checkStatus() && self::checkAjax() && CModule::IncludeModule(self::MODULE_ID))
+		if(Tools::checkStatus() && Tools::checkAjax() && CModule::IncludeModule(self::MODULE_ID))
 		{
-			if(self::getSetting('enable') == 'Y')
+			if(self::chechEnable())
 			{
-				global $APPLICATION;
-				
-				if(self::getSetting('jquery') == 'Y')
+				$jquery = (Tools::getSiteSetting('jquery') == 'Y' || Tools::getSetting('jquery') == 'Y');
+				if($jquery)
 					CJSCore::Init(array("jquery"));
 				
-				
-				if(self::getSetting('disable_preloader') != 'Y')
+				if(Tools::getSetting('disable_preloader') != 'Y')
+				{
+					global $APPLICATION;
 					$APPLICATION->SetAdditionalCSS("/bitrix/css/".self::MODULE_ID."/style.css", true);
+				}
 			}
 		}
 	}

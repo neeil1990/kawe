@@ -13,9 +13,8 @@ if (!$USER->IsAdmin()) return;
 $arOptions = array(
     "main" => array(
         array("disable", GetMessage($MODULE_NAME . "_ENABLE"), "N", array("checkbox")),
-        // array("jquery", GetMessage($MODULE_NAME . "_JQUERY"), "N", array("checkbox")),
-        // array("selectors", GetMessage($MODULE_NAME . "_SELECTORS"), "", array("textarea", 5, 40)),
-    )
+    ),
+	"help" => array()
 );
 
 $siteList = array();
@@ -44,7 +43,6 @@ $arOptions["main"][] = array("google_fonts_inline", GetMessage($MODULE_NAME . "_
 $arOptions["main"][] = array("outer_style_inline", GetMessage($MODULE_NAME . "_OUTER_STYLE_INLINE"), "N", array("checkbox"));
 $arOptions["main"][] = array("use_compress", GetMessage($MODULE_NAME . "_USE_COMPRESS"), "N", array("checkbox"));
 
-// $arOptions["main"][] = array("only_head_style", GetMessage($MODULE_NAME . "_ONLY_HEADER_STYLE"), "N", array("checkbox"));
 
 $move_js_to_body = COption::GetOptionString("main", "move_js_to_body");
 if($move_js_to_body != 'Y')
@@ -53,16 +51,17 @@ if($move_js_to_body != 'Y')
 $arOptions["main"][] = GetMessage($MODULE_NAME . "_SYSTEM_TITLE");
 $arOptions["main"][] = array("admin_debug", GetMessage($MODULE_NAME . "_ADMIN_DEBUG"), "N", array("checkbox"));
 
+$arOptions["help"][] = array("help_card", GetMessage($MODULE_NAME . "_CARD_TEXT"), GetMessage($MODULE_NAME . "_CARD_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_install", GetMessage($MODULE_NAME . "_INSTALL_TEXT"), GetMessage($MODULE_NAME . "_INSTALL_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_install_video", GetMessage($MODULE_NAME . "_INSTALL_VIDEO_TEXT"), GetMessage($MODULE_NAME . "_INSTALL_VIDEO_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_faq", GetMessage($MODULE_NAME . "_FAQ_TEXT"), GetMessage($MODULE_NAME . "_FAQ_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_faq_main", GetMessage($MODULE_NAME . "_FAQ_MAIN_TEXT"), GetMessage($MODULE_NAME . "_FAQ_MAIN_TEXT_VALUE"), array("statictext"));
 
-$arOptionsNote = array(
-	// "selectors" => GetMessage($MODULE_NAME . "_SELECTORS_NOTE")
-);
 
-// echo '<pre>'; print_r($arOptions); echo '</pre>';
+$arTabs = array();
+$arTabs[] = array("DIV" => "edit1", "TAB" => GetMessage("MAIN_TAB_SET"), "TITLE" => GetMessage("MAIN_TAB_TITLE_SET"), "OPTIONS"=>"main");
+$arTabs[] = array("DIV" => "edit_system_help", "TAB" => GetMessage($MODULE_NAME."_HELP_TAB_NAME"), "TITLE" => GetMessage($MODULE_NAME."_HELP_TAB_TITLE"), "OPTIONS"=>"help");
 
-$arTabs = array(
-    array("DIV" => "edit1", "TAB" => GetMessage("MAIN_TAB_SET"), "TITLE" => GetMessage("MAIN_TAB_TITLE_SET"), "OPTIONS"=>"main"),
-);
 $tabControl = new CAdminTabControl("tabControl", $arTabs);
 
 // ****** SaveBlock
@@ -115,19 +114,20 @@ $allow_url_fopen = ini_get("allow_url_fopen");
 			$settingList = $arOptions[$tab["OPTIONS"]];
 			
 			foreach ($settingList as $Option) {
-				__AdmSettingsDrawRow($module_id, $Option);
-				
-				if($arOptionsNote[$Option[0]]):?>
-				<tr>
-					<td colspan="2">
-						<div class="adm-info-message-wrap">
-							<div class="adm-info-message">
-								<?=$arOptionsNote[$Option[0]]?>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<?endif;
+				if($tab["OPTIONS"] == 'help'){
+					?>
+					<tr>
+						<td class="adm-detail-valign-top adm-detail-content-cell-l" width="50%">
+							<?=$Option["1"]?>
+						</td>
+						<td class="adm-detail-content-cell-r" width="50%">
+							<?=htmlspecialchars_decode($Option["2"])?>
+						</td>
+					</tr>
+					<?
+				}else{
+					__AdmSettingsDrawRow($module_id, $Option);
+				}
 			}
 	endforeach;?>
 	

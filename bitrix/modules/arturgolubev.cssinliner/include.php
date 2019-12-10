@@ -7,7 +7,7 @@ Class CArturgolubevCssinliner
 	var $MODULE_ID = 'arturgolubev.cssinliner'; 
 	
 	function checkStatus(){
-		return (!defined('ADMIN_SECTION') && $_SERVER['REQUEST_METHOD'] != 'POST' && strpos($_SERVER['PHP_SELF'], BX_ROOT.'/admin') !== 0);
+		return (!defined('LOCK_CSSINLINER') && !defined('ADMIN_SECTION') && $_SERVER['REQUEST_METHOD'] != 'POST' && strpos($_SERVER['PHP_SELF'], BX_ROOT.'/admin') !== 0);
 	}
 	
 	function checkAdmin(){
@@ -24,20 +24,32 @@ Class CArturgolubevCssinliner
 	function onBufferContent(&$bufferContent){
 		if(self::checkStatus() && CModule::IncludeModule(self::MODULE_ID))
 		{
-			$admin_debug = self::getSetting('admin_debug');
+			$stop = 0;
 			
-			$disable = self::getSetting('disable');
-			$disableSite = self::getSetting('disabled_'.SITE_ID);
-						
-			if($disable != 'Y' && $disableSite != 'Y')
+			if(self::getSetting('disable') == 'Y' || self::getSetting('disabled_'.SITE_ID) == 'Y')
+				$stop = 1;
+			
+			if(!$stop && stripos($bufferContent, '<!DOCTYPE') === false)
+				$stop = 1;
+			
+			/* $context = \Bitrix\Main\Application::getInstance()->getContext();
+			$request = $context->getRequest();
+			if ($request->isAjaxRequest()) {
+				$stop = 1;
+			} */
+			
+			if(!$stop)
 			{
+				$admin_debug = self::getSetting('admin_debug');
+				
+				if($admin_debug == 'Y')
+				{
+					$bufferContent = self::showDebug($bufferContent);
+				}
+				
 				if(!self::checkAdmin())
 				{
 					$bufferContent = self::replace($bufferContent);
-				}
-				elseif($admin_debug == 'Y')
-				{
-					self::showDebug($bufferContent);
 				}
 			}
 		}
@@ -45,12 +57,24 @@ Class CArturgolubevCssinliner
 	
 	function showDebug($bufferContent){
 		preg_match_all('/\<link.*\>/sU', $bufferContent, $arLinks);
+		$ds = '<script>';
+			$ds .= 'console.log("'.GetMessage("ARTURGOLUBEV_CSSINLINER_DEBUG_TITLE").'");';
+			foreach($arLinks[0] as $link){
+				if(!strstr($link, '.css'))
+					continue;
+				
+				preg_match_all('/href=[\"\'](.*\.css).*[\"\']/sU', $link, $tmphref);
+				$cssitem = $tmphref[1][0];
+				if($cssitem)
+				{
+					$ds .= 'console.log("'.$cssitem.'");';
+				}
+			}
+		$ds .= '</script>';
 		
-		echo GetMessage("ARTURGOLUBEV_CSSINLINER_DEBUG_TITLE").'<pre>';
-		foreach($arLinks[0] as $link){
-			echo htmlspecialcharsbx($link)."\r";
-		}
-		echo '</pre>';
+		$bufferContent = str_replace('</body>', $ds.'</body>', $bufferContent);
+		
+		return $bufferContent;
 	}
 	
 	function baseOptimize($style, $useOptimize, $arDopSearch = array(), $arDopReplace = array()){
@@ -98,18 +122,21 @@ Class CArturgolubevCssinliner
 	}
 	
 	function getOuterCss($url, $useOptimize = 'N', $arDopSearch = array(), $arDopReplace = array()){
-		$timeSeconds = 86400;
-		$cacheId = md5($url.$useOptimize.serialize($arDopSearch).serialize($arDopReplace));
-		
 		if(substr($url,0,2) == '//') $url = 'https:'.$url;
 		
 		$obCache = new CPHPCache();
-		$cachePath = '/'.SITE_ID.'/cssinliner/'.$cacheId;
 		
-		if($obCache->InitCache($timeSeconds, $cacheId, $cachePath)){
+		$timeSeconds = 86400;
+		$cacheId = md5($url.$useOptimize.serialize($arDopSearch).serialize($arDopReplace));
+		$cachePath = '/'.SITE_ID.'/arturgolubev.cssinliner/outer/';
+		
+		if($obCache->InitCache($timeSeconds, $cacheId, $cachePath))
+		{
 			$vars = $obCache->GetVars();
 			$style = $vars['style'];
-		}elseif($obCache->StartDataCache()){
+		}
+		elseif($obCache->StartDataCache())
+		{
 			$style = self::_getOuterStyle($url);
 			$style = self::baseOptimize($style, $useOptimize, $arDopSearch, $arDopReplace);
 			
@@ -120,20 +147,19 @@ Class CArturgolubevCssinliner
 	}
 	
 	function getInnerCss($url, $useOptimize = 'N', $arDopSearch = array(), $arDopReplace = array()){
+		$obCache = new CPHPCache();
+		
 		$timeSeconds = 3600;
 		$cacheId = md5($url.$useOptimize.serialize($arDopSearch).serialize($arDopReplace));
-				
-		$obCache = new CPHPCache();
-		$cachePath = '/'.SITE_ID.'/cssinliner/'.$cacheId;
+		$cachePath = '/'.SITE_ID.'/arturgolubev.cssinliner/'.basename($url);
 		
-		if($obCache->InitCache($timeSeconds, $cacheId, $cachePath)){
-			// echo '<pre>'; print_r('Cache'); echo '</pre>';
-			
+		if($obCache->InitCache($timeSeconds, $cacheId, $cachePath))
+		{
 			$vars = $obCache->GetVars();
 			$style = $vars['style'];
-		}elseif($obCache->StartDataCache()){
-			// echo '<pre>'; print_r('NO Cache'); echo '</pre>';
-			
+		}
+		elseif($obCache->StartDataCache())
+		{
 			$style = trim(file_get_contents($_SERVER['DOCUMENT_ROOT'].$url));
 			$style = self::baseOptimize($style, $useOptimize, $arDopSearch, $arDopReplace);
 			$obCache->EndDataCache(array('style' => $style));
