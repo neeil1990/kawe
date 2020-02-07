@@ -346,14 +346,15 @@ function OnSaleComponentOrderResultPreparedHandler($order, &$arUserResult, $requ
                 "QUANTITY" => $basket['QUANTITY']
             ));
 
-            $arResult['JS_DATA']['GRID']['ROWS'][$basket['ID']]['data']['SUM'] = CurrencyFormat($discountPrice, $basket['CURRENCY']);
+            $arResult['JS_DATA']['GRID']['ROWS'][$basket['ID']]['data']['PRICE'] = ($discountPrice*$basket['QUANTITY']);
+            $arResult['JS_DATA']['GRID']['ROWS'][$basket['ID']]['data']['SUM'] = CurrencyFormat($discountPrice*$basket['QUANTITY'], $basket['CURRENCY']);
 
             $_SESSION['CATALOG_BASKET_CALC_PRICE'][$basket['ID']] = $basket['ID'];
         }
 
         $total = 0;
         foreach($arResult['JS_DATA']['GRID']['ROWS'] as $basket){
-            $total += $basket['data']['SUM'];
+            $total += $basket['data']['PRICE'];
         }
 
         if($total){
@@ -361,6 +362,7 @@ function OnSaleComponentOrderResultPreparedHandler($order, &$arUserResult, $requ
             $arResult['JS_DATA']['TOTAL']['ORDER_PRICE_FORMATED'] = CurrencyFormat($total, $arSale['CURRENCY']);
         }
 
+        var_dump($arUserResult);
         \Bitrix\Sale\DiscountCouponsManager::clear(true);
     }
 }
