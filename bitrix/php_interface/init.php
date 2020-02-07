@@ -339,11 +339,19 @@ function OnSaleComponentOrderResultPreparedHandler($order, &$arUserResult, $requ
                 $basket['CURRENCY'],
                 $arDiscounts
             );
+            $basket['PROPS'][] = [
+                'NAME' => 'Купон: '.$arResult['JS_DATA']['COUPON_LIST'][0]['DISCOUNT_NAME'],
+                'CODE' => 'COUPON',
+                'VALUE' => $arResult['JS_DATA']['COUPON_LIST'][0]['COUPON'],
+                'SORT' => '100',
+            ];
+
             CSaleBasket::Update($basket['ID'], array(
                 "PRICE" => $discountPrice,
                 "CUSTOM_PRICE" => $basket['CUSTOM_PRICE'],
                 "CURRENCY" => $basket['CURRENCY'],
-                "QUANTITY" => $basket['QUANTITY']
+                "QUANTITY" => $basket['QUANTITY'],
+                "PROPS" => $basket['PROPS']
             ));
 
             $arResult['JS_DATA']['GRID']['ROWS'][$basket['ID']]['data']['PRICE'] = ($discountPrice*$basket['QUANTITY']);
@@ -361,7 +369,7 @@ function OnSaleComponentOrderResultPreparedHandler($order, &$arUserResult, $requ
             $arResult['JS_DATA']['TOTAL']['ORDER_TOTAL_PRICE_FORMATED'] = CurrencyFormat($total, $arSale['CURRENCY']);
             $arResult['JS_DATA']['TOTAL']['ORDER_PRICE_FORMATED'] = CurrencyFormat($total, $arSale['CURRENCY']);
         }
-        
+
         \Bitrix\Sale\DiscountCouponsManager::clear(true);
     }
 }
