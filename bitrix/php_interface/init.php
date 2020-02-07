@@ -309,3 +309,58 @@ function BeforeIndexHandler($arFields)
 
     return $arFields; // вернём изменения
 }
+
+
+AddEventHandler("sale", "OnSaleComponentOrderResultPrepared", "OnSaleComponentOrderResultPreparedHandler");
+function OnSaleComponentOrderResultPreparedHandler($order, &$arUserResult, $request, &$arParams, &$arResult)
+{
+
+    if($arResult['JS_DATA']['COUPON_LIST']){
+
+        $arSale = CSaleDiscount::GetByID($arResult['JS_DATA']['COUPON_LIST'][0]['DISCOUNT_ID']);
+        if(isset($arSale['ACTIONS'])){
+            $action = unserialize($arSale['ACTIONS']);
+            if(is_array($action) && $action['CHILDREN']){
+                $percent = $action['CHILDREN'][0]['DATA']['Value'];
+                $max_percent = $action['CHILDREN'][0]['DATA']['Max'];
+            }
+            $arDiscounts = [
+                ['VALUE_TYPE' => $arSale['DISCOUNT_TYPE'], 'VALUE' => $percent, 'CURRENCY' => $arSale['CURRENCY'], 'MAX_DISCOUNT' => $max_percent]
+            ];
+        }
+
+        foreach($arResult['BASKET_ITEMS'] as $basket){
+
+            if (in_array($basket['ID'], $_SESSION['CATALOG_BASKET_CALC_PRICE']))
+                continue;
+
+            $discountPrice = CCatalogProduct::CountPriceWithDiscount(
+                $basket['PRICE'],
+                $basket['CURRENCY'],
+                $arDiscounts
+            );
+            CSaleBasket::Update($basket['ID'], array(
+                "PRICE" => $discountPrice,
+                "CUSTOM_PRICE" => $basket['CUSTOM_PRICE'],
+                "CURRENCY" => $basket['CURRENCY'],
+                "QUANTITY" => $basket['QUANTITY']
+            ));
+
+            $arResult['JS_DATA']['GRID']['ROWS'][$basket['ID']]['data']['SUM'] = CurrencyFormat($discountPrice, $basket['CURRENCY']);
+
+            $_SESSION['CATALOG_BASKET_CALC_PRICE'][$basket['ID']] = $basket['ID'];
+        }
+
+        $total = 0;
+        foreach($arResult['JS_DATA']['GRID']['ROWS'] as $basket){
+            $total += $basket['data']['SUM'];
+        }
+
+        if($total){
+            $arResult['JS_DATA']['TOTAL']['ORDER_TOTAL_PRICE_FORMATED'] = CurrencyFormat($total, $arSale['CURRENCY']);
+            $arResult['JS_DATA']['TOTAL']['ORDER_PRICE_FORMATED'] = CurrencyFormat($total, $arSale['CURRENCY']);
+        }
+
+        \Bitrix\Sale\DiscountCouponsManager::clear(true);
+    }
+}
