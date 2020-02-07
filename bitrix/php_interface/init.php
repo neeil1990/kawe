@@ -315,7 +315,7 @@ AddEventHandler("sale", "OnSaleComponentOrderResultPrepared", "OnSaleComponentOr
 function OnSaleComponentOrderResultPreparedHandler($order, &$arUserResult, $request, &$arParams, &$arResult)
 {
 
-    if($arResult['JS_DATA']['COUPON_LIST']){
+    if($arResult['JS_DATA']['COUPON_LIST'] && $arResult['JS_DATA']['COUPON_LIST'][0]['DISCOUNT_ID']){
 
         $arSale = CSaleDiscount::GetByID($arResult['JS_DATA']['COUPON_LIST'][0]['DISCOUNT_ID']);
         if(isset($arSale['ACTIONS'])){
