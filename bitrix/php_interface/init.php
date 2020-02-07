@@ -361,8 +361,7 @@ function OnSaleComponentOrderResultPreparedHandler($order, &$arUserResult, $requ
             $arResult['JS_DATA']['TOTAL']['ORDER_TOTAL_PRICE_FORMATED'] = CurrencyFormat($total, $arSale['CURRENCY']);
             $arResult['JS_DATA']['TOTAL']['ORDER_PRICE_FORMATED'] = CurrencyFormat($total, $arSale['CURRENCY']);
         }
-
-        var_dump($arUserResult);
+        
         \Bitrix\Sale\DiscountCouponsManager::clear(true);
     }
 }
