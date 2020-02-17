@@ -18,15 +18,6 @@ if (!empty($arResult['RECOMMENDED_IDS']))
 		"=ID" => $arResult['RECOMMENDED_IDS'],
 	);
 
-	if (empty($arParams['HIDE_BLOCK_TITLE']) || $arParams['HIDE_BLOCK_TITLE'] !== 'Y')
-	{
-		?>
-		<div class="title">
-			<?=($arParams['BLOCK_TITLE'] ? htmlspecialcharsbx($arParams['BLOCK_TITLE']) : GetMessage('CATALOG_RECOMMENDED_PRODUCTS_HREF_TITLE'))?>
-		</div>
-		<?
-	}
-
 	if (!empty($arParams['SHOW_PRODUCTS']))
 	{
 		$iblockId = key($arParams['SHOW_PRODUCTS']);

@@ -133,6 +133,12 @@ $this->setFrameMode(true);
 
 	</div>
 
+    <hr class="hr">
+
+    <div class="title">
+        <?=($arResult['PROPERTIES']['TITLE_SLIDER']['VALUE'] ? htmlspecialcharsbx($arResult['PROPERTIES']['TITLE_SLIDER']['VALUE']) : "Рекомендуемые товары")?>
+    </div>
+
 
 
 
