@@ -1,7 +1,10 @@
 <? if(!$arCityes = include $_SERVER['DOCUMENT_ROOT'].'/.cityes.php') return false; ?>
 
 <li class="nav__item">
-    <a href="#" class="nav__link" id="location_btn" style="background: #c82c30;text-decoration: none;"><?=($_COOKIE['city']) ?: 'Выбор города'?></a>
+    <a href="#" class="nav__link" id="location_btn">
+        <?=($_COOKIE['city']) ?: 'Выбор города'?>
+        <i class="icon-arrow_down" style="transform: none;"></i>
+    </a>
 </li>
 
 <div class="mfeedback-p" id="location" style="max-width: 500px;">
