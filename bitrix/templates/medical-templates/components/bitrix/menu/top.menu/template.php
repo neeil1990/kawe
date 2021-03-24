@@ -35,4 +35,12 @@ if (empty($arResult["ALL_ITEMS"]))
 			<? endif;?>
 		</li>
 		<? endforeach; ?>
+
+        <?
+        $APPLICATION->IncludeFile("/include/location.php", Array(), Array(
+            "MODE"      => "html",
+            "NAME"      => "Редактирование включаемой области раздела",
+            "TEMPLATE"  => ""
+        ));
+        ?>
 	</ul>
