@@ -70,7 +70,7 @@
     $('.city .item-city a.c').click(function(){
         var city = $(this).text();
         document.cookie = "city=" + city + "; path=/;";
-        $('#location_btn').text(city);
+        $('#location_btn').html(city + '<i class="icon-arrow_down" style="transform: none;"></i>');
 
         var bPopup = $('#location').bPopup();
         bPopup.close();
