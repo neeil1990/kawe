@@ -1,1 +1,0 @@
-<?define("sotbit_bill_TEMPORARY_CACHE", "dGMFCSoxAVM+VipgVmwBfA10");?>

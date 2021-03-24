@@ -1,4 +1,5 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 $moduleId = 'kda.exportexcel';
 $moduleFilePrefix = 'kda_export_excel';
@@ -103,6 +104,7 @@ $io = CBXVirtualIo::GetInstance();
 /////////////////////////////////////////////////////////////////////
 if ($REQUEST_METHOD == "POST" && $MODE=='AJAX')
 {
+	define('PUBLIC_AJAX_MODE', 'Y');
 	if($ACTION=='REMOVE_PROCESS_PROFILE')
 	{
 		$APPLICATION->RestartBuffer();
@@ -166,6 +168,8 @@ if ($REQUEST_METHOD == "POST" && $MODE=='AJAX')
 
 if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 {
+	if($ACTION) define('PUBLIC_AJAX_MODE', 'Y');
+	
 	//*****************************************************************//	
 	if ($STEP > 1)
 	{

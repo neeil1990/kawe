@@ -1,8 +1,9 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/prolog.php");
 $moduleId = 'kda.exportexcel';
-$moduleEmail = 'app@kabubu.org';
+$moduleEmail = 'app@esolutions.su';
 $imgPath = '/bitrix/panel/'.$moduleId.'/images/video_icons/';
 CModule::IncludeModule($moduleId);
 IncludeModuleLangFile(__FILE__);

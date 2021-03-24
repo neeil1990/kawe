@@ -31,6 +31,7 @@ class CKDAExportExcelWriterCsv {
 		$this->arListTitle = $arParams['PARAMS']['LIST_NAME'];
 		$this->arTextRowsTop = $arParams['PARAMS']['TEXT_ROWS_TOP'];
 		$this->arTextRowsTop2 = $arParams['PARAMS']['TEXT_ROWS_TOP2'];
+		$this->arTextRowsTop3 = $arParams['PARAMS']['TEXT_ROWS_TOP3'];
 		$this->arHideColumnTitles = $arParams['PARAMS']['HIDE_COLUMN_TITLES'];
 		$this->SetEObject($ee);
 		
@@ -129,6 +130,7 @@ class CKDAExportExcelWriterCsv {
 					return false;
 				}
 			}
+			$this->AddTextRows($this->textRowsTop3);
 			fclose($handle);
 		}
 		$this->closeExcelWriter();
@@ -155,6 +157,7 @@ class CKDAExportExcelWriterCsv {
 		$this->listTitle = $this->arListTitle[$listIndex];
 		$this->textRowsTop = $this->arTextRowsTop[$listIndex];
 		$this->textRowsTop2 = $this->arTextRowsTop2[$listIndex];
+		$this->textRowsTop3 = $this->arTextRowsTop3[$listIndex];
 		$this->fparams = $this->arFparams[$listIndex];
 		$this->hideColumnTitles = $this->arHideColumnTitles[$listIndex];
 		$this->tmpFile = $this->dirPath.'data_'.$listIndex.'.txt';

@@ -13,4 +13,5 @@ $MESS["KDA_EE_ADD_LINE_UNDER"] = "Add a row below";
 $MESS["KDA_EE_REMOVE_LINE"] = "Delete row";
 $MESS["KDA_EE_INSERT_PICTURE"] = "Insert picture";
 $MESS['KDA_EE_POPUP_CRON_TITLE'] = "Cron settings";
+$MESS['KDA_EE_FILTER_LAST_DAYS'] = "Last n days";
 ?>

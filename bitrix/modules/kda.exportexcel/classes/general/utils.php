@@ -547,6 +547,7 @@ class CKDAExportUtils {
 		$arFields = (is_array($SETTINGS['FILTER'][$listIndex]) ? $SETTINGS['FILTER'][$listIndex] : array());
 		
 		?>
+		<script>var arClearHiddenFields = [];</script>
 		<!--<form method="GET" name="find_form" id="find_form" action="">-->
 		<div class="find_form_inner">
 		<?
@@ -1361,6 +1362,7 @@ class CKDAExportUtils {
 					$GLOBALS["SETTINGS[FILTER][".$listIndex."][find_".$FIELD_NAME."]_from_FILTER_DIRECTION"] = $arFields['find_'.$FIELD_NAME.'_from_FILTER_DIRECTION'];
 					$inputHTML = $USER_FIELD_MANAGER->GetFilterHTML($arUserField, 'SETTINGS[FILTER]['.$listIndex.'][find_'.$FIELD_NAME.']', $arFields['find_'.$FIELD_NAME]);
 					$inputHTML = preg_replace('/(name="[^"]*)\](_[^\]]*)"/Uis', '$1$2]"', $inputHTML);
+					$inputHTML = preg_replace('/^(\s*<tr[^>]*>\s*<td[^>]*>[^<]*<\/td>\s*<td[^>]*)/Uis', '$1  data-filter-period="'.htmlspecialcharsex($arFields['find_'.$FIELD_NAME.'_from_FILTER_PERIOD']).'" data-filter-last-days="'.htmlspecialcharsex($arFields['find_'.$FIELD_NAME.'_from_FILTER_LAST_DAYS']).'"', $inputHTML);
 				}
 				else
 				{
@@ -1407,9 +1409,10 @@ class CKDAExportUtils {
 		return $result;
 	}
 	
-	public static function GetCellStyleFormatted($arStyles = array(), $arParams = array())
+	public static function GetCellStyleFormatted($arStyles = array(), $arParams = array(), $arCellStyles = array())
 	{
 		if(!is_array($arStyles)) $arStyles = array();
+		if(is_array($arCellStyles)) $arStyles = array_merge($arStyles, $arCellStyles);
 		//if(empty($arStyles)) return '';
 		$style = '';
 		if(!$arStyles['FONT_FAMILY'] && $arParams['FONT_FAMILY']) $arStyles['FONT_FAMILY'] = $arParams['FONT_FAMILY'];
@@ -1446,10 +1449,9 @@ class CKDAExportUtils {
 				if(is_array($rows[$listIndex]))
 				{
 					$rowsCount = (int)$arStepParams['rows2'][$listIndex];
-					if(is_array($arParams['TEXT_ROWS_TOP'])) $rowsCount += count($arParams['TEXT_ROWS_TOP']);
-					if($arParams['HIDE_COLUMN_TITLES']!='Y') $rowsCount += 1;
-					if(is_array($arParams['TEXT_ROWS_TOP2'])) $rowsCount += count($arParams['TEXT_ROWS_TOP2']);
-					
+					if(is_array($arParams['TEXT_ROWS_TOP']) && is_array($arParams['TEXT_ROWS_TOP'][$listIndex])) $rowsCount += count($arParams['TEXT_ROWS_TOP'][$listIndex]);
+					if($arParams['HIDE_COLUMN_TITLES'][$listIndex]!='Y') $rowsCount += 1;
+					if(is_array($arParams['TEXT_ROWS_TOP2']) && is_array($arParams['TEXT_ROWS_TOP2'][$listIndex])) $rowsCount += count($arParams['TEXT_ROWS_TOP2'][$listIndex]);
 					foreach($rows[$listIndex] as $k=>$row)
 					{
 						$row = str_replace('{MAX_ROW_NUM}', $rowsCount, $row);
@@ -1635,7 +1637,8 @@ class CKDAExportUtils {
 							closedir($dh2);
 							if($emptyDir)
 							{
-								unlink($subdir);
+								//unlink($subdir);
+								rmdir($subdir);
 							}
 						}
 						

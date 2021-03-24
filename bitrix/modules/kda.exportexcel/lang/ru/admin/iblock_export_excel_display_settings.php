@@ -17,5 +17,6 @@ $MESS["KDA_EE_DISPLAY_VERTICAL_ALIGN_BOTTOM"] = "По нижнему краю";
 $MESS['KDA_EE_DISPLAY_SETTING_PICTURE_WIDTH'] = "Максимальная ширина картинки, px";
 $MESS['KDA_EE_DISPLAY_SETTING_PICTURE_HEIGHT'] = "Максимальная высота картинки, px";
 $MESS['KDA_EE_DISPLAY_ROW_HEIGHT'] = "Высота строки, px";
+$MESS['KDA_EE_DISPLAY_ROW_HIDDEN'] = "Скрыть строку";
 $MESS['KDA_EE_DISPLAY_SETTING_HIDE_UNDER_GROUP'] = "Скрыть строку под группировкой";
 ?>

@@ -1,4 +1,5 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 $moduleId = 'kda.exportexcel';
 $moduleFilePrefix = 'kda_export_excel';
@@ -48,6 +49,12 @@ if($_POST)
 	{
 		unset($SETTINGS);
 	}
+	
+	if(isset($_POST['TEMPLATE_FILE_del']) && $_POST['TEMPLATE_FILE_del']=='Y' && $SETTINGS_DEFAULT['TEMPLATE_FILE'] > 0)
+	{
+		\CFile::Delete($SETTINGS_DEFAULT['TEMPLATE_FILE']);
+		$SETTINGS_DEFAULT['TEMPLATE_FILE'] = '';
+	}
 }
 
 if(isset($_FILES) && is_array($_FILES))
@@ -57,13 +64,19 @@ if(isset($_FILES) && is_array($_FILES))
 	{
 		if(!empty($_FILES[$fileKey]))
 		{
-			$fid = CFile::SaveFile($_FILES[$fileKey], $moduleId);
+			$fid = \CFile::SaveFile($_FILES[$fileKey], $moduleId);
 			$arSubKeys = explode('_', substr($fileKey, 12));
 			$blockKey = array_pop($arSubKeys);
 			$listKey = array_pop($arSubKeys);
 			$blockTextKey = implode('_', $arSubKeys);
 			$SETTINGS[$blockTextKey][$listKey][$blockKey] = '[['.$fid.']]';
 		}
+	}
+	
+	if(isset($_FILES['TEMPLATE_FILE']) && $_FILES['TEMPLATE_FILE']['error']==0 && $_FILES['TEMPLATE_FILE']['size'] > 0 && preg_match('/\.xlsx$/i', $_FILES['TEMPLATE_FILE']['name']))
+	{
+		if($SETTINGS_DEFAULT['TEMPLATE_FILE'] > 0) \CFile::Delete($SETTINGS_DEFAULT['TEMPLATE_FILE']);
+		$SETTINGS_DEFAULT['TEMPLATE_FILE'] = \CFile::SaveFile($_FILES['TEMPLATE_FILE'], $moduleId);
 	}
 }
 
@@ -111,6 +124,7 @@ $io = CBXVirtualIo::GetInstance();
 /////////////////////////////////////////////////////////////////////
 if ($REQUEST_METHOD == "POST" && $MODE=='AJAX')
 {
+	define('PUBLIC_AJAX_MODE', 'Y');
 	if($ACTION=='SHOW_MODULE_MESSAGE')
 	{
 		$APPLICATION->RestartBuffer();
@@ -200,6 +214,8 @@ if ($REQUEST_METHOD == "POST" && $MODE=='AJAX')
 
 if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 {
+	if($ACTION) define('PUBLIC_AJAX_MODE', 'Y');
+	
 	//*****************************************************************//	
 	if ($STEP > 1)
 	{
@@ -289,7 +305,7 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 		$params = array_merge($SETTINGS_DEFAULT, $SETTINGS);
 		$params['MAX_PREVIEW_LINES'] = $cntLines;
 		$ee = new CKDAExportExcel($params, $EXTRASETTINGS, false, $PROFILE_ID);
-
+		$imageDir = $ee->GetPublicImagePath();
 		$arFields = array();
 		/*$arRes = $ee->GetExportData($list, $cntLines, 0);
 		$arFields = $arRes['FIELDS'];
@@ -304,7 +320,7 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 			$i++;
 		}
 		$arData = array_slice($arData, 0, $cntLines);
-		
+
 		if(!isset($SETTINGS['DISPLAY_PARAMS'][$list])) $SETTINGS['DISPLAY_PARAMS'][$list] = array();
 		if(!isset($SETTINGS['DISPLAY_PARAMS'][$list]['COLUMN_TITLES'])) $SETTINGS['DISPLAY_PARAMS'][$list]['COLUMN_TITLES'] = array('STYLE_BOLD' => 'Y');
 		foreach($arData as $arElement)
@@ -317,7 +333,7 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 		$rowIndex = $rowTitleIndex = 1;
 		
 		/*Additionals rows*/
-		$textKeys = array('TEXT_ROWS_TOP', 'TEXT_ROWS_TOP2');
+		$textKeys = array('TEXT_ROWS_TOP', 'TEXT_ROWS_TOP2', 'TEXT_ROWS_TOP3');
 		$additionalRows = array();
 		foreach($textKeys as $textKey)
 		{
@@ -528,7 +544,7 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 		{
 			echo implode('', $additionalRows[$textKey]);
 		}
-			
+
 		foreach($arData as $arElement)
 		{
 			echo '<tr>';
@@ -559,7 +575,8 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 					$val = (isset($arElement[$field.'_'.$key]) ? $arElement[$field.'_'.$key] : $arElement[$field]);
 					$isHtml = (bool)(!is_array($val) && strpos($val, 'kda-ee-conversion-link')!==false);
 					$fSettings = $EXTRASETTINGS[$list][$key];
-					if(((isset($fSettings['INSERT_PICTURE']) && $fSettings['INSERT_PICTURE']=='Y') || $field=='IE_QR_CODE_IMAGE') && $ee->IsPictureField($field))
+					if(!is_array($fSettings)) $fSettings = array();
+					if(((isset($fSettings['INSERT_PICTURE']) && $fSettings['INSERT_PICTURE']=='Y') || in_array($field, array('IE_QR_CODE_IMAGE', 'ICAT_BARCODE_IMAGE'))) && $ee->IsPictureField($field) && ((is_array($val) && !empty($val)) || (!is_array($val) && strlen($val) > 0)))
 					{
 						$arVals = $val;
 						if(!is_array($arVals)) $arVals = array($arVals);
@@ -578,11 +595,11 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 								{
 									if(preg_match('/(<a[^>]+class="kda\-ee\-conversion\-link"[^>]*>)(.*)(<\/a>)/Uis', $mval, $m))
 									{
-										$val .= $m[1].'<img src="'.htmlspecialcharsbx($m[2]).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">'.$m[3];
+										$val .= $m[1].'<img src="'.htmlspecialcharsbx($imageDir.$m[2]).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">'.$m[3];
 									}
 									else
 									{
-										$val .= '<img src="'.htmlspecialcharsbx($mval).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">';
+										$val .= '<img src="'.htmlspecialcharsbx($imageDir.$mval).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">';
 									}
 								}
 							}
@@ -590,11 +607,11 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 							{
 								if(preg_match('/(<a[^>]+class="kda\-ee\-conversion\-link"[^>]*>)(.*)(<\/a>)/Uis', $val, $m))
 								{
-									$val = $m[1].'<img src="'.htmlspecialcharsbx($m[2]).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">'.$m[3];
+									$val = $m[1].'<img src="'.htmlspecialcharsbx($imageDir.$m[2]).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">'.$m[3];
 								}
 								else
 								{
-									$val = '<img src="'.htmlspecialcharsbx($val).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">';
+									$val = '<img src="'.htmlspecialcharsbx($imageDir.$val).'" style="max-width: '.$maxWidth.'px; max-height: '.$maxHeight.'px;">';
 								}
 							}
 							$arVals[$mkey] = $val;
@@ -622,10 +639,16 @@ if ($REQUEST_METHOD == "POST" && $STEP > 1 && check_bitrix_sessid())
 						$val = $newVal;
 						$isHtml = true;
 					}
-					echo '<td><div class="cell"><div class="cell_inner"'.($SETTINGS_DEFAULT['NOT_SHOW_PREVIEW_STYLES']=='Y' ? '' : ' '.CKDAExportUtils::GetCellStyleFormatted($fSettings, $SETTINGS_DEFAULT)).'>'.($isHtml ? nl2br($val) : nl2br(htmlspecialcharsbx($val))).'</div></div></td>';
+					echo '<td><div class="cell"><div class="cell_inner"'.($SETTINGS_DEFAULT['NOT_SHOW_PREVIEW_STYLES']=='Y' ? '' : ' '.CKDAExportUtils::GetCellStyleFormatted($fSettings, $SETTINGS_DEFAULT, $arElement['CELLSTYLE_'.$key])).'>'.($isHtml ? nl2br($val) : nl2br(htmlspecialcharsbx($val))).'</div></div></td>';
 				}
 			}
 			echo '</tr>';
+		}
+		
+		$textKey = 'TEXT_ROWS_TOP3';
+		if(isset($additionalRows[$textKey]) && is_array($additionalRows[$textKey]))
+		{
+			echo implode('', $additionalRows[$textKey]);
 		}
 		echo '</table>';
 		echo '</div>';
@@ -738,7 +761,7 @@ if ($STEP < 2)
 CAdminMessage::ShowMessage($strError);
 ?>
 
-<form method="POST" action="<?echo $sDocPath ?>?lang=<?echo LANG ?>" ENCTYPE="multipart/form-data" name="dataload" id="dataload" class="kda-ee-s1-form">
+<form method="POST" action="<?echo $sDocPath ?>?<?if(strlen($PROFILE_ID) > 0){echo 'PROFILE_ID='.$PROFILE_ID.'&';}?>lang=<?echo LANG ?>" ENCTYPE="multipart/form-data" name="dataload" id="dataload" class="kda-ee-s1-form">
 
 <?
 $arProfile = (strlen($PROFILE_ID) > 0 ? $oProfile->GetFieldsByID($PROFILE_ID) : array());
@@ -984,6 +1007,13 @@ if ($STEP == 1)
 		</tr>
 		
 		<tr <?if($SETTINGS_DEFAULT['EXPORT_SEP_SECTIONS']!='Y'){echo 'style="display: none;"';}?>>
+			<td><?echo GetMessage("KDA_EE_EXPORT_INACTIVE_SECTIONS"); ?>:</td>
+			<td>
+				<input type="checkbox" name="SETTINGS_DEFAULT[EXPORT_INACTIVE_SECTIONS]" value="Y" <?if($SETTINGS_DEFAULT['EXPORT_INACTIVE_SECTIONS']=='Y'){echo 'checked';}?>>
+			</td>
+		</tr>
+		
+		<tr <?if($SETTINGS_DEFAULT['EXPORT_SEP_SECTIONS']!='Y'){echo 'style="display: none;"';}?>>
 			<td><?echo GetMessage("KDA_EE_EXPORT_SEP_SECTIONS_SORT"); ?>:</td>
 			<td>
 				<select name="SETTINGS_DEFAULT[EXPORT_SEP_SECTIONS_SORT]">
@@ -1044,6 +1074,13 @@ if ($STEP == 1)
 		</tr>
 		
 		<tr class="kda-sku-block" <?if(!$OFFERS_IBLOCK_ID){echo 'style="display: none;"';}?> >
+			<td><?echo GetMessage("KDA_EE_EXPORT_OFFERS_UNDER_ELEM"); ?>:</td>
+			<td>
+				<input type="checkbox" name="SETTINGS_DEFAULT[EXPORT_OFFERS_UNDER_ELEM]" value="Y" <?if($SETTINGS_DEFAULT['EXPORT_OFFERS_UNDER_ELEM']=='Y'){echo 'checked';}?>>
+			</td>
+		</tr>
+		
+		<tr class="kda-sku-block" <?if(!$OFFERS_IBLOCK_ID){echo 'style="display: none;"';}?> >
 			<td><?echo GetMessage("KDA_EE_EXPORT_PRODUCTS_JOIN"); ?>:</td>
 			<td>
 				<input type="checkbox" name="SETTINGS_DEFAULT[EXPORT_PROPUCTS_JOIN]" value="Y" <?if($SETTINGS_DEFAULT['EXPORT_PROPUCTS_JOIN']=='Y'){echo 'checked';}?>>
@@ -1057,7 +1094,18 @@ if ($STEP == 1)
 		<tr>
 			<td><?echo GetMessage("KDA_EE_DISPLAY_LOCK_HEADERS"); ?>:</td>
 			<td>
-				<input type="checkbox" name="SETTINGS_DEFAULT[DISPLAY_LOCK_HEADERS]" value="Y" <?if($SETTINGS_DEFAULT['DISPLAY_LOCK_HEADERS']=='Y'){echo 'checked';}?>>
+				<table cellspacing="0"><tr>
+				<td style="padding-left: 0px;">
+					<input type="checkbox" name="SETTINGS_DEFAULT[DISPLAY_LOCK_HEADERS]" value="Y" <?if($SETTINGS_DEFAULT['DISPLAY_LOCK_HEADERS']=='Y'){echo 'checked';}?> onchange="if(this.checked){$('#lock_headers_ext').show();}else{$('#lock_headers_ext').hide();}">
+				</td>
+				<td>&nbsp; &nbsp; &nbsp;</td>
+				<td>
+					<div id="lock_headers_ext"<?if($SETTINGS_DEFAULT['DISPLAY_LOCK_HEADERS']!='Y'){?> style="display: none;"<?}?>>
+						<?echo GetMessage("KDA_EE_DISPLAY_LOCK_HEADERS_CNT");?>:
+						<input type="text" name="SETTINGS_DEFAULT[DISPLAY_LOCK_HEADERS_CNT]" value="<?=htmlspecialcharsbx($SETTINGS_DEFAULT['DISPLAY_LOCK_HEADERS_CNT'])?>" size="3">
+					</div>
+				</td>
+				</tr></table>
 			</td>
 		</tr>
 		
@@ -1157,6 +1205,27 @@ if ($STEP == 1)
 				<input type="text" name="SETTINGS_DEFAULT[BORDER_COLOR]" value="<?=htmlspecialcharsbx($SETTINGS_DEFAULT['BORDER_COLOR'])?>" placeholder="#000000">
 			</td>
 		</tr>
+		
+		<?if(\Cmodule::IncludeModule('fileman')){?>
+		<tr>
+			<td><?echo GetMessage("KDA_EE_DISPLAY_SETTING_TEMPLATE_FILE");?>: <span id="hint_TEMPLATE_FILE"></span><script>BX.hint_replace(BX('hint_TEMPLATE_FILE'), '<?echo GetMessage("KDA_EE_DISPLAY_SETTING_TEMPLATE_FILE_HINT"); ?>');</script></td>
+			<td class="kda-ee-fileinput-cont">
+				<input type="hidden" name="SETTINGS_DEFAULT[TEMPLATE_FILE]" value="<?=htmlspecialcharsbx($SETTINGS_DEFAULT['TEMPLATE_FILE'])?>">
+				<?
+				echo \CFileInput::Show("TEMPLATE_FILE", $SETTINGS_DEFAULT["TEMPLATE_FILE"], array(
+					"IMAGE" => "N",
+					"PATH" => "Y",
+					"FILE_SIZE" => "Y",
+					"DIMENSIONS" => "N"
+				), array(
+					'upload' => true,
+					'del' => true,
+					'description' => false,
+				));
+				?>
+			</td>
+		</tr>
+		<?}?>
 		
 		<tr class="heading">
 			<td colspan="2"><?echo GetMessage("KDA_EE_DOCUMENT_PARAMS"); ?> <a href="javascript:void(0)" onclick="EProfile.ToggleAdditionalSettings(this)" class="kda-head-more show"><?echo GetMessage("KDA_EE_SETTINGS_ADDITONAL_SHOW_HIDE"); ?></a></td>
@@ -1276,8 +1345,47 @@ if ($STEP == 1)
 			</td>
 		</tr>
 		
+		<tr>
+			<td><?echo GetMessage("KDA_EE_EXT_SERVICES_EMAIL");?>:</td>
+			<td>
+				<table cellspacing="0"><tr>
+				<td style="padding-left: 0px;"><input type="checkbox" name="SETTINGS_DEFAULT[EXPORT_TO_EMAIL]" value="Y" <?=htmlspecialcharsbx($SETTINGS_DEFAULT['EXPORT_TO_EMAIL']=='Y' ? 'checked' : '')?> onchange="if(this.checked){$('#sendemail').show();}else{$('#sendemail').hide();}"></td>
+				<td>&nbsp; &nbsp;</td>
+				<td id="sendemail"<?if($SETTINGS_DEFAULT['EXPORT_TO_EMAIL']!='Y'){echo ' style="display: none;"';}?>>
+					<?$eventName = 'KDA_EXPORT_SEND_FILE';?>
+					<div>
+						<?echo sprintf(GetMessage("KDA_EE_EXT_SERVICES_EMAIL_TEMPLATE"), $eventName);?>:
+						<div style="padding-top: 2px;"><select name="SETTINGS_DEFAULT[MAIL_TEMPLATE_ID]" style="width: 420px;">
+							<option value=""><?echo GetMessage("KDA_EE_NOT_CHOOSE");?></option>
+						<?
+						$dbRes = \CEventMessage::GetList(($by='id'), ($order='desc'), array('TYPE_ID'=>$eventName));
+						while($arr = $dbRes->Fetch())
+						{
+							echo '<option value="'.(int)$arr['ID'].'"'.($SETTINGS_DEFAULT['MAIL_TEMPLATE_ID']==$arr['ID'] ? ' selected' : '').'>['.$arr['ID'].'] '.$arr['SUBJECT'].'</option>';
+						}
+						?>
+						</select></div>
+					</div>
+					<br>
+					<?$eventToField = '#EMAIL_TO#';?>
+					<div>
+						<?echo sprintf(GetMessage("KDA_EE_EXT_SERVICES_EMAIL_RECIPIENT"), $eventToField);?>:
+						<div style="padding-top: 2px;"><input type="text" name="SETTINGS_DEFAULT[MAIL_TEMPLATE_EMAIL]" value="<?=htmlspecialcharsbx($SETTINGS_DEFAULT['MAIL_TEMPLATE_EMAIL'])?>" style="width: 420px;"></div>
+					</div>
+				</td>
+				</tr></table>
+			</td>
+		</tr>
+		
 		<tr class="heading">
 			<td colspan="2"><?echo GetMessage("KDA_EE_OTHER_SETTINGS"); ?> <a href="javascript:void(0)" onclick="EProfile.ToggleAdditionalSettings(this)" class="kda-head-more show"><?echo GetMessage("KDA_EE_SETTINGS_ADDITONAL_SHOW_HIDE"); ?></a></td>
+		</tr>
+		
+		<tr>
+			<td><?echo GetMessage("KDA_EE_OTHER_EXPORT_ARCHIVE");?>:</td>
+			<td>
+				<input type="checkbox" name="SETTINGS_DEFAULT[EXPORT_ARCHIVE]" value="Y" <?=htmlspecialcharsbx($SETTINGS_DEFAULT['EXPORT_ARCHIVE']=='Y' ? 'checked' : '')?>>
+			</td>
 		</tr>
 		
 		<tr>
@@ -1297,7 +1405,7 @@ if ($STEP == 1)
 						{
 							if($path)
 							{
-								$archivePath = '/upload/'.preg_replace('/\.[^\.]*$/', '', basename($path)).'.zip';
+								$archivePath = '/upload/'.preg_replace('/\.[^\.]*$/', '', basename($path)).'_files.zip';
 							}
 							else
 							{
@@ -1306,6 +1414,9 @@ if ($STEP == 1)
 						}
 						?>
 						<input type="text" name="SETTINGS_DEFAULT[FILES_ARCHIVE_PATH]" id="kda-ee-file-path" value="<?echo htmlspecialcharsbx($archivePath); ?>" size="55">
+						<div style="padding-top: 3px;">
+							<input type="checkbox" name="SETTINGS_DEFAULT[EXPORT_FILES_ARCHIVE_SINGLE]" value="Y" <?=htmlspecialcharsbx($SETTINGS_DEFAULT['EXPORT_FILES_ARCHIVE_SINGLE']=='Y' ? 'checked' : '')?> id="EXPORT_FILES_ARCHIVE_SINGLE_chb"> <label for="EXPORT_FILES_ARCHIVE_SINGLE_chb"><?echo GetMessage("KDA_EE_OTHER_FILES_ARCHIVE_SINGLE");?></label>
+						</div>
 					</div>
 				</td>
 				</tr></table>
@@ -1323,6 +1434,13 @@ if ($STEP == 1)
 			<td><?echo GetMessage("KDA_EE_OTHER_SETTINGS_NOT_SHOW_PREVIEW_STYLES");?>: <span id="hint_NOT_SHOW_PREVIEW_STYLES"></span><script>BX.hint_replace(BX('hint_NOT_SHOW_PREVIEW_STYLES'), '<?echo GetMessage("KDA_EE_OTHER_SETTINGS_NOT_SHOW_PREVIEW_STYLES_HINT"); ?>');</script></td>
 			<td>
 				<input type="checkbox" name="SETTINGS_DEFAULT[NOT_SHOW_PREVIEW_STYLES]" value="Y" <?=htmlspecialcharsbx($SETTINGS_DEFAULT['NOT_SHOW_PREVIEW_STYLES']=='Y' ? 'checked' : '')?>>
+			</td>
+		</tr>
+		
+		<tr>
+			<td><?echo GetMessage("KDA_EE_OTHER_SETTINGS_MAX_READ_ROWS");?>: <span id="hint_MAX_READ_ROWS"></span><script>BX.hint_replace(BX('hint_MAX_READ_ROWS'), '<?echo GetMessage("KDA_EE_OTHER_SETTINGS_MAX_READ_ROWS_HINT"); ?>');</script></td>
+			<td>
+				<input type="text" name="SETTINGS_DEFAULT[MAX_READ_ROWS]" value="<?=htmlspecialcharsbx($SETTINGS_DEFAULT['MAX_READ_ROWS'])?>" placeholder="100">
 			</td>
 		</tr>
 		

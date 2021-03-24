@@ -70,7 +70,8 @@ CModule::AddAutoloadClasses(
 		'CKDAExportUtils' => 'classes/general/utils.php',
 		//'CKDAExportCondTree' => 'classes/general/cond_tree.php',
 		'\Bitrix\KdaExportexcel\ProfileTable' => "lib/profile.php",
-		'\Bitrix\KdaExportexcel\ProfileHlTable' => "lib/profile_hl.php"
+		'\Bitrix\KdaExportexcel\ProfileHlTable' => "lib/profile_hl.php",
+		'\Bitrix\KdaImportexcel\ClassManager' => "lib/class_manager.php",
 	)
 );
 
@@ -81,19 +82,19 @@ $arJSKdaIBlockConfig = array(
 	$moduleJsId => array(
 		'js' => $pathJS.'/script.js',
 		'css' => $pathCSS.'/styles.css',
-		'rel' => array('jquery', $moduleJsId.'_chosen'/*, 'core_condtree'*/),
+		'rel' => array('jquery2', $moduleJsId.'_chosen'/*, 'core_condtree'*/),
 		'lang' => $pathLang.'/js_admin.php'
 	),
 	$moduleJsId.'_highload' => array(
 		'js' => $pathJS.'/script_highload.js',
 		'css' => $pathCSS.'/styles.css',
-		'rel' => array('jquery', $moduleJsId.'_chosen'/*, 'core_condtree'*/),
+		'rel' => array('jquery2', $moduleJsId.'_chosen'/*, 'core_condtree'*/),
 		'lang' => $pathLang.'/js_admin_hlbl.php',
 	),
 	$moduleJsId.'_chosen' => array(
 		'js' => $pathJS.'/chosen/chosen.jquery.min.js',
 		'css' => $pathJS.'/chosen/chosen.min.css',
-		'rel' => array('jquery')
+		'rel' => array('jquery2')
 	),
 );
 

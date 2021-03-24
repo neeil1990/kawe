@@ -18,6 +18,7 @@ if($storage=='db')
 	if(is_callable(array($conn, 'queryExecute')))
 	{
 		$conn->queryExecute('SET wait_timeout=900');
+		$conn->queryExecute('SET sql_mode=""');
 	}
 }
 else
@@ -119,12 +120,12 @@ class CKDAExportProfileAll {
 		$this->pid = $pid;
 	}
 	
-	public function OnStartImport()
+	public function OnStartExport()
 	{
-		return false;
+		return  false;
 	}
 	
-	public function OnEndImport()
+	public function OnEndExport($file, $arParams, $arErrors=array())
 	{
 		return array();
 	}

@@ -10,6 +10,7 @@ class CKDAExportProfileDB extends CKDAExportProfileAll {
 	private $errors = array();
 	private $entity = false;
 	private $pid = null;
+	private $exportMode = null;
 	
 	function __construct($suffix='')
 	{
@@ -144,11 +145,11 @@ class CKDAExportProfileDB extends CKDAExportProfileAll {
 	
 	private function CheckTableEncoding($conn, $tblName)
 	{
-		$res = $conn->query('SHOW VARIABLES LIKE "character_set_database"');
+		$res = $conn->query('SHOW VARIABLES LIKE "character_set_connection"');
 		$f = $res->fetch();
 		$charset = trim($f['Value']);
 
-		$res = $conn->query('SHOW VARIABLES LIKE "collation_database"');
+		$res = $conn->query('SHOW VARIABLES LIKE "collation_connection"');
 		$f = $res->fetch();
 		$collation = trim($f['Value']);
 		
@@ -559,24 +560,148 @@ class CKDAExportProfileDB extends CKDAExportProfileAll {
 		return array();
 	}
 	
-	public function SetExportParams($pid)
+	public function SetExportParams($pid, $arParams=array())
 	{
 		$this->pid = $pid;
+		$this->exportMode = ($arParams['EXPORT_MODE']=='CRON' ? 'CRON' : 'USER');
 	}
 	
-	public function OnStartImport()
+	public function OnStartExport()
 	{
 		$this->UpdateFields($this->pid, array(
 			'DATE_START' => new \Bitrix\Main\Type\DateTime(),
 			'DATE_FINISH' => false
 		));
+		
+		if(true)
+		{
+			if(COption::GetOptionString(static::$moduleId, 'NOTIFY_BEGIN_EXPORT', 'N')=='Y'
+				&& (COption::GetOptionString(static::$moduleId, 'NOTIFY_MODE', 'NONE')=='ALL'
+					|| (COption::GetOptionString(static::$moduleId, 'NOTIFY_MODE', 'NONE')=='CRON' && $this->exportMode=='CRON')))
+			{
+				$this->CheckEventOnBeginExport();
+				$arEventData = array();
+				$arProfile = $this->GetFieldsByID($this->pid);
+				$arEventData['PROFILE_NAME'] = $arProfile['NAME'];
+				$arEventData['EXPORT_START_DATETIME'] = (is_callable(array($arProfile['DATE_START'], 'toString')) ? $arProfile['DATE_START']->toString() : '');
+				$arEventData['EMAIL_TO'] = COption::GetOptionString(static::$moduleId, 'NOTIFY_EMAIL');
+				CEvent::Send('KDA_EXPORT_START', $this->GetDefaultSiteId(), $arEventData);
+			}
+		}
 	}
 	
-	public function OnEndImport()
+	public function OnEndExport($file, $arParams, $arErrors=array())
 	{
 		$this->UpdateFields($this->pid, array(
 			'DATE_FINISH'=>new \Bitrix\Main\Type\DateTime()
 		));	
+		
+		if(true)
+		{			
+			$arEventData = array();
+			if(is_array($arParams))
+			{
+				foreach($arParams as $k=>$v)
+				{
+					if(!is_array($v)) $arEventData[ToUpper($k)] = $v;
+				}
+			}
+			$arEventData['TOTAL_LINE'] = $arEventData['TOTAL_READ_LINE'];
+			$arProfile = $this->GetFieldsByID($this->pid);
+			$arEventData['PROFILE_NAME'] = $arProfile['NAME'];
+			$arEventData['FILE_PATH'] = \Bitrix\Main\IO\Path::convertPhysicalToLogical($file);
+			$arEventData['EXPORT_START_DATETIME'] = (is_callable(array($arProfile['DATE_START'], 'toString')) ? $arProfile['DATE_START']->toString() : '');
+			$arEventData['EXPORT_FINISH_DATETIME'] = (is_callable(array($arProfile['DATE_FINISH'], 'toString')) ? $arProfile['DATE_FINISH']->toString() : '');
+			if(COption::GetOptionString(static::$moduleId, 'NOTIFY_END_EXPORT', 'N')=='Y'
+				&& (COption::GetOptionString(static::$moduleId, 'NOTIFY_MODE', 'NONE')=='ALL'
+					|| (COption::GetOptionString(static::$moduleId, 'NOTIFY_MODE', 'NONE')=='CRON' && $this->exportMode=='CRON')))
+			{
+				$this->CheckEventOnEndExport();
+				$arEventData['EMAIL_TO'] = COption::GetOptionString(static::$moduleId, 'NOTIFY_EMAIL');
+				$arEventData['ERRORS'] = implode("\r\n--------\r\n", $arErrors);
+				CEvent::Send('KDA_EXPORT_END', $this->GetDefaultSiteId(), $arEventData);
+			}
+		}
+	}
+	
+	public function GetDefaultSiteId()
+	{
+		if(!($arSite = \CSite::GetList(($by='sort'), ($order='asc'), array('DEFAULT'=>'Y'))->Fetch()))
+			$arSite = \CSite::GetList(($by='sort'), ($order='asc'), array())->Fetch();
+		return $arSite['ID'];
+	}
+	
+	public function CheckEventOnBeginExport()
+	{
+		$eventName = 'KDA_EXPORT_START';
+		$dbRes = CEventType::GetList(array('TYPE_ID'=>$eventName));
+		if(!$dbRes->Fetch())
+		{
+			$et = new CEventType();
+			$et->Add(array(
+				"LID" => "ru",
+				"EVENT_NAME" => $eventName,
+				"NAME" => Loc::getMessage("KDA_EE_EVENT_EXPORT_START"),
+				"DESCRIPTION" => 
+					"#PROFILE_NAME# - ".Loc::getMessage("KDA_EE_EVENT_PROFILE_NAME")."\r\n".
+					"#EXPORT_START_DATETIME# - ".Loc::getMessage("KDA_EE_EVENT_TIME_BEGIN")
+				));
+		}
+		$dbRes = CEventMessage::GetList(($by='id'), ($order='desc'), array('TYPE_ID'=>$eventName));
+		if(!$dbRes->Fetch())
+		{
+			$emess = new CEventMessage();
+			$emess->Add(array(
+				'ACTIVE' => 'Y',
+				'EVENT_NAME' => $eventName,
+				'LID' => $this->GetDefaultSiteId(),
+				'EMAIL_FROM' => '#DEFAULT_EMAIL_FROM#',
+				'EMAIL_TO' => '#EMAIL_TO#',
+				'SUBJECT' => '#SITE_NAME#: '.Loc::getMessage("KDA_EE_EVENT_BEGIN_PROFILE").' "#PROFILE_NAME#"',
+				'MESSAGE' => 
+					Loc::getMessage("KDA_EE_EVENT_PROFILE_NAME").": #PROFILE_NAME#\r\n".
+					Loc::getMessage("KDA_EE_EVENT_TIME_BEGIN").": #EXPORT_START_DATETIME#"
+			));
+		}
+	}
+	
+	public function CheckEventOnEndExport()
+	{
+		$eventName = 'KDA_EXPORT_END';
+		$dbRes = CEventType::GetList(array('TYPE_ID'=>$eventName));
+		if(!$dbRes->Fetch())
+		{
+			$et = new CEventType();
+			$et->Add(array(
+				"LID" => "ru",
+				"EVENT_NAME" => $eventName,
+				"NAME" => Loc::getMessage("KDA_EE_EVENT_EXPORT_END"),
+				"DESCRIPTION" => 
+					"#PROFILE_NAME# - ".Loc::getMessage("KDA_EE_EVENT_PROFILE_NAME")."\r\n".
+					"#EXPORT_START_DATETIME# - ".Loc::getMessage("KDA_EE_EVENT_TIME_BEGIN")."\r\n".
+					"#EXPORT_FINISH_DATETIME# - ".Loc::getMessage("KDA_EE_EVENT_TIME_END")."\r\n".
+					"#TOTAL_LINE# - ".Loc::getMessage("KDA_EE_EVENT_TOTAL_LINE")."\r\n"
+				));
+		}
+		$dbRes = CEventMessage::GetList(($by='id'), ($order='desc'), array('TYPE_ID'=>$eventName));
+		if(!$dbRes->Fetch())
+		{
+			$emess = new CEventMessage();
+			$emess->Add(array(
+				'ACTIVE' => 'Y',
+				'EVENT_NAME' => $eventName,
+				'LID' => $this->GetDefaultSiteId(),
+				'EMAIL_FROM' => '#DEFAULT_EMAIL_FROM#',
+				'EMAIL_TO' => '#EMAIL_TO#',
+				'SUBJECT' => '#SITE_NAME#: '.Loc::getMessage("KDA_EE_EVENT_END_PROFILE").' "#PROFILE_NAME#"',
+				'MESSAGE' => 
+					Loc::getMessage("KDA_EE_EVENT_PROFILE_NAME").": #PROFILE_NAME#\r\n".
+					Loc::getMessage("KDA_EE_EVENT_TIME_BEGIN").": #EXPORT_START_DATETIME#\r\n".
+					Loc::getMessage("KDA_EE_EVENT_TIME_END").": #EXPORT_FINISH_DATETIME#\r\n".
+					"\r\n".
+					Loc::getMessage("KDA_EE_EVENT_TOTAL_LINE").": #TOTAL_LINE#"
+			));
+		}
 	}
 	
 	public function OutputBackup()
@@ -638,12 +763,12 @@ class CKDAExportProfileDB extends CKDAExportProfileAll {
 	{
 		if(!isset($arPFile) || !is_array($arPFile) || $arPFile['error'] > 0 || $arPFile['size'] < 1)
 		{
-			return array('TYPE'=>'ERROR', 'MESSAGE'=>Loc::getMessage("KDA_IE_RESTORE_NOT_LOAD_FILE"));
+			return array('TYPE'=>'ERROR', 'MESSAGE'=>Loc::getMessage("KDA_EE_RESTORE_NOT_LOAD_FILE"));
 		}
 		$filename = $arPFile['name'];
 		if(ToLower(\CKDAExportUtils::GetFileExtension($filename))!=='zip')
 		{
-			return array('TYPE'=>'ERROR', 'MESSAGE'=>Loc::getMessage("KDA_IE_RESTORE_FILE_NOT_VALID"));
+			return array('TYPE'=>'ERROR', 'MESSAGE'=>Loc::getMessage("KDA_EE_RESTORE_FILE_NOT_VALID"));
 		}
 		
 		$tempPath = \CFile::GetTempName('', bx_basename($filename));
@@ -663,7 +788,7 @@ class CKDAExportProfileDB extends CKDAExportProfileAll {
 		{
 			foreach($arFiles as $file) unlink($file);
 			rmdir($dir);
-			return array('TYPE'=>'ERROR', 'MESSAGE'=>Loc::getMessage("KDA_IE_RESTORE_FILE_NOT_VALID"));
+			return array('TYPE'=>'ERROR', 'MESSAGE'=>Loc::getMessage("KDA_EE_RESTORE_FILE_NOT_VALID"));
 		}
 		
 		$profileEntity = $this->GetEntity();
@@ -728,6 +853,6 @@ class CKDAExportProfileDB extends CKDAExportProfileAll {
 		foreach($arFiles as $file) unlink($file);
 		rmdir($dir);
 		
-		return array('TYPE'=>'SUCCESS', 'MESSAGE'=>Loc::getMessage("KDA_IE_RESTORE_SUCCESS"));
+		return array('TYPE'=>'SUCCESS', 'MESSAGE'=>Loc::getMessage("KDA_EE_RESTORE_SUCCESS"));
 	}
 }

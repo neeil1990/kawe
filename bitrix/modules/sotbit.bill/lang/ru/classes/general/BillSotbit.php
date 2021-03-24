@@ -1,4 +1,0 @@
-<?
-$iModuleID  = 'bill.sotbit';
-
-?>

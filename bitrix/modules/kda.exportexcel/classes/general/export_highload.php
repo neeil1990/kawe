@@ -57,6 +57,8 @@ class CKDAExportExcelHighload {
 			CheckDirPath($this->imagedir);
 			
 			$this->tmpfile = $this->tmpdir.'params.txt';
+			$oProfile = CKDAExportProfile::getInstance('highload');
+			$oProfile->SetExportParams($pid, $stepparams);
 			/*/Temp folders*/
 			
 			if(file_exists($this->tmpfile))
@@ -71,6 +73,8 @@ class CKDAExportExcelHighload {
 				$this->procfile = $dir.$pid.'.txt';
 				if($this->stepparams['total_read_line'] < 1)
 				{
+					$oProfile = CKDAExportProfile::getInstance('highload');
+					$oProfile->OnStartExport();
 					if(file_exists($this->procfile)) unlink($this->procfile);
 				}
 			}
@@ -313,6 +317,9 @@ class CKDAExportExcelHighload {
 		}
 		$this->SaveStatusImport(true);
 		
+		$oProfile = CKDAExportProfile::getInstance('highload');
+		$arEventData = $oProfile->OnEndExport($outputFile, $this->stepparams);
+		
 		return $this->GetBreakParams('finish');
 	}
 	
@@ -365,7 +372,7 @@ class CKDAExportExcelHighload {
 		try{				
 			if(stripos($expression, 'return')===0)
 			{
-				return eval($expression.';');
+				$val = eval($expression.';');
 			}
 			elseif(preg_match('/\$val\s*=/', $expression))
 			{
@@ -374,8 +381,10 @@ class CKDAExportExcelHighload {
 			}
 			else
 			{
-				return eval('return '.$expression.';');
+				$val = eval('return '.$expression.';');
 			}
+			if(!isset($val)) $val = '';
+			return $val;
 		}catch(Exception $ex){
 			return $altReturn;
 		}

@@ -84,6 +84,38 @@ if($USER->IsAdmin())
 			<input type="checkbox" name="SETTINGS[AUTO_CONTINUE_EXPORT]" value="Y" <?if(COption::GetOptionString($module_id, 'AUTO_CONTINUE_EXPORT', 'N')=='Y'){echo 'checked';}?>>
 		</td>
 	</tr>
+	
+	<tr class="heading">
+		<td colspan="2"><? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY'); ?></td>
+	</tr>
+	<tr>
+		<td><? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY_MODE'); ?>:</td>
+		<td>
+			<label><input type="radio" name="SETTINGS[NOTIFY_MODE]" value="NONE" <?if(COption::GetOptionString($module_id, 'NOTIFY_MODE', 'NONE')=='NONE') echo 'checked';?>> <? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY_MODE_NONE'); ?></label><br>
+			<label><input type="radio" name="SETTINGS[NOTIFY_MODE]" value="CRON" <?if(COption::GetOptionString($module_id, 'NOTIFY_MODE', 'NONE')=='CRON') echo 'checked';?>> <? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY_MODE_CRON'); ?></label><br>
+			<label><input type="radio" name="SETTINGS[NOTIFY_MODE]" value="ALL" <?if(COption::GetOptionString($module_id, 'NOTIFY_MODE', 'NONE')=='ALL') echo 'checked';?>> <? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY_MODE_ALL'); ?></label>
+		</td>
+	</tr>
+	<tr>
+		<td><? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY_EMAIL'); ?>:</td>
+		<td>
+			<input type="text" name="SETTINGS[NOTIFY_EMAIL]" value="<?echo htmlspecialcharsex(COption::GetOptionString($module_id, 'NOTIFY_EMAIL'));?>">
+		</td>
+	</tr>
+	<tr>
+		<td><? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY_BEGIN_EXPORT'); ?>:</td>
+		<td>
+			<input type="hidden" name="SETTINGS[NOTIFY_BEGIN_EXPORT]" value="N">
+			<input type="checkbox" name="SETTINGS[NOTIFY_BEGIN_EXPORT]" value="Y" <?if(COption::GetOptionString($module_id, 'NOTIFY_BEGIN_EXPORT', 'N')=='Y') echo 'checked';?>>
+		</td>
+	</tr>
+	<tr>
+		<td><? echo Loc::getMessage('KDA_EE_OPTIONS_NOTIFY_END_EXPORT'); ?>:</td>
+		<td>
+			<input type="hidden" name="SETTINGS[NOTIFY_END_EXPORT]" value="N">
+			<input type="checkbox" name="SETTINGS[NOTIFY_END_EXPORT]" value="Y" <?if(COption::GetOptionString($module_id, 'NOTIFY_END_EXPORT', 'N')=='Y') echo 'checked';?>>
+		</td>
+	</tr>
 
 	<?$tabControl->BeginNextTab();?>
 	<?require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/admin/group_rights.php");?>

@@ -108,12 +108,12 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
     /**
      * Create a new KDAPHPExcel_Writer_Excel2007
      *
-	 * @param 	KDAPHPExcel	$pKDAPHPExcel
+	 * @param 	KDAPHPExcel	$arKDAPHPExcel
      */
-    public function __construct(KDAPHPExcel $pKDAPHPExcel = null)
+    public function __construct(KDAPHPExcel $arKDAPHPExcel = null)
     {
     	// Assign KDAPHPExcel
-		$this->setKDAPHPExcel($pKDAPHPExcel);
+		$this->setKDAPHPExcel($arKDAPHPExcel);
 
     	$writerPartsArray = array(	'stringtable'	=> 'KDAPHPExcel_Writer_Excel2007_StringTable',
 									'contenttypes'	=> 'KDAPHPExcel_Writer_Excel2007_ContentTypes',
@@ -130,29 +130,29 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
 
     	//	Initialise writer parts
 		//		and Assign their parent IWriters
-		foreach ($writerPartsArray as $writer => $class) {
-			$this->_writerParts[$writer] = new $class($this);
+		foreach ($writerPartsArray as $strWriter => $strClass) {
+			$this->_writerParts[$strWriter] = new $strClass($this);
 		}
 
-    	$hashTablesArray = array( '_stylesConditionalHashTable',	'_fillHashTable',		'_fontHashTable',
+    	$arHashTablesArray = array( '_stylesConditionalHashTable',	'_fillHashTable',		'_fontHashTable',
 								  '_bordersHashTable',				'_numFmtHashTable',		'_drawingHashTable'
 							    );
 
 		// Set HashTable variables
-		foreach ($hashTablesArray as $tableName) {
-			$this->$tableName 	= new KDAPHPExcel_HashTable();
+		foreach ($arHashTablesArray as $strTableName) {
+			$this->$strTableName 	= new KDAPHPExcel_HashTable();
 		}
     }
 
 	/**
 	 * Get writer part
 	 *
-	 * @param 	string 	$pPartName		Writer part name
+	 * @param 	string 	$strPartName		Writer part name
 	 * @return 	KDAPHPExcel_Writer_Excel2007_WriterPart
 	 */
-	public function getWriterPart($pPartName = '') {
-		if ($pPartName != '' && isset($this->_writerParts[strtolower($pPartName)])) {
-			return $this->_writerParts[strtolower($pPartName)];
+	public function getWriterPart($strPartName = '') {
+		if ($strPartName != '' && isset($this->_writerParts[strtolower($strPartName)])) {
+			return $this->_writerParts[strtolower($strPartName)];
 		} else {
 			return null;
 		}
@@ -161,27 +161,27 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
 	/**
 	 * Save KDAPHPExcel to file
 	 *
-	 * @param 	string 		$pFilename
+	 * @param 	string 		$strFilename
 	 * @throws 	KDAPHPExcel_Writer_Exception
 	 */
-	public function save($pFilename = null)
+	public function save($strFilename = null)
 	{
 		if ($this->_spreadSheet !== NULL) {
 			// garbage collect
 			$this->_spreadSheet->garbageCollect();
 
-			// If $pFilename is php://output or php://stdout, make it a temporary file...
-			$originalFilename = $pFilename;
-			if (strtolower($pFilename) == 'php://output' || strtolower($pFilename) == 'php://stdout') {
-				$pFilename = @tempnam(KDAPHPExcel_Shared_File::sys_get_temp_dir(), 'phpxltmp');
-				if ($pFilename == '') {
-					$pFilename = $originalFilename;
+			// If $strFilename is php://output or php://stdout, make it a temporary file...
+			$strOriginalFilename = $strFilename;
+			if (strtolower($strFilename) == 'php://output' || strtolower($strFilename) == 'php://stdout') {
+				$strFilename = @tempnam(KDAPHPExcel_Shared_File::sys_get_temp_dir(), 'phpxltmp');
+				if ($strFilename == '') {
+					$strFilename = $strOriginalFilename;
 				}
 			}
 
-			$saveDebugLog = KDAPHPExcel_Calculation::getInstance($this->_spreadSheet)->getDebugLog()->getWriteDebugLog();
+			$strSaveDebugLog = KDAPHPExcel_Calculation::getInstance($this->_spreadSheet)->getDebugLog()->getWriteDebugLog();
 			KDAPHPExcel_Calculation::getInstance($this->_spreadSheet)->getDebugLog()->setWriteDebugLog(FALSE);
-			$saveDateReturnType = KDAPHPExcel_Calculation_Functions::getReturnDateType();
+			$strSaveDateReturnType = KDAPHPExcel_Calculation_Functions::getReturnDateType();
 			KDAPHPExcel_Calculation_Functions::setReturnDateType(KDAPHPExcel_Calculation_Functions::RETURNDATE_EXCEL);
 
 			// Create string lookup table
@@ -201,109 +201,109 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
 			$this->_drawingHashTable->addFromSource( 			$this->getWriterPart('Drawing')->allDrawings($this->_spreadSheet) 		);
 
 			// Create new ZIP file and open it for writing
-			$zipClass = KDAPHPExcel_Settings::getZipClass();
-			$objZip = new $zipClass();
+			$strZipClass = KDAPHPExcel_Settings::getZipClass();
+			$arObjZip = new $strZipClass();
 
 			//	Retrieve OVERWRITE and CREATE constants from the instantiated zip class
 			//	This method of accessing constant values from a dynamic class should work with all appropriate versions of PHP
-			$ro = new ReflectionObject($objZip);
-			$zipOverWrite = $ro->getConstant('OVERWRITE');
-			$zipCreate = $ro->getConstant('CREATE');
+			$strRo = new ReflectionObject($arObjZip);
+			$strZipOverWrite = $strRo->getConstant('OVERWRITE');
+			$strZipCreate = $strRo->getConstant('CREATE');
 
-			if (file_exists($pFilename)) {
-				unlink($pFilename);
+			if (file_exists($strFilename)) {
+				unlink($strFilename);
 			}
 			// Try opening the ZIP file
-			if ($objZip->open($pFilename, $zipOverWrite) !== true) {
-				if ($objZip->open($pFilename, $zipCreate) !== true) {
-					throw new KDAPHPExcel_Writer_Exception("Could not open " . $pFilename . " for writing.");
+			if ($arObjZip->open($strFilename, $strZipOverWrite) !== true) {
+				if ($arObjZip->open($strFilename, $strZipCreate) !== true) {
+					throw new KDAPHPExcel_Writer_Exception("Could not open " . $strFilename . " for writing.");
 				}
 			}
 
 			// Add [Content_Types].xml to ZIP file
-			$objZip->addFromString('[Content_Types].xml', 			$this->getWriterPart('ContentTypes')->writeContentTypes($this->_spreadSheet, $this->_includeCharts));
+			$arObjZip->addFromString('[Content_Types].xml', 			$this->getWriterPart('ContentTypes')->writeContentTypes($this->_spreadSheet, $this->_includeCharts));
 
 			// Add relationships to ZIP file
-			$objZip->addFromString('_rels/.rels', 					$this->getWriterPart('Rels')->writeRelationships($this->_spreadSheet));
-			$objZip->addFromString('xl/_rels/workbook.xml.rels', 	$this->getWriterPart('Rels')->writeWorkbookRelationships($this->_spreadSheet));
+			$arObjZip->addFromString('_rels/.rels', 					$this->getWriterPart('Rels')->writeRelationships($this->_spreadSheet));
+			$arObjZip->addFromString('xl/_rels/workbook.xml.rels', 	$this->getWriterPart('Rels')->writeWorkbookRelationships($this->_spreadSheet));
 
 			// Add document properties to ZIP file
-			$objZip->addFromString('docProps/app.xml', 				$this->getWriterPart('DocProps')->writeDocPropsApp($this->_spreadSheet));
-			$objZip->addFromString('docProps/core.xml', 			$this->getWriterPart('DocProps')->writeDocPropsCore($this->_spreadSheet));
-			$customPropertiesPart = $this->getWriterPart('DocProps')->writeDocPropsCustom($this->_spreadSheet);
-			if ($customPropertiesPart !== NULL) {
-				$objZip->addFromString('docProps/custom.xml', 		$customPropertiesPart);
+			$arObjZip->addFromString('docProps/app.xml', 				$this->getWriterPart('DocProps')->writeDocPropsApp($this->_spreadSheet));
+			$arObjZip->addFromString('docProps/core.xml', 			$this->getWriterPart('DocProps')->writeDocPropsCore($this->_spreadSheet));
+			$strCustomPropertiesPart = $this->getWriterPart('DocProps')->writeDocPropsCustom($this->_spreadSheet);
+			if ($strCustomPropertiesPart !== NULL) {
+				$arObjZip->addFromString('docProps/custom.xml', 		$strCustomPropertiesPart);
 			}
 
 			// Add theme to ZIP file
-			$objZip->addFromString('xl/theme/theme1.xml', 			$this->getWriterPart('Theme')->writeTheme($this->_spreadSheet));
+			$arObjZip->addFromString('xl/theme/theme1.xml', 			$this->getWriterPart('Theme')->writeTheme($this->_spreadSheet));
 
 			// Add string table to ZIP file
-			$objZip->addFromString('xl/sharedStrings.xml', 			$this->getWriterPart('StringTable')->writeStringTable($this->_stringTable));
+			$arObjZip->addFromString('xl/sharedStrings.xml', 			$this->getWriterPart('StringTable')->writeStringTable($this->_stringTable));
 
 			// Add styles to ZIP file
-			$objZip->addFromString('xl/styles.xml', 				$this->getWriterPart('Style')->writeStyles($this->_spreadSheet));
+			$arObjZip->addFromString('xl/styles.xml', 				$this->getWriterPart('Style')->writeStyles($this->_spreadSheet));
 
 			// Add workbook to ZIP file
-			$objZip->addFromString('xl/workbook.xml', 				$this->getWriterPart('Workbook')->writeWorkbook($this->_spreadSheet, $this->_preCalculateFormulas));
+			$arObjZip->addFromString('xl/workbook.xml', 				$this->getWriterPart('Workbook')->writeWorkbook($this->_spreadSheet, $this->_preCalculateFormulas));
 
-			$chartCount = 0;
+			$strChartCount = 0;
 			// Add worksheets
 			for ($i = 0; $i < $this->_spreadSheet->getSheetCount(); ++$i) {
-				$objZip->addFromString('xl/worksheets/sheet' . ($i + 1) . '.xml', $this->getWriterPart('Worksheet')->writeWorksheet($this->_spreadSheet->getSheet($i), $this->_stringTable, $this->_includeCharts));
+				$arObjZip->addFromString('xl/worksheets/sheet' . ($i + 1) . '.xml', $this->getWriterPart('Worksheet')->writeWorksheet($this->_spreadSheet->getSheet($i), $this->_stringTable, $this->_includeCharts));
 				if ($this->_includeCharts) {
-					$charts = $this->_spreadSheet->getSheet($i)->getChartCollection();
-					if (count($charts) > 0) {
-						foreach($charts as $chart) {
-							$objZip->addFromString('xl/charts/chart' . ($chartCount + 1) . '.xml', $this->getWriterPart('Chart')->writeChart($chart));
-							$chartCount++;
+					$strCharts = $this->_spreadSheet->getSheet($i)->getChartCollection();
+					if (count($strCharts) > 0) {
+						foreach($strCharts as $strChart) {
+							$arObjZip->addFromString('xl/charts/chart' . ($strChartCount + 1) . '.xml', $this->getWriterPart('Chart')->writeChart($strChart));
+							$strChartCount++;
 						}
 					}
 				}
 			}
 
-			$chartRef1 = $chartRef2 = 0;
+			$strChartRef1 = $strChartRef2 = 0;
 			// Add worksheet relationships (drawings, ...)
 			for ($i = 0; $i < $this->_spreadSheet->getSheetCount(); ++$i) {
 
 				// Add relationships
-				$objZip->addFromString('xl/worksheets/_rels/sheet' . ($i + 1) . '.xml.rels', 	$this->getWriterPart('Rels')->writeWorksheetRelationships($this->_spreadSheet->getSheet($i), ($i + 1), $this->_includeCharts));
+				$arObjZip->addFromString('xl/worksheets/_rels/sheet' . ($i + 1) . '.xml.rels', 	$this->getWriterPart('Rels')->writeWorksheetRelationships($this->_spreadSheet->getSheet($i), ($i + 1), $this->_includeCharts));
 
 				$drawings = $this->_spreadSheet->getSheet($i)->getDrawingCollection();
 				$drawingCount = count($drawings);
 				if ($this->_includeCharts) {
-					$chartCount = $this->_spreadSheet->getSheet($i)->getChartCount();
+					$strChartCount = $this->_spreadSheet->getSheet($i)->getChartCount();
 				}
 
 				// Add drawing and image relationship parts
-				if (($drawingCount > 0) || ($chartCount > 0)) {
+				if (($drawingCount > 0) || ($strChartCount > 0)) {
 					// Drawing relationships
-					$objZip->addFromString('xl/drawings/_rels/drawing' . ($i + 1) . '.xml.rels', $this->getWriterPart('Rels')->writeDrawingRelationships($this->_spreadSheet->getSheet($i),$chartRef1, $this->_includeCharts));
+					$arObjZip->addFromString('xl/drawings/_rels/drawing' . ($i + 1) . '.xml.rels', $this->getWriterPart('Rels')->writeDrawingRelationships($this->_spreadSheet->getSheet($i),$strChartRef1, $this->_includeCharts));
 
 					// Drawings
-					$objZip->addFromString('xl/drawings/drawing' . ($i + 1) . '.xml', $this->getWriterPart('Drawing')->writeDrawings($this->_spreadSheet->getSheet($i),$chartRef2,$this->_includeCharts));
+					$arObjZip->addFromString('xl/drawings/drawing' . ($i + 1) . '.xml', $this->getWriterPart('Drawing')->writeDrawings($this->_spreadSheet->getSheet($i),$strChartRef2,$this->_includeCharts));
 				}
 
 				// Add comment relationship parts
 				if (count($this->_spreadSheet->getSheet($i)->getComments()) > 0) {
 					// VML Comments
-					$objZip->addFromString('xl/drawings/vmlDrawing' . ($i + 1) . '.vml', $this->getWriterPart('Comments')->writeVMLComments($this->_spreadSheet->getSheet($i)));
+					$arObjZip->addFromString('xl/drawings/vmlDrawing' . ($i + 1) . '.vml', $this->getWriterPart('Comments')->writeVMLComments($this->_spreadSheet->getSheet($i)));
 
 					// Comments
-					$objZip->addFromString('xl/comments' . ($i + 1) . '.xml', $this->getWriterPart('Comments')->writeComments($this->_spreadSheet->getSheet($i)));
+					$arObjZip->addFromString('xl/comments' . ($i + 1) . '.xml', $this->getWriterPart('Comments')->writeComments($this->_spreadSheet->getSheet($i)));
 				}
 
 				// Add header/footer relationship parts
 				if (count($this->_spreadSheet->getSheet($i)->getHeaderFooter()->getImages()) > 0) {
 					// VML Drawings
-					$objZip->addFromString('xl/drawings/vmlDrawingHF' . ($i + 1) . '.vml', $this->getWriterPart('Drawing')->writeVMLHeaderFooterImages($this->_spreadSheet->getSheet($i)));
+					$arObjZip->addFromString('xl/drawings/vmlDrawingHF' . ($i + 1) . '.vml', $this->getWriterPart('Drawing')->writeVMLHeaderFooterImages($this->_spreadSheet->getSheet($i)));
 
 					// VML Drawing relationships
-					$objZip->addFromString('xl/drawings/_rels/vmlDrawingHF' . ($i + 1) . '.vml.rels', $this->getWriterPart('Rels')->writeHeaderFooterDrawingRelationships($this->_spreadSheet->getSheet($i)));
+					$arObjZip->addFromString('xl/drawings/_rels/vmlDrawingHF' . ($i + 1) . '.vml.rels', $this->getWriterPart('Rels')->writeHeaderFooterDrawingRelationships($this->_spreadSheet->getSheet($i)));
 
 					// Media
 					foreach ($this->_spreadSheet->getSheet($i)->getHeaderFooter()->getImages() as $image) {
-						$objZip->addFromString('xl/media/' . $image->getIndexedFilename(), file_get_contents($image->getPath()));
+						$arObjZip->addFromString('xl/media/' . $image->getIndexedFilename(), file_get_contents($image->getPath()));
 					}
 				}
 			}
@@ -327,7 +327,7 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
 						$imageContents = file_get_contents($imagePath);
 					}
 
-					$objZip->addFromString('xl/media/' . str_replace(' ', '_', $this->getDrawingHashTable()->getByIndex($i)->getIndexedFilename()), $imageContents);
+					$arObjZip->addFromString('xl/media/' . str_replace(' ', '_', $this->getDrawingHashTable()->getByIndex($i)->getIndexedFilename()), $imageContents);
 				} else if ($this->getDrawingHashTable()->getByIndex($i) instanceof KDAPHPExcel_Worksheet_MemoryDrawing) {
 					ob_start();
 					call_user_func(
@@ -337,24 +337,24 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
 					$imageContents = ob_get_contents();
 					ob_end_clean();
 
-					$objZip->addFromString('xl/media/' . str_replace(' ', '_', $this->getDrawingHashTable()->getByIndex($i)->getIndexedFilename()), $imageContents);
+					$arObjZip->addFromString('xl/media/' . str_replace(' ', '_', $this->getDrawingHashTable()->getByIndex($i)->getIndexedFilename()), $imageContents);
 				}
 			}
 
-			KDAPHPExcel_Calculation_Functions::setReturnDateType($saveDateReturnType);
-			KDAPHPExcel_Calculation::getInstance($this->_spreadSheet)->getDebugLog()->setWriteDebugLog($saveDebugLog);
+			KDAPHPExcel_Calculation_Functions::setReturnDateType($strSaveDateReturnType);
+			KDAPHPExcel_Calculation::getInstance($this->_spreadSheet)->getDebugLog()->setWriteDebugLog($strSaveDebugLog);
 
 			// Close file
-			if ($objZip->close() === false) {
-				throw new KDAPHPExcel_Writer_Exception("Could not close zip file $pFilename.");
+			if ($arObjZip->close() === false) {
+				throw new KDAPHPExcel_Writer_Exception("Could not close zip file $strFilename.");
 			}
 
 			// If a temporary file was used, copy it to the correct file stream
-			if ($originalFilename != $pFilename) {
-				if (copy($pFilename, $originalFilename) === false) {
-					throw new KDAPHPExcel_Writer_Exception("Could not copy temporary zip file $pFilename to $originalFilename.");
+			if ($strOriginalFilename != $strFilename) {
+				if (copy($strFilename, $strOriginalFilename) === false) {
+					throw new KDAPHPExcel_Writer_Exception("Could not copy temporary zip file $strFilename to $strOriginalFilename.");
 				}
-				@unlink($pFilename);
+				@unlink($strFilename);
 			}
 		} else {
 			throw new KDAPHPExcel_Writer_Exception("KDAPHPExcel object unassigned.");
@@ -378,12 +378,12 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
 	/**
 	 * Set KDAPHPExcel object
 	 *
-	 * @param 	KDAPHPExcel 	$pKDAPHPExcel	KDAPHPExcel object
+	 * @param 	KDAPHPExcel 	$arKDAPHPExcel	KDAPHPExcel object
 	 * @throws	KDAPHPExcel_Writer_Exception
 	 * @return KDAPHPExcel_Writer_Excel2007
 	 */
-	public function setKDAPHPExcel(KDAPHPExcel $pKDAPHPExcel = null) {
-		$this->_spreadSheet = $pKDAPHPExcel;
+	public function setKDAPHPExcel(KDAPHPExcel $arKDAPHPExcel = null) {
+		$this->_spreadSheet = $arKDAPHPExcel;
 		return $this;
 	}
 
@@ -462,11 +462,11 @@ class KDAPHPExcel_Writer_Excel2007 extends KDAPHPExcel_Writer_Abstract implement
     /**
      * Set Office2003 compatibility
      *
-     * @param boolean $pValue	Office2003 compatibility?
+     * @param boolean $strValue	Office2003 compatibility?
      * @return KDAPHPExcel_Writer_Excel2007
      */
-    public function setOffice2003Compatibility($pValue = false) {
-    	$this->_office2003compatibility = $pValue;
+    public function setOffice2003Compatibility($strValue = false) {
+    	$this->_office2003compatibility = $strValue;
     	return $this;
     }
 

@@ -1,4 +1,5 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/prolog.php");
 $moduleId = 'kda.exportexcel';
@@ -39,6 +40,7 @@ if(isset($_POST['POSTEXTRA']))
 
 if($_POST['action'] == 'save' && is_array($_POST['EXTRASETTINGS']))
 {
+	define('PUBLIC_AJAX_MODE', 'Y');
 	CKDAExportExtrasettings::HandleParams($PEXTRASETTINGS, $_POST['EXTRASETTINGS']);
 	preg_match_all('/\[([_\d]+)\]/', $_GET['field_name'], $keys);
 	$oid = 'field_settings_'.$keys[1][0].'_'.$keys[1][1];

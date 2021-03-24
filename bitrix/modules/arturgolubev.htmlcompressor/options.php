@@ -21,11 +21,11 @@ while($arRes = $rsSites->Fetch())
 	);
 }
 
-
 $arOptions = array(
     "main" => array(
 		array("compression_off", GetMessage("ARTURGOLUBEV_HTMLC_COMPRESSION_OFF"), "N", array("checkbox")),
-	)
+	),
+	"help" => array()
 );
 
 if(count($siteList))
@@ -46,9 +46,15 @@ $arOptions["main"][] = array("page_exceptions", GetMessage("ARTURGOLUBEV_HTMLC_P
 $arOptions["main"][] = array("note" => GetMessage("ARTURGOLUBEV_HTMLC_PAGE_EXCEPTIONS_TEXT"));
 
 
-$arTabs = array(
-    array("DIV" => "edit1", "TAB" => GetMessage("ARTURGOLUBEV_HTMLC_OPTIONS_MAINTAB"), "TITLE" => GetMessage("ARTURGOLUBEV_HTMLC_OPTIONS_MAINTAB"), "OPTIONS"=>"main"),
-);
+$arOptions["help"][] = array("help_card", GetMessage($MODULE_NAME . "_CARD_TEXT"), GetMessage($MODULE_NAME . "_CARD_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_install", GetMessage($MODULE_NAME . "_INSTALL_TEXT"), GetMessage($MODULE_NAME . "_INSTALL_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_install_video", GetMessage($MODULE_NAME . "_INSTALL_VIDEO_TEXT"), GetMessage($MODULE_NAME . "_INSTALL_VIDEO_TEXT_VALUE"), array("statictext"));
+$arOptions["help"][] = array("help_faq_main", GetMessage($MODULE_NAME . "_FAQ_MAIN_TEXT"), GetMessage($MODULE_NAME . "_FAQ_MAIN_TEXT_VALUE"), array("statictext"));
+
+
+$arTabs = array();
+$arTabs[] = array("DIV" => "edit1", "TAB" => GetMessage("ARTURGOLUBEV_HTMLC_OPTIONS_MAINTAB"), "TITLE" => GetMessage("ARTURGOLUBEV_HTMLC_OPTIONS_MAINTAB"), "OPTIONS"=>"main");
+$arTabs[] = array("DIV" => "edit_system_help", "TAB" => GetMessage($MODULE_NAME."_HELP_TAB_NAME"), "TITLE" => GetMessage($MODULE_NAME."_HELP_TAB_TITLE"), "OPTIONS"=>"help");
 
 $tabControl = new CAdminTabControl("tabControl", $arTabs);
 
@@ -90,7 +96,20 @@ if($REQUEST_METHOD=="POST" && strlen($Update.$Apply)>0 && check_bitrix_sessid())
 			$settingList = $arOptions[$tab["OPTIONS"]];
 			
 			foreach ($settingList as $Option) {
-				__AdmSettingsDrawRow($module_id, $Option);
+				if($tab["OPTIONS"] == 'help'){
+					?>
+					<tr>
+						<td class="adm-detail-valign-top adm-detail-content-cell-l" width="50%">
+							<?=$Option["1"]?>
+						</td>
+						<td class="adm-detail-content-cell-r" width="50%">
+							<?=htmlspecialchars_decode($Option["2"])?>
+						</td>
+					</tr>
+					<?
+				}else{
+					__AdmSettingsDrawRow($module_id, $Option);
+				}
 			}
 	endforeach;?>
 	
@@ -106,3 +125,29 @@ if($REQUEST_METHOD=="POST" && strlen($Update.$Apply)>0 && check_bitrix_sessid())
 		<?=bitrix_sessid_post();?>
 	<?$tabControl->End();?>
 </form>
+
+
+
+<?
+if (class_exists('\Bitrix\Main\UI\Extension')) {
+   \Bitrix\Main\UI\Extension::load("ui.hint");
+   ?>
+	<script>
+	BX.ready(function() {
+		BX.UI.Hint.init(BX('adm-workarea')); 
+	});
+	</script>
+	<?
+}
+?>
+
+<style>
+	#bx-admin-prefix form .adm-info-message {
+		color:#111;
+		background:#fff;
+		border: 1px solid #bbb;
+		padding: 10px 15px;
+		margin-top: 0;
+		text-align: left;
+	}
+</style>

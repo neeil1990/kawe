@@ -31,6 +31,15 @@ if(empty($arResult['ITEMS']))
 						<i class="icon-star"></i>
 						<i class="icon-star-o"></i>
 					</div>-->
+					
+					<? if($item['PROPERTIES']['BADGE']['VALUE']): ?>
+                    <div class="goods__badge">
+                        <div class="badge" style="background-color: <?=$item['PROPERTIES']['BADGE']['DESCRIPTION']?>">
+                            <span><?=$item['PROPERTIES']['BADGE']['VALUE'];?></span>
+                        </div>
+                    </div>
+                    <? endif; ?>
+					
 					<div class="goods__img">
 						<a href="<?=$item['DETAIL_PAGE_URL'];?>"><img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>"></a>
 					</div>

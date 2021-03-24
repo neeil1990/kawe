@@ -1,4 +1,5 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/prolog.php");
 $moduleId = 'kda.exportexcel';
@@ -26,6 +27,7 @@ if($_POST['PARAMS'])
 
 if($_POST['action']=='save' && is_array($_POST['SETTINGS']))
 {
+	define('PUBLIC_AJAX_MODE', 'Y');
 	$APPLICATION->RestartBuffer();
 	ob_end_clean();
 	$returnJson = (empty($_POST['SETTINGS']['DISPLAY_PARAMS'][$listIndex]) ? '""' : CUtil::PhpToJSObject($_POST['SETTINGS']['DISPLAY_PARAMS'][$listIndex]));
@@ -126,6 +128,19 @@ require ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_ad
 				eval('$val = $'.$fNameEval.';');
 				?>
 				<input type="text" name="<?=$fName?>" value="<?=htmlspecialcharsex($val)?>">
+			</td>
+		</tr>
+		
+		<tr>
+			<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_DISPLAY_ROW_HIDDEN"); ?>:</td>
+			<td class="adm-detail-content-cell-r">
+				<?
+				$fName = $fieldPrefix.'[ROW_HIDDEN]';
+				$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+				eval('$val = $'.$fNameEval.';');
+				?>
+				<input type="hidden" name="<?=$fName?>" value="N">
+				<input type="checkbox" name="<?=$fName?>" value="Y" <?if($val=='Y'){echo 'checked';}?>>
 			</td>
 		</tr>
 		

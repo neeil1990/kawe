@@ -9,7 +9,10 @@ $('.cart__content .cart__radio').change(function(){
 });
 
 $('.cart__content > p.article').text("Арт: " + $('.cart__content .cart__radio:checked').val());
+
+if($('.cart__content .cart__radio:checked').attr('data-price') != '0 ₽')
 $('.cart__content > .cart__price').text($('.cart__content .cart__radio:checked').attr('data-price'));
+
 $('.cart__content > .cart_old_price').text($('.cart__content .cart__radio:checked').attr('data-old-price'));
 
 

@@ -92,9 +92,13 @@ var EList = {
 					TEXT: BX.message("KDA_EE_ADD_LINE_UNDER"),
 					ONCLICK: "EList.AddNewRow('TEXT_ROWS_TOP2', 1)"
 				});
+				menuItems.push({
+					TEXT: BX.message("KDA_EE_ADD_LINE_TO_END"),
+					ONCLICK: "EList.AddNewRow('TEXT_ROWS_TOP3', 1)"
+				});
 			}
 			
-			if(key.indexOf('TEXT_ROWS_TOP_') == 0 || key.indexOf('TEXT_ROWS_TOP2_') == 0)
+			if(key.indexOf('TEXT_ROWS_TOP') == 0)
 			{
 				var textKey = key.replace(/_\d+$/, '');
 				menuItems.push({
@@ -407,6 +411,11 @@ var EList = {
 					{
 						parentDiv.addClass('kda-ee-filter-select-wrap');
 						parentDiv.prepend('<a href="javascript:void(0)" onclick="EList.ChangeSelectViewMode(this)" class="kda-ee-select-view-mode" title="'+BX.message("KDA_EE_SELECT_FAST_VIEW")+'"></a>');
+						var leftTd = parentDiv.closest('td').prev('td.adm-filter-item-left');
+						if(leftTd.length > 0)
+						{
+							leftTd.html('<div class="kda-ee-text-with-view-mode">'+leftTd.html()+'</div>');
+						}
 					}
 				});
 				
@@ -655,11 +664,11 @@ var EList = {
 			{
 				if(chb[0].checked)
 				{
-					data.find('input[type=checkbox]').attr('checked', true);
+					data.find('input[type=checkbox]').prop('checked', true);
 				}
 				else
 				{
-					data.find('input[type=checkbox]').attr('checked', false);
+					data.find('input[type=checkbox]').prop('checked', false);
 				}
 			}*/
 			$('table.list', tbl).append(data);
@@ -943,6 +952,7 @@ var EList = {
 		/*BX.adminPanel.showWait(el);
 		BX.adminPanel.closeWait(el);*/
 		//var wrap = $(el).closest('.kda-ee-sheet');
+		$(el).closest('.find_form_inner').find('tr[id*="_filter_row_"]:hidden').find('input,select,textarea').val('').trigger('change');
 		var wrap = $(el).closest('.kda-ee-sheet-wrap').find('.kda-ee-sheet');
 		EList.UpdateSheet(wrap);
 		return false;
@@ -951,8 +961,9 @@ var EList = {
 	DeleteFilter: function(el)
 	{
 		var formInner = $(el).closest('.find_form_inner');
-		$('select, input[type="text"], textarea', formInner).val('');
-		$('input[type="radio"], input[type="checkbox"]', formInner).removeAttr('checked');
+		$('input[type="text"], textarea', formInner).val('');
+		$('select', formInner).prop('selectedIndex', 0); 
+		$('input[type="radio"], input[type="checkbox"]', formInner).removeAttr('checked').prop('checked', false);
 		
 		this.ApplyFilter(el);
 		return false;
@@ -1798,7 +1809,7 @@ var KdaEeBx24 = {
 	
 	SetFolder: function(chb)
 	{
-		$('#'+this.parentId+' input[type=checkbox]').not(chb).removeAttr('checked');
+		$('#'+this.parentId+' input[type=checkbox]').not(chb).removeAttr('checked').prop('checked', false);
 		$('#'+this.inputId).val(chb.value);
 		$('#'+this.pathInputId).val($(chb).closest('.kda-ee-bx24-struct-item').find('a').attr('data-folder-path'));
 	},
@@ -2256,7 +2267,8 @@ var ESettings = {
 		else
 		{
 			var div2 = div.clone(true);
-			$('select, input', div2).val('');
+			$('input', div2).val('');
+			$('select', div2).prop('selectedIndex', 0); 
 			$(link).before(div2);
 		}
 	},
@@ -2270,7 +2282,8 @@ var ESettings = {
 		}
 		else
 		{
-			$('select, input', divs).val('');
+			$('input', divs).val('');
+			$('select', divs).prop('selectedIndex', 0); 
 			divs.hide();
 		}
 	},
@@ -2427,6 +2440,7 @@ var ESettings = {
 			else
 			{
 				$('select, input', div).not('.choose_val').val('').attr('title', '');
+				$('select', div).prop('selectedIndex', 0); 
 			}
 			$(link).before(div);
 		}
@@ -2443,7 +2457,8 @@ var ESettings = {
 		}
 		else
 		{
-			$('select, input', div).not('.choose_val').val('');
+			$('input', div).not('.choose_val').val('');
+			$('select', div).prop('selectedIndex', 0); 
 			div.hide();
 		}
 	},

@@ -13,7 +13,7 @@
 $this->setFrameMode(true);
 ?>
 
-	<div class="title"><?=htmlspecialchars_decode($arResult['NAME'])?></div>
+	<h1 class="title"><?=htmlspecialchars_decode($arResult['NAME'])?></h1>
 	<div class="cart">
 
 		<div class="cart__gallery">
@@ -24,6 +24,14 @@ $this->setFrameMode(true);
 				<i class="icon-star"></i>
 				<i class="icon-star-o"></i>
 			</div>-->
+			
+			<? if($arResult['PROPERTIES']['BADGE']['VALUE']): ?>
+                <div class="goods__badge">
+                    <div class="badge" style="background-color: <?=$arResult['PROPERTIES']['BADGE']['DESCRIPTION']?>">
+                        <span><?=$arResult['PROPERTIES']['BADGE']['VALUE'];?></span>
+                    </div>
+                </div>
+            <? endif; ?>
 
 			<div class="cart__alert">new</div>
 

@@ -340,7 +340,34 @@ var EList = {
 			processData:false,
 			success: function(data, textStatus, jqXHR)
 			{
-				wrap.prev('.find_form_inner').show();
+				var findForm = wrap.prev('.find_form_inner');
+				findForm.show();
+				$('select[name$="_FILTER_PERIOD]"], select[name$="_FILTER_DIRECTION]"]', findForm).each(function(){
+					if(this.getAttribute('data-init')) return;
+					this.name = this.name.replace(/\]([^\]]+)$/, '$1]');
+					if(this.name.substr(this.name.length - 15, 14)=='_FILTER_PERIOD')
+					{
+						$(this).append('<option value="last_days">'+BX.message("KDA_EE_FILTER_LAST_DAYS")+'</option>');
+						$(this).closest('.adm-filter-box-sizing').append('<div class="adm-input-wrap adm-calendar-last-days" style="display: none;"><input class="adm-input adm-calendar-last-days adm-calendar-inp-setted" name="'+this.name.replace('_FILTER_PERIOD', '_FILTER_LAST_DAYS')+'" size="15" value="" type="text"></div>');
+						$(this).bind('change', function(){
+							$(this).closest('.adm-filter-box-sizing').find('div.adm-calendar-last-days').css('display', (this.value=="last_days" ? 'inline-block' : 'none'));
+						});
+						
+						var parentTd = $(this).closest('td');
+						var valPeriod = parentTd.data('filter-period');
+						var valLastDays = parentTd.data('filter-last-days');
+						if((typeof valLastDays == 'string' && valLastDays.length > 0) || (typeof valLastDays == 'number'))
+						{
+							$(this).closest('.adm-filter-box-sizing').find('div.adm-calendar-last-days input[type=text]').val(valLastDays);
+						}
+						if(valPeriod=='last_days')
+						{
+							$(this).val(valPeriod).trigger('change');
+						}
+					}
+					this.setAttribute('data-init', 1);
+				});
+				
 				wrap.html(data);
 				var ptable = $('.kda-ee-tbl', wrap);
 				EList.SetFieldValues(ptable);
@@ -552,11 +579,11 @@ var EList = {
 			{
 				if(chb[0].checked)
 				{
-					data.find('input[type=checkbox]').attr('checked', true);
+					data.find('input[type=checkbox]').prop('checked', true);
 				}
 				else
 				{
-					data.find('input[type=checkbox]').attr('checked', false);
+					data.find('input[type=checkbox]').prop('checked', false);
 				}
 			}*/
 			$('table.list', tbl).append(data);
@@ -840,6 +867,7 @@ var EList = {
 		/*BX.adminPanel.showWait(el);
 		BX.adminPanel.closeWait(el);*/
 		//var wrap = $(el).closest('.kda-ee-sheet');
+		$(el).closest('.find_form_inner').find('tr[id*="_filter_row_"]:hidden').find('input,select,textarea').val('').trigger('change');
 		var wrap = $(el).closest('.kda-ee-sheet-wrap').find('.kda-ee-sheet');
 		EList.UpdateSheet(wrap);
 		return false;
@@ -848,8 +876,9 @@ var EList = {
 	DeleteFilter: function(el)
 	{
 		var formInner = $(el).closest('.find_form_inner');
-		$('select, input[type="text"], textarea', formInner).val('');
-		$('input[type="radio"], input[type="checkbox"]', formInner).removeAttr('checked');
+		$('input[type="text"], textarea', formInner).val('');
+		$('select', formInner).prop('selectedIndex', 0); 
+		$('input[type="radio"], input[type="checkbox"]', formInner).removeAttr('checked').prop('checked', false);
 		
 		this.ApplyFilter(el);
 		return false;
@@ -1473,7 +1502,8 @@ var ESettings = {
 		else
 		{
 			var div2 = div.clone(true);
-			$('select, input', div2).val('');
+			$('input', div2).val('');
+			$('select', div2).prop('selectedIndex', 0); 
 			$(link).before(div2);
 		}
 	},
@@ -1487,7 +1517,8 @@ var ESettings = {
 		}
 		else
 		{
-			$('select, input', divs).val('');
+			$('input', divs).val('');
+			$('select', divs).prop('selectedIndex', 0); 
 			divs.hide();
 		}
 	},
@@ -1576,7 +1607,8 @@ var ESettings = {
 		else
 		{
 			var div = prevDiv.clone();
-			$('select, input', div).not('.choose_val').val('');
+			$('input', div).not('.choose_val').val('');
+			$('select', div).prop('selectedIndex', 0); 
 			$(link).before(div);
 		}
 	},
@@ -1590,7 +1622,8 @@ var ESettings = {
 		}
 		else
 		{
-			$('select, input', div).not('.choose_val').val('');
+			$('input', div).not('.choose_val').val('');
+			$('select', div).prop('selectedIndex', 0); 
 			div.hide();
 		}
 	},

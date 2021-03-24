@@ -1,6 +1,7 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetPageProperty("titlePage", "Условия доставки интернет-магазина kawe.su");
+$APPLICATION->SetPageProperty("description", "Доставка оплаченных товаров происходит до пункта самовывоза или \"до двери\" курьером.");
+$APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Условия доставки интернет-магазина kawe.su</h1>");
 $APPLICATION->SetTitle("Доставка");
 ?>
 

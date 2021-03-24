@@ -20,6 +20,21 @@ function kda_exportexcel_demo_expired() {
 
 function kda_exportexcel_show_demo($bAjax = false) {
 	$moduleId = 'kda.exportexcel';
+	$pathJS = '/bitrix/js/'.$moduleId;
+	$pathCSS = '/bitrix/panel/'.$moduleId;
+	$pathLang = BX_ROOT.'/modules/'.$moduleId.'/lang/'.LANGUAGE_ID;
+	$arJSKdaDemoConfig = array(
+		'kda_exportexcel_demo' => array(
+			'js' => array($pathJS.'/chosen/chosen.jquery.min.js', $pathJS.'/script.js'),
+			'css' => array($pathJS.'/chosen/chosen.min.css', $pathCSS.'/styles.css'),
+			'rel' => array('jquery'),
+			'lang' => $pathLang.'/js_admin.php',
+		),
+	);
+	foreach ($arJSKdaDemoConfig as $ext => $arExt) {
+		\CJSCore::RegisterExt($ext, $arExt);
+	}
+	
 	$DemoMode = CModule::IncludeModuleEx($moduleId);
 	$activateText = GetMessage("KDA_EXPORTEXCEL_DEMO_MESSAGE_ACTIVATE_MODULE",array("#LANG#"=>LANGUAGE_ID));
 	if ($DemoMode==MODULE_DEMO) {
@@ -35,16 +50,19 @@ function kda_exportexcel_show_demo($bAjax = false) {
 				print GetMessage("KDA_EXPORTEXCEL_DEMO_MESSAGE_DAYS_REMAIN",array("#DAYS#"=>$days, "#ACTIVATE#"=>$activateText));
 				print EndNote();
 			} else {
+				\CJSCore::Init(array('kda_exportexcel_demo'));
 				print BeginNote();
 				print GetMessage("KDA_EXPORTEXCEL_DEMO_MESSAGE_EXPIRED", array("#ACTIVATE#"=>$activateText));
 				print EndNote();
 			}
 		} else{ 
+			\CJSCore::Init(array('kda_exportexcel_demo'));
 			print BeginNote();
 			print GetMessage("KDA_EXPORTEXCEL_DEMO_MESSAGE_EXPIRED", array("#ACTIVATE#"=>$activateText));
 			print EndNote();
 		}
 	} elseif ($DemoMode==MODULE_DEMO_EXPIRED) {
+		\CJSCore::Init(array('kda_exportexcel_demo'));
 		print BeginNote();
 		print GetMessage("KDA_EXPORTEXCEL_DEMO_MESSAGE_EXPIRED", array("#ACTIVATE#"=>$activateText));
 		print EndNote();

@@ -1259,6 +1259,35 @@ ol,ul
     top: 19px;
     z-index: 2;
 }
+
+/* badge start */
+.goods__badge{
+    position: absolute;
+    top: 19px;
+    left: 19px;
+    right: 19px;
+    z-index: 2;
+}
+.goods__badge:hover{
+    z-index: 3;
+}
+.goods__badge .badge{
+    border-radius: 4px;
+    padding: 5px 10px;
+    max-width: 100%;
+    text-align: center;
+    line-height: 1;
+}
+.goods__badge .badge span {
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+.cart__gallery .goods__badge .badge span {
+    text-transform: uppercase;
+}
+/* badge end */
+
 .goods__img
 {
     overflow: hidden;

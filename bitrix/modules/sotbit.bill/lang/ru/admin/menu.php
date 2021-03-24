@@ -1,7 +1,0 @@
-<?
-$MESS["MENU_BILLSOTBIT_TEXT"] = "Счет";
-$MESS["MENU_BILLSOTBIT_TITLE"] = "Счет";
-$MESS["MENU_BILLSOTBIT_SETTING_TEXT"] = "Настройки";
-$MESS["MENU_BILLSOTBIT_SETTING_TITLE"] = "Настройки модуля Счет";
-
-?>

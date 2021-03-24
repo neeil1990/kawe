@@ -23,7 +23,7 @@ $aMenuLinks = Array(
 	),
 	Array(
 		"Скидки", 
-		"/catalog/rasprodazha/", 
+		"/skidki/", 
 		Array("/skidki/"), 
 		Array("FROM_IBLOCK"=>"1", "IS_PARENT"=>"", "DEPTH_LEVEL"=>"1"), 
 		"" 

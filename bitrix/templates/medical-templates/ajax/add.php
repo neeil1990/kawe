@@ -22,7 +22,7 @@ if( !empty( $_GET["art"] ) ){
     $res = CIBlockElement::GetList(Array(), $arFilter, false, false, $arSelect);
     if($ob = $res->GetNextElement()){
         $arProps = $ob->GetProperties();
-        $key_price = array_search(trim($_GET["art"]),$arProps['PRICES']['DESCRIPTION']);
+        $key_price = array_search($_GET["art"], $arProps['PRICES']['DESCRIPTION']);
         if($arProps['PRICES']['VALUE'][$key_price]){
 
             $arDiscounts = CCatalogDiscount::GetDiscount($id, IBLOCK_CATALOG);

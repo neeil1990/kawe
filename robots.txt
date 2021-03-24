@@ -1,4 +1,13 @@
 User-Agent: *
+########################
+########################
+Allow: /bitrix/components/
+Allow: /bitrix/cache/
+Allow: /bitrix/js/
+Allow: /bitrix/templates/
+Allow: /bitrix/panel/
+Host: https://kawe.su/
+Sitemap: https://kawe.su/sitemap.xml
 Disallow: */index.php
 Disallow: /bitrix/
 Disallow: /*show_include_exec_time=
@@ -37,7 +46,6 @@ Disallow: *click.php
 Disallow: *redirect.php
 Disallow: /?
 Disallow: /*?
-########################
 Disallow: /googlee84fbc11d340a0de.html
 Disallow: /googleff0da0f1125cc1fa.html
 Disallow: /sect_bottom.php
@@ -51,11 +59,4 @@ Disallow: /personal/cart/
 Disallow: /catalog/prochee/
 Disallow: /catalog/lampy-dlya-priborov/
 Disallow: /catalog/lampy-kawe-germaniya/
-########################
-Allow: /bitrix/components/
-Allow: /bitrix/cache/
-Allow: /bitrix/js/
-Allow: /bitrix/templates/
-Allow: /bitrix/panel/
-Host: https://kawe.su/
-Sitemap: https://kawe.su/sitemap.xml
+Disallow: /catalog/meditsinskie-svetilniki/

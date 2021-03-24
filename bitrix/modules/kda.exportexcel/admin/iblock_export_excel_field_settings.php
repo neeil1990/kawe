@@ -1,4 +1,5 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/prolog.php");
 $moduleId = 'kda.exportexcel';
@@ -68,6 +69,7 @@ if(isset($_POST['POSTEXTRA']))
 
 if($_POST['action']=='save' && is_array($_POST['EXTRASETTINGS']))
 {
+	define('PUBLIC_AJAX_MODE', 'Y');
 	CKDAExportExtrasettings::HandleParams($PEXTRASETTINGS, $_POST['EXTRASETTINGS']);
 	preg_match_all('/\[([_\d]+)\]/', $_GET['field_name'], $keys);
 	$oid = 'field_settings_'.$keys[1][0].'_'.$keys[1][1];
@@ -113,6 +115,7 @@ if((strncmp($field, "ICAT_PRICE", 10) == 0 && (substr($field, -6)=='_PRICE') || 
 
 $bIblockElement = false;
 $bIblockSection = false;
+$bDirectory = false;
 if(strncmp($field, "IP_PROP", 7) == 0 && is_numeric(substr($field, 7)))
 {
 	$propId = intval(substr($field, 7));
@@ -128,6 +131,17 @@ if(strncmp($field, "IP_PROP", 7) == 0 && is_numeric(substr($field, 7)))
 		{
 			$bIblockSection = true;
 			$iblockSectionIblock = ($arProp['LINK_IBLOCK_ID'] ? $arProp['LINK_IBLOCK_ID'] : $IBLOCK_ID);
+		}
+		elseif($arProp['PROPERTY_TYPE']=='S' && $arProp['USER_TYPE']=='directory' && $arProp['USER_TYPE_SETTINGS']['TABLE_NAME'] && \CModule::IncludeModule('highloadblock'))
+		{
+			$hlblock = \Bitrix\Highloadblock\HighloadBlockTable::getList(array('filter'=>array('TABLE_NAME'=>$arProp['USER_TYPE_SETTINGS']['TABLE_NAME'])))->fetch();
+			$dbRes = \CUserTypeEntity::GetList(array('SORT'=>'ASC', 'ID'=>'ASC'), array('ENTITY_ID'=>'HLBLOCK_'.$hlblock['ID'], 'LANG'=>LANGUAGE_ID));
+			$arHLFields = array();
+			while($arHLField = $dbRes->Fetch())
+			{
+				$arHLFields[$arHLField['FIELD_NAME']] = ($arHLField['EDIT_FORM_LABEL'] ? $arHLField['EDIT_FORM_LABEL'] : $arHLField['FIELD_NAME']);
+			}
+			$bDirectory = true;
 		}
 	}
 }
@@ -313,6 +327,34 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 			</tr>
 		<?}?>
 		
+		<?if($bDirectory){?>
+			<tr>
+				<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_SETTINGS_REL_DIRECTORY_FIELD");?>:</td>
+				<td class="adm-detail-content-cell-r">
+					<?
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[REL_DIRECTORY_FIELD]';
+					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+					$val = '';
+					if(is_array($PEXTRASETTINGS))
+					{
+						eval('$val = $P'.$fNameEval.';');
+					}
+					?>
+					<select name="<?echo $fName;?>" class="chosen" style="max-width: 450px;">
+						<?
+						if(is_array($arHLFields))
+						{
+							foreach($arHLFields as $k=>$v)
+							{
+								echo '<option value="'.htmlspecialcharsbx($k).'"'.($val==$k || (strlen($val)==0 && $k=='UF_NAME') ? ' selected' : '').'>'.htmlspecialcharsbx($v).'</option>';
+							}
+						}
+						?>
+					</select>
+				</td>
+			</tr>
+		<?}?>
+		
 		<?if($bUser){?>
 			<tr>
 				<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_SETTINGS_REL_USER_FIELD");?>:</td>
@@ -360,6 +402,39 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 						}
 						?>
 					</select>
+				</td>
+			</tr>
+		<?}elseif($field=="ICAT_BARCODE_IMAGE"){?>
+			<tr>
+				<td class="adm-detail-content-cell-l" valign="top"><?echo GetMessage("KDA_EE_SETTINGS_BARCODE_FIELD");?>:</td>
+				<td class="adm-detail-content-cell-r">
+					<?
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', $fieldName).'[BARCODE_FIELD]';
+					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+					eval('$val = $P'.$fNameEval.';');
+					?>
+					<select name="<?=$fName?>">
+						<option value="ICAT_BARCODE"<?if($val=='ICAT_BARCODE'){echo ' selected';}?>><?=GetMessage("KDA_EE_SETTINGS_BARCODE_FIELD_BARCODE")?></option>
+						<?
+						$dbRes = CIBlockProperty::GetList(array("sort" => "asc", "name" => "asc"), array("ACTIVE" => "Y", "IBLOCK_ID" => ($isOffer ? $OFFER_IBLOCK_ID : $IBLOCK_ID), "CHECK_PERMISSIONS" => "N"));
+						while($arProp = $dbRes->Fetch())
+						{
+							if(!in_array($arProp['PROPERTY_TYPE'], array('S', "N")) || strlen($arProp['USER_TYPE']) > 0) continue;
+							?><option value="IP_PROP<?=$arProp['ID']?>"<?if($val=='IP_PROP'.$arProp['ID']){echo ' selected';}?>><?=GetMessage("KDA_EE_SETTINGS_BARCODE_FIELD_PROP")?> &laquo;<?=$arProp['NAME']?>&raquo;</option><?
+						}
+						?>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_SETTINGS_BARCODE_HEIGHT");?>:</td>
+				<td class="adm-detail-content-cell-r">
+					<?
+					$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsbx($_GET['field_name'])).'[BARCODE_HEIGHT]';
+					$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+					eval('$val = $P'.$fNameEval.';');
+					?>
+					<input type="text" name="<?=$fName?>"  value="<?=htmlspecialcharsbx($val)?>" placeholder="80">
 				</td>
 			</tr>
 		<?}elseif($bPicture){?>
@@ -537,6 +612,8 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 								'</optgroup>'.
 								'<optgroup label="'.GetMessage("KDA_EE_SETTINGS_CONVERSION_THEN_GROUP_OTHER").'">'.
 									/*'<option value="NOT_LOAD" '.($v['THEN']=='NOT_LOAD' ? 'selected' : '').'>'.GetMessage("KDA_EE_SETTINGS_CONVERSION_THEN_NOT_LOAD").'</option>'.*/
+									'<option value="SET_BG_COLOR" '.($v['THEN']=='SET_BG_COLOR' ? 'selected' : '').'>'.GetMessage("KDA_EE_SETTINGS_CONVERSION_THEN_SET_BG_COLOR").'</option>'.
+									'<option value="SET_TEXT_COLOR" '.($v['THEN']=='SET_TEXT_COLOR' ? 'selected' : '').'>'.GetMessage("KDA_EE_SETTINGS_CONVERSION_THEN_SET_TEXT_COLOR").'</option>'.
 									'<option value="ADD_LINK" '.($v['THEN']=='ADD_LINK' ? 'selected' : '').'>'.GetMessage("KDA_EE_SETTINGS_CONVERSION_THEN_ADD_LINK").'</option>'.
 									'<option value="EXPRESSION" '.($v['THEN']=='EXPRESSION' ? 'selected' : '').'>'.GetMessage("KDA_EE_SETTINGS_CONVERSION_THEN_EXPRESSION").'</option>'.
 								'</optgroup>'.
@@ -775,6 +852,30 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 					<option value="4"<?if($val=='4'){echo ' selected';}?>><?echo sprintf(GetMessage("KDA_EE_DISPLAY_NUMBER_FORMAT_NUMERIC"), '1 234,10'); ?></option>
 					<option value="5"<?if($val=='5'){echo ' selected';}?>><?echo sprintf(GetMessage("KDA_EE_DISPLAY_NUMBER_FORMAT_FINANCIAL"), '1 234 P'); ?></option>
 					<option value="7"<?if($val=='7'){echo ' selected';}?>><?echo sprintf(GetMessage("KDA_EE_DISPLAY_NUMBER_FORMAT_FINANCIAL"), '1 234,10 P'); ?></option>
+					<option value="[$$-409]#,##0"<?if($val=='[$$-409]#,##0'){echo ' selected';}?>><?echo sprintf(GetMessage("KDA_EE_DISPLAY_NUMBER_FORMAT_FINANCIAL"), '$1 234'); ?></option>
+					<option value="[$$-409]#,##0.00"<?if($val=='[$$-409]#,##0.00'){echo ' selected';}?>><?echo sprintf(GetMessage("KDA_EE_DISPLAY_NUMBER_FORMAT_FINANCIAL"), '$1 234,10'); ?></option>
+					<option value="[$€-2]\ #,##0"<?if($val=='[$€-2]\ #,##0'){echo ' selected';}?>><?echo sprintf(GetMessage("KDA_EE_DISPLAY_NUMBER_FORMAT_FINANCIAL"), '€1 234'); ?></option>
+					<option value="[$€-2]\ #,##0.00"<?if($val=='[$€-2]\ #,##0.00'){echo ' selected';}?>><?echo sprintf(GetMessage("KDA_EE_DISPLAY_NUMBER_FORMAT_FINANCIAL"), '€1 234,10'); ?></option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="adm-detail-content-cell-l"><?echo GetMessage("KDA_EE_DISPLAY_NUMBER_DECIMALS"); ?>:</td>
+			<td class="adm-detail-content-cell-r">
+				<?
+				$fName = 'EXTRA'.str_replace('[FIELDS_LIST]', '', htmlspecialcharsbx($_GET['field_name'])).'[NUMBER_DECIMALS]';
+				$fNameEval = strtr($fName, array("["=>"['", "]"=>"']"));
+				eval('$val = $P'.$fNameEval.';');
+				if(strlen($val)==0 || (int)$val < 0 || (int)$val > 30) $val = 2;
+				$val = (int)$val;
+				?>
+				<select name="<?=$fName?>">
+					<?
+					for($i=0; $i<=30; $i++)
+					{
+						echo '<option value="'.($i==2 ? '' : $i).'"'.($val==$i ? ' selected' : '').'>'.$i.'</option>';
+					}
+					?>
 				</select>
 			</td>
 		</tr>

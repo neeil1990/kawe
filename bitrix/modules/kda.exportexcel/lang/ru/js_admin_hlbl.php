@@ -13,4 +13,5 @@ $MESS["KDA_EE_ADD_LINE_UNDER"] = "Добавить строку ниже";
 $MESS["KDA_EE_REMOVE_LINE"] = "Удалить строку";
 $MESS["KDA_EE_INSERT_PICTURE"] = "Вставить изображение";
 $MESS['KDA_EE_POPUP_CRON_TITLE'] = "Настройка cron";
+$MESS['KDA_EE_FILTER_LAST_DAYS'] = "Последние n дней";
 ?>

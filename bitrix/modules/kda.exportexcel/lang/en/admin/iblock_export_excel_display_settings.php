@@ -17,5 +17,6 @@ $MESS["KDA_EE_DISPLAY_VERTICAL_ALIGN_BOTTOM"] = "Bottom";
 $MESS['KDA_EE_DISPLAY_SETTING_PICTURE_WIDTH'] = "The maximum width of the picture, px";
 $MESS['KDA_EE_DISPLAY_SETTING_PICTURE_HEIGHT'] = "The maximum height of the picture, px";
 $MESS['KDA_EE_DISPLAY_ROW_HEIGHT'] = "Row height, px";
+$MESS['KDA_EE_DISPLAY_ROW_HIDDEN'] = "Hide string";
 $MESS['KDA_EE_DISPLAY_SETTING_HIDE_UNDER_GROUP'] = "Hide string below grouping";
 ?>

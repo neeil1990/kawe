@@ -10,6 +10,9 @@ class CKDAExportExcel {
 	private $sectionPaths = array();
 	private $sectionCache = array();
 	private $sectionCacheSize = 0;
+	private $imagedir = '';
+	private $hlbl = array();
+	private $hlblFields = array();
 
 	function __construct($params=array(), $fparams=array(), $stepparams=false, $pid = false)
 	{
@@ -17,6 +20,11 @@ class CKDAExportExcel {
 		$this->fparams = $fparams;
 		$this->maxReadRows = 100;
 		$this->maxReadRowsWOffers = 20;
+		if((int)$this->params['MAX_READ_ROWS'] > 0)
+		{
+			$this->maxReadRows = (int)$this->params['MAX_READ_ROWS'];
+			$this->maxReadRowsWOffers = (int)$this->params['MAX_READ_ROWS'];
+		}
 		$this->stepparams = array();
 		$this->stepparams['parentSections'] = array();
 		$this->docRoot = rtrim($_SERVER["DOCUMENT_ROOT"], '/');
@@ -36,13 +44,21 @@ class CKDAExportExcel {
 						$this->fparams[$listIndex][$key]['QRCODE_SIZE'] = (isset($this->fparams[$listIndex][$key]['QRCODE_SIZE']) && (int)$this->fparams[$listIndex][$key]['QRCODE_SIZE'] > 0 ? (int)$this->fparams[$listIndex][$key]['QRCODE_SIZE'] : 3);
 						$this->fparams[$listIndex][$key]['PICTURE_WIDTH'] = $this->fparams[$listIndex][$key]['PICTURE_HEIGHT'] = $this->fparams[$listIndex][$key]['QRCODE_SIZE']*41;
 					}
+					elseif($field==='ICAT_BARCODE_IMAGE')
+					{
+						if(!is_array($this->fparams[$listIndex][$key])) $this->fparams[$listIndex][$key] = array();
+						$this->fparams[$listIndex][$key]['INSERT_PICTURE'] = 'Y';
+						$this->fparams[$listIndex][$key]['BARCODE_HEIGHT'] = (isset($this->fparams[$listIndex][$key]['BARCODE_HEIGHT']) && (int)$this->fparams[$listIndex][$key]['BARCODE_HEIGHT'] > 0 ? (int)$this->fparams[$listIndex][$key]['BARCODE_HEIGHT'] : 80);
+						$this->fparams[$listIndex][$key]['PICTURE_HEIGHT'] = $this->fparams[$listIndex][$key]['BARCODE_HEIGHT'];
+						$this->fparams[$listIndex][$key]['PICTURE_WIDTH'] = $this->fparams[$listIndex][$key]['PICTURE_HEIGHT']*2;
+					}
 					$this->fparamsByName[$listIndex][$field] = $this->fparams[$listIndex][$key];
 				}
 			}
 		}	
 		if(strlen($this->params['ELEMENT_MULTIPLE_SEPARATOR']))
 		{
-			$this->params['ELEMENT_MULTIPLE_SEPARATOR'] = strtr($this->params['ELEMENT_MULTIPLE_SEPARATOR'], array('\r'=>"\r", '\n'=>"\n", '\t'=>"\t"));
+			$this->params['ELEMENT_MULTIPLE_SEPARATOR'] = $this->GetSeparator($this->params['ELEMENT_MULTIPLE_SEPARATOR']);
 		}
 
 		if(is_array($stepparams))
@@ -76,33 +92,11 @@ class CKDAExportExcel {
 			}
 			
 			/*Temp folders*/
-			$dir = $this->docRoot.'/upload/tmp/'.static::$moduleId.'/'.static::$moduleSubDir;
-			CheckDirPath($dir);
-			if(!$this->stepparams['tmpdir'])
-			{
-				if($pid!==false)
-				{
-					$tmpdir = $dir.'p'.$pid.'/';
-					if(file_exists($tmpdir))
-					{
-						DeleteDirFilesEx(substr($tmpdir, strlen($this->docRoot)));
-					}
-				}
-				else
-				{
-					$i = 0;
-					while(($tmpdir = $dir.$i.'/') && file_exists($tmpdir)){$i++;}
-				}
-				$this->stepparams['tmpdir'] = $tmpdir;
-				CheckDirPath($tmpdir);
-			}
-			$this->tmpdir = $this->stepparams['tmpdir'];
-			$this->imagedir = $this->stepparams['tmpdir'].'images/';
-			CheckDirPath($this->imagedir);
+			$dir = $this->SetTmpFolders($pid);
 			
 			$this->tmpfile = $this->tmpdir.'params.txt';
 			$oProfile = CKDAExportProfile::getInstance();
-			$oProfile->SetExportParams($pid);
+			$oProfile->SetExportParams($pid, $stepparams);
 			/*/Temp folders*/
 			
 			if(file_exists($this->tmpfile))
@@ -118,9 +112,9 @@ class CKDAExportExcel {
 				if((int)$this->stepparams['export_started'] < 1)
 				{
 					$oProfile = CKDAExportProfile::getInstance();
-					$oProfile->OnStartImport();
+					$oProfile->OnStartExport();
 				
-					if(file_exists($this->procfile)) unlink($this->procfile);
+					$this->SaveStatusImport();
 					if($this->params['EXPORT_FILES_IN_ARCHIVE']=='Y' && strlen($this->params['FILES_ARCHIVE_PATH']) > 0)
 					{
 						$archivePath = $this->docRoot. preg_replace('/\.zip\s*$/U', '', '/'.ltrim($this->params['FILES_ARCHIVE_PATH'], '/'));
@@ -133,6 +127,44 @@ class CKDAExportExcel {
 				}
 			}
 		}
+		elseif($pid!==false)
+		{
+			$this->SetTmpFolders($pid, '_preview');
+		}
+	}
+	
+	public function SetTmpFolders($pid, $suffix='')
+	{		
+		$dir = $this->docRoot.'/upload/tmp/'.static::$moduleId.'/'.static::$moduleSubDir;
+		CheckDirPath($dir);
+		if(!isset($this->stepparams) || !is_array($this->stepparams)) $this->stepparams = array();
+		if(!$this->stepparams['tmpdir'])
+		{
+			if($pid!==false)
+			{
+				$tmpdir = $dir.'p'.$pid.$suffix.'/';
+				if(file_exists($tmpdir))
+				{
+					DeleteDirFilesEx(substr($tmpdir, strlen($this->docRoot)));
+				}
+			}
+			else
+			{
+				$i = 0;
+				while(($tmpdir = $dir.$i.'/') && file_exists($tmpdir)){$i++;}
+			}
+			$this->stepparams['tmpdir'] = $tmpdir;
+			CheckDirPath($tmpdir);
+		}
+		$this->tmpdir = $this->stepparams['tmpdir'];
+		$this->imagedir = $this->stepparams['tmpdir'].'images/';
+		CheckDirPath($this->imagedir);
+		return $dir;
+	}
+	
+	public function GetPublicImagePath()
+	{
+		return substr($this->imagedir, strlen($this->docRoot));
 	}
 	
 	public function GetProfileId()
@@ -250,6 +282,7 @@ class CKDAExportExcel {
 					$next = each($arListIndexes);
 					$listIndex = (int)$next['value'];
 					unset($this->sepSectionIds);
+					$this->stepparams['parentSections'] = array();
 					$this->OpenTmpdataHandler($listIndex);
 				}
 			}
@@ -273,10 +306,16 @@ class CKDAExportExcel {
 		}
 		
 		$this->CloseTmpdataHandler();
+		$this->PutFileToArchive();
+		if($this->CheckTimeEnding())
+		{
+			return $this->GetBreakParams();
+		}
 		
 		$arListIndexes = $arListIndexesOrig;
 		CKDAExportUtils::PrepareTextRows($this->params['TEXT_ROWS_TOP'], $this->params, $this->stepparams);
 		CKDAExportUtils::PrepareTextRows($this->params['TEXT_ROWS_TOP2'], $this->params, $this->stepparams);
+		CKDAExportUtils::PrepareTextRows($this->params['TEXT_ROWS_TOP3'], $this->params, $this->stepparams);
 
 		$filePath = CKDAExportUtils::PrepareExportFileName($this->params['FILE_PATH']);
 		$outputFile = $this->docRoot.$filePath;
@@ -287,6 +326,7 @@ class CKDAExportExcel {
 		}
 		
 		$arWriterParams = array(
+			'DOCROOT' => $this->docRoot,
 			'OUTPUTFILE' => $outputFile,
 			'TMPDIR' => $this->tmpdir,
 			'IMAGEDIR' => $this->imagedir,
@@ -468,6 +508,15 @@ class CKDAExportExcel {
 					$row++;
 				}
 				$this->CloseTmpdataHandler();
+				
+				if(isset($this->params['TEXT_ROWS_TOP3'][$listIndex]))
+				{
+					foreach($this->params['TEXT_ROWS_TOP3'][$listIndex] as $k=>$v)
+					{
+						$worksheet->setCellValueExplicit($arCols[0].$row, $this->GetCellValue($v));
+						$row++;
+					}
+				}
 			}
 			
 			$objWriter = KDAPHPExcel_IOFactory::createWriter($objPHPExcel, $writerType);
@@ -487,10 +536,18 @@ class CKDAExportExcel {
 		}
 		$this->SaveStatusImport(true);
 		
+		if($this->params['EXPORT_ARCHIVE']=='Y')
+		{
+			$zipFile = preg_replace('/\.[^\.]*$/', '', $outputFile).'.zip';
+			if(file_exists($zipFile)) unlink($zipFile);
+			$zipObj = \CBXArchive::GetArchive($zipFile, 'ZIP');
+			$zipObj->Add($outputFile, array("add_path" => false, "remove_path" => dirname($outputFile)));
+		}
+		
 		$this->CheckExtServices($outputFile);
 		
 		$oProfile = CKDAExportProfile::getInstance();
-		$arEventData = $oProfile->OnEndImport();
+		$arEventData = $oProfile->OnEndExport($outputFile, $this->stepparams);
 		
 		return $this->GetBreakParams('finish');
 	}
@@ -508,7 +565,7 @@ class CKDAExportExcel {
 				$folderType = ToLower(substr($folderId, 0, -strlen($m[0])));
 				$folderId = substr($m[0], 1);
 			}
-			$fileName = basename($outputFile);
+			$fileName = bx_basename($outputFile);
 			$fileContent = base64_encode(file_get_contents($outputFile));
 			if(in_array($folderType, array('folder', 'storage')))
 			{
@@ -553,6 +610,16 @@ class CKDAExportExcel {
 				$client->setHeader('Authorization', "OAuth ".$token);
 				$res = $client->query('PUT', $arRes['href'], file_get_contents($outputFile));
 			}
+		}
+		
+		if($this->params['EXPORT_TO_EMAIL']=="Y" && (int)$this->params['MAIL_TEMPLATE_ID'] > 0)
+		{
+			$arMailFields = array(
+				'DATE' => date('d.m.Y'),
+				'DATETIME' => date('d.m.Y H:i:s'),
+				'EMAIL_TO' => $this->params['MAIL_TEMPLATE_EMAIL']
+			);
+			\CEvent::Send('KDA_EXPORT_SEND_FILE', $this->GetDefaultSiteId(), $arMailFields, 'Y', $this->params['MAIL_TEMPLATE_ID'], array($outputFile));
 		}
 	}
 	
@@ -605,7 +672,7 @@ class CKDAExportExcel {
 		try{				
 			if(stripos($expression, 'return')===0)
 			{
-				return eval($expression.';');
+				$val = eval($expression.';');
 			}
 			elseif(preg_match('/\$val\s*=/', $expression))
 			{
@@ -614,8 +681,10 @@ class CKDAExportExcel {
 			}
 			else
 			{
-				return eval('return '.$expression.';');
+				$val = eval('return '.$expression.';');
 			}
+			if(!isset($val)) $val = '';
+			return $val;
 		}catch(Exception $ex){
 			return $altReturn;
 		}
@@ -866,33 +935,51 @@ class CKDAExportExcel {
 		$this->filesForMove = array();
 	}
 	
-	public function PutFileToArchive($val, $removePath='')
+	public function PutFileToArchive($val='', $removePath='')
 	{
 		if($this->stepparams['curstep'] != 'export') return;
-		$zipFile = '';
-		$suffix = 0;
-		$archivePath = $this->docRoot. preg_replace('/\.zip\s*$/U', '', '/'.ltrim($this->params['FILES_ARCHIVE_PATH'], '/'));
-		while(strlen($zipFile)==0 || (file_exists($zipFile) && filesize($zipFile)>1024*1024*100))
+		$maxSize = 1024*1024*150;
+		$parentDir = $this->tmpdir.'archiveimages/';
+		$this->stepparams['imgarchivesize'] = (int)$this->stepparams['imgarchivesize'];
+		if(strlen($val) > 0)
 		{
-			$zipFile = $archivePath.($suffix > 0 ? '_'.$suffix : '').'.zip';
-			$suffix++;
+			$io = CBXVirtualIo::GetInstance();
+			$newVal = $val;
+			if(strlen($removePath) > 0) $newVal = substr($val, strlen(substr($removePath, strlen($this->docRoot))));
+			$newVal = ltrim($newVal, '/');
+			$io->copy($this->docRoot.$val, $parentDir.$newVal);
+			$this->stepparams['imgarchivesize'] += filesize($this->docRoot.$val);
 		}
-		$siteEncoding = CKDAExportUtils::getSiteEncoding();
-		$fsEncoding = CKDAExportUtils::getfileSystemEncoding();
-		
-		if(class_exists('ZipArchive') && ($zipObj = new ZipArchive()) && $zipObj->open($zipFile, ZipArchive::CREATE)===true)
+		if((($this->stepparams['imgarchivesize'] > $maxSize && $this->params['EXPORT_FILES_ARCHIVE_SINGLE']!='Y') || strlen($val)==0) && count(array_diff(scandir($parentDir), array('.', '..'))) > 0)
 		{
-			$f1 = $this->docRoot.$val;
-			if($siteEncoding!=$fsEncoding) $f1 = \Bitrix\Main\Text\Encoding::convertEncoding($f1, $siteEncoding, $fsEncoding);
-			$f2 = \Bitrix\Main\Text\Encoding::convertEncoding(ltrim($val, '/'), $siteEncoding, 'cp866');
-			if(strlen($removePath) > 0) $f2 = \Bitrix\Main\Text\Encoding::convertEncoding(ltrim(substr($this->docRoot.$val, strlen($removePath)), '/'), $siteEncoding, 'cp866');
-			$zipObj->addFile($f1, $f2);
-			$zipObj->close();
-		}
-		else
-		{
-			$zipObj = \CBXArchive::GetArchive($zipFile, 'ZIP');
-			$zipObj->Add($this->docRoot.$val, array("add_path" => false, "remove_path" => (strlen($removePath) > 0 ? $removePath : $this->docRoot.'/')));
+			$zipFile = '';
+			$suffix = 0;
+			$archivePath = $this->docRoot. preg_replace('/\.zip\s*$/U', '', '/'.ltrim($this->params['FILES_ARCHIVE_PATH'], '/'));
+			while(strlen($zipFile)==0 || file_exists($zipFile))
+			{
+				$zipFile = $archivePath.($suffix > 0 ? '_'.$suffix : '').'.zip';
+				$suffix++;
+			}
+			$siteEncoding = CKDAExportUtils::getSiteEncoding();
+			$fsEncoding = CKDAExportUtils::getfileSystemEncoding();
+			
+			/*if(class_exists('ZipArchive') && ($zipObj = new ZipArchive()) && $zipObj->open($zipFile, ZipArchive::CREATE)===true)
+			{
+				$f1 = $this->docRoot.$val;
+				if($siteEncoding!=$fsEncoding) $f1 = \Bitrix\Main\Text\Encoding::convertEncoding($f1, $siteEncoding, $fsEncoding);
+				$f2 = \Bitrix\Main\Text\Encoding::convertEncoding(ltrim($val, '/'), $siteEncoding, 'cp866');
+				if(strlen($removePath) > 0) $f2 = \Bitrix\Main\Text\Encoding::convertEncoding(ltrim(substr($this->docRoot.$val, strlen($removePath)), '/'), $siteEncoding, 'cp866');
+				$zipObj->addFile($f1, $f2);
+				$zipObj->close();
+			}
+			else*/
+			if(true)
+			{
+				$zipObj = \CBXArchive::GetArchive($zipFile, 'ZIP');
+				$zipObj->Add($parentDir, array("add_path" => false, "remove_path" => $parentDir));
+			}
+			$this->stepparams['imgarchivesize'] = 0;
+			DeleteDirFilesEx(substr($parentDir, strlen($this->docRoot)));
 		}
 	}
 	
@@ -913,31 +1000,39 @@ class CKDAExportExcel {
 		return $val;
 	}
 	
-	public function GetHighloadBlockValue($arProp, $val)
+	public function GetHighloadBlockValue($arProp, $val, $relField = '')
 	{
 		if($val && CModule::IncludeModule('highloadblock') && $arProp['USER_TYPE_SETTINGS']['TABLE_NAME'])
 		{
-			if(!isset($this->propVals[$arProp['ID']][$val]))
+			if(strlen($relField)==0) $relField = 'UF_NAME';
+			if(!isset($this->propVals[$arProp['ID']][$relField][$val]))
 			{
 				if(!$this->hlbl[$arProp['ID']])
 				{
 					$hlblock = \Bitrix\Highloadblock\HighloadBlockTable::getList(array('filter'=>array('TABLE_NAME'=>$arProp['USER_TYPE_SETTINGS']['TABLE_NAME'])))->fetch();
 					$entity = \Bitrix\Highloadblock\HighloadBlockTable::compileEntity($hlblock);
 					$this->hlbl[$arProp['ID']] = $entity->getDataClass();
+					
+					$dbRes = \CUserTypeEntity::GetList(array(), array('ENTITY_ID'=>'HLBLOCK_'.$hlblock['ID'], 'LANG'=>LANGUAGE_ID));
+					$this->hlblFields = array();
+					while($arHLField = $dbRes->Fetch())
+					{
+						$this->hlblFields[] = $arHLField['FIELD_NAME'];
+					}
 				}
-				$entityDataClass = $this->hlbl[$arProp['ID']];
 				
-				$dbRes2 = $entityDataClass::GetList(array('filter'=>array("UF_XML_ID"=>$val), 'select'=>array('ID', 'UF_NAME'), 'limit'=>1));
-				if($arr2 = $dbRes2->Fetch())
+				$this->propVals[$arProp['ID']][$relField][$val] = '';
+				if(in_array($relField, $this->hlblFields))
 				{
-					$this->propVals[$arProp['ID']][$val] = $arr2['UF_NAME'];
-				}
-				else
-				{
-					$this->propVals[$arProp['ID']][$val] = '';
+					$entityDataClass = $this->hlbl[$arProp['ID']];
+					$dbRes2 = $entityDataClass::GetList(array('filter'=>array("UF_XML_ID"=>$val), 'select'=>array('ID', $relField), 'limit'=>1));
+					if($arr2 = $dbRes2->Fetch())
+					{
+						$this->propVals[$arProp['ID']][$relField][$val] = $arr2[$relField];
+					}
 				}
 			}
-			return $this->propVals[$arProp['ID']][$val];
+			return $this->propVals[$arProp['ID']][$relField][$val];
 		}
 		return $val;
 	}
@@ -1032,6 +1127,7 @@ class CKDAExportExcel {
 	
 	public function ApplyConversions($val, $arConv, $arItem, $field=false, $iblockFields=array())
 	{
+		$this->curCellStyle = array();
 		$fieldName = $fieldKey = false;
 		if(!is_array($field))
 		{
@@ -1057,13 +1153,15 @@ class CKDAExportExcel {
 				if(is_array($condVal)) $condVal = implode($this->params['ELEMENT_MULTIPLE_SEPARATOR'], $condVal);
 				if(strlen($v['FROM']) > 0) $v['FROM'] = preg_replace_callback('/(#[A-Za-z0-9\_]+#)/', array($this, 'ConversionReplaceValues'), $v['FROM']);
 				if($v['CELL']=='ELSE') $v['WHEN'] = '';
+				$condValNum = $this->GetFloatVal($condVal);
+				$fromNum = $this->GetFloatVal($v['FROM']);
 				if(($v['CELL']=='ELSE' && !$execConv)
 					|| ($v['WHEN']=='EQ' && ($condVal==$v['FROM'] && strlen($condVal)==strlen($v['FROM'])))
 					|| ($v['WHEN']=='NEQ' && ($condVal!=$v['FROM'] || strlen($condVal)!=strlen($v['FROM'])))
-					|| ($v['WHEN']=='GT' && $condVal > $v['FROM'])
-					|| ($v['WHEN']=='LT' && $condVal < $v['FROM'])
-					|| ($v['WHEN']=='GEQ' && $condVal >= $v['FROM'])
-					|| ($v['WHEN']=='LEQ' && $condVal <= $v['FROM'])
+					|| ($v['WHEN']=='GT' && $condValNum > $fromNum)
+					|| ($v['WHEN']=='LT' && $condValNum < $fromNum)
+					|| ($v['WHEN']=='GEQ' && $condValNum >= $fromNum)
+					|| ($v['WHEN']=='LEQ' && $condValNum <= $fromNum)
 					|| ($v['WHEN']=='CONTAIN' && strpos($condVal, $v['FROM'])!==false)
 					|| ($v['WHEN']=='NOT_CONTAIN' && strpos($condVal, $v['FROM'])===false)
 					|| ($v['WHEN']=='REGEXP' && preg_match('/'.ToLower($v['FROM']).'/i', ToLower($condVal)))
@@ -1104,6 +1202,14 @@ class CKDAExportExcel {
 							}
 						}
 						$val = $this->Str2Url($val, $arParams);
+					}
+					elseif($v['THEN']=='SET_BG_COLOR')
+					{
+						$this->curCellStyle['BACKGROUND_COLOR'] = $v['TO'];
+					}
+					elseif($v['THEN']=='SET_TEXT_COLOR')
+					{
+						$this->curCellStyle['FONT_COLOR'] = $v['TO'];
 					}
 					$execConv = true;
 				}
@@ -1359,13 +1465,23 @@ class CKDAExportExcel {
 					if(!empty($arOrders))
 					{
 						$this->arFilterOrders = $arOrders;
-						$dbRes = CSaleBasket::GetList(array(), array('ORDER_ID'=>$arOrders), array('PRODUCT_ID'), false, array('PRODUCT_ID'));
+						$dbRes = \CSaleBasket::GetList(array(), array('ORDER_ID'=>$arOrders), array('PRODUCT_ID'), false, array('PRODUCT_ID'));
 						while($arr = $dbRes->Fetch())
 						{
 							$arProductIds[] = $arr['PRODUCT_ID'];
 						}
 						if(!empty($arProductIds))
 						{
+							if(isset($offersIblockId) && $offersIblockId > 0)
+							{
+								$arSkuFilter['ID'] = $arProductIds;
+								$dbRes = \CiblockElement::GetList(array(), array('IBLOCK_ID'=>$offersIblockId, 'ID'=>$arProductIds), false, false, array('PROPERTY_'.$offersPropId));
+								while($arr = $dbRes->Fetch())
+								{
+									$propKey = 'PROPERTY_'.$offersPropId.'_VALUE';
+									if(isset($arr[$propKey]) && $arr[$propKey] > 0 && !in_array($arr[$propKey], $arProductIds)) $arProductIds[] = $arr[$propKey];
+								}
+							}
 							$arFilter['ID'] = $arProductIds;
 						}
 					}
@@ -1429,7 +1545,12 @@ class CKDAExportExcel {
 					if(!empty($arAddFilter['find_el_date_active_to_from'])) $arFilter[">=DATE_ACTIVE_TO"] = $arAddFilter['find_el_date_active_to_from'];
 					if(!empty($arAddFilter['find_el_date_active_to_to'])) $arFilter["<=DATE_ACTIVE_TO"] = $arAddFilter['find_el_date_active_to_to'];
 				}
-				if (!empty($arAddFilter['find_el_catalog_type'])) $arFilter['CATALOG_TYPE'] = $arAddFilter['find_el_catalog_type'];
+				if(!empty($arAddFilter['find_el_catalog_type']))
+				{
+					$cTypes = $arAddFilter['find_el_catalog_type'];
+					if(is_array($cTypes)) $cTypes = array_diff($cTypes, array(''));
+					if(!empty($cTypes)) $arFilter['CATALOG_TYPE'] = $cTypes;
+				}
 				if (!empty($arAddFilter['find_el_catalog_available'])) $arFilter['CATALOG_AVAILABLE'] = $arAddFilter['find_el_catalog_available'];
 				if (!empty($arAddFilter['find_el_catalog_bundle'])) $arFilter['CATALOG_BUNDLE'] = $arAddFilter['find_el_catalog_bundle'];
 				if (strlen($arAddFilter['find_el_catalog_quantity']) > 0)
@@ -1656,9 +1777,19 @@ class CKDAExportExcel {
 					$fa = $arFields[$fieldIndex].'|'.$arSettings['REL_SECTION_FIELD'];
 					if(!in_array($fa, $arFieldsAdded)) $arFieldsAdded[] = $fa;
 				}
+				if(isset($arSettings['REL_DIRECTORY_FIELD']) && strlen($arSettings['REL_DIRECTORY_FIELD']) > 0)
+				{
+					$fa = $arFields[$fieldIndex].'|'.$arSettings['REL_DIRECTORY_FIELD'];
+					if(!in_array($fa, $arFieldsAdded)) $arFieldsAdded[] = $fa;
+				}
 				if(isset($arSettings['REL_USER_FIELD']) && strlen($arSettings['REL_USER_FIELD']) > 0)
 				{
 					$fa = $arFields[$fieldIndex].'|'.$arSettings['REL_USER_FIELD'];
+					if(!in_array($fa, $arFieldsAdded)) $arFieldsAdded[] = $fa;
+				}
+				if(isset($arSettings['BARCODE_FIELD']) && strlen($arSettings['BARCODE_FIELD']) > 0)
+				{
+					$fa = $arSettings['BARCODE_FIELD'];
 					if(!in_array($fa, $arFieldsAdded)) $arFieldsAdded[] = $fa;
 				}
 				if(isset($arSettings['CONVERSION']) && is_array($arSettings['CONVERSION']) && $field)
@@ -1771,7 +1902,7 @@ class CKDAExportExcel {
 						$plFullVal = '';
 						if(is_array($arSettings['PROPLIST_PROPS_LIST']))
 						{
-							$sep1 = $arSettings['PROPLIST_PROPS_SEP_VALS'];
+							$sep1 = $this->GetSeparator($arSettings['PROPLIST_PROPS_SEP_VALS']);
 							if(strlen(trim($sep1))==0) $sep1 = "\r\n";
 							$sep2 = $arSettings['PROPLIST_PROPS_SEP_NAMEVAL'];
 							if(strlen(trim($sep2))==0) $sep2 = ": ";
@@ -1815,10 +1946,11 @@ class CKDAExportExcel {
 							}
 						}
 					}
-					if(isset($arSettings['REL_ELEMENT_FIELD']) || isset($arSettings['REL_SECTION_FIELD']) || isset($arSettings['REL_USER_FIELD']))
+					if(isset($arSettings['REL_ELEMENT_FIELD']) || isset($arSettings['REL_SECTION_FIELD']) || isset($arSettings['REL_DIRECTORY_FIELD']) || isset($arSettings['REL_USER_FIELD']))
 					{
 						if(isset($arSettings['REL_ELEMENT_FIELD'])) $fieldKey = $field.'|'.$arSettings['REL_ELEMENT_FIELD'];
 						elseif(isset($arSettings['REL_SECTION_FIELD'])) $fieldKey = $field.'|'.$arSettings['REL_SECTION_FIELD'];
+						elseif(isset($arSettings['REL_DIRECTORY_FIELD'])) $fieldKey = $field.'|'.$arSettings['REL_DIRECTORY_FIELD'];
 						elseif(isset($arSettings['REL_USER_FIELD'])) $fieldKey = $field.'|'.$arSettings['REL_USER_FIELD'];
 						if(is_array($arElementData[$fieldKey]))
 						{
@@ -1854,15 +1986,24 @@ class CKDAExportExcel {
 											if(is_array($v3) && array_key_exists('TYPE', $v3) && array_key_exists($k2, $v3)) $arElementData2[$k3] = $v3[$k2];
 										}
 										$arData[$k][$field.'_'.$fieldIndex][$k2] = $arElementData[$field.'_'.$fieldIndex][$k2] = $this->ApplyConversions($val, $arSettings['CONVERSION'], $arElementData2, $field);
+										if(!empty($this->curCellStyle))
+										{
+											$arData[$k]['CELLSTYLE_'.$fieldIndex] = array_merge(is_array($arData[$k]['CELLSTYLE_'.$fieldIndex]) ? $arData[$k]['CELLSTYLE_'.$fieldIndex] : array(), $this->curCellStyle);
+										}
 									}
 									continue;
 								}
 								$arData[$k][$field.'_'.$fieldIndex][$k2] = $arElementData[$field.'_'.$fieldIndex][$k2] = $this->ApplyConversions($val, $arSettings['CONVERSION'], $arElementData, $field);
+								if(!empty($this->curCellStyle))
+								{
+									$arData[$k]['CELLSTYLE_'.$fieldIndex] = array_merge(is_array($arData[$k]['CELLSTYLE_'.$fieldIndex]) ? $arData[$k]['CELLSTYLE_'.$fieldIndex] : array(), $this->curCellStyle);
+								}
 							}
 						}
 						else
 						{
 							$arData[$k][$field.'_'.$fieldIndex] = $arElementData[$field.'_'.$fieldIndex] = $this->ApplyConversions($fieldVal, $arSettings['CONVERSION'], $arElementData, $field);
+							if(!empty($this->curCellStyle)) $arData[$k]['CELLSTYLE_'.$fieldIndex] = $this->curCellStyle;
 						}
 					}
 					
@@ -1988,7 +2129,7 @@ class CKDAExportExcel {
 						}
 						else
 						{
-							if(isset($arSettings['CHANGE_MULTIPLE_SEPARATOR']) && $arSettings['CHANGE_MULTIPLE_SEPARATOR']=='Y') $separator = $arSettings['MULTIPLE_SEPARATOR'];
+							if(isset($arSettings['CHANGE_MULTIPLE_SEPARATOR']) && $arSettings['CHANGE_MULTIPLE_SEPARATOR']=='Y') $separator = $this->GetSeparator($arSettings['MULTIPLE_SEPARATOR']);
 							else $separator = $this->params['ELEMENT_MULTIPLE_SEPARATOR'];
 							$val = implode($separator, $arVals);
 						}
@@ -2001,18 +2142,25 @@ class CKDAExportExcel {
 			{
 				if(is_array($val))
 				{
+					if(isset($arFieldSettings[$k2]['CHANGE_MULTIPLE_SEPARATOR']) && $arFieldSettings[$k2]['CHANGE_MULTIPLE_SEPARATOR']=='Y') $separator = $this->GetSeparator($arFieldSettings[$k2]['MULTIPLE_SEPARATOR']);
+					else $separator = $this->params['ELEMENT_MULTIPLE_SEPARATOR'];	
 					if(isset($val['TYPE']) && $val['TYPE']=='MULTICELL')
 					{
 						$arData[$k]['ROWS_COUNT'] = max(1, (int)$arData[$k]['ROWS_COUNT'], count($val)-1);
+						foreach($val as $subkey=>$subval)
+						{
+							if(is_array($subval) && !array_key_exists('VALUE', $subval))
+							{
+								$arData[$k][$k2][$subkey] = implode($separator, $subval);
+							}
+						}
 					}
 					elseif(isset($val['TYPE']) && $val['TYPE']=='MULTIROW')
 					{
 						
 					}
 					else
-					{
-						if(isset($arFieldSettings[$k2]['CHANGE_MULTIPLE_SEPARATOR']) && $arFieldSettings[$k2]['CHANGE_MULTIPLE_SEPARATOR']=='Y') $separator = $arFieldSettings[$k2]['MULTIPLE_SEPARATOR'];
-						else $separator = $this->params['ELEMENT_MULTIPLE_SEPARATOR'];					
+					{				
 						$arData[$k][$k2] = implode($separator, $val);
 					}
 				}
@@ -2215,6 +2363,11 @@ class CKDAExportExcel {
 			}
 			elseif(strpos($field, 'ICAT_')===0)
 			{
+				$key = substr($field, 5);
+				if($key=='BARCODE_IMAGE' && !in_array('BARCODE', $arFieldsProduct))
+				{
+					$arFieldsProduct[] = 'BARCODE';
+				}
 				$arFieldsProduct[] = substr($field, 5);
 			}
 			elseif(strpos($field, 'IP_PROP')===0)
@@ -2304,7 +2457,7 @@ class CKDAExportExcel {
 
 			if($isSection 
 				&& (!isset($arNavParams['iNumPage']) || $arNavParams['iNumPage']==1)
-				&& $dbResElements->SelectedRowsCount() > 0)
+				&& $dbResElements->SelectedRowsCount() > 0 && (int)$this->currentPageCnt < 1)
 			{
 				if($this->params['EXPORT_SECTION_PATH']=='Y')
 				{
@@ -2343,6 +2496,8 @@ class CKDAExportExcel {
 			$arElementList = array();
 			$arElementIds = array();
 			$arElementPrices = array();
+			$arElementProps = array();
+			$arElementProduct = array();
 			while($arElement = $dbResElements->GetNext())
 			{
 				$arElementList[] = $arElement;
@@ -2373,6 +2528,68 @@ class CKDAExportExcel {
 						{
 							$arElementPrices[$arPrice['CATALOG_GROUP_ID']][$arPrice['PRODUCT_ID']][] = $arPrice;
 						}
+					}
+				}
+				
+				if(!empty($arPropsFields))
+				{
+					$arPropIds = array();
+					foreach($arPropsFields as $propKey)
+					{
+						$propKey = (int)current(explode('_', $propKey));
+						$arPropIds[$propKey] = $propKey;
+					}
+					$arDefProps = $this->GetIblockProperties($arFilter['IBLOCK_ID']);
+					
+					$dbRes = CIBlockElement::GetPropertyValues($arFilter['IBLOCK_ID'], array('ID'=>$arElementIds), true, array('ID'=>$arPropIds));
+					while($arr = $dbRes->Fetch())
+					{
+						$arCurElem = array();
+						foreach($arPropIds as $propId)
+						{
+							$arCurProp = array(
+								'ID' => $propId,
+								'MULTIPLE' => $arDefProps[$propId]['MULTIPLE'],
+								'PROPERTY_TYPE' => $arDefProps[$propId]['PROPERTY_TYPE'],
+								'USER_TYPE' => $arDefProps[$propId]['USER_TYPE'],
+								'LINK_IBLOCK_ID' => $arDefProps[$propId]['LINK_IBLOCK_ID'],
+								'USER_TYPE_SETTINGS' => $arDefProps[$propId]['USER_TYPE_SETTINGS']
+							);
+							if($arDefProps[$propId]['MULTIPLE'] && is_array($arr[$propId]))
+							{
+								if(count($arr[$propId])==0)
+								{
+									$arr[$propId] = array('');
+									$arr['DESCRIPTION'][$propId] = array('');
+								}
+								foreach($arr[$propId] as $k=>$v)
+								{
+									$arCurElem[] = array_merge($arCurProp, array('VALUE'=>$this->GetPropVal($v, $arDefProps[$propId]), 'DESCRIPTION'=>$arr['DESCRIPTION'][$propId][$k]));
+								}
+							}
+							else
+							{
+								$arCurElem[] = array_merge($arCurProp, array('VALUE'=>$this->GetPropVal($arr[$propId], $arDefProps[$propId]), 'DESCRIPTION'=>$arr['DESCRIPTION'][$propId]));
+							}
+						}
+						$arElementProps[$arr['IBLOCK_ELEMENT_ID']] = $arCurElem;
+					}
+				}
+				
+				if(!empty($arFieldsProduct))
+				{
+					$arProductFilter = array('ID'=>$arElementIds);
+					if(is_callable(array('\Bitrix\Catalog\Model\Product', 'getList')))
+					{
+						$dbRes2 = \Bitrix\Catalog\Model\Product::getList(array('filter'=>$arProductFilter));
+					}
+					else
+					{
+						$dbRes2 = CCatalogProduct::GetList(array(), $arProductFilter);
+					}
+					while($arr = $dbRes2->Fetch())
+					{
+						$arElementProduct[$arr['ID']] = $arr;
 					}
 				}
 			}
@@ -2450,10 +2667,11 @@ class CKDAExportExcel {
 			
 				if(!empty($arPropsFields))
 				{
-					$dbRes2 = CIBlockElement::GetProperty($arElement['IBLOCK_ID'], $arElement['ID'], array(), array());
-					while($arProp = $dbRes2->Fetch())
+					/*$dbRes2 = CIBlockElement::GetProperty($arElement['IBLOCK_ID'], $arElement['ID'], array(), array());
+					while($arProp = $dbRes2->Fetch())*/
+					foreach($arElementProps[$arElement['ID']] as $arProp)
 					{
-						if(in_array($arProp['ID'], $arPropsFields))
+						if(true /*in_array($arProp['ID'], $arPropsFields)*/)
 						{
 							$arRels = $arPropsFieldsRels[$arProp['ID']];
 							if(!is_array($arRels) || empty($arRels)) $arRels = array('');
@@ -2487,7 +2705,7 @@ class CKDAExportExcel {
 									}
 									elseif($arProp['PROPERTY_TYPE']=='S' && $arProp['USER_TYPE']=='directory')
 									{
-										$val = $this->GetHighloadBlockValue($arProp, $val);
+										$val = $this->GetHighloadBlockValue($arProp, $val, $relField);
 									}
 									elseif($arProp['PROPERTY_TYPE']=='S' && $arProp['USER_TYPE']=='HTML')
 									{
@@ -2589,8 +2807,9 @@ class CKDAExportExcel {
 				
 				if(!empty($arFieldsProduct))
 				{
-					$dbRes2 = CCatalogProduct::GetList(array(), array('ID'=>$arElement['ID']), false, array('nTopCount'=>1), array());
-					if($arProduct = $dbRes2->Fetch())
+					/*$dbRes2 = CCatalogProduct::GetList(array(), array('ID'=>$arElement['ID']), false, array('nTopCount'=>1), array());
+					if($arProduct = $dbRes2->Fetch())*/
+					if($arProduct = $arElementProduct[$arElement['ID']])
 					{
 						foreach($arProduct as $k=>$v)
 						{
@@ -2663,9 +2882,31 @@ class CKDAExportExcel {
 								$arElement2['ICAT_BARCODE'] .= (strlen($arElement2['ICAT_BARCODE']) > 0 ? $this->params['ELEMENT_MULTIPLE_SEPARATOR'] : '').$arBarcode['BARCODE'];
 							}
 						}
+						
+						if(in_array('BARCODE_IMAGE', $arFieldsProduct) && ((int)$this->stepparams['export_started'] > 0 || (int)$this->stepparams['barcode_qnt'] < 10))
+						{
+							$barcodefield = (string)$this->fparamsByName[$this->listIndex]['ICAT_BARCODE_IMAGE']['BARCODE_FIELD'];
+							if(strlen($barcodefield)==0) $barcodefield = 'ICAT_BARCODE';
+							$barcodeval = explode($this->params['ELEMENT_MULTIPLE_SEPARATOR'], $arElement2[$barcodefield]);
+							$barcodeval = preg_replace('/\D/', '', current($barcodeval));
+							if(strlen($barcodeval) > 0)
+							{
+								if(!class_exists('\Barcode\BarcodeGenerator')) require_once(dirname(__FILE__).'/../../lib/phpbarcode/BarcodeGenerator.php');
+								$barcodepath = $this->imagedir.'image'.(++$this->stepparams['image_cnt']).'.png';
+								$generator = new \Barcode\BarcodeGeneratorPNG();
+								$barcodeHeight = (int)$this->fparamsByName[$this->listIndex]['ICAT_BARCODE_IMAGE']['BARCODE_HEIGHT'];
+								$image = $generator->getBarcode($barcodeval, $generator::TYPE_EAN_13, ($barcodeHeight / 80) * 2, $barcodeHeight);
+								if($image!==false)
+								{
+									file_put_contents($barcodepath, $image);
+									$arElement2['ICAT_BARCODE_IMAGE'] = $this->GetFileValue($barcodepath, 'ICAT_BARCODE_IMAGE');
+									$this->stepparams['barcode_qnt']++;
+								}
+							}
+						}
 					}
 				}
-				
+
 				if(!empty($arFieldsPrices))
 				{
 					foreach($arFieldsPrices as $key=>$arPriceSelectField)
@@ -2685,27 +2926,56 @@ class CKDAExportExcel {
 							if($arParams['TYPE'] == 'OFFER') $elemParamKey = 'OFFER_'.$elemParamKey;
 							$siteId = (isset($this->customFieldSettings[$elemParamKey]['SITE_ID']) ? $this->customFieldSettings[$elemParamKey]['SITE_ID'] : '');
 							if(!$siteId) $siteId = $this->GetIblockSite($arElement['IBLOCK_ID'], true);
-							$dbResElementForPrice = CIblockElement::GetList(array(), array('ID'=>$arElement['ID']), false, array('nTopCount'=>1), $arSelectElementFieldsForPrice);
-							$arElementForPrice = $dbResElementForPrice->Fetch();
-							$arPrices = CIBlockPriceTools::GetItemPrices($arElement['IBLOCK_ID'], $arGroupPrices, $arElementForPrice, true, array(), 0, $siteId);
-							$arPrice = $arPrices[$arPriceCodes[$key]];
+							if(false && \Bitrix\KdaImportexcel\ClassManager::VersionGeqThen('catalog', '20.0.0'))
+							{
+								\Bitrix\Catalog\Discount\DiscountManager::preloadPriceData(array($arElement['ID']), array($key=>$key));
+								$optimalPrice = \CCatalogProduct::GetOptimalPrice($arElement['ID'], 1, array(2), 'N', array(), $siteId);
+								$arPrice = array(
+									'DISCOUNT_VALUE' => $optimalPrice['RESULT_PRICE']['DISCOUNT_PRICE'],
+									'CURRENCY' => $optimalPrice['RESULT_PRICE']['CURRENCY']
+								);
+							}
+							else
+							{
+								$dbResElementForPrice = CIblockElement::GetList(array(), array('ID'=>$arElement['ID']), false, array('nTopCount'=>1), $arSelectElementFieldsForPrice);
+								$arElementForPrice = $dbResElementForPrice->Fetch();
+								$arPrices = CIBlockPriceTools::GetItemPrices($arElement['IBLOCK_ID'], $arGroupPrices, $arElementForPrice, true, array(), 0, $siteId);
+								$arPrice = $arPrices[$arPriceCodes[$key]];
+							}
 							$arElement2[$elemKey.'_ORIG'] = $arPrice['DISCOUNT_VALUE'];
 							$arElement2[$elemKey] = $this->GetConvertedPrice($arPrice['DISCOUNT_VALUE'], $arPrice['CURRENCY'], $elemParamKey);
 							
 							if(isset($this->arPricesGroup[$key]) && is_array($this->arPricesGroup[$key]))
 							{
-								$origUserId = $GLOBALS['USER']->GetID();
-								foreach($this->arPricesGroup[$key] as $keyGroups=>$arGroups)
+								if(false && \Bitrix\KdaImportexcel\ClassManager::VersionGeqThen('catalog', '20.0.0'))
 								{
-									$userId = $this->GetUserByGroups($arGroups);
-									if(!$userId) continue;
-									$GLOBALS['USER']->Authorize($userId);
-									$arPrices = CIBlockPriceTools::GetItemPrices($arElement['IBLOCK_ID'], $arGroupPrices, $arElementForPrice, true, array(), 0, $siteId);
-									$arPrice = $arPrices[$arPriceCodes[$key]];
-									$arElement2[$elemKey.'__'.$keyGroups.'_ORIG'] = $arPrice['DISCOUNT_VALUE'];
-									$arElement2[$elemKey.'__'.$keyGroups] = $this->GetConvertedPrice($arPrice['DISCOUNT_VALUE'], $arPrice['CURRENCY'], $elemParamKey);
-									if($origUserId > 0) $GLOBALS['USER']->Authorize($origUserId);
-									else $GLOBALS['USER']->Logout();
+									foreach($this->arPricesGroup[$key] as $keyGroups=>$arGroups)
+									{
+										\Bitrix\Catalog\Discount\DiscountManager::preloadPriceData(array($arElement['ID']), array($key=>$key));
+										$optimalPrice = \CCatalogProduct::GetOptimalPrice($arElement['ID'], 1, $arGroups, 'N', array(), $siteId);
+										$arPrice = array(
+											'DISCOUNT_VALUE' => $optimalPrice['RESULT_PRICE']['DISCOUNT_PRICE'],
+											'CURRENCY' => $optimalPrice['RESULT_PRICE']['CURRENCY']
+										);
+										$arElement2[$elemKey.'__'.$keyGroups.'_ORIG'] = $arPrice['DISCOUNT_VALUE'];
+										$arElement2[$elemKey.'__'.$keyGroups] = $this->GetConvertedPrice($arPrice['DISCOUNT_VALUE'], $arPrice['CURRENCY'], $elemParamKey);
+									}
+								}
+								else
+								{
+									$origUserId = $GLOBALS['USER']->GetID();
+									foreach($this->arPricesGroup[$key] as $keyGroups=>$arGroups)
+									{
+										$userId = $this->GetUserByGroups($arGroups);
+										if(!$userId) continue;
+										$GLOBALS['USER']->Authorize($userId);
+										$arPrices = CIBlockPriceTools::GetItemPrices($arElement['IBLOCK_ID'], $arGroupPrices, $arElementForPrice, true, array(), 0, $siteId);
+										$arPrice = $arPrices[$arPriceCodes[$key]];
+										$arElement2[$elemKey.'__'.$keyGroups.'_ORIG'] = $arPrice['DISCOUNT_VALUE'];
+										$arElement2[$elemKey.'__'.$keyGroups] = $this->GetConvertedPrice($arPrice['DISCOUNT_VALUE'], $arPrice['CURRENCY'], $elemParamKey);
+										if($origUserId > 0) $GLOBALS['USER']->Authorize($origUserId);
+										else $GLOBALS['USER']->Logout();
+									}
 								}
 							}
 						}
@@ -2970,6 +3240,10 @@ class CKDAExportExcel {
 							$arDataFields = array();
 							foreach($arDataOffers as $arDataOffer)
 							{
+								foreach($arAllFields as $fieldName)
+								{
+									if(strpos($fieldName, 'OFFER_')===0 && !array_key_exists($fieldName, $arDataOffer)) $arDataOffer[$fieldName] = '';
+								}
 								foreach($arDataOffer as $k=>$v)
 								{
 									if(strpos($k, 'OFFER_')===0) 
@@ -2994,6 +3268,13 @@ class CKDAExportExcel {
 						if(isset($this->params['MAX_PREVIEW_LINES']) && $this->params['MAX_PREVIEW_LINES'] > 0 && $this->params['EXPORT_ONE_OFFER_MIN_PRICE']!='Y')
 						{
 							$arOfferParams['NAV_PARAMS']['nTopCount'] = $this->params['MAX_PREVIEW_LINES'];
+						}
+						if($this->params['EXPORT_OFFERS_UNDER_ELEM']=='Y')
+						{
+							$arData[] = $arElement2;
+							$this->ProcessMoveFiles($arElement2);
+							$arOfferParams['PARENTFIELDS'] = array();
+							$needAdd = false;
 						}
 
 						$arResElements2 = $this->GetElementsData($arData, $arOfferParams);
@@ -3079,6 +3360,17 @@ class CKDAExportExcel {
 		);
 	}
 	
+	public function GetPropVal($val, $arProp)
+	{
+		if($arProp['PROPERTY_TYPE']=='S' && $arProp['USER_TYPE']=='HTML')
+		{
+			$arVal = unserialize($val);
+			if(is_array($arVal) && isset($arVal['TEXT'])) $val = $arVal['TEXT'];
+			else $val = '';
+		}
+		return $val;
+	}
+	
 	public function GetElementSectionList(&$arElement2, $arElement, $arFieldsSections, $arElementNameFields, $arFilter, $arParams, $showOnlyFilterSection)
 	{
 		$arElementSections = array();
@@ -3088,9 +3380,12 @@ class CKDAExportExcel {
 			$mainSection = $arElement['IBLOCK_SECTION_ID'];
 			if(!$showOnlyFilterSection && !$onlyOneSection)
 			{
+				$arIds = array();
 				$dbRes = CIBlockElement::GetElementGroups($arElement['ID'], true, array('ID'));
 				while($arSect = $dbRes->Fetch())
 				{
+					if(in_array($arSect['ID'], $arIds)) continue;
+					$arIds[] = $arSect['ID'];
 					if($arSect['ID']!=$mainSection)
 					{
 						$arElement3 = array();
@@ -3198,6 +3493,28 @@ class CKDAExportExcel {
 	public function GetSectionsData(&$arData, $arParams)
 	{
 		$arFilter = $arParams['FILTER'];
+		if($arFilter['INCLUDE_SUBSECTIONS']=='Y' && is_array($arFilter['SECTION_ID']) && count($arFilter['SECTION_ID']) > 0 && class_exists('\Bitrix\Iblock\SectionTable'))
+		{
+			$dbRes = \Bitrix\Iblock\SectionTable::GetList(array(
+				'filter'=>array('ID'=>$arFilter['SECTION_ID']),
+				'runtime' => array(new \Bitrix\Main\Entity\ReferenceField(
+					'SECTION2',
+					'\Bitrix\Iblock\SectionTable',
+					array(
+						'<=this.LEFT_MARGIN' => 'ref.LEFT_MARGIN',
+						'>=this.RIGHT_MARGIN' => 'ref.RIGHT_MARGIN',
+						'this.IBLOCK_ID' => 'ref.IBLOCK_ID'
+					)
+				)), 
+				'select'=>array('SID'=>'SECTION2.ID'), 
+				'order'=>array('SECTION2.DEPTH_LEVEL'=>'ASC')
+			));
+			while($arSection = $dbRes->Fetch())
+			{
+				if(!in_array($arSection['SID'], $arFilter['SECTION_ID'])) $arFilter['SECTION_ID'][] = $arSection['SID'];
+			}
+			unset($arFilter['INCLUDE_SUBSECTIONS']);
+		}
 		$arSkuFilter = $arParams['SKU_FILTER'];
 		$arNavParams = (is_array($arParams['NAV_PARAMS']) ? $arParams['NAV_PARAMS'] : false);
 		$arAllFields = $arParams['FIELDS'];
@@ -3260,7 +3577,9 @@ class CKDAExportExcel {
 		$arFilter2 = array_merge($arFilter, ($currentKey > 0 ? array('DEPTH_LEVEL'=>$currentKey) : array()));
 		if((array_key_exists('<=LEFT_MARGIN', $arFilter2) || array_key_exists('>=RIGHT_MARGIN', $arFilter2)) && array_key_exists('DEPTH_LEVEL', $arFilter2) && class_exists('\Bitrix\Iblock\SectionTable'))
 		{
-			if($arTmpSection = \Bitrix\Iblock\SectionTable::getList(array('filter'=>$arFilter2, 'select'=>array('ID'), 'limit'=>1))->Fetch())
+			$arFilter3 = $arFilter2;
+			$arFilter3 = array_diff_key($arFilter3, array_flip(preg_grep('/^\W*(SECTION_ID|INCLUDE_SUBSECTIONS)$/', array_keys($arFilter3))));
+			if($arTmpSection = \Bitrix\Iblock\SectionTable::getList(array('filter'=>$arFilter3, 'select'=>array('ID'), 'limit'=>1))->Fetch())
 			{
 				$arFilter2['ID'] = $arTmpSection['ID'];
 				if(array_key_exists('<=LEFT_MARGIN', $arFilter2)) unset($arFilter2['<=LEFT_MARGIN']);
@@ -3359,7 +3678,7 @@ class CKDAExportExcel {
 		$listIndex = $this->listIndex;
 		$arOrder = array();
 		$arSort = array_map('trim', explode('=>', $this->params['SORT'][$listIndex]));
-		if($arSort[0])
+		if($arSort[0] && in_array($arSort[0], $this->params['FIELDS_LIST'][$listIndex]))
 		{
 			$sortField = $arSort[0];
 			$sortOrder = (ToUpper($arSort[1])=='DESC' ? 'DESC' : 'ASC');
@@ -3513,27 +3832,29 @@ class CKDAExportExcel {
 				//if(!empty($arSectionIds))
 				if($this->params['EXPORT_SEP_SECTIONS']=='Y')
 				{
+					$addFilter = array();
+					if($this->params['EXPORT_INACTIVE_SECTIONS']!='Y') $addFilter['GLOBAL_ACTIVE'] = 'Y';
 					$arSort = array('LEFT_MARGIN'=>'ASC');
 					if($arFilter['SECTION_ID'] > 0 || (is_array($arFilter['SECTION_ID']) && count($arFilter['SECTION_ID']) > 0))
 					{
 						if($arFilter['INCLUDE_SUBSECTIONS']=='Y')
 						{
-							$dbResMain = CIblockSection::GetList($arSort, array('IBLOCK_ID'=>$arFilter['IBLOCK_ID'], 'ID'=>$arFilter['SECTION_ID'], 'GLOBAL_ACTIVE'=>'Y'), false, array('LEFT_MARGIN', 'RIGHT_MARGIN'));
+							$dbResMain = CIblockSection::GetList($arSort, array_merge(array('IBLOCK_ID'=>$arFilter['IBLOCK_ID'], 'ID'=>$arFilter['SECTION_ID']), $addFilter), false, array('LEFT_MARGIN', 'RIGHT_MARGIN'));
 							while($arMainSect = $dbResMain->Fetch())
 							{
-								$dbRes = CIblockSection::GetList($arSort, array('IBLOCK_ID'=>$arFilter['IBLOCK_ID'], '>=LEFT_MARGIN'=>$arMainSect['LEFT_MARGIN'], '<=RIGHT_MARGIN'=>$arMainSect['RIGHT_MARGIN'], 'GLOBAL_ACTIVE'=>'Y'), false, array('ID', 'NAME'));
+								$dbRes = CIblockSection::GetList($arSort, array_merge(array('IBLOCK_ID'=>$arFilter['IBLOCK_ID'], '>=LEFT_MARGIN'=>$arMainSect['LEFT_MARGIN'], '<=RIGHT_MARGIN'=>$arMainSect['RIGHT_MARGIN']), $addFilter), false, array('ID', 'NAME'));
 								while($arr = $dbRes->Fetch()) $arSections[$arr['ID']] = $arr;
 							}
 						}
 						else
 						{
-							$dbRes = CIblockSection::GetList($arSort, array('IBLOCK_ID'=>$arFilter['IBLOCK_ID'], 'ID'=>$arFilter['SECTION_ID'], 'GLOBAL_ACTIVE'=>'Y'), false, array('ID', 'NAME'));
+							$dbRes = CIblockSection::GetList($arSort, array_merge(array('IBLOCK_ID'=>$arFilter['IBLOCK_ID'], 'ID'=>$arFilter['SECTION_ID']), $addFilter), false, array('ID', 'NAME'));
 							while($arr = $dbRes->Fetch()) $arSections[$arr['ID']] = $arr;
 						}
 					}
 					else
 					{
-						$dbRes = CIblockSection::GetList($arSort, array(/*'ID'=>$arSectionIds*/'IBLOCK_ID'=>$arFilter['IBLOCK_ID'], 'GLOBAL_ACTIVE'=>'Y'), false, array('ID', 'NAME'));
+						$dbRes = CIblockSection::GetList($arSort, array_merge(array(/*'ID'=>$arSectionIds*/'IBLOCK_ID'=>$arFilter['IBLOCK_ID']), $addFilter), false, array('ID', 'NAME'));
 						while($arr = $dbRes->Fetch()) $arSections[$arr['ID']] = $arr;
 					}
 
@@ -3690,10 +4011,10 @@ class CKDAExportExcel {
 	public function GetSectionIpropTemplates(&$arSection, $arSelectFields)
 	{
 		$arIpropTempKeys = preg_grep('/^IPROP_TEMP_/', $arSelectFields);
-		$arIpropTempKeys = array_map(create_function('$k', 'return substr($k, 11);'), $arIpropTempKeys);
+		if(count($arIpropTempKeys) > 0) $arIpropTempKeys = array_map(create_function('$k', 'return substr($k, 11);'), $arIpropTempKeys);
 		$arIpropTempKeys2 = preg_grep('/^TEMPLATE_/', $arIpropTempKeys);
 		$arIpropTempKeys = array_diff($arIpropTempKeys, $arIpropTempKeys2);
-		$arIpropTempKeys2 = array_map(create_function('$k', 'return substr($k, 9);'), $arIpropTempKeys2);
+		if(count($arIpropTempKeys2) > 0) $arIpropTempKeys2 = array_map(create_function('$k', 'return substr($k, 9);'), $arIpropTempKeys2);
 		if(!empty($arIpropTempKeys))
 		{
 			$ipropValues = new \Bitrix\Iblock\InheritedProperty\SectionValues($arSection['IBLOCK_ID'], $arSection['ID']);
@@ -3758,7 +4079,7 @@ class CKDAExportExcel {
 		}
 
 		$isPicture = false;
-		if(in_array($field, array('IE_PREVIEW_PICTURE', 'IE_DETAIL_PICTURE', 'IE_QR_CODE_IMAGE')) || preg_match('/^ISECT\d*(_DETAIL)?_PICTURE$/', $field)) $isPicture = true;
+		if(in_array($field, array('IE_PREVIEW_PICTURE', 'IE_DETAIL_PICTURE', 'IE_QR_CODE_IMAGE', 'ICAT_BARCODE_IMAGE')) || preg_match('/^ISECT\d*(_DETAIL)?_PICTURE$/', $field)) $isPicture = true;
 		if(!$isPicture && strpos($field, 'IP_PROP')===0)
 		{
 			$propId = substr($field, 7);
@@ -3995,6 +4316,23 @@ class CKDAExportExcel {
 		}
 	}
 	
+	public function GetDefaultSite()
+	{
+		if(!isset($this->defaultSite) || !is_array($this->defaultSite))
+		{
+			if(!($arSite = \CSite::GetList(($by='sort'), ($order='asc'), array('DEFAULT'=>'Y'))->Fetch()))
+				$arSite = \CSite::GetList(($by='sort'), ($order='asc'), array())->Fetch();
+			$this->defaultSite = (is_array($arSite) ? $arSite : array());
+		}
+		return $this->defaultSite;
+	}
+	
+	public function GetDefaultSiteId()
+	{
+		$arSite = $this->GetDefaultSite();
+		return $arSite['ID'];
+	}
+	
 	public function Str2Url($string, $arParams=array())
 	{
 		if(!is_array($arParams)) $arParams = array();
@@ -4007,6 +4345,11 @@ class CKDAExportExcel {
 			if(isset($arParams['TRANS_EAT']) && $arParams['TRANS_EAT']=='N') $arParams['delete_repeat_replace'] = false;
 		}
 		return CUtil::translit($string, LANGUAGE_ID, $arParams);
+	}
+	
+	public function GetSeparator($sep)
+	{
+		return strtr((string)$sep, array('\r'=>"\r", '\n'=>"\n", '\t'=>"\t"));
 	}
 }
 ?>

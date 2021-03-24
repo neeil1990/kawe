@@ -1,5 +1,7 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("description", "Выберите интересующие вас товары в каталоге. Все приборы и инструменты рассортированы по тематическим категориям, например, дерматоскопы Kawe - в дерматологии.");
+$APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Как заказать?</h1>");
 $APPLICATION->SetTitle("Как заказать?");
 ?>
 

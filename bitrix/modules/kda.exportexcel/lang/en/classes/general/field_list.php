@@ -144,6 +144,7 @@ $MESS['KDA_EE_FI_DISCOUNT_NOTES'] = "Brief description of discounts";
 $MESS['KDA_EE_FI_DISCOUNT_CURRENCY'] = "Discount currency";
 $MESS['KDA_EE_FI_DETAIL_PAGE_URL'] = "Details page URL";
 $MESS['KDA_EE_QR_CODE_IMAGE'] = "QR code";
+$MESS['KDA_EE_BARCODE_IMAGE'] = "Barcode EAN13 (picture)";
 $MESS['KDA_EE_FI_VAT_ID'] = "VAT rate";
 $MESS['KDA_EE_FI_BARCODE'] = "Barcode";
 $MESS['KDA_EE_FI_QUANTITY_TRACE'] = "Enable stock tracking";

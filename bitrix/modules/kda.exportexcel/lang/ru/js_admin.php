@@ -11,6 +11,7 @@ $MESS["KDA_EE_ADD_ALL_ELEMENT_FIELDS_SEO"] = "Показать все SEO-пол
 $MESS["KDA_EE_ADD_ALL_ELEMENT_FIELDS_CATALOG"] = "Показать все поля торгового каталога";
 $MESS["KDA_EE_ADD_LINE_ABOVE"] = "Добавить строку выше";
 $MESS["KDA_EE_ADD_LINE_UNDER"] = "Добавить строку ниже";
+$MESS["KDA_EE_ADD_LINE_TO_END"] = "Добавить строку в конце листа";
 $MESS["KDA_EE_REMOVE_LINE"] = "Удалить строку";
 $MESS["KDA_EE_INSERT_PICTURE"] = "Вставить изображение";
 $MESS['KDA_EE_POPUP_CRON_TITLE'] = "Настройка cron";

@@ -1,0 +1,23 @@
+<?
+$MESS["DELIGHT_WEBP_SETTINGS_ENABLED"] = "Активность";
+$MESS["DELIGHT_WEBP_SETTINGS_ATTRIBUTES"] = "Обрабатываемые атрибуты";
+$MESS["DELIGHT_WEBP_SETTINGS_ATTRIBUTES_HINT"] = "Здесь указываются атрибуты тегов (img и других), в которых содержатся ссылки на файлы с изображениями и которые требуется обрабатывать. Каждый атрибут нужно писать с новой строки. Атрибут style указывать не нужно. Допускаются только латиница, числа и символы -_";
+$MESS["DELIGHT_WEBP_SETTINGS_LIMITATION_URL"] = "Ограничение работы модуля по наличию строки в URL";
+$MESS["DELIGHT_WEBP_SETTINGS_LIMITATION_URL_HINT"] = "Здесь указываются параметры URL, например, домены или разделы, внутри которых модуль не будет запускаться. Каждый параметр нужно писать с новой строки. При загрузке страницы модуль проверит, не содержит ли текущий URL параметр из этого поля, и если содержит, то модуль не будет запущен на этой странице.";
+$MESS["DELIGHT_WEBP_SETTINGS_SAVE"] = "Сохранить";
+$MESS["DELIGHT_WEBP_SETTINGS_APPLY"] = "Применить";
+$MESS["DELIGHT_WEBP_SETTINGS_CANCEL"] = "Отменить";
+$MESS["DELIGHT_WEBP_RESTORE_DEFAULTS"] = "По умолчанию";
+$MESS["DELIGHT_WEBP_RESTORE_DEFAULTS_WARNING"] = "Внимание! Все настройки будут перезаписаны значениями по умолчанию! Продолжить?";
+$MESS["DELIGHT_WEBP_SETTINGS_SAVE_ATTRIBUTES_ERROR"] = "Недопустимые символы в поле «Обрабатываемые атрибуты»";
+$MESS["DELIGHT_WEBP_SETTINGS_CURRENT_CONVERTER"] = "Для конвертирования используется библиотека:";
+$MESS["DELIGHT_WEBP_SETTINGS_SERVICE_INFORMATION"] = "Служебная информация";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTER_TEST"] = "Результат тестового конвертирования:";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTER_TEST_SUCCESS"] = "<span style='color:green;font-weight:600;'>Успешно</span>";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTER_TEST_FAIL"] = "<span style='color:red;font-weight:600;'>Ошибка</span>";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTER_TEST_FAIL_GD"] = "<span style='color:red;'>Используется устаревшая версия серверной библиотеки GD. Для корректной работы модуля требуется обновить библиотеку.</span>";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTER_GD_CURRENT_VERSION"] = "Текущая версия: ";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTER_GD_NEED_VERSION"] = "Минимальная версия: 2.2.5 или выше";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTER_GD_ALTERNATIVE"] = "Вместо библиотеки GD вы можете установить другую библиотеку. Поддерживаются: ";
+$MESS["DELIGHT_WEBP_SETTINGS_CONVERTATION_ERROR_TITLE"] = "Не удалось конвертировать изображение. Пожалуйста, установите одну из поддерживаемых серверных библиотек:";
+$MESS["DELIGHT_WEBP_SETTINGS_LIBRARY_HOSTING_UPDATE"] = "Для обновления или установки серверных библиотек вы можете обратиться к тех. поддержке хостинга.";

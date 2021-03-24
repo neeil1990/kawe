@@ -1,4 +1,5 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 $moduleId = 'kda.exportexcel';
 $moduleFileSuffix = '';
@@ -18,11 +19,27 @@ define("KDA_EE_PATH2EXPORTS", "/bitrix/php_interface/include/".$moduleId."/");
 
 if ($_REQUEST["action"]=="save")
 {
+	define('PUBLIC_AJAX_MODE', 'Y');
 	$strErrorMessage = $strSuccessMessage = '';
 	
 	if (strlen($PROFILE_ID) < 1)
 	{
 		$strErrorMessage .= GetMessage("KDA_EE_CRON_NOT_PROFILE")."\n";
+	}
+	
+	$cfg_data = "";
+	$arLines = array();
+	@exec('crontab -l', $arLines);
+	if(is_array($arLines))
+	{
+		$cfg_data = implode("\n", $arLines);
+	}
+	if(strlen(trim($cfg_data))==0 && file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg"))
+	{
+		$cfg_file_size = filesize($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg");
+		$fp = fopen($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg", "rb");
+		$cfg_data = fread($fp, $cfg_file_size);
+		fclose($fp);
 	}
 
 	if (strlen($strErrorMessage)<=0 && $_REQUEST["subaction"]=='add')
@@ -45,15 +62,6 @@ if ($_REQUEST["action"]=="save")
 		$agent_php_path = Trim($_REQUEST["agent_php_path"]);
 		if (strlen($agent_php_path)<=0) $agent_php_path = "/usr/bin/php";
 
-		$cfg_data = "";
-		if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg"))
-		{
-			$cfg_file_size = filesize($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg");
-			$fp = fopen($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg", "rb");
-			$cfg_data = fread($fp, $cfg_file_size);
-			fclose($fp);
-		}
-
 		CheckDirPath($_SERVER["DOCUMENT_ROOT"].KDA_EE_PATH2EXPORTS.(strlen($moduleFileSuffix) > 0 ? $moduleFileSuffix.'_' : '')."logs/");
 		if (strlen($PROFILE_ID) > 0)
 		{
@@ -72,6 +80,7 @@ if ($_REQUEST["action"]=="save")
 			$logFile = $_SERVER["DOCUMENT_ROOT"].KDA_EE_PATH2EXPORTS.(strlen($moduleFileSuffix) > 0 ? $moduleFileSuffix.'_' : '')."logs/".$PROFILE_ID.".txt";
 			if(CKDAExportUtils::getSiteEncoding()=='utf-8') $phpParams = '-d mbstring.func_overload=2 -d mbstring.internal_encoding=UTF-8';
 			else $phpParams = '-d mbstring.func_overload=0 -d mbstring.internal_encoding=CP1251';
+			$phpParams .= ' -d short_open_tag=on -d memory_limit=1024M';
 			$cfg_subdata = $strTime.$agent_php_path." ".$phpParams." -f ".$execFile." ".$PROFILE_ID." >".$logFile."\n";
 			$cfg_data .= $cfg_subdata;
 			$strSuccessMessage .= GetMessage("KDA_EE_CRON_PANEL_CONFIG")."<br><br><i>".$cfg_subdata.'</i><br><br>';
@@ -86,7 +95,7 @@ if ($_REQUEST["action"]=="save")
 		if (strlen($strErrorMessage)<=0)
 		{
 			CheckDirPath($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/");
-			$cfg_data = preg_replace("#[\r\n]{2,}#im", "\n", $cfg_data);
+			//$cfg_data = preg_replace("#[\r\n]{2,}#im", "\n", $cfg_data);
 			$fp = fopen($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg", "wb");
 			fwrite($fp, $cfg_data);
 			fclose($fp);
@@ -113,17 +122,17 @@ if ($_REQUEST["action"]=="save")
 	
 	if (strlen($strErrorMessage)<=0 && $_REQUEST["subaction"]=='delete')
 	{
-		$cfg_data = "";
 		if (file_exists($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg"))
 		{
-			$cfg_file_size = filesize($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg");
+			/*$cfg_file_size = filesize($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg");
 			$fp = fopen($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg", "rb");
 			$cfg_data = fread($fp, $cfg_file_size);
-			fclose($fp);
+			fclose($fp);*/
 
 			$cfg_data = preg_replace("#^.*?".preg_quote(KDA_EE_PATH2EXPORTS).$cronFrame." +".$PROFILE_ID." *>.*?$#im", "", $cfg_data);
 
-			$cfg_data = preg_replace("#[\r\n]{2,}#im", "\n", $cfg_data);
+			//$cfg_data = preg_replace("#[\r\n]{2,}#im", "\n", $cfg_data);
+			$cfg_data = preg_replace("#\n{3,}#im", "\n\n", $cfg_data);
 			$fp = fopen($_SERVER["DOCUMENT_ROOT"]."/bitrix/crontab/crontab.cfg", "wb");
 			fwrite($fp, $cfg_data);
 			fclose($fp);
@@ -169,6 +178,44 @@ if ($_REQUEST["action"]=="save")
 /*$obJSPopup = new CJSPopup();
 $obJSPopup->ShowTitlebar(GetMessage("KDA_EE_CRON_TITLE"));*/
 
+/*Define php path*/
+$arPaths = array('/usr/bin/php');
+$arLines = array();
+@exec('crontab -l', $arLines);
+if(is_array($arLines))
+{
+	foreach($arLines as $line)
+	{
+		$arLineParts = preg_split('/\s+/', $line);
+		if(isset($arLineParts[5]) && !in_array($arLineParts[5], $arPaths))
+		{
+			$arPaths[] = $arLineParts[5];
+		}
+	}
+}
+$arVersions = array();
+foreach($arPaths as $phpPath)
+{
+	$arPhpLines = array();
+	@exec($phpPath.' -v', $arPhpLines);
+	if(is_array($arPhpLines) && isset($arPhpLines[0]) && preg_match('/PHP\s*([\d\.]+)/i', $arPhpLines[0], $m) && !isset($arVersions[$m[1]]))
+	{
+		$arVersions[$m[1]] = $phpPath;
+	}
+}
+if(!empty($arVersions))
+{
+	krsort($arVersions);
+	reset($arVersions);
+	$phpPath = current($arVersions);
+}
+else
+{
+	reset($arPaths);
+	$phpPath = current($arPaths);
+}
+/*/Define php path*/
+
 $oProfile = new CKDAExportProfile($suffix);
 $arProfiles = $oProfile->GetList();
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_admin.php");
@@ -208,11 +255,11 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_adm
 				</tr>
 				<tr>
 					<td style="font-size: 12px;"><? echo GetMessage("KDA_EE_CRON_PHP_PATH"); ?> <span id="hint_CRON_PHP_PATH"></span><script>BX.hint_replace(BX('hint_CRON_PHP_PATH'), '<?echo GetMessage("KDA_EE_CRON_PHP_PATH_HINT"); ?>');</script></td>
-					<td><input type="text" name="agent_php_path" value="/usr/bin/php" size="25"></td>
+					<td><input type="text" name="agent_php_path" value="<?echo $phpPath;?>" size="25"></td>
 				</tr>
 				<tr>
 					<td style="font-size: 12px;"><? echo GetMessage("KDA_EE_CRON_AUTO_CRON"); ?> <span id="hint_CRON_AUTO_CRON"></span><script>BX.hint_replace(BX('hint_CRON_AUTO_CRON'), '<?echo GetMessage("KDA_EE_CRON_AUTO_CRON_HINT"); ?>');</script></td>
-					<td><input type="hidden" name="auto_cron_tasks" value="N"><input type="checkbox" name="auto_cron_tasks" value="Y"></td>
+					<td><input type="hidden" name="auto_cron_tasks" value="N"><input type="checkbox" name="auto_cron_tasks" value="Y" checked></td>
 				</tr>
 				<tr>
 					<td colspan="2" style="text-align: center;">

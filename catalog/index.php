@@ -1,5 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Каталог</h1>");
 $APPLICATION->SetTitle("Медицинская техника KaWe -прямые поставки от производителя");
 ?><div class="wrapper">
 

@@ -14,6 +14,7 @@ class CKDAExportExcelWriterXlsx {
 	private $arListIndexes = array();
     private $curCel = 0;
     private $numStrings = 0;
+    private $docRoot = '';
     private $dirPath = '';
     private $outputFile = '';
 	private $tmpFile = '';
@@ -24,10 +25,19 @@ class CKDAExportExcelWriterXlsx {
 	private $ee = false;
 	private $arMergeCells = array();
 	private $arHyperLinks = array();
+	private $arDrawings = array();
 	private $styleFonts = array();
 	private $styleFills = array();
 	private $styleFillIds = array();
 	private $styleCellXfs = array();
+	private $styleCellStyleXfs = array();
+	private $styleCellStyles = array();
+	private $styleNumFmts = array();
+	private $styleStartNumFmtId = 164;
+	private $styleStartFontId = 0;
+	private $styleStartFillId = 0;
+	private $styleStartBorderId = 0;
+	private $styleMainAttrs = array();
 	private $arStyles = array();
 	private $arRowStyles = array();
 	private $arStyleIds = array();
@@ -45,9 +55,11 @@ class CKDAExportExcelWriterXlsx {
 	private $arFunctions = array();
 	private $titlesRowNum = 0;
 	private $mergeSheets = false;
+	private $byTemplate = false;
 	
 	function __construct($arParams = array(), $ee = false)
 	{
+		$this->docRoot = $arParams['DOCROOT'];
 		$this->dirPath = $arParams['TMPDIR'];
 		$this->outputFile = $arParams['OUTPUTFILE'];
 		$this->arListIndexes = $arParams['LIST_INDEXES'];
@@ -68,6 +80,7 @@ class CKDAExportExcelWriterXlsx {
 		$this->arDisplayParams = $arParams['PARAMS']['DISPLAY_PARAMS'];
 		$this->arTextRowsTop = $arParams['PARAMS']['TEXT_ROWS_TOP'];
 		$this->arTextRowsTop2 = $arParams['PARAMS']['TEXT_ROWS_TOP2'];
+		$this->arTextRowsTop3 = $arParams['PARAMS']['TEXT_ROWS_TOP3'];
 		$this->arHideColumnTitles = $arParams['PARAMS']['HIDE_COLUMN_TITLES'];
 		$this->arEnableAutofilters = $arParams['PARAMS']['ENABLE_AUTOFILTER'];
 		$this->arEnableProtections = $arParams['PARAMS']['ENABLE_PROTECTION'];
@@ -78,6 +91,15 @@ class CKDAExportExcelWriterXlsx {
 		{
 			$minHeight = $this->ee->GetFloatVal($this->params['ROW_MIN_HEIGHT']) * 0.6;
 			if($minHeight > 5) $this->defaultRowHeight = $minHeight;
+		}
+		
+		if($this->params['TEMPLATE_FILE'] && $this->params['TEMPLATE_FILE'] > 0)
+		{
+			$arFile = \CFile::GetFileArray($this->params['TEMPLATE_FILE']);
+			if(strlen($arFile['SRC']) > 0 && preg_match('/\.xlsx$/i', $arFile['SRC']) && file_exists($_SERVER['DOCUMENT_ROOT'].\Bitrix\Main\IO\Path::convertLogicalToPhysical($arFile['SRC'])))
+			{
+				$this->byTemplate = $_SERVER['DOCUMENT_ROOT'].$arFile['SRC'];
+			}
 		}
 		
 		$this->arColLetters = range('A', 'Z');
@@ -277,6 +299,10 @@ class CKDAExportExcelWriterXlsx {
 								$valIndex++;
 							}								
 						}
+						elseif(isset($arElement['CELLSTYLE_'.$k]) && is_array($arElement['CELLSTYLE_'.$k]))
+						{
+							$arValStyles[$valIndex][$k] = $arElement['CELLSTYLE_'.$k];
+						}
 						if($valIndex==0)
 						{
 							$arVals[$valIndex][$k] = $val;
@@ -386,15 +412,33 @@ class CKDAExportExcelWriterXlsx {
 					
 					$currentRow = $this->numRows;
 					$maxIndex = count($arVals) - 1;
+					
+					$singleHeight = 0;
+					if(count($arVals) > 1)
+					{
+						$groupHeight = $colHeight;
+						$groupCount = count($arVals);
+						foreach($arVals as $valIndex=>$arValue)
+						{
+							if(isset($arColHeight[$valIndex]) && $arColHeight[$valIndex] > $curHeight)
+							{
+								$groupHeight -= $arColHeight[$valIndex];
+								$groupCount--;
+							}
+						}
+						if($groupCount > 0 && $groupHeight/$groupCount>$this->defaultRowHeight)
+						{
+							$singleHeight = round($groupHeight/$groupCount);
+						}
+					}
+					
 					$arHeights = array();
 					foreach($arVals as $valIndex=>$arValue)
 					{
 						if($maxIndex > $valIndex) $curHeight = 0;
 						else $curHeight = max(0, $colHeight - array_sum($arHeights)*2);
-						if(isset($arColHeight[$valIndex]) && $arColHeight[$valIndex] > $curHeight)
-						{
-							$curHeight = $arColHeight[$valIndex];
-						}
+						if(isset($arColHeight[$valIndex]) && $arColHeight[$valIndex] > $curHeight) $curHeight = $arColHeight[$valIndex];
+						elseif($singleHeight > 0) $curHeight = max($curHeight, $singleHeight);
 						$this->writeRowStart($curHeight, array(), $rowParams);
 						$arHeights[$valIndex] = ($curHeight > 0 ? $curHeight : $this->defaultRowHeight);
 						
@@ -528,6 +572,7 @@ class CKDAExportExcelWriterXlsx {
 					return false;
 				}
 			}
+			$this->AddTextRows($this->textRowsTop3, 'TEXT_ROWS_TOP3', $fieldsCount);
 			fclose($handle);
 			$this->closeWorkSheet($listIndex);
 		}
@@ -551,14 +596,153 @@ class CKDAExportExcelWriterXlsx {
 			$this->stringsHandler = fopen($dirPath.'data/xl/sharedStrings.xml', 'a+');
 			$this->stylesHandler = fopen($dirPath.'data/xl/styles.xml', 'a+');
 			return;
-		}	
+		}
 		
         CheckDirPath($dirPath.'data/');
         CheckDirPath($dirPath.'data/xl/');
         CheckDirPath($dirPath.'data/xl/worksheets/');
-		$zipObj = CBXArchive::GetArchive(dirname(__FILE__).'/../../source/example.xlsx', 'ZIP');
+		$zipObj = CBXArchive::GetArchive(($this->byTemplate ? $this->byTemplate : dirname(__FILE__).'/../../source/example.xlsx'), 'ZIP');
 		$zipObj->Unpack($dirPath.'data/');
-		unlink($dirPath.'data/xl/worksheets/sheet1.xml');
+		if(!$this->byTemplate) unlink($dirPath.'data/xl/worksheets/sheet1.xml');
+		else
+		{
+			$i = 1;
+			foreach($this->arListIndexesFile as $listIndex)
+			{
+				rename($dirPath.'data/xl/worksheets/sheet'.$i.'.xml', $dirPath.'data/xl/worksheets/sheet'.$i.'.xml.tmp');
+				$i++;
+			}
+			if(file_exists($dirPath.'data/xl/printerSettings'))
+			{
+				DeleteDirFilesEx(substr($dirPath.'data/xl/printerSettings', strlen($this->docRoot)));
+			}
+		}
+		
+		$this->styleMainAttrs = array(
+			'xmlns'=>'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
+		);
+		$arDefaultExts = array(			
+			'jpeg' => '<Default Extension="jpeg" ContentType="image/jpeg"/>',
+			'jpg' => '<Default Extension="jpg" ContentType="image/jpeg"/>',
+			'png' => '<Default Extension="png" ContentType="image/png"/>',
+			'gif' => '<Default Extension="gif" ContentType="image/gif"/>',
+			'bmp' => '<Default Extension="bmp" ContentType="image/bmp"/>',
+			'rels' => '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>',
+			'xml' => '<Default Extension="xml" ContentType="application/xml"/>'
+		);
+		$sharedStrings = '';
+		if($this->byTemplate)
+		{
+			if(file_exists($dirPath.'data/[Content_Types].xml'))
+			{
+				$sxml = simplexml_load_file($dirPath.'data/[Content_Types].xml');
+				if($sxml->Default)
+				{
+					foreach($sxml->Default as $default)
+					{
+						if(!$default->attributes()->Extension) continue;
+						$extension = ToLower((string)$default->attributes()->Extension);
+						if(!array_key_exists($extension, $arDefaultExts))
+						{
+							$arDefaultExts[$extension] = $default->asXML();
+						}
+					}
+				}
+			}
+			
+			if(file_exists($dirPath.'data/xl/sharedStrings.xml'))
+			{
+				$sxml = simplexml_load_file($dirPath.'data/xl/sharedStrings.xml');
+				if($sxml->si)
+				{
+					$this->numStrings = count($sxml->si);
+					$countCells += count($sxml->si);
+					foreach($sxml->si as $si)
+					{
+						$sharedStrings .= $si->asXML();
+					}
+				}
+			}
+			
+			$tmpStyleFile = $dirPath.'data/xl/styles.xml';
+			if(file_exists($tmpStyleFile))
+			{
+				$beginFile = file_get_contents($tmpStyleFile, false, null, 0, 10000);
+				if(preg_match('/<styleSheet[^>]*>/', $beginFile, $m) && preg_match_all('/\s([^=]+)="([^"]+)"/', $m[0], $m2))
+				{
+					foreach($m2[1] as $k=>$v)
+					{
+						$this->styleMainAttrs[$v] = $m2[2][$k];
+					}
+				}
+				
+				$sxml = simplexml_load_file($tmpStyleFile);
+				if($sxml->numFmts && $sxml->numFmts->numFmt)
+				{
+					foreach($sxml->numFmts->numFmt as $numFmt)
+					{
+						if($numFmt->attributes()->numFmtId && (int)$numFmt->attributes()->numFmtId>=$this->styleStartNumFmtId) $this->styleStartNumFmtId = (int)$numFmt->attributes()->numFmtId + 1;
+						$this->styleNumFmts[] = $numFmt->asXML();
+					}
+				}
+				
+				if($sxml->fonts && $sxml->fonts->font)
+				{
+					foreach($sxml->fonts->font as $font)
+					{
+						$this->styleFonts[] = $font->asXML();
+					}
+					$this->styleStartFontId = count($this->styleFonts);
+				}
+				if($sxml->fills && $sxml->fills->fill)
+				{
+					foreach($sxml->fills->fill as $fill)
+					{
+						$this->styleFills[] = $fill->asXML();
+					}
+					$this->styleStartFillId = count($this->styleFills);
+				}
+				if($sxml->borders && $sxml->borders->border)
+				{
+					foreach($sxml->borders->border as $border)
+					{
+						$this->arBorders[] = $border->asXML();
+					}
+					$this->styleStartBorderId = count($this->arBorders);
+				}
+				if($sxml->cellStyleXfs && $sxml->cellStyleXfs->xf)
+				{
+					foreach($sxml->cellStyleXfs->xf as $xf)
+					{
+						$this->styleCellStyleXfs[] = $xf->asXML();
+					}
+				}
+				if($sxml->cellXfs && $sxml->cellXfs->xf)
+				{
+					foreach($sxml->cellXfs->xf as $xf)
+					{
+						$this->styleCellXfs[] = $xf->asXML();
+					}
+				}
+				if($sxml->cellStyles && $sxml->cellStyles->cellStyle)
+				{
+					foreach($sxml->cellStyles->cellStyle as $cellStyle)
+					{
+						$this->styleCellStyles[] = $cellStyle->asXML();
+					}
+				}
+			}
+			
+			$mediaDir = $dirPath.'data/xl/media/';
+			if(file_exists($mediaDir) && is_dir($mediaDir) && ($arFiles = glob($mediaDir.'image*')))
+			{
+				foreach($arFiles as $mediafile)
+				{
+					rename($mediafile, str_replace($mediaDir, $mediaDir.'tpl_', $mediafile));
+					unlink($mediafile);
+				}
+			}
+		}
 
 		/*Core*/
 		$time = time();
@@ -622,13 +806,7 @@ class CKDAExportExcelWriterXlsx {
 		$this->contentTypesHandler = fopen($dirPath.'data/[Content_Types].xml', 'w+');
 		fwrite($this->contentTypesHandler, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'.
 			'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'.
-			'<Default Extension="jpeg" ContentType="image/jpeg"/>'.
-			'<Default Extension="jpg" ContentType="image/jpeg"/>'.
-			'<Default Extension="png" ContentType="image/png"/>'.
-			'<Default Extension="gif" ContentType="image/gif"/>'.
-			'<Default Extension="bmp" ContentType="image/bmp"/>'.
-			'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'.
-			'<Default Extension="xml" ContentType="application/xml"/>'.
+			implode('', $arDefaultExts).
 			'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>');
 		$ind = 1;
 		foreach($this->arListIndexesFile as $listIndex)
@@ -685,7 +863,7 @@ class CKDAExportExcelWriterXlsx {
 		$this->stylesHandler = fopen($dirPath.'data/xl/styles.xml', 'w+');
 		
         fwrite($this->stringsHandler, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?'.
-            '><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'.$countCells.'" uniqueCount="'.$countCells.'">');
+            '><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'.$countCells.'" uniqueCount="'.$countCells.'">'.$sharedStrings);
 			
 		/*Drawings*/
 		CheckDirPath($dirPath.'data/xl/drawings/');
@@ -707,15 +885,14 @@ class CKDAExportExcelWriterXlsx {
 		}
 		/*/Drawings*/
 		
-		$this->styleFonts = array(
-			'<font>'.
+		$this->styleFonts[] = '<font>'.
 				'<sz val="11"/>'.
 				'<color theme="1"/>'.
 				'<name val="Calibri"/>'.
 				'<family val="2"/>'.
 				'<scheme val="minor"/>'.
-			'</font>',
-			'<font>'.
+			'</font>';
+		$this->styleFonts[] = '<font>'.
 				'<sz val="'.((int)$this->params['FONT_SIZE'] ? (int)$this->params['FONT_SIZE'] : '11').'"/>'.
 				($this->params['FONT_COLOR'] ? '<color rgb="FF'.htmlspecialcharsex(ToUpper(substr($this->params['FONT_COLOR'], 1))).'"/>' : '<color theme="1"/>').
 				($this->params['STYLE_BOLD']=='Y' ? '<b/>' : '').
@@ -724,13 +901,10 @@ class CKDAExportExcelWriterXlsx {
 				'<name val="'.($this->params['FONT_FAMILY'] ? htmlspecialcharsex($this->params['FONT_FAMILY']) : 'Calibri').'"/>'.
 				'<family val="2"/>'.
 				'<scheme val="minor"/>'.
-			'</font>'
-		);
+			'</font>';
 		
-		$this->styleFills = array(
-			'<fill><patternFill patternType="none"/></fill>',
-			'<fill><patternFill patternType="gray125"/></fill>'
-		);
+		$this->styleFills[] = '<fill><patternFill patternType="none"/></fill>';
+		$this->styleFills[] = '<fill><patternFill patternType="gray125"/></fill>';
 		/*$this->styleFills = array();
 		if($this->params['BACKGROUND_COLOR'])
 		{
@@ -749,9 +923,11 @@ class CKDAExportExcelWriterXlsx {
 		
 		$this->arBorders[] = '<border><left/><right/><top/><bottom/><diagonal/></border>';
 
-		$this->styleCellXfs = array(
-			'<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyAlignment="1" applyProtection="1">'.$this->getAlignment().'</xf>'
-		);
+		$this->styleCellXfs[] = '<xf numFmtId="0" fontId="'.($this->styleStartFontId + 1).'" fillId="'.$this->styleStartFillId.'" borderId="'.$this->styleStartBorderId.'" xfId="0" applyAlignment="1" applyProtection="1">'.$this->getAlignment().'</xf>';
+		
+		$this->styleCellStyleXfs[] = '<xf numFmtId="0" fontId="'.$this->styleStartFontId.'" fillId="'.$this->styleStartFillId.'" borderId="'.$this->styleStartBorderId.'"/>';
+		
+		$this->styleCellStyles[] = '<cellStyle name="Normal" xfId="0" builtinId="0"/>';
     }
 	
     public function openWorkSheet($listIndex)
@@ -764,6 +940,7 @@ class CKDAExportExcelWriterXlsx {
 		$this->displayParams = $this->arDisplayParams[$listIndex];
 		$this->textRowsTop = $this->arTextRowsTop[$listIndex];
 		$this->textRowsTop2 = $this->arTextRowsTop2[$listIndex];
+		$this->textRowsTop3 = $this->arTextRowsTop3[$listIndex];
 		$this->fparams = $this->arFparams[$listIndex];
 		$this->hideColumnTitles = $this->arHideColumnTitles[$listIndex];
 		$this->enableAutofilter = $this->arEnableAutofilters[$listIndex];
@@ -775,11 +952,17 @@ class CKDAExportExcelWriterXlsx {
 		$arFields = $this->fields = $this->ee->GetFieldList($listIndex);
 		$cols = count($arFields);
 		$rows = $this->arTotalRows[$listIndex];
-		$this->qntHeadLines = 0;
+		$this->qntHeadLines = $this->firstDataLine = 0;
 		if(is_array($this->textRowsTop)) $this->qntHeadLines += count($this->textRowsTop);
 		if($this->hideColumnTitles!='Y') $this->qntHeadLines += 1;
 		$rows += $this->qntHeadLines;
-		if(is_array($this->textRowsTop2)) $rows += count($this->textRowsTop2);
+		$this->firstDataLine = $this->qntHeadLines + 1;
+		if(is_array($this->textRowsTop2))
+		{
+			$rows += count($this->textRowsTop2);
+			$this->firstDataLine += count($this->textRowsTop2);
+		}
+		if(is_array($this->textRowsTop3)) $rows += count($this->textRowsTop3);
 		$dirPath = $this->dirPath;
 		$this->currentListIsFirst = (bool)($listIndex==$this->indexFirstList);
 		$this->currentListIsLast = (bool)($listIndex==$this->indexLastList);		
@@ -800,18 +983,143 @@ class CKDAExportExcelWriterXlsx {
 		
 		$this->arMergeCells = array();
 		$this->arHyperLinks = array();
+		$this->arDrawings = array();
 		$this->curRelationshipIndex = 1;
 		$this->curImgIndex = 1;
 		$this->numRows = 0;
 		
+		$defaultRows = '';
+		$arDefaultCols = array();
+		$arDefaultRels = array();
+		$arDrawingItems = array();
+		$arDrawingItemRels = array();
+		$workSheetAttrs = array(
+			'xmlns' => 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+			'xmlns:r' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
+		);
+		if($this->byTemplate)
+		{
+			$tmpSheet = $dirPath.'data/xl/worksheets/sheet'.$sheetId.'.xml.tmp';
+			if(file_exists($tmpSheet))
+			{
+				$beginFile = file_get_contents($tmpSheet, false, null, 0, 10000);
+				if(preg_match('/<worksheet[^>]*>/', $beginFile, $m) && preg_match_all('/\s([^=]+)="([^"]+)"/', $m[0], $m2))
+				{
+					foreach($m2[1] as $k=>$v)
+					{
+						$workSheetAttrs[$v] = $m2[2][$k];
+					}
+				}
+				
+				$sxml = simplexml_load_file($tmpSheet);
+				if($sxml->sheetData && $sxml->sheetData->row)
+				{
+					$this->numRows += count($sxml->sheetData->row);
+					$rows += count($sxml->sheetData->row);
+					$this->qntHeadLines += count($sxml->sheetData->row);
+					$this->firstDataLine += count($sxml->sheetData->row);
+					foreach($sxml->sheetData->row as $row)
+					{
+						if($row->c) $cols = max($cols, count($row->c));
+						$defaultRows .= $row->asXML();
+					}
+				}
+				if($sxml->cols && $sxml->cols->col)
+				{
+					$i = 1;
+					$cols = max($cols, count($sxml->cols->col));
+					foreach($sxml->cols->col as $col)
+					{
+						$arDefaultCols[$i++] = $col->asXML();
+					}
+				}
+				if($sxml->mergeCells && $sxml->mergeCells->mergeCell)
+				{
+					foreach($sxml->mergeCells->mergeCell as $mergeCell)
+					{
+						$this->arMergeCells[] = $mergeCell->asXML();
+					}
+				}
+				if($sxml->hyperlinks && $sxml->hyperlinks->hyperlink)
+				{
+					foreach($sxml->hyperlinks->hyperlink as $hyperlink)
+					{
+						$this->arHyperLinks[] = $hyperlink->asXML();
+					}
+				}
+				if($sxml->drawing)
+				{
+					foreach($sxml->drawing as $drawing)
+					{
+						$this->arDrawings[] = $drawing->asXML();
+					}
+				}
+				unlink($dirPath.'data/xl/worksheets/sheet'.$sheetId.'.xml.tmp');
+			}
+			
+			if(file_exists($dirPath.'data/xl/worksheets/_rels/sheet'.$sheetId.'.xml.rels'))
+			{
+				$sxml = simplexml_load_file($dirPath.'data/xl/worksheets/_rels/sheet'.$sheetId.'.xml.rels');
+				if($sxml->Relationship)
+				{
+					foreach($sxml->Relationship as $relationship)
+					{
+						if(stripos((string)$relationship->attributes()->Type, 'printerSettings')!==false) continue;
+						$relId = (string)$relationship->attributes()->Id;
+						$arDefaultRels[$relId] = $relationship->asXML();
+						if(preg_match('/^rId(\d+)$/', $relId, $m)) $this->curRelationshipIndex = max($this->curRelationshipIndex, $m[1] + 1);
+					}
+				}
+			}
+			
+			if(file_exists($dirPath.'data/xl/drawings/drawing'.$sheetId.'.xml'))
+			{
+				$fileContent = file_get_contents($dirPath.'data/xl/drawings/drawing'.$sheetId.'.xml');
+				if(preg_match_all('/<(xdr:oneCellAnchor|xdr:twoCellAnchor)[\s>].*<\/\1>/Uis', $fileContent, $m))
+				{
+					$arDrawingItems = $m[0];
+					foreach($arDrawingItems as $drawingItem)
+					{
+						if(preg_match('/<xdr:cNvPr[^>]*id="(\d+)"/Uis', $drawingItem, $m2))
+						{
+							$this->curImgIndex = max($this->curImgIndex, $m2[1] + 1);
+						}
+					}
+				}
+			}
+
+			if(file_exists($dirPath.'data/xl/drawings/_rels/drawing'.$sheetId.'.xml.rels'))
+			{
+				$sxml = simplexml_load_file($dirPath.'data/xl/drawings/_rels/drawing'.$sheetId.'.xml.rels');
+				if($sxml->Relationship)
+				{
+					foreach($sxml->Relationship as $relationship)
+					{
+						$xmlPart = $relationship->asXML();
+						if(preg_match('/^\.\.\/media\/(image.*)$/i', (string)$relationship->attributes()->Target, $m))
+						{
+							$xmlPart = str_replace('../media/'.$m[1], '../media/tpl_'.$m[1], $xmlPart);
+						}
+						$arDrawingItemRels[] = $xmlPart;
+					}
+				}
+			}
+		}
+		
+		$frozenLines = $this->qntHeadLines;
+		if($this->params['DISPLAY_LOCK_HEADERS']=='Y' && strlen($this->params['DISPLAY_LOCK_HEADERS_CNT']) > 0 && (int)$this->params['DISPLAY_LOCK_HEADERS_CNT'] > 0)
+		{
+			$frozenLines = (int)$this->params['DISPLAY_LOCK_HEADERS_CNT'];
+		}
 		$this->workSheetHandler = fopen($dirPath.'data/xl/worksheets/sheet'.$sheetId.'.xml', 'w+');
         fwrite($this->workSheetHandler, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'.
-			'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'.
+			'<worksheet '.implode(' ', array_map(create_function('$k, $v', 'return $k."=\"".htmlspecialcharsbx($v)."\"";'), array_keys($workSheetAttrs), $workSheetAttrs)).'>'.
 			'<sheetPr>'.(strlen($this->labelColor) > 0 ? '<tabColor rgb="'.$this->labelColor.'"/>' : '').'<outlinePr summaryBelow="0"/></sheetPr>'.
             '<dimension ref="A1:'.$this->arColLetters[$cols - 1].$rows.'"/><sheetViews>'.
 			($this->params['DISPLAY_LOCK_HEADERS']=='Y' ? 
 				'<sheetView '.($sheetId==1 ? 'tabSelected="1" ' : '').'showRuler="0" zoomScaleNormal="100" workbookViewId="0">'.
-				'<pane ySplit="'.$this->qntHeadLines.'" topLeftCell="A'.($this->qntHeadLines + 1).'" activePane="bottomLeft" state="frozen"/>'.
+				'<pane ySplit="'.$frozenLines.'" topLeftCell="A'.($frozenLines + 1).'" activePane="bottomLeft" state="frozen"/>'.
+				'<selection pane="bottomLeft" activeCell="A'.$this->firstDataLine.'" sqref="A'.$this->firstDataLine.'"/>'.
 				'</sheetView>'
 				:
 				'<sheetView '.($sheetId==1 ? 'tabSelected="1" ' : '').'showRuler="0" zoomScaleNormal="100" workbookViewId="0"/>'
@@ -820,22 +1128,36 @@ class CKDAExportExcelWriterXlsx {
 			'<cols>');
 		for($i=1; $i<=$cols; $i++)
 		{
+			if(array_key_exists($i, $arDefaultCols))
+			{
+				fwrite($this->workSheetHandler, $arDefaultCols[$i]);
+				continue;
+			}
 			$width = $this->defaultWidth;
 			if(isset($this->fparams[$i-1]['DISPLAY_WIDTH']) && (int)$this->fparams[$i-1]['DISPLAY_WIDTH'] > 0) $width = (int)$this->fparams[$i-1]['DISPLAY_WIDTH'];
 			fwrite($this->workSheetHandler, '<col min="'.$i.'" max="'.$i.'" width="'.($width / $this->defaultWidthRatio).'" customWidth="1"/>');
 		}
-		fwrite($this->workSheetHandler, '</cols><sheetData>');
+		fwrite($this->workSheetHandler, '</cols><sheetData>'.$defaultRows);
 		
 		/*Drawings*/
 		$this->drawingsHandler = fopen($dirPath.'data/xl/drawings/drawing'.$sheetId.'.xml', 'w+');
 		$this->drawingRelsHandler = fopen($dirPath.'data/xl/drawings/_rels/drawing'.$sheetId.'.xml.rels', 'w+');
 		
 		fwrite($this->drawingsHandler, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'.
-			'<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">');
+			'<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'.implode('', $arDrawingItems));
 		fwrite($this->drawingRelsHandler, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'.
-			'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">');
-			
-		$this->writeWorksheetRels('<Relationship Id="rId'.($this->curRelationshipIndex++).'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing'.$sheetId.'.xml"/>');
+			'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'.implode('', $arDrawingItemRels));
+		
+		foreach($arDefaultRels as $rel)
+		{
+			$this->writeWorksheetRels($rel);
+		}
+		if(count($this->arDrawings)==0)
+		{
+			$this->writeWorksheetRels('<Relationship Id="rId'.$this->curRelationshipIndex.'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing'.$sheetId.'.xml"/>');
+			$this->arDrawings[] = '<drawing r:id="rId'.$this->curRelationshipIndex.'"/>';
+			$this->curRelationshipIndex++;
+		}
 		/*/Drawings*/
 		return true;
     }
@@ -852,6 +1174,10 @@ class CKDAExportExcelWriterXlsx {
 		if($arStyles['HIDE_UNDER_GROUP']=='Y' && !isset($rowParams['outlineLevel']) /*&& $this->numRows > 0*/)
 		{
 			$rowParams['outlineLevel'] = 1;
+			$rowParams['hidden'] = 1;
+		}
+		elseif($arStyles['ROW_HIDDEN']=='Y' && !isset($rowParams['outlineLevel']))
+		{
 			$rowParams['hidden'] = 1;
 		}
 		elseif(($this->params['EXPORT_GROUP_PRODUCTS']!='Y' && $this->params['EXPORT_GROUP_SUBSECTIONS']!='Y'))
@@ -894,7 +1220,7 @@ class CKDAExportExcelWriterXlsx {
 		{
 			foreach($arStyles as $k=>$v)
 			{
-				if(!in_array($k, array('FONT_FAMILY', 'FONT_SIZE', 'FONT_COLOR', 'STYLE_BOLD', 'STYLE_ITALIC', 'STYLE_UNDERLINE', 'BACKGROUND_COLOR', 'ROW_HEIGHT', 'TEXT_ALIGN', 'VERTICAL_ALIGN', 'BORDER_STYLE', 'BORDER_STYLE_SIDE', 'BORDER_COLOR', 'INDENT', 'NUMBER_FORMAT', 'PROTECTION')))
+				if(!in_array($k, array('FONT_FAMILY', 'FONT_SIZE', 'FONT_COLOR', 'STYLE_BOLD', 'STYLE_ITALIC', 'STYLE_UNDERLINE', 'BACKGROUND_COLOR', 'ROW_HEIGHT', 'TEXT_ALIGN', 'VERTICAL_ALIGN', 'BORDER_STYLE', 'BORDER_STYLE_SIDE', 'BORDER_COLOR', 'INDENT', 'NUMBER_FORMAT', 'NUMBER_DECIMALS', 'PROTECTION')))
 				{
 					unset($arStyles[$k]);
 				}
@@ -921,7 +1247,7 @@ class CKDAExportExcelWriterXlsx {
 				else $arFont[] = '<sz val="11"/>';
 				if($arStyles['FONT_COLOR'])
 				{
-					$arFont[] = '<color rgb="FF'.htmlspecialcharsex(ToUpper(substr($arStyles['FONT_COLOR'], 1))).'"/>';
+					$arFont[] = '<color rgb="FF'.htmlspecialcharsex(ToUpper(substr(trim($arStyles['FONT_COLOR']), 1))).'"/>';
 					$setFont = true;
 				}
 				else $arFont[] = '<color theme="1"/>';
@@ -956,7 +1282,7 @@ class CKDAExportExcelWriterXlsx {
 				$fillId = 0;
 				if($arStyles['BACKGROUND_COLOR'])
 				{
-					$bg = $arStyles['BACKGROUND_COLOR'];
+					$bg = trim($arStyles['BACKGROUND_COLOR']);
 					if(!isset($this->styleFillIds[$bg]))
 					{
 						$this->styleFills[] = '<fill>'.
@@ -991,8 +1317,42 @@ class CKDAExportExcelWriterXlsx {
 				if($fontId > 0 || $fillId > 0 || $setAlignment || $borderId > 0 || $arStyles['INDENT'] || $arStyles['NUMBER_FORMAT'] || $arStyles['PROTECTION'])
 				{
 					$numFmtId = 'numFmtId="0"';
-					if((int)$arStyles['NUMBER_FORMAT'] > 0) $numFmtId = 'numFmtId="'.(int)$arStyles['NUMBER_FORMAT'].'" applyNumberFormat="1"'.((int)$arStyles['NUMBER_FORMAT']==49 ? ' quotePrefix="1"' : '');
-					$this->styleCellXfs[] = '<xf '.$numFmtId.' fontId="'.$fontId.'" fillId="'.$fillId.'" '.($borderId > 0 ? 'borderId="'.$borderId.'" applyBorder="1"' : 'borderId="0"').' xfId="'.count($this->styleCellXfs).'"'.($fontId > 0 ? ' applyFont="1"' : '').($fillId > 0 ? ' applyFill="1"' : '').' applyAlignment="1" applyProtection="1">'.$this->getAlignment($arStyles).$this->getProtection($arStyles).'</xf>';
+					if(strlen($arStyles['NUMBER_FORMAT']) > 0)
+					{
+						if(!preg_match('/^\d+$/', $arStyles['NUMBER_FORMAT']))
+						{
+							$numFormat = $this->styleStartNumFmtId++;
+							$this->styleNumFmts[md5($arStyles['NUMBER_FORMAT'])] = '<numFmt numFmtId="'.$numFormat.'" formatCode="'.$arStyles['NUMBER_FORMAT'].'"/>';
+						}
+						elseif(strlen($arStyles['NUMBER_DECIMALS']) > 0 && in_array($arStyles['NUMBER_FORMAT'], array(1,2,3,4)))
+						{
+							if(in_array($arStyles['NUMBER_FORMAT'], array(1,2)))
+							{
+								if($arStyles['NUMBER_DECIMALS']==0) $arStyles['NUMBER_FORMAT'] = 1;
+								elseif($arStyles['NUMBER_DECIMALS']==2) $arStyles['NUMBER_FORMAT'] = 2;
+								else
+								{
+									$numFormat = $this->styleStartNumFmtId++;
+									$formatCode = '0.'.str_repeat('0', $arStyles['NUMBER_DECIMALS']);
+									$this->styleNumFmts[md5($formatCode)] = '<numFmt numFmtId="'.$numFormat.'" formatCode="'.$formatCode.'"/>';
+								}
+							}
+							elseif(in_array($arStyles['NUMBER_FORMAT'], array(3,4)))
+							{
+								if($arStyles['NUMBER_DECIMALS']==0) $arStyles['NUMBER_FORMAT'] = 3;
+								elseif($arStyles['NUMBER_DECIMALS']==2) $arStyles['NUMBER_FORMAT'] = 4;
+								else
+								{
+									$numFormat = $this->styleStartNumFmtId++;
+									$formatCode = '#,##0.'.str_repeat('0', $arStyles['NUMBER_DECIMALS']);
+									$this->styleNumFmts[md5($formatCode)] = '<numFmt numFmtId="'.$numFormat.'" formatCode="'.$formatCode.'"/>';
+								}
+							}
+						}
+						else $numFormat = (int)$arStyles['NUMBER_FORMAT'];
+						$numFmtId = 'numFmtId="'.$numFormat.'" applyNumberFormat="1"'.($numFormat==49 ? ' quotePrefix="1"' : '');
+					}
+					$this->styleCellXfs[] = '<xf '.$numFmtId.' fontId="'.$fontId.'" fillId="'.$fillId.'" '.($borderId > 0 ? 'borderId="'.$borderId.'" applyBorder="1"' : 'borderId="'.$this->styleStartBorderId.'"').' xfId="'.count($this->styleCellXfs).'"'.($fontId > 0 ? ' applyFont="1"' : '').($fillId > 0 ? ' applyFill="1"' : '').' applyAlignment="1" applyProtection="1">'.$this->getAlignment($arStyles).$this->getProtection($arStyles).'</xf>';
 					$curStyleId = count($this->styleCellXfs) - 1;
 				}
 				else
@@ -1068,7 +1428,7 @@ class CKDAExportExcelWriterXlsx {
     {
 		$origValue = $value;
 		$arStyles = $this->GetStylesWithDefault($arStyles);
-		if((int)$arStyles['NUMBER_FORMAT'] > 0 && !in_array((int)$arStyles['NUMBER_FORMAT'], array(49)) && strlen($cellType)==0) $cellType = 'NUMBER';
+		if(strlen($arStyles['NUMBER_FORMAT']) > 0 && !in_array((int)$arStyles['NUMBER_FORMAT'], array(49)) && strlen($cellType)==0) $cellType = 'NUMBER';
         $this->curCel++;
 		$cell = $this->curCel;
         if (1) {
@@ -1099,7 +1459,7 @@ class CKDAExportExcelWriterXlsx {
 				}
 				elseif($cellType=='NUMBER')
 				{
-					fwrite($this->workSheetHandler, '<c r="'.$this->arColLetters[$this->curCel - 1].$this->numRows.'"'.$attrs.'><v>'.floatval($value).'</v></c>');
+					fwrite($this->workSheetHandler, '<c r="'.$this->arColLetters[$this->curCel - 1].$this->numRows.'"'.$attrs.'><v>'.$this->ee->GetFloatVal($value).'</v></c>');
 				}
 				else
 				{
@@ -1385,7 +1745,7 @@ class CKDAExportExcelWriterXlsx {
 			'<pageSetup orientation="portrait"/>'.
 			'<headerFooter alignWithMargins="0"/>'.
 			'<ignoredErrors><ignoredError sqref="A1:'.$this->arColLetters[$this->totalCols - 1].$this->numRows.'" numberStoredAsText="1"/></ignoredErrors>'.
-			($this->curImgIndex > 1 ? '<drawing r:id="rId1"/>' : '').
+			(count($this->arDrawings) > 0 ? implode('', $this->arDrawings) : '').
 			'</worksheet>');
 		fclose($this->workSheetHandler);
 	}
@@ -1429,9 +1789,9 @@ class CKDAExportExcelWriterXlsx {
         fclose($this->stringsHandler);
 		
 		$this->closeWorkSheetRelsHandler();
-		
 		fwrite($this->stylesHandler, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'.
-			'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'.
+			'<styleSheet '.implode(' ', array_map(create_function('$k, $v', 'return $k."=\"".htmlspecialcharsbx($v)."\"";'), array_keys($this->styleMainAttrs), $this->styleMainAttrs)).'>'.
+			(count($this->styleNumFmts) > 0 ? '<numFmts count="'.count($this->styleNumFmts).'">'.implode('', $this->styleNumFmts).'</numFmts>' : '').
 			'<fonts count="'.count($this->styleFonts).'">'.
 				implode('', $this->styleFonts).
 			'</fonts>'.
@@ -1441,14 +1801,14 @@ class CKDAExportExcelWriterXlsx {
 			'<borders count="'.count($this->arBorders).'">'.
 				implode('', $this->arBorders).
 			'</borders>'.
-			'<cellStyleXfs count="1">'.
-				'<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>'.
+			'<cellStyleXfs count="'.count($this->styleCellStyleXfs).'">'.
+				implode('', $this->styleCellStyleXfs).
 			'</cellStyleXfs>'.
 			'<cellXfs count="'.count($this->styleCellXfs).'">'.
 				implode('', $this->styleCellXfs).
 			'</cellXfs>'.
-			'<cellStyles count="1">'.
-				'<cellStyle name="Normal" xfId="0" builtinId="0"/>'.
+			'<cellStyles count="'.count($this->styleCellStyles).'">'.
+				implode('', $this->styleCellStyles).
 			'</cellStyles>'.
 			'<dxfs count="0"/>'.
 			'<tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleMedium9"/>'.

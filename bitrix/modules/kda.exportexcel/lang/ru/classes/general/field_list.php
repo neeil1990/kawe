@@ -144,6 +144,7 @@ $MESS['KDA_EE_FI_DISCOUNT_NOTES'] = "Краткое описание скидк�
 $MESS['KDA_EE_FI_DISCOUNT_CURRENCY'] = "Валюта скидки";
 $MESS['KDA_EE_FI_DETAIL_PAGE_URL'] = "URL страницы детального просмотра";
 $MESS['KDA_EE_QR_CODE_IMAGE'] = "QR-код";
+$MESS['KDA_EE_BARCODE_IMAGE'] = "Штрихкод EAN13 (картинка)";
 $MESS['KDA_EE_FI_VAT_ID'] = "Ставка НДС";
 $MESS['KDA_EE_FI_BARCODE'] = "Штрихкод";
 $MESS['KDA_EE_FI_QUANTITY_TRACE'] = "Включить количественный учет";

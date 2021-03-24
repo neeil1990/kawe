@@ -139,7 +139,7 @@ class CKDAExportExtrasettings {
 					
 					if(in_array($k3, array('INSERT_PICTURE', 'MAKE_DROPDOWN', 'STYLE_BOLD', 'STYLE_ITALIC')) && $v3!='Y') $v3 = '';
 
-					if(!empty($v3))
+					if(!empty($v3) || (!is_array($v3) && strlen($v3) > 0))
 					{
 						$PEXTRASETTINGS[$k1][$k2][$k3] = $v3;
 					}

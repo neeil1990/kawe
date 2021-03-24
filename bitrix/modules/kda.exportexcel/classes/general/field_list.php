@@ -96,7 +96,7 @@ class CKDAEEFieldList {
 			),
 			"IE_QR_CODE_IMAGE" => array(
 				"name" => Loc::getMessage("KDA_EE_QR_CODE_IMAGE"),
-			),
+			)
 		);
 	}
 	
@@ -666,6 +666,11 @@ class CKDAEEFieldList {
 				);
 				
 				$arCatalogFields[] = array(
+					"value" => "ICAT_BARCODE_IMAGE",
+					"name" => Loc::getMessage("KDA_EE_BARCODE_IMAGE"),
+				);
+				
+				$arCatalogFields[] = array(
 					"value" => "ICAT_QUANTITY_TRACE",
 					"name" => Loc::getMessage("KDA_EE_FI_QUANTITY_TRACE"),
 				);
@@ -787,7 +792,7 @@ class CKDAEEFieldList {
 				{
 					if($offers)
 					{
-						if(preg_match('/\D'.$offers.'$/', $ar["value"])) continue;
+						//if(preg_match('/\D'.$offers.'$/', $ar["value"])) continue;
 						$ar["value"] = 'OFFER_'.$ar["value"];
 					} 
 					$this->aFields[$ikey]['prop']['items'][$ar["value"]] = $ar["name"];

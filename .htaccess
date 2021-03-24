@@ -14,7 +14,14 @@ ErrorDocument 404 /404.php
   Options +FollowSymLinks
   RewriteEngine On
 
-############могут быть проблемы с ajax не забудь что тут писал!!!!
+RewriteCond %{HTTPS} =off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{REQUEST_URI} !^/bitrix/admin/1c_exchange.php
+RewriteCond %{REQUEST_URI} !^/hand1CtoSite.php
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+
+############РјРѕРіСѓС‚ Р±С‹С‚СЊ РїСЂРѕР±Р»РµРјС‹ СЃ ajax РЅРµ Р·Р°Р±СѓРґСЊ С‡С‚Рѕ С‚СѓС‚ РїРёСЃР°Р»!!!!
   RewriteCond %{THE_REQUEST} /(.*)index.php.*$
   RewriteCond %{THE_REQUEST} !bitrix/admin/
   RewriteRule .* /%1 [R=301,L]
@@ -23,23 +30,18 @@ ErrorDocument 404 /404.php
 RewriteCond %{HTTP_HOST} ^www\.(.*) [NC]
 RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
   
-RewriteEngine On
-RewriteCond %{HTTPS} =off
-RewriteCond %{REQUEST_URI} !^/bitrix/admin/1c_exchange.php
-RewriteCond %{REQUEST_URI} !^/hand1CtoSite.php
-RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
   
-#добавить / если его нет 
+#РґРѕР±Р°РІРёС‚СЊ / РµСЃР»Рё РµРіРѕ РЅРµС‚ 
 RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_URI} !(.*)/$
+#RewriteCond %{REQUEST_URI} !(.*)/$
 RewriteRule ^(.*[^/])$ $1/ [L,R=301]
 
-#убрать //
-RewriteCond %{REQUEST_URI} ^(.*)/{2,}(.*)$
-RewriteRule (.*) %1/%2 [R=301,L]    
-    
-  
+#СѓР±СЂР°С‚СЊ //
+RewriteCond %{THE_REQUEST} // 
+RewriteRule .* /$0 [R=301,L] 
+
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d

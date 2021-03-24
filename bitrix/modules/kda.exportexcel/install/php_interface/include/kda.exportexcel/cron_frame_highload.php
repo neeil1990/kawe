@@ -1,6 +1,7 @@
 <?
 @set_time_limit(0);
 if(!defined('NOT_CHECK_PERMISSIONS')) define('NOT_CHECK_PERMISSIONS', true);
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 if(!defined('BX_CRONTAB')) define("BX_CRONTAB", true);
 if(!defined('ADMIN_SECTION')) define("ADMIN_SECTION", true);
 if(!ini_get('date.timezone') && function_exists('date_default_timezone_set')){@date_default_timezone_set("Europe/Moscow");}
@@ -15,7 +16,13 @@ $moduleRunnerClass = 'CKDAExportExcelRunner';
 \Bitrix\Main\Loader::includeModule('catalog');
 \Bitrix\Main\Loader::includeModule("currency");
 \Bitrix\Main\Loader::includeModule($moduleId);
-$PROFILE_ID = $argv[1];
+$PROFILE_ID = htmlspecialcharsbx($argv[1]);
+
+/*Close session*/
+$sess = $_SESSION;
+session_write_close();
+$_SESSION = $sess;
+/*/Close session*/
 
 /*Remove old dirs*/
 CKDAExportUtils::RemoveTmpFiles(0);
@@ -46,14 +53,13 @@ foreach($arProfiles as $PROFILE_ID)
 	}
 
 	$SETTINGS_DEFAULT = $SETTINGS = $EXTRASETTINGS = null;
-	$oProfile = CKDAExportProfile::getInstance('highload');
 	$oProfile->Apply($SETTINGS_DEFAULT, $SETTINGS, $PROFILE_ID);
 	$oProfile->ApplyExtra($EXTRASETTINGS, $PROFILE_ID);
 	$params = array_merge($SETTINGS_DEFAULT, $SETTINGS);
 	$params['MAX_EXECUTION_TIME'] = 0;
 
-	$arParams = array();
-	$arResult = $moduleRunnerClass::ExportHighloadblock($params, $EXTRASETTINGS, array(), $PROFILE_ID);
+	$arParams = array('EXPORT_MODE'=>'CRON');
+	$arResult = $moduleRunnerClass::ExportHighloadblock($params, $EXTRASETTINGS, $arParams, $PROFILE_ID);
 
 	echo date('Y-m-d H:i:s').": export complete\r\n"."Profile id = ".$PROFILE_ID."\r\n".CUtil::PhpToJSObject($arResult)."\r\n\r\n";
 }

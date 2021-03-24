@@ -1,4 +1,5 @@
 <?
+if(!defined('NO_AGENT_CHECK')) define('NO_AGENT_CHECK', true);
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/prolog.php");
 $moduleId = 'kda.exportexcel';
@@ -12,6 +13,7 @@ $listIndex = (int)$_GET['list_index'];
 
 if($_POST['action']=='save' && $_POST['NEW_FIELDS_LIST'])
 {
+	define('PUBLIC_AJAX_MODE', 'Y');
 	$APPLICATION->RestartBuffer();
 	ob_end_clean();
 	$return = htmlspecialcharsex($_POST['NEW_FIELDS_LIST']);

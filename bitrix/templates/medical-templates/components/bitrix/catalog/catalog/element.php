@@ -129,6 +129,24 @@ else
 );?><?
 $GLOBALS["CATALOG_CURRENT_ELEMENT_ID"] = $ElementID;
 unset($basketAction);
+
+// Компонент для электронной коммерции
+if(CModule::IncludeModule("arturgolubev.ecommerce")){
+	$APPLICATION->IncludeComponent(
+		"arturgolubev:ecommerce.detail", 
+		".default", 
+		array(
+			"COMPONENT_TEMPLATE" => ".default",
+			"OFFERS_CART_PROPERTIES" => $arParams['OFFERS_CART_PROPERTIES'],
+			"PRODUCT_ID" => $ElementId,
+			"CACHE_TYPE" => "A",
+			"CACHE_TIME" => "360000"
+		),
+		$component
+	);
+}
+//
+
 ?>
 
 	<? $APPLICATION->IncludeComponent("nbrains:catalog.recommended.products", "recommended.products", Array(

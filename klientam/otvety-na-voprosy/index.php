@@ -1,5 +1,7 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("description", "Ответы на вопросы по продукции Kawe");
+$APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Ответы на вопросы</h1>");
 $APPLICATION->SetTitle("Ответы на вопросы");
 ?>
 

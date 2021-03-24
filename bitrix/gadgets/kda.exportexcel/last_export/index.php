@@ -5,6 +5,8 @@ Loc::loadMessages(__FILE__);
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 $moduleId = 'kda.exportexcel';
 if(!Loader::includeModule($moduleId)) return;
+$MODULE_RIGHT = $APPLICATION->GetGroupRight($moduleId);
+if($MODULE_RIGHT < "W") return;
 
 $arGadgetParams["PROFILES_COUNT"] = (int)$arGadgetParams["PROFILES_COUNT"];
 if ($arGadgetParams["PROFILES_COUNT"] <= 0)

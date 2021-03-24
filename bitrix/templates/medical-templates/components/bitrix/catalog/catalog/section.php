@@ -24,7 +24,7 @@ $this->setFrameMode(true);
 	$arSection = $rsSections->Fetch();
 	if ($arSection) {
 	?>
-	<div class="title"><?= $arSection['NAME']; ?></div>
+	<h1 class="title"><?= $arSection['NAME']; ?></h1>
 	<?
 	}
 
