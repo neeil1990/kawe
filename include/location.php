@@ -22,11 +22,11 @@
         <? endif; ?>
 
         <div class="item-city">
-            <a href="javascript:void(0)" class="city-show" onclick="$(this).closest('.city').find('.item-city:last-child').toggle(); return false;">Показать все города</a>
+            <a href="javascript:void(0)" class="city-show" onclick="$(this).closest('.city').find('.item-city:last-child').toggleClass('active'); return false;">Показать все города</a>
         </div>
 
         <? if($arCityes['hide']): ?>
-        <div class="item-city" style="display: none;">
+        <div class="item-city">
             <? foreach ($arCityes['hide'] as $h):?>
             <a href="javascript:void(0)" class="c"><?=$h?></a>
             <? endforeach; ?>
@@ -56,6 +56,12 @@
     .city .item-city a.city-show {
         flex-grow: 1;
         text-align: center;
+    }
+    .city .item-city:last-child{
+        display: none;
+    }
+    .city .item-city:last-child.active{
+        display: flex;
     }
 </style>
 
