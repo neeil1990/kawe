@@ -23,12 +23,15 @@ if(empty($_REQUEST["ELEMENT_SORT_FIELD"])){
 if(empty($_REQUEST['PAGE_ELEMENT_COUNT'])){
 	$_REQUEST['PAGE_ELEMENT_COUNT'] = 20;
 }
+
 if($_REQUEST['TEMPLATE_THEME'])
-$_SESSION['TEMPLATE_THEME'] = $_REQUEST['TEMPLATE_THEME'];
+    $_SESSION['TEMPLATE_THEME'] = $_REQUEST['TEMPLATE_THEME'];
+elseif(empty($_REQUEST['TEMPLATE_THEME']) && empty($_SESSION['TEMPLATE_THEME']))
+    $_SESSION['TEMPLATE_THEME'] = 'list';
 
 $APPLICATION->IncludeComponent(
-	"bitrix:catalog", 
-	"catalog", 
+	"bitrix:catalog",
+	"catalog",
 	array(
 		"IBLOCK_TYPE" => "1c_catalog",
 		"IBLOCK_ID" => IBLOCK_CATALOG,

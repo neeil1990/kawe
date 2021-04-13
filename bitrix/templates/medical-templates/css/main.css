@@ -1300,7 +1300,6 @@ ol,ul
     height: 210px;
     justify-content: center;
     margin-bottom: 11px;
-    padding: 10px;
     ms-flex-align: center;
     ms-flex-pack: center;
     webkit-align-items: center;
@@ -1329,6 +1328,7 @@ ol,ul
 {
     color: #c82c30;
 }
+
 .goods__desc
 {
     align-items: center;

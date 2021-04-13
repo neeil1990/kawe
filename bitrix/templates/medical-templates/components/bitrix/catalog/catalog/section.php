@@ -51,12 +51,17 @@ $APPLICATION->IncludeComponent(
 	array("HIDE_ICONS" => "Y")
 );?>
 
-
+<?
+/* TAGS LIST */
+$APPLICATION->IncludeFile(SITE_TEMPLATE_PATH."/include/tags_list.php", Array("SECTION" => $arSection), Array(
+    "MODE"      => "php",
+    "NAME"      => "",
+    "TEMPLATE"  => "",
+    "SHOW_BORDER" => false,
+));
+?>
 
 <?
-
-
-
 if (isset($arParams['USE_COMMON_SETTINGS_BASKET_POPUP']) && $arParams['USE_COMMON_SETTINGS_BASKET_POPUP'] == 'Y')
 {
 	$basketAction = (isset($arParams['COMMON_ADD_TO_BASKET_ACTION']) ? $arParams['COMMON_ADD_TO_BASKET_ACTION'] : '');
@@ -120,7 +125,8 @@ $intSectionID = 0;
 
 	<? endif; ?>
 
-	<?$intSectionID = $APPLICATION->IncludeComponent(
+	<?
+    $intSectionID = $APPLICATION->IncludeComponent(
 	"bitrix:catalog.section",
 	$_SESSION['TEMPLATE_THEME'],
 	array(
@@ -222,6 +228,17 @@ $intSectionID = 0;
 $GLOBALS['CATALOG_CURRENT_SECTION_ID'] = $intSectionID;
 unset($basketAction);
 ?>
+
+    <?
+    /* RECOMMENDED LIST */
+    $APPLICATION->IncludeFile(SITE_TEMPLATE_PATH."/include/recommended_list.php", Array("SECTION" => $arSection), Array(
+        "MODE"      => "php",
+        "NAME"      => "",
+        "TEMPLATE"  => "",
+        "SHOW_BORDER" => false,
+    ));
+    ?>
+
 
 	<div class="catalog-text">
 	<?
