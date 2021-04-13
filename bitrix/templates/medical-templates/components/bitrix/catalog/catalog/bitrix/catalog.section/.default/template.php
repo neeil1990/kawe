@@ -31,7 +31,7 @@ if(empty($arResult['ITEMS']))
 						<i class="icon-star"></i>
 						<i class="icon-star-o"></i>
 					</div>-->
-					
+
 					<? if($item['PROPERTIES']['BADGE']['VALUE']): ?>
                     <div class="goods__badge">
                         <div class="badge" style="background-color: <?=$item['PROPERTIES']['BADGE']['DESCRIPTION']?>">
@@ -39,7 +39,7 @@ if(empty($arResult['ITEMS']))
                         </div>
                     </div>
                     <? endif; ?>
-					
+
 					<div class="goods__img">
 						<a href="<?=$item['DETAIL_PAGE_URL'];?>"><img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>"></a>
 					</div>
@@ -56,7 +56,7 @@ if(empty($arResult['ITEMS']))
 						<div class="goods__prices">
 
 							<?if($item['PRICES']['BASE']['VALUE']):?>
-								<div class="goods__price"><?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
+								<div class="goods__price">Цена <?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
 							<?else:?>
 								<div class="goods__price tooltip" style="font-size: 15px;">Цена по запросу</div>
 							<?endif;?>
@@ -69,10 +69,10 @@ if(empty($arResult['ITEMS']))
 							<span>за штуку</span>
 						</div>
                         <? if(count($item['PROPERTIES']['ARTICLS']['VALUE']) > 1): ?>
-                            <a href="javascript:void(0)" class="goods__basket icon-basket" onclick="$('#more_option_<?=$item[ID]?>').bPopup({zIndex:1000});"></a>
+                            <a href="javascript:void(0)" class="goods__buy_thumbs" onclick="$('#more_option_<?=$item[ID]?>').bPopup({zIndex:1000});">Купить</a>
                         <?else:?>
                             <input type="hidden" name="article" value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
-						    <a href="javascript:void(0)" class="goods__basket icon-basket" onclick="addToBasket2(<?=$item['ID']?>, $('#goods__counter_input_<?=$item['ID']?>').val(),this);"></a>
+						    <a href="javascript:void(0)" class="goods__buy_thumbs" onclick="addToBasket2(<?=$item['ID']?>, $('#goods__counter_input_<?=$item['ID']?>').val(),this);">Купить</a>
 						<?endif;?>
 					</div>
 				</div>

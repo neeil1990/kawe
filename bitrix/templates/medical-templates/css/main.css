@@ -1091,6 +1091,23 @@ ol,ul
     background-color: #c82c30;
     color: #fff;
 }
+.goods__buy_thumbs
+{
+    background-color: #898989;
+    color: #fff;
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.22;
+    padding: 5px;
+    text-align: center;
+    text-decoration: none;
+}
+.goods__buy_thumbs:hover
+{
+    background-color: #c82c30;
+    color: #fff;
+}
 .goods .lSNext,.goods .lSPrev
 {
     height: auto;

@@ -24,7 +24,7 @@ $this->setFrameMode(true);
 				<i class="icon-star"></i>
 				<i class="icon-star-o"></i>
 			</div>-->
-			
+
 			<? if($arResult['PROPERTIES']['BADGE']['VALUE']): ?>
                 <div class="goods__badge">
                     <div class="badge" style="background-color: <?=$arResult['PROPERTIES']['BADGE']['DESCRIPTION']?>">
@@ -69,14 +69,14 @@ $this->setFrameMode(true);
 				<div class="cart__wrapper">
 					<?foreach($arResult['PROPERTIES']['ARTICLS']['DESCRIPTION'] as $val => $art):?>
 					<label class="cart__label">
-						<input type="radio" name="color" data-old-price="<?=CurrencyFormat($arResult['PRICES']['BASE']['OLD'][$val],"RUB");?>" data-price="<?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][$val],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" <?=($val == 0) ? "checked" : "";?> value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"><i></i>
+						<input type="radio" name="color" data-old-price="<?=CurrencyFormat($arResult['PRICES']['BASE']['OLD'][$val],"RUB");?>" data-price="Цена <?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][$val],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" <?=($val == 0) ? "checked" : "";?> value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][$val]?>"><i></i>
 						<?=$art?>
 					</label>
 					<?endforeach?>
 				</div>
 				<?else:?>
 					<span>
-						<input type="radio" name="color" data-old-price="<?=CurrencyFormat($arResult['PRICES']['BASE']['OLD'][0],"RUB");?>" data-price="<?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][0],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" checked value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
+						<input type="radio" name="color" data-old-price="<?=CurrencyFormat($arResult['PRICES']['BASE']['OLD'][0],"RUB");?>" data-price="Цена <?=CurrencyFormat($arResult['PROPERTIES']['PRICES']['VALUE'][0],$arResult['PRICES']['BASE']['CURRENCY'])?>" class="cart__radio" checked value="<?=$arResult['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
 					</span>
 				<? endif; ?>
 			<? endif; ?>
@@ -90,7 +90,7 @@ $this->setFrameMode(true);
 
 			<div class="cart__price <?=(!$arResult['PRICES']['BASE']['DISCOUNT_VALUE']) ? "tooltip" : ""?>">
 				<?if($arResult['PRICES']['BASE']['DISCOUNT_VALUE']):?>
-					<?=$arResult['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
+                    Цена <?=$arResult['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
 				<?else:?>
 					Цена по запросу
 				<?endif;?>
@@ -105,7 +105,7 @@ $this->setFrameMode(true);
 					<div class="goods__counter_add">+</div>
 				</div>
 
-				<a href="javascript:void(0)" class="cart__basket" onclick="addToBasket2(<?=$arResult['ID']?>, $('.goods__counter_input').val(),this);">В корзину</a>
+				<a href="javascript:void(0)" class="cart__basket" onclick="addToBasket2(<?=$arResult['ID']?>, $('.goods__counter_input').val(),this);">Купить</a>
 			</div>
 		</div>
 	</div>

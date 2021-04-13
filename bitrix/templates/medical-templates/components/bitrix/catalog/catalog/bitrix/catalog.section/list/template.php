@@ -42,7 +42,7 @@ if(empty($arResult['ITEMS']))
 						<i class="icon-star-o"></i>
 					</div>-->
 					<?if($item['PRICES']['BASE']['VALUE']):?>
-						<div class="goods__price"><?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
+						<div class="goods__price">Цена <?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
 					<?else:?>
 						<div class="goods__price tooltip" style="font-size: 15px;">Цена по запросу</div>
 					<?endif;?>
