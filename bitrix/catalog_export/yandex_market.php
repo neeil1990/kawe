@@ -6,7 +6,7 @@ $strReferer2 = htmlspecialchars($_GET["referer2"]);
 header("Content-Type: text/xml; charset=windows-1251");
 echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <!DOCTYPE yml_catalog SYSTEM "shops.dtd">
-<yml_catalog date="2021-03-24 07:39">
+<yml_catalog date="2021-04-13 09:37">
 <shop>
 <name>kawe.su - поставки медицинского оборудования по всей России</name>
 <company>Kawe - медицинское оборудование</company>
