@@ -30,8 +30,8 @@ elseif(empty($_REQUEST['TEMPLATE_THEME']) && empty($_SESSION['TEMPLATE_THEME']))
     $_SESSION['TEMPLATE_THEME'] = 'list';
 
 $APPLICATION->IncludeComponent(
-	"bitrix:catalog",
-	"catalog",
+	"bitrix:catalog", 
+	"catalog", 
 	array(
 		"IBLOCK_TYPE" => "1c_catalog",
 		"IBLOCK_ID" => IBLOCK_CATALOG,
@@ -115,8 +115,8 @@ $APPLICATION->IncludeComponent(
 		"SECTIONS_SHOW_PARENT_NAME" => "N",
 		"PAGE_ELEMENT_COUNT" => $_REQUEST["PAGE_ELEMENT_COUNT"],
 		"LINE_ELEMENT_COUNT" => "3",
-		"ELEMENT_SORT_FIELD" => $_REQUEST["ELEMENT_SORT_FIELD"],
-		"ELEMENT_SORT_ORDER" => $_REQUEST["ELEMENT_SORT_ORDER"],
+		"ELEMENT_SORT_FIELD" => "sort",
+		"ELEMENT_SORT_ORDER" => "asc",
 		"LIST_PROPERTY_CODE" => array(
 			0 => "",
 			1 => "NEWPRODUCT",

@@ -1,13 +1,4 @@
 User-Agent: *
-########################
-########################
-Allow: /bitrix/components/
-Allow: /bitrix/cache/
-Allow: /bitrix/js/
-Allow: /bitrix/templates/
-Allow: /bitrix/panel/
-Host: https://kawe.su/
-Sitemap: https://kawe.su/sitemap.xml
 Disallow: */index.php
 Disallow: /bitrix/
 Disallow: /*show_include_exec_time=
@@ -60,3 +51,12 @@ Disallow: /catalog/prochee/
 Disallow: /catalog/lampy-dlya-priborov/
 Disallow: /catalog/lampy-kawe-germaniya/
 Disallow: /catalog/meditsinskie-svetilniki/
+########################
+########################
+Allow: /bitrix/components/
+Allow: /bitrix/cache/
+Allow: /bitrix/js/
+Allow: /bitrix/templates/
+Allow: /bitrix/panel/
+Host: https://kawe.su/
+Sitemap: https://kawe.su/sitemap.xml
