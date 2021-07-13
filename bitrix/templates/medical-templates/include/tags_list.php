@@ -2,17 +2,6 @@
 if(!$arParams['SECTION']['UF_TAGS_ACTIVE'])
     return false;
 
-$arResultTags = [];
-$rsParentSection = CIBlockSection::GetByID($arParams['SECTION']['ID']);
-if ($arParentSection = $rsParentSection->GetNext())
-{
-    $arFilter = array('IBLOCK_ID' => $arParentSection['IBLOCK_ID'], 'ACTIVE' => 'Y', '>LEFT_MARGIN' => $arParentSection['LEFT_MARGIN'],'<RIGHT_MARGIN' => $arParentSection['RIGHT_MARGIN'],'>DEPTH_LEVEL' => $arParentSection['DEPTH_LEVEL']);
-    $rsSect = CIBlockSection::GetList(array('left_margin' => 'asc'),$arFilter);
-    while ($arSect = $rsSect->GetNext())
-    {
-        $arResultTags['SECTIONS'][$arSect['ID']] = $arSect;
-    }
-}
 ?>
 
 <style>
@@ -210,10 +199,6 @@ if ($arParentSection = $rsParentSection->GetNext())
 
     <div class="subcategories">
         <ul class="tag-slider sub-links-2">
-            <? foreach ($arResultTags['SECTIONS'] as $item): ?>
-            <li><a href="<?=$item['SECTION_PAGE_URL']?>"><?=$item['NAME']?></a></li>
-            <?endforeach;?>
-
             <? foreach ($arParams['SECTION']['UF_TAGS_LIST'] as $tags):
                 $arTags = explode('@', $tags, 2);
                 ?>
