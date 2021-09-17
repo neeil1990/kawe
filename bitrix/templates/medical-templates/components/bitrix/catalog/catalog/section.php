@@ -14,10 +14,8 @@ use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 
 $this->setFrameMode(true);
-
+$arResult["VARIABLES"]["SECTION_CODE"] = str_replace(' ', '-', $arResult["VARIABLES"]["SECTION_CODE"]);
 ?>
-
-
 
 <?
 	$rsSections = CIBlockSection::GetList(array(),array('IBLOCK_ID' => $arParams["IBLOCK_ID"], '=CODE' => $arResult['VARIABLES']['SECTION_CODE'],'ELEMENT_SUBSECTIONS' => 'N'),true,array('UF_*'));

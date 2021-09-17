@@ -14,6 +14,10 @@ use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 
 $this->setFrameMode(true);
+//STRICT_SECTION_CHECK
+$arResult["VARIABLES"]["SECTION_CODE"] = str_replace(' ', '-', $arResult["VARIABLES"]["SECTION_CODE"]);
+$arResult["VARIABLES"]["ELEMENT_CODE"] = str_replace(' ', '-', $arResult["VARIABLES"]["ELEMENT_CODE"]);
+
 if (isset($arParams['USE_COMMON_SETTINGS_BASKET_POPUP']) && $arParams['USE_COMMON_SETTINGS_BASKET_POPUP'] == 'Y')
 {
 	$basketAction = (isset($arParams['COMMON_ADD_TO_BASKET_ACTION']) ? array($arParams['COMMON_ADD_TO_BASKET_ACTION']) : array());
@@ -24,8 +28,8 @@ else
 }
 ?>
 
-
-<?$ElementID = $APPLICATION->IncludeComponent(
+<?
+$ElementID = $APPLICATION->IncludeComponent(
 	"bitrix:catalog.element",
 	"",
 	array(
@@ -86,6 +90,7 @@ else
 		'USE_ELEMENT_COUNTER' => $arParams['USE_ELEMENT_COUNTER'],
 		'SHOW_DEACTIVATED' => $arParams['SHOW_DEACTIVATED'],
 		"USE_MAIN_ELEMENT_SECTION" => $arParams["USE_MAIN_ELEMENT_SECTION"],
+		"STRICT_SECTION_CHECK" => $arParams["USE_MAIN_ELEMENT_SECTION"],
 
 		'ADD_PICT_PROP' => $arParams['ADD_PICT_PROP'],
 		'LABEL_PROP' => $arParams['LABEL_PROP'],
@@ -133,8 +138,8 @@ unset($basketAction);
 // Компонент для электронной коммерции
 if(CModule::IncludeModule("arturgolubev.ecommerce")){
 	$APPLICATION->IncludeComponent(
-		"arturgolubev:ecommerce.detail", 
-		".default", 
+		"arturgolubev:ecommerce.detail",
+		".default",
 		array(
 			"COMPONENT_TEMPLATE" => ".default",
 			"OFFERS_CART_PROPERTIES" => $arParams['OFFERS_CART_PROPERTIES'],
