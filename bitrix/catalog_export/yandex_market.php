@@ -6,7 +6,7 @@ $strReferer2 = htmlspecialchars($_GET["referer2"]);
 header("Content-Type: text/xml; charset=windows-1251");
 echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <!DOCTYPE yml_catalog SYSTEM "shops.dtd">
-<yml_catalog date="2021-05-31 07:53">
+<yml_catalog date="2021-09-20 11:45">
 <shop>
 <name>kawe.su - поставки медицинского оборудования по всей России</name>
 <company>Kawe - медицинское оборудование</company>
@@ -27,11 +27,6 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <category id="2807" parentId="2799">Диагностические ЛОР наборы</category>
 <category id="2808" parentId="2807">Диагностические ЛОР наборы KaWe, Германия</category>
 <category id="2809" parentId="2799">Камертоны медицинские</category>
-<category id="2810" parentId="2809">Камертоны медицинские Kawe, Германия</category>
-<category id="2811" parentId="2810">Камертоны KaWe алюминиевые медицинские, Германия</category>
-<category id="2812" parentId="2810">Камертоны KaWe по Лукае</category>
-<category id="2813" parentId="2810">Камертоны KaWe по Хартману</category>
-<category id="2814" parentId="2810">Камертоны KaWe стальные медицинские, Германия</category>
 <category id="2815" parentId="2799">Оториноскопы</category>
 <category id="2934" parentId="2815">Оториноскоп диагностический</category>
 <category id="2816" parentId="2799">Настенные диагностические системы</category>
@@ -136,10 +131,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <offers>
 <offer id="10236" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/kawe-piccolight-fo-led-otoskop-fibroopticheskiy-chernyy-standartnaya-yarkost--night-cherniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>8002</price>
+<price>7714</price>
 <currencyId>RUB</currencyId>
 <categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/521/521ad51254744469bbf01a9ab998eed7.jpg</picture>
+<picture>https://kawe.su/upload/iblock/6ab/6ab68911633aa586046e7d0d6b4d5f69.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe PICCOLIGHT FO LED Отоскоп фиброоптический стандартная яркость night (черный)</name>
 <description></description>
@@ -148,10 +143,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10237" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-kawe-diagnosticheskiy-belyy-s-knopochnym-vklyucheniem_1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>661</price>
+<price>637</price>
 <currencyId>RUB</currencyId>
 <categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/cba/cbaa0ad692649d0af3793e9f05ba8ea3.jpg</picture>
+<picture>https://kawe.su/upload/iblock/85d/85d951b178ef3defd4b80d854386a9d3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик медицинский диагностический KaWe белый с кнопочным включением</name>
 <description></description>
@@ -160,10 +155,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10238" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-dubl-kawe-cherniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>593</price>
+<price>572</price>
 <currencyId>RUB</currencyId>
 <categoryId>2853</categoryId>
-<picture>https://kawe.su/upload/iblock/73f/73f35e8ca69b401bb5cf591eb02f11db.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8fd/8fd4a8aa8bc87b248282998b4208115d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Дубль черный, KaWe</name>
 <description></description>
@@ -172,10 +167,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10239" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-rapport-chernyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
 <categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/7cc/7cc6b8c40b990082cccf93a0f5fb5718.jpg</picture>
+<picture>https://kawe.su/upload/iblock/85f/85fb019d0b2c9e2d1be48eeeda64e41d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Раппорт черный KaWe</name>
 <description></description>
@@ -184,10 +179,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10240" available="true">
 <url>https://kawe.su/catalog/veterinarnye-otoskopy-kawe-germaniya/otoskop-lampochnyy-eurolight-vet-c30-25b/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13115</price>
+<price>12442</price>
 <currencyId>RUB</currencyId>
 <categoryId>2857</categoryId>
-<picture>https://kawe.su/upload/iblock/050/050a458f37825a65329ba17363f50b3c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/b19/b196c15679132abc7e6758701229f4c2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe Eurolight VET C30 2,5B Отоскоп лампочный</name>
 <description></description>
@@ -196,10 +191,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10241" available="true">
 <url>https://kawe.su/catalog/veterinarnye-otoskopy-kawe-germaniya/otoskop-lampochnyy-eurolight-vet-c30-25b-otoskop-operacionniy-lampochniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13448</price>
+<price>12763</price>
 <currencyId>RUB</currencyId>
 <categoryId>2858</categoryId>
-<picture>https://kawe.su/upload/iblock/3d2/3d2cf2efb4a9169847b9fa88f6c5b143.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d93/d9346c399a18b75f8b2759c0a0b50600.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe Eurolight VET C30 OP 2,5B Отоскоп операционный лампочный</name>
 <description></description>
@@ -208,10 +203,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10242" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-pikkolayt-ye50-chernii-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>10003</price>
+<price>9643</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/843/843c9351d99a1f0bedc67a1cdb1e1666.jpg</picture>
+<picture>https://kawe.su/upload/iblock/460/46010bcab6710a35a109a8417ae6221b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт Е50 черный KaWe</name>
 <description></description>
@@ -220,10 +215,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10244" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-pikkolayt-e56-chernyy-eu-versiya-zelenyy-filtr-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12448</price>
+<price>12000</price>
 <currencyId>RUB</currencyId>
 <categoryId>2827</categoryId>
-<picture>https://kawe.su/upload/iblock/d94/d94fedc9872e7c8b0e02f386ecdd22b5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/772/7720c75ef3747de6476282e14c9636a8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт E56, черный, EU-версия, зеленый фильтр, KaWe</name>
 <description></description>
@@ -232,10 +227,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10245" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/ftalmoskop-yevrolayt-ye10-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>10670</price>
+<price>10286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/0fa/0fa3074089d3f3244ad6c4ebf404cd33.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2ee/2ee0873d55881ae0ccb91e7b601aea67.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Евролайт Е10 KaWe</name>
 <description></description>
@@ -244,10 +239,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10246" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-yevrolayt-ye30-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13115</price>
+<price>12643</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/c40/c404a95aa5d38030896cab8430421004.jpg</picture>
+<picture>https://kawe.su/upload/iblock/540/540993e7ff4374c2042a08a5ee3beeb2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Евролайт Е30 KaWe</name>
 <description></description>
@@ -256,10 +251,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10247" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-evrolait-e36-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>16338</price>
+<price>15750</price>
 <currencyId>RUB</currencyId>
 <categoryId>2827</categoryId>
-<picture>https://kawe.su/upload/iblock/34e/34e98ae52f84348bd6979bf5c960b774.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2d7/2d745569a83c0353b714eacf00f0cf67.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Евролайт Е36 KaWe</name>
 <description></description>
@@ -268,10 +263,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10248" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-yevrolayt-ye36-35v-s-akkumulyatorom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>24895</price>
+<price>24000</price>
 <currencyId>RUB</currencyId>
 <categoryId>2827</categoryId>
-<picture>https://kawe.su/upload/iblock/ecf/ecf9238688569808edc2a7d962d48130.jpg</picture>
+<picture>https://kawe.su/upload/iblock/c53/c53d7d90fb1d3bbac182526e497a322c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Евролайт Е36 3.5В (с аккумулятором) KaWe</name>
 <description></description>
@@ -280,10 +275,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10249" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-evrolajt-e36-3-5v-perezaryadka-ot-seti-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>32231</price>
+<price>31072</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/439/439a75261434b0bc2012ae2eb097d7b7.jpg</picture>
+<picture>https://kawe.su/upload/iblock/9ac/9acbf1d084044da347aa5079bd4efc58.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Евролайт Е36 3.5В (перезарядка от сети) KaWe</name>
 <description></description>
@@ -292,10 +287,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10250" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/kawe-piccolight-c-25-v-otoskop-lampochnyy-serii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5557</price>
+<price>5357</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/fdd/fdd68a67a71144e7949cdd967d7754b6.jpg</picture>
+<picture>https://kawe.su/upload/iblock/0c2/0c2c82d6273edb74518ab8c65e918b19.jpg</picture>
 <vendor>Kawe</vendor>
 <name>PICCOLIGHT C 2,5 В Отоскоп лампочный серый, KaWe</name>
 <description></description>
@@ -304,10 +299,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10251" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/kawe-piccolight-fo-led-otoskop-fibroopticheskiy-temno-siniy-povyshennaya-yarkost-temno-sinii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12893</price>
+<price>12429</price>
 <currencyId>RUB</currencyId>
 <categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/f0b/f0b5f2a3532ff8b42b13da7b3a71125c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d2e/d2edb22818b3a25811ec705480961cb1.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe PICCOLIGHT FO LED Отоскоп фиброоптический повышенная яркость темно-синий</name>
 <description></description>
@@ -316,10 +311,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10252" available="true">
 <url>https://kawe.su/catalog/dopolnitelnoe-prinadlezhnosti-k-otoskopam-kawe-germaniya/grusha-dlya-pnevmotesta-k-otoskopam-e-24840-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1056</price>
+<price>1018</price>
 <currencyId>RUB</currencyId>
 <categoryId>2803</categoryId>
-<picture>https://kawe.su/upload/iblock/fa2/fa2409c819a38439e93d41b944e15afb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7d3/7d3e21d03c87a3ae062d522e4d4775ab.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Груша для пневмотеста к отоскопам (E-24840) KaWe</name>
 <description></description>
@@ -328,10 +323,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10253" available="true">
 <url>https://kawe.su/catalog/dopolnitelnoe-prinadlezhnosti-k-otoskopam-kawe-germaniya/adapter-dlya-grushi-pnevmotestirovaniya-26290k-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>668</price>
+<price>643</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/24e/24e05c4df2ac6af5854638cdb3e7cbc0.jpg</picture>
+<picture>https://kawe.su/upload/iblock/78b/78b73351e4c639cc0dc1501acc9d3846.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Адаптер для груши пневмотестирования 26290K KaWe</name>
 <description></description>
@@ -340,10 +335,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10254" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-combilight/kawe-combilight-c10-25-v-lampochnyy-otoskop/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>6225</price>
+<price>6000</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/bff/bff1e206db2f42e18c1ff3476876fce0.jpg</picture>
+<picture>https://kawe.su/upload/iblock/cb6/cb650b09f6a45f056ccb1ea86810af6c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe COMBILIGHT C10 2,5 В Лампочный отоскоп</name>
 <description></description>
@@ -355,7 +350,7 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <price>9595</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/d37/d37fc404dd1996c60e213dd7d2a39233.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7ab/7ab01a81e8b70894bd34379c65d5eacb.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KAWE COMBILIGHT FO 30 2.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -364,10 +359,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10256" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-combilight/kawe-combilight-fo-30-35-v-otoskop-fibroopticheskiy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12115</price>
+<price>11679</price>
 <currencyId>RUB</currencyId>
 <categoryId>2804</categoryId>
-<picture>https://kawe.su/upload/iblock/8a7/8a7414a1a01cc8c5a6dd48a22b206d24.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8ea/8eaac6ea81c528f35f566d01060bb380.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe COMBILIGHT FO 30 LED 2.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -376,10 +371,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10257" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-combilight/kawe-combilight-fo-30-35-v-otoskop-fibroopticheskiy-s-podzaryadkoy-ot-seti/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>27119</price>
+<price>26143</price>
 <currencyId>RUB</currencyId>
 <categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/5e0/5e073c586ff1660326fc931f8d4ae9d9.jpg</picture>
+<picture>https://kawe.su/upload/iblock/e79/e795d120531be1a6e2ef4fa8e1613356.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe COMBILIGHT FO 30 3.5 В Отоскоп фиброоптический с подзарядкой от сети</name>
 <description></description>
@@ -388,10 +383,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10258" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe-eurolight-c10-25-v-lampochnyy-otoskop/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7336</price>
+<price>7072</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/3d3/3d307ce04db2e8eb3fcbcd3fe39e081b.jpg</picture>
+<picture>https://kawe.su/upload/iblock/673/673821cf12ac7b223c6aea97825add83.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT C10 2,5 В Лампочный отоскоп</name>
 <description></description>
@@ -400,10 +395,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10259" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe-eurolight-c30-25-v-lampochnyy-otoskop/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9225</price>
+<price>8893</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/3a4/3a41b2eb22585c64145c624029f3418d.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5d9/5d9d3f8edb302f49a097d152337f8ccd.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT C30 2,5 В Лампочный отоскоп</name>
 <description></description>
@@ -412,10 +407,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10260" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe-eurolight-fo-30-25-v-otoskop-fibroopticheskiy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>16116</price>
+<price>15536</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/cc0/cc01e5b435c355b1080f3362fba6e8f9.jpg</picture>
+<picture>https://kawe.su/upload/iblock/290/29065f893bf0a6a9ccab554910629dd2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT FO 30 2.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -424,10 +419,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10261" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe_eurolight_fo_30_led_2_5_v_otoskop_fibroopticheskij/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>17228</price>
+<price>16607</price>
 <currencyId>RUB</currencyId>
 <categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/55c/55cefe06fe3c90c394af52af2a9360c9.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2b2/2b2b9a71d6b34b640a606761d049d300.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT FO 30 LED 2.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -436,10 +431,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10262" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe-eurolight-fo-30-35-v-otoskop-fibroopticheskiy-s-podzaryadkoy-ot-seti/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>31120</price>
+<price>30000</price>
 <currencyId>RUB</currencyId>
 <categoryId>2805</categoryId>
-<picture>https://kawe.su/upload/iblock/8e9/8e95ce533ce0e22512dc75d2cd307782.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f5c/f5c0be20878bfc68746dfcb287ed58af.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT FO 30 3.5 В Отоскоп фиброоптический с подзарядкой от сети</name>
 <description></description>
@@ -448,34 +443,42 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10263" available="true">
 <url>https://kawe.su/catalog/dermatoskopy-kawe-germaniya/dermatoskop-kawe-eurolight-d30-25-v-yevrolayt-25-v/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>27785</price>
+<price>26785</price>
 <currencyId>RUB</currencyId>
 <categoryId>2864</categoryId>
-<picture>https://kawe.su/upload/iblock/06e/06eb6ea7d9bd38e9f22ec29ceaed675d.jpg</picture>
+<picture>https://kawe.su/upload/iblock/e6e/e6e55d74643ca7af17226bfb0a17c76d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Дерматоскоп KAWE EUROLIGHT D30 2,5 В - ЕВРОЛАЙТ 2,5 В</name>
-<description></description>
+<description>
+	Дерматоскоп - прибор для осмотра кожи.
+	Материал - металл.
+
+ </description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
 <offer id="10264" available="true">
 <url>https://kawe.su/catalog/dermatoskopy-kawe-germaniya/dermatoskop-kawe-piccolight-d-25-v-pikkolayt-25-v/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>19450</price>
+<price>18750</price>
 <currencyId>RUB</currencyId>
 <categoryId>2864</categoryId>
-<picture>https://kawe.su/upload/iblock/aa3/aa373d5eead22bf42878a875957b66c2.jpg</picture>
+<picture>https://kawe.su/upload/iblock/bc9/bc96b7a012cf385f69d9f8704f300a00.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Дерматоскоп KAWE PICCOLIGHT D 2,5 В - ПИККОЛАЙТ 2,5 В</name>
-<description></description>
+<description>
+	Дерматоскоп - аппарат для исследования кожи.
+	Диапазон фокусировки от –6 до +3,5 D
+	Батарея питания типа АА (не входят в комплектацию)
+</description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
 <offer id="10265" available="true">
 <url>https://kawe.su/catalog/dermatoskopy-kawe-germaniya/dermatoskop-kawe-eurolight-d30-35-v---yevrolayt-35-v-s-led-lampoy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>33342</price>
+<price>32142</price>
 <currencyId>RUB</currencyId>
 <categoryId>2864</categoryId>
-<picture>https://kawe.su/upload/iblock/397/397ba7c9f3d01f0f0533f2845beac831.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ba0/ba01f579d7bca59eedb79175a2e8f223.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Дерматоскоп KAWE EUROLIGHT D30 3,5 В - ЕВРОЛАЙТ 3,5 В с LED лампой</name>
 <description></description>
@@ -484,10 +487,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10266" available="true">
 <url>https://kawe.su/catalog/meditsinskie-svetilniki-kawe-germania/masterlight-klassik-led-kawe-smotrovoy-svetilnik-napolniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>38700</price>
+<price>37307</price>
 <currencyId>RUB</currencyId>
 <categoryId>2868</categoryId>
-<picture>https://kawe.su/upload/iblock/68b/68b68c5ad700215d29f9668934ebba88.jpg</picture>
+<picture>https://kawe.su/upload/iblock/133/13350a1a94518fdb87f11160b613364e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Masterlight Классик LED KaWe смотровой светильник передвижной напольный</name>
 <description></description>
@@ -496,10 +499,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10267" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-c-kawe-germaniya/klinok-macintosh-0-c-izognutyy-dlinavysota-7713-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2874</categoryId>
-<picture>https://kawe.su/upload/iblock/8cb/8cbbf82724f5a5180e2dab9d3d013a84.jpg</picture>
+<picture>https://kawe.su/upload/iblock/b78/b786559af9951ce90a2a8c8be660014f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №0 C изогнутый (длина/высота, 77/13 мм) KaWe</name>
 <description></description>
@@ -508,10 +511,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10268" available="true">
 <url>https://kawe.su/catalog/meditsinskie-svetilniki-kawe-germania/masterlight-klassik-kawe-smotrovoy-svetilnik-napolniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>32486</price>
+<price>31317</price>
 <currencyId>RUB</currencyId>
 <categoryId>2868</categoryId>
-<picture>https://kawe.su/upload/iblock/985/985e5121bf9efd75d7d1b4a6b0254713.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ff5/ff592ad23391b10234e80e403093e4ae.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Masterlight Классик KaWe смотровой светильник напольный</name>
 <description></description>
@@ -520,10 +523,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10269" available="true">
 <url>https://kawe.su/catalog/meditsinskie-svetilniki-kawe-germania/masterlight-klassik-kawe-smotrovoy-svetilnik/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>23118</price>
+<price>22286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2868</categoryId>
-<picture>https://kawe.su/upload/iblock/385/385a53ca48f0f4abf6f2435e31987123.jpg</picture>
+<picture>https://kawe.su/upload/iblock/9fd/9fd9b9f85661e4f62a9c9c9dfd97b62f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Masterlight Классик KaWe смотровой светильник</name>
 <description></description>
@@ -532,10 +535,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10270" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-c-kawe-germaniya/klinok-macintosh-1-c-izognutyy-dlinavysota-9218-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/91a/91ad31e946026b2b90797b55f3e8b6f0.jpg</picture>
+<picture>https://kawe.su/upload/iblock/706/706177f8ddf879e104c216d3f025a51a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №1 C изогнутый (длина/высота, 92/18 мм) KaWe</name>
 <description></description>
@@ -544,10 +547,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10271" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-c-kawe-germaniya/klinok-macintosh-2-c-izognutyy-dlinavysota-11220-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/738/73808d124575aff5274d7ae9ce5b7902.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4ef/4ef0aaf4ffe2633dc13b4c987db11d2f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №2 C изогнутый (длина/высота, 112/20 мм) KaWe</name>
 <description></description>
@@ -556,10 +559,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10272" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-c-kawe-germaniya/klinok-macintosh-3-c-izognutyy-dlinavysota-13321-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/74e/74ed499822521b14028e3477bbecd15f.jpg</picture>
+<picture>https://kawe.su/upload/iblock/738/73831cd6db1e5e1c55d9964069db8c22.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №3 C изогнутый (длина/высота, 133/21 мм) KaWe</name>
 <description></description>
@@ -568,10 +571,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10273" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-c-kawe-germaniya/klinok-macintosh-4-c-izognutyy-dlinavysota-15321-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2874</categoryId>
-<picture>https://kawe.su/upload/iblock/44e/44e9de64f2251f2f7cce6983ea8c05a4.jpg</picture>
+<picture>https://kawe.su/upload/iblock/01e/01e0c2c0003f04af2b33594411bd0596.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №4 C изогнутый (длина/высота, 155/25 мм) KaWe</name>
 <description></description>
@@ -580,10 +583,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10274" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-c-kawe-germaniya/klinok-macintosh-5-c-izognutyy-dlinavysota-17623-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/3f4/3f471f73c0b0906d9d3d91405230809c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/df9/df9e17ac5975285ab9dfaf85a97f41d4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №5 C изогнутый (длина/высота, 175/23 мм) KaWe</name>
 <description></description>
@@ -592,10 +595,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10275" available="true">
 <url>https://kawe.su/catalog/meditsinskie-svetilniki-kawe-germania/masterlight-klassik-led-kawe-smotrovoy-svetilnik/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>30341</price>
+<price>29250</price>
 <currencyId>RUB</currencyId>
 <categoryId>2868</categoryId>
-<picture>https://kawe.su/upload/iblock/ab1/ab18b15d1123e77efeddfd4d10fc97b3.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7a8/7a85f574948caa1afe21712cf6f23744.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Masterlight Классик LED KaWe cмотровой светильник</name>
 <description></description>
@@ -604,10 +607,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10276" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-germaniya/klinok-miller-00-c-pryamoy-dlinavysota-6510-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/967/9677eedc5c468462133f9ca677865a85.jpg</picture>
+<picture>https://kawe.su/upload/iblock/691/69177b21e0249341bd6e5aef39234af4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №00 C прямой (длина/высота, 65/10 мм) в ларингоскоп KaWe</name>
 <description></description>
@@ -616,10 +619,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10277" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-germaniya/klinok-miller-0-c-pryamoy-dlinavysota-7910-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2875</categoryId>
-<picture>https://kawe.su/upload/iblock/08c/08caf8e62d266b8c8841420add7d91c5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/79c/79cbd94418e2c05bea127a41a4abc730.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №0 C прямой (длина/высота, 79/10 мм) в ларингоскоп KaWe</name>
 <description></description>
@@ -628,10 +631,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10279" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-germaniya/klinok-miller-1-c-pryamoy-dlinavysota-10310-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2875</categoryId>
-<picture>https://kawe.su/upload/iblock/dbc/dbcf35b3477ae1a7016a2fb0dd0fda1a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/85c/85c385556c8e88b5657f1d1d0ebe7994.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №1 C прямой (длина/высота, 103/10 мм) в ларингоскоп KaWe</name>
 <description></description>
@@ -640,10 +643,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10280" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-germaniya/klinok-miller-2-c-pryamoy-dlinavysota-15312-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/04f/04fb83e412dda8da5e345bd116e602e5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/c1a/c1ad390e07d8dd852807897da2982144.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №2 C прямой (длина/высота, 153/12 мм) в ларингоскоп KaWe</name>
 <description></description>
@@ -652,10 +655,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10281" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-germaniya/klinok-miller-3-c-pryamoy-dlinavysota-19212-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2875</categoryId>
-<picture>https://kawe.su/upload/iblock/33b/33b4c21e553456ab9a0ed6b0b9c2aafb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7c3/7c34f15fc86c14cb1344a00dedbe8907.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №3 C прямой (длина/высота, 195/13 мм) в ларингоскоп KaWe</name>
 <description></description>
@@ -664,10 +667,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10282" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-germaniya/klinok-miller-4-c-pryamoy-dlinavysota-20216-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/1fa/1faa78545f99441bc206e902e98233c5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d82/d821ed0fe58d4c30d88dba4f5e10e930.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №4 C прямой (длина/высота, 205/16 мм) в ларингоскоп KaWe</name>
 <description></description>
@@ -676,10 +679,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10283" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-c-kawe-germaniya/klinok-foregger-0-c-pryamoy-dlinavysota-7712-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/30d/30d00397a2498a58f0b41b1229e0b9b5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/db1/db1e9ef901009b33afdabeb94ee0584f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Foregger №0 C прямой (длина/высота, 77/12 мм) в ларингоскопы KaWe</name>
 <description></description>
@@ -688,10 +691,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10284" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-c-kawe-germaniya/klinok-foregger-1-c-pryamoy-dlinavysota-9214-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/247/247dd25cc0231765d00b5af671cea4a5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/70d/70d55fed6fece0e04137e2cda353ad65.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Foregger №1 C прямой (длина/высота, 92/14 мм) в ларингоскопы KaWe</name>
 <description></description>
@@ -700,10 +703,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10285" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/nabor-dlya-lor-vracha-nabor-diagnosticheskiy-beysik-s10-kawe---otoskop-s-prinadlezhnostyami/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13337</price>
+<price>12857</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/281/2819d7c11e3499abd64eeec53647a228.jpg</picture>
+<picture>https://kawe.su/upload/iblock/163/163cb164cb33f5581e6fe0b41e2387d5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Оториноскоп - набор для ЛОР врача, диагностический Бейсик С10 KaWe - отоскоп с принадлежностями</name>
 <description></description>
@@ -712,22 +715,22 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10286" available="true">
 <url>https://kawe.su/catalog/stetoskopy-veterinarnye/stetoskop-suprabyell-s-voronkoy-d495mm-dlina-75sm/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>6558</price>
+<price>6322</price>
 <currencyId>RUB</currencyId>
 <categoryId>2861</categoryId>
-<picture>https://kawe.su/upload/iblock/b96/b960436529e80a90e8e3276333d61680.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4fb/4fbdbbb00d0001090ce0c595617c1562.jpg</picture>
 <vendor>Kawe</vendor>
-<name>Стетоскоп СУПРАБЕЛЛЬ с воронкой d=49,5мм,  длина 75см</name>
+<name>Стетоскоп СУПРАБЕЛЛЬ ветеринарный с воронкой d=49,5мм,  длина 75см</name>
 <description></description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
 <offer id="10287" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/diagnosticheskiy-nabor-beysik-s10ye10-kawe---oftalmoskop-1-apertura-i-otoskop-s-prinadlezhnostyami/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>15893</price>
+<price>15322</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/16a/16af488dbd43aa133064da254ee86cfb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/21e/21e5061f00dbb67350d42b852a4efc3c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диагностический набор Бейсик С10/Е10 KaWe - офтальмоскоп 1 апертура и отоскоп с принадлежностями</name>
 <description></description>
@@ -736,10 +739,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10288" available="true">
 <url>https://kawe.su/catalog/zaryadnye-ustroystva-kawe-germaniya/universalnoe-zaryadnoe-ustroystvo-medcharge-4000-dlya-akkumulyatorov-nimh-li-ion-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>17561</price>
+<price>16929</price>
 <currencyId>RUB</currencyId>
 <categoryId>2807</categoryId>
-<picture>https://kawe.su/upload/iblock/f89/f8904c81bbb5a8e5243e7810fd4d049c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/cf0/cf0ef1f5f45b3bda9b3dd3dd7da64dee.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Универсальное зарядное устройство MedCharge 4000 для аккумуляторов NiMH, Li-Ion KaWe</name>
 <description></description>
@@ -748,10 +751,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10289" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/diagnosticheskiy-nabor-beysik-s10ye16-kawe---oftalmoskop-6-apertur-i-otoskop-s-prinadlezhnostyami/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>18894</price>
+<price>18214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2860</categoryId>
-<picture>https://kawe.su/upload/iblock/8ec/8ec07099dfec724706e3fd08e3ce45c8.jpg</picture>
+<picture>https://kawe.su/upload/iblock/081/0814e208d103a549f0b31786d77f5ebe.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диагностический набор Бейсик С10/Е16 KaWe - офтальмоскоп 6 апертур и отоскоп с принадлежностями</name>
 <description></description>
@@ -760,10 +763,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10291" available="true">
 <url>https://kawe.su/catalog/dermatoskopy-kawe-germaniya/dermagel-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>557</price>
+<price>536</price>
 <currencyId>RUB</currencyId>
 <categoryId>2865</categoryId>
-<picture>https://kawe.su/upload/iblock/306/306a0fd3e30619e1849154c5dea641ed.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5cf/5cf2259eec3d261873359a72dca90a52.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Дермагель KaWe</name>
 <description></description>
@@ -772,22 +775,24 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10292" available="true">
 <url>https://kawe.su/catalog/dermatoskopy-kawe-germaniya/kontaktnoe-steklo-so-shkaloy-dlya-kawe-dermatoskopov/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3446</price>
+<price>3322</price>
 <currencyId>RUB</currencyId>
 <categoryId>2864</categoryId>
-<picture>https://kawe.su/upload/iblock/cd9/cd9ec2f57c969f43f53252d1ffebc100.jpg</picture>
+<picture>https://kawe.su/upload/iblock/65f/65f0b53fcc6a284bf137724a30118159.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Контактное стекло со шкалой для KaWe дерматоскопов</name>
-<description></description>
+<description>
+	Диаметр - 25 мм
+</description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
 <offer id="10299" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/diagnosticheskiy-nabor-combilight-fo30--e36-25-v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>44345</price>
+<price>42749</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/d73/d73bb9da4a957b643eaf50eaf6fbb856.jpg</picture>
+<picture>https://kawe.su/upload/iblock/04b/04bbf58c5e5c9bc89bc2947129fdf593.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диагностический набор Combilight F.O.30 / E36 2,5 В KaWe</name>
 <description></description>
@@ -796,10 +801,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10300" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/diagnosticheskiy-nabor-combilight-led-fo30--e36-35-v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>66499</price>
+<price>64107</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/5ab/5abbb16f2559acac595e3029f2cdac1a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7e6/7e657a5c2039666ed0d6cbc1f0562c26.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диагностический набор Combilight LED F.O.30 / E36 3,5 В KaWe</name>
 <description></description>
@@ -808,10 +813,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10301" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/diagnosticheskiy-nabor-semeynogo-vracha-basic-set-combilight-c10e15-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>17561</price>
+<price>16929</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/40a/40a14a3749fc370b83b714f638c25b8a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7fb/7fb0b350d9030b614c4e8d93b2a46160.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диагностический набор семейного врача BASIC-Set Combilight C10/E15, KaWe</name>
 <description></description>
@@ -820,10 +825,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10302" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/plastikovyy-keys-chernyy-dlya-piccolightkawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1779</price>
+<price>1715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2807</categoryId>
-<picture>https://kawe.su/upload/iblock/f35/f356c702310125b178b16ce0b8ba5741.jpg</picture>
+<picture>https://kawe.su/upload/iblock/cfb/cfb04ba6e854ea1c478e7c915f0d5f85.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Пластиковый кейс, черный для PICCOLIGHT®,KaWe</name>
 <description></description>
@@ -832,10 +837,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10303" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/plastikovyy-keys-chernyy-dlya-basic-set-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1779</price>
+<price>1715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2807</categoryId>
-<picture>https://kawe.su/upload/iblock/f8b/f8bb7e36325553c0704b9e516896196f.jpg</picture>
+<picture>https://kawe.su/upload/iblock/227/22725f0d176b05391e60be96f73d9aa9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Пластиковый кейс, черный для BASIC-SET, KaWe</name>
 <description></description>
@@ -844,10 +849,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10305" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe/komplekt-meditsinskikh-kamertonov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>18867</price>
+<price>18188</price>
 <currencyId>RUB</currencyId>
-<categoryId>2810</categoryId>
-<picture>https://kawe.su/upload/iblock/fb1/fb1698a19b2bfbc43d3a4d692314ebf4.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/1b8/1b8fa453ad4ac621cdae2742594dfd33.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Комплект медицинских камертонов KaWe</name>
 <description></description>
@@ -856,10 +861,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10306" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-alyuminievye-meditsinskie-germaniya/kamerton-128-gts-128-hz-alyuminievyy-s-gruzami-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5298</price>
+<price>5108</price>
 <currencyId>RUB</currencyId>
-<categoryId>2810</categoryId>
-<picture>https://kawe.su/upload/iblock/7bb/7bbd5935ec21c99bd95c6b40f5000168.jpg</picture>
+<categoryId>2809</categoryId>
+<picture>https://kawe.su/upload/iblock/bc6/bc6880a0f07c3da49f4475be08b90c5d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон алюминиевый с демпферами (частота 128 Гц) KaWe</name>
 <description></description>
@@ -868,10 +873,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10307" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-alyuminievye-meditsinskie-germaniya/kamerton-256-gts-256-hz-alyuminievyy-s-gruzami-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5077</price>
+<price>4894</price>
 <currencyId>RUB</currencyId>
-<categoryId>2811</categoryId>
-<picture>https://kawe.su/upload/iblock/5d1/5d199d1e3b120eaf2965df895bf63c13.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/00b/00be300ba05b052fb2ca87e764015184.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон алюминиевый с демпферами (частота 256 Гц) KaWe</name>
 <description></description>
@@ -880,10 +885,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10308" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-alyuminievye-meditsinskie-germaniya/kamerton-256-gts-256-hz-aluminieviy-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5077</price>
+<price>4894</price>
 <currencyId>RUB</currencyId>
-<categoryId>2811</categoryId>
-<picture>https://kawe.su/upload/iblock/661/66101986e4d0931118f9e8ceca22908b.JPG</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/629/629c7e8b0563a8dc3845041d9a6d9cc4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон алюминиевый без демпферов (частота 256 Гц) KaWe</name>
 <description></description>
@@ -892,10 +897,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10309" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-alyuminievye-meditsinskie-germaniya/kamerton-alyuminievyy-bez-dempferov-0814051001-33523-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3531</price>
+<price>3404</price>
 <currencyId>RUB</currencyId>
-<categoryId>2810</categoryId>
-<picture>https://kawe.su/upload/iblock/482/482380e3587918a779b0aa4a25bf49ab.jpg</picture>
+<categoryId>2809</categoryId>
+<picture>https://kawe.su/upload/iblock/851/851c58cd8044c2d9c10e81e01fb22408.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон алюминиевый без демпферов  (частота 512 Гц) KaWe</name>
 <description></description>
@@ -904,10 +909,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10310" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-alyuminievye-meditsinskie-germaniya/kamerton-1024-gts-1024-hz-alyuminievyy-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3312</price>
+<price>3193</price>
 <currencyId>RUB</currencyId>
 <categoryId>2809</categoryId>
-<picture>https://kawe.su/upload/iblock/aeb/aeb4a1517a15547d828bc19254f931b1.JPG</picture>
+<picture>https://kawe.su/upload/iblock/b35/b353bba9356ff9c146073db48e196341.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон алюминиевый без демпферов  (частота 1024 Гц) KaWe</name>
 <description></description>
@@ -916,10 +921,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10311" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-alyuminievye-meditsinskie-germaniya/kamerton-2048-gts-2048-hz-alyuminievyy-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3367</price>
+<price>3246</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/2c6/2c601873b4cd987b91f92d246cb4917d.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5fa/5fad3adf8ddc264a77f7054f6d47734a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон алюминиевый без демпферов  (частота 2048) KaWe</name>
 <description></description>
@@ -928,10 +933,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10312" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-lukae/kamerton-po-lukae-128-gts-128-hz-graduirovannyy-s-reguliruemymi-ot-c-do-h-gruzami-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>8057</price>
+<price>7767</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/010/010fa318a2a7fc7f9d6d0da3f3b8b1eb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/345/34574cb8293a59509aa0055e9b07c83a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Лукае градуированный с регулируемыми от C до H демпферами  (частота 128 Гц) KaWe</name>
 <description></description>
@@ -940,10 +945,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10313" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-lukae/kamerton-128-gts-128-hz-po-lukae-s-podstavkoi-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5904</price>
+<price>5692</price>
 <currencyId>RUB</currencyId>
-<categoryId>2810</categoryId>
-<picture>https://kawe.su/upload/iblock/093/0930272e6dcf867b745fa245d3e5e398.JPG</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/5ab/5ab23eb1682649524b0e956950c227ca.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Лукае без демпферов  (частота 128 Гц) KaWe</name>
 <description></description>
@@ -952,10 +957,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10314" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-lukae/kamerton-256-gts-256-hz-po-lukae-s-podstavkoi-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5298</price>
+<price>5108</price>
 <currencyId>RUB</currencyId>
-<categoryId>2812</categoryId>
-<picture>https://kawe.su/upload/iblock/eca/eca1ee8bb1a71259e7135ed42b68c6bc.JPG</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/f77/f775c3608627f24b0c7eb1f01015bda1.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Лукае без демпферов  (частота 256 Гц) KaWe</name>
 <description></description>
@@ -964,10 +969,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10315" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-lukae/kamerton-512-gts-512-hz-po-lukae-s-podstavkoi-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5077</price>
+<price>4894</price>
 <currencyId>RUB</currencyId>
 <categoryId>2809</categoryId>
-<picture>https://kawe.su/upload/iblock/15d/15dc8eaa6ade0dbb7601fad2d8461e34.JPG</picture>
+<picture>https://kawe.su/upload/iblock/02a/02a131a5b140b145e847f595f9d73262.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Лукае без демпферов  (частота 512 Гц) KaWe</name>
 <description></description>
@@ -976,10 +981,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10316" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-lukae/kamerton-1024-gts-1024-hz-po-lukae-s-podstavkoi-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4966</price>
+<price>4788</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/61d/61d768d31c92be650e966a60ab7b159e.JPG</picture>
+<picture>https://kawe.su/upload/iblock/019/01946c3f9315caa3298929431142b5a8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Лукае без демпферов  (частота 1024 Гц) KaWe</name>
 <description></description>
@@ -988,10 +993,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10317" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-lukae/kamerton-2048-gts-2048-hz-po-lukae-s-podstavkoi-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5022</price>
+<price>4841</price>
 <currencyId>RUB</currencyId>
-<categoryId>2812</categoryId>
-<picture>https://kawe.su/upload/iblock/f88/f88cf582946fad6f1147383ae64c16e7.JPG</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/528/5280e29ad3b662ad39eeb51992912f1b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Лукае без демпферов  (частота 2048) KaWe</name>
 <description></description>
@@ -1000,10 +1005,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10318" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-lukae/kamerton-4096-gts-4096-hz-po-lukae-s-podstavkoi-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4966</price>
+<price>4788</price>
 <currencyId>RUB</currencyId>
-<categoryId>2810</categoryId>
-<picture>https://kawe.su/upload/iblock/104/1040a52c399f893666172ad4c2b9c4fa.JPG</picture>
+<categoryId>2809</categoryId>
+<picture>https://kawe.su/upload/iblock/928/9289c1830b4f12ff5dc9c66f2f394749.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Лукае без демпферов  (частота 4096 Гц) KaWe</name>
 <description></description>
@@ -1012,10 +1017,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10319" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-khartmanu/kamerton-4096-gts-4096-hz-po-khartmanu-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3091</price>
+<price>2980</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/2fc/2fc79cda5793f617e793e069221ca1cb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/aae/aaed0257210bc9d10a30e83d9e5c128b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Хартману без демпферов  (частота 4096 Гц) KaWe</name>
 <description></description>
@@ -1024,10 +1029,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10320" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-khartmanu/kamerton-2048-gts-2048-hz-po-khartmanu-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2981</price>
+<price>2873</price>
 <currencyId>RUB</currencyId>
-<categoryId>2813</categoryId>
-<picture>https://kawe.su/upload/iblock/6e2/6e261b49e536f1d7b7922db35104f635.jpg</picture>
+<categoryId>2809</categoryId>
+<picture>https://kawe.su/upload/iblock/f1e/f1e1e2a9a689fd74ccfb8810810a5f02.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Хартману без демпферов  (частота 2048) KaWe</name>
 <description></description>
@@ -1036,10 +1041,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10321" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-khartmanu/kamerton-1024-gts-1024-hz-po-khartmanu-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3367</price>
+<price>3246</price>
 <currencyId>RUB</currencyId>
-<categoryId>2813</categoryId>
-<picture>https://kawe.su/upload/iblock/6d3/6d3f517c582b9d5481a33dd4e390413a.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/00b/00b1d0d99f566c2742e17400223b1bef.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Хартману без демпферов  (частота 1024 Гц) KaWe</name>
 <description></description>
@@ -1048,10 +1053,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10322" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-khartmanu/kamerton-512-gts-512-hz-po-khartmanu-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3587</price>
+<price>3457</price>
 <currencyId>RUB</currencyId>
 <categoryId>2809</categoryId>
-<picture>https://kawe.su/upload/iblock/32c/32ce112d2a2cf88ca2fb8828d1f31d38.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f31/f317cc4561099182e4fb582c73afcd14.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Хартману без демпферов  (частота 512 Гц) KaWe</name>
 <description></description>
@@ -1060,10 +1065,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10323" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-khartmanu/kamerton-256-gts-25-hz-po-hartmanu-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3731</price>
+<price>3597</price>
 <currencyId>RUB</currencyId>
-<categoryId>2813</categoryId>
-<picture>https://kawe.su/upload/iblock/ca0/ca0272b374784530ba157d1f5ac4187b.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/cef/cefb23a959ee46dda5e798e0005d01d4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Хартману без демпферов  (частота 256 Гц) KaWe</name>
 <description></description>
@@ -1072,10 +1077,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10324" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-khartmanu/kamerton-128-gts-128-hz-po-khartmanu-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4745</price>
+<price>4574</price>
 <currencyId>RUB</currencyId>
-<categoryId>2813</categoryId>
-<picture>https://kawe.su/upload/iblock/913/9135ec3bf474ba879a5873e1aa076c49.jpg</picture>
+<categoryId>2809</categoryId>
+<picture>https://kawe.su/upload/iblock/0e5/0e5aaf5ae36d5c029e1ef072a2cacbec.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Хартману без демпферов (частота 128 Гц) KaWe</name>
 <description></description>
@@ -1084,10 +1089,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10325" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-po-khartmanu/kamerton-128-gts-128-hz-po-khartmanu-s-fiksirovannymi-gruzami-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5739</price>
+<price>5533</price>
 <currencyId>RUB</currencyId>
 <categoryId>2809</categoryId>
-<picture>https://kawe.su/upload/iblock/845/8456d132673cc621b09e4a1dc1f66b97.jpg</picture>
+<picture>https://kawe.su/upload/iblock/6de/6de304c161992c332beb8a4bcbbdd445.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон по Хартману с фиксированными демпферами  ( частота 128 Гц) KaWe</name>
 <description></description>
@@ -1096,10 +1101,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10326" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-stalnye-meditsinskie-germaniya/kamerton-ot-128-do-64gts-128-64-hz-po-ryudel-seyferu-graduirovanniy-s-gruzami-i-podstavkoi-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9436</price>
+<price>9097</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/498/498705a747a0e940d329ba2356daf9b1.jpg</picture>
+<picture>https://kawe.su/upload/iblock/85c/85c8d1374268f2b39328b012927f1d09.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон KaWe по Рюдель-Сейфферу градуированный (частота без демпферов 128Гц) KaWe</name>
 <description></description>
@@ -1108,10 +1113,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10327" available="true">
 <url>https://kawe.su/catalog/kamertony-kawe-stalnye-meditsinskie-germaniya/kamerton-a1-440-gts-a1-440-hz-bez-gruzov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3973</price>
+<price>3831</price>
 <currencyId>RUB</currencyId>
-<categoryId>2810</categoryId>
-<picture>https://kawe.su/upload/iblock/912/9128b1bd94d8a9d61cd53f7d7e3f1816.jpg</picture>
+<categoryId>2809</categoryId>
+<picture>https://kawe.su/upload/iblock/ef0/ef00f39d7c6406aa3c6f5de463187b96.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Камертон A1 440 Гц (A1 440 Hz) без грузов, KaWe</name>
 <description></description>
@@ -1120,10 +1125,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10328" available="true">
 <url>https://kawe.su/catalog/bazovye-nastennye-moduli-kawe/medcenter-5000-bazovyy-nastennyy-modul-s-1-rukoyatyu-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>26758</price>
+<price>25794</price>
 <currencyId>RUB</currencyId>
 <categoryId>2817</categoryId>
-<picture>https://kawe.su/upload/iblock/fef/fefec4c195ecc166c6dece645be8077c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/60b/60b1a2bb9c93e906e0539d48ccb0105e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 базовый настенный модуль с 1 рукоятью, KaWe</name>
 <description></description>
@@ -1132,10 +1137,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10329" available="true">
 <url>https://kawe.su/catalog/bazovye-nastennye-moduli-kawe/medcenter-5000-bazovyydopolnitelnyy-modul-s-2-rukoyatyami-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>38293</price>
+<price>36914</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/ae1/ae1054585857bef363867dfc524d6512.jpg</picture>
+<picture>https://kawe.su/upload/iblock/906/906864c4f1fe5a59d2f171f21181202b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 базовый+дополнительный модуль с 2 рукоятями, KaWe</name>
 <description></description>
@@ -1144,10 +1149,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10330" available="true">
 <url>https://kawe.su/catalog/bazovye-nastennye-moduli-kawe/medcenter-5000-dopolnitelnyy-modul-s-1-rukoyatyu-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>16173</price>
+<price>15591</price>
 <currencyId>RUB</currencyId>
 <categoryId>2817</categoryId>
-<picture>https://kawe.su/upload/iblock/f10/f10ec7672dcc4f543cca634bfb725395.jpg</picture>
+<picture>https://kawe.su/upload/iblock/442/442a6e06e0af703f05c7f96b60872653.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 дополнительный модуль с 1 рукоятью, KaWe</name>
 <description></description>
@@ -1156,10 +1161,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10331" available="true">
 <url>https://kawe.su/catalog/bazovye-nastennye-moduli-kawe/medcenter-5000-modul-dlya-ushnykh-voronok-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4281</price>
+<price>4127</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/71c/71cf86fe27d31cc5ec9cae947b6f00e0.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5c0/5c02f8511fce76c917c634ecf9c8ca09.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 модуль для ушных воронок, KaWe</name>
 <description></description>
@@ -1168,10 +1173,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10332" available="true">
 <url>https://kawe.su/catalog/gotovye-komplekty-kawe/medcenter-5000-nabor-ce55-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>50541</price>
+<price>48722</price>
 <currencyId>RUB</currencyId>
 <categoryId>2818</categoryId>
-<picture>https://kawe.su/upload/iblock/901/90110fcd829214d23a949bb942780fb6.jpg</picture>
+<picture>https://kawe.su/upload/iblock/9b7/9b7cf13922e4e1573c35ededf9589fae.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 набор C/E55, KaWe</name>
 <description></description>
@@ -1180,10 +1185,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10333" available="true">
 <url>https://kawe.su/catalog/gotovye-komplekty-kawe/medcenter-5000-nabor-fo-led-e56-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>57793</price>
+<price>55714</price>
 <currencyId>RUB</currencyId>
 <categoryId>2818</categoryId>
-<picture>https://kawe.su/upload/iblock/819/819b1a565bbfdb97121a99252972a20a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/18d/18d06da6263d479d43d110eb1412a688.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 Набор FO LED/ E56 (США), KaWe</name>
 <description></description>
@@ -1192,10 +1197,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10334" available="true">
 <url>https://kawe.su/catalog/gotovye-komplekty-kawe/medcenter-5000-nabor-fo-led-e56-kawe-1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>57793</price>
+<price>55714</price>
 <currencyId>RUB</currencyId>
 <categoryId>2818</categoryId>
-<picture>https://kawe.su/upload/iblock/04d/04d76d240ba8cf787524f0440fcd9f73.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ca6/ca6f74f77944517e2db6ce40ddb18621.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 Набор FO LED/ E56 (ЕС), KaWe</name>
 <description></description>
@@ -1204,10 +1209,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10335" available="true">
 <url>https://kawe.su/catalog/gotovye-komplekty-kawe/medcenter-5000-nabor-fo-led-e25-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>91569</price>
+<price>88274</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/8d2/8d204dea6d07f625d53efe99f96c3415.jpg</picture>
+<picture>https://kawe.su/upload/iblock/567/56772fa4d83627241ca656fb1de51655.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter 5000 Набор FO LED/ E25, KaWe</name>
 <description></description>
@@ -1216,10 +1221,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10336" available="true">
 <url>https://kawe.su/catalog/komplektuyushchie-k-diagosticheskim-naboram-kawe/golovka-otoskopa-dlya-medcenter5000-piccolight-c-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5828</price>
+<price>5619</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/6c6/6c6feb3c45b5999266a1abf47b27e9dd.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d41/d4170665bec4b8da14310acc88b9dc14.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка отоскопа для MedCenter5000 Piccolight C, KaWe</name>
 <description></description>
@@ -1228,10 +1233,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10337" available="true">
 <url>https://kawe.su/catalog/komplektuyushchie-k-diagosticheskim-naboram-kawe/golovka-otoskopa-dlya-medcenter5000-piccolight-fo-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12130</price>
+<price>11694</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/990/99013554cd1babd9eb2e3840f681a5c4.jpg</picture>
+<picture>https://kawe.su/upload/iblock/0a1/0a158ffc26db35be3a2ff01f8e20fe0b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка отоскопа для MedCenter5000 Piccolight FO, KaWe</name>
 <description></description>
@@ -1240,10 +1245,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10338" available="true">
 <url>https://kawe.su/catalog/komplektuyushchie-k-diagosticheskim-naboram-kawe/golovka-oftalmoskopa-dlya-medcenter5000-eurolight-e25-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>62935</price>
+<price>60670</price>
 <currencyId>RUB</currencyId>
 <categoryId>2819</categoryId>
-<picture>https://kawe.su/upload/iblock/5b3/5b3ce27cb8645481102c325e8db89e84.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5a0/5a0178fabcc864e56ad32733dfbe1fc8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка офтальмоскопа для MedCenter5000 Eurolight E25, KaWe</name>
 <description></description>
@@ -1252,10 +1257,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10339" available="true">
 <url>https://kawe.su/catalog/komplektuyushchie-k-diagosticheskim-naboram-kawe/golovka-oftalmoskopa-dlya-medcenter5000-piccolight-ye55-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>15477</price>
+<price>14920</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/3ab/3abd839d7a5a04f57b16b2aaa123b0f7.jpg</picture>
+<picture>https://kawe.su/upload/iblock/22f/22f0effe83c2289a5bed2cca69f07509.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка офтальмоскопа для MedCenter5000 Piccolight Е55, KaWe</name>
 <description></description>
@@ -1264,10 +1269,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10340" available="true">
 <url>https://kawe.su/catalog/komplektuyushchie-k-diagosticheskim-naboram-kawe/golovka-oftalmoskopa-dlya-medcenter5000-piccolight-ye56-eu-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>18052</price>
+<price>17402</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/884/88458ad9b62fd68aac7ff584857a13c9.jpg</picture>
+<picture>https://kawe.su/upload/iblock/392/392dee5ec747e4e4b0bed32a87b3f0c9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка офтальмоскопа для MedCenter5000 Piccolight Е56 (EU), KaWe</name>
 <description></description>
@@ -1276,10 +1281,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10341" available="true">
 <url>https://kawe.su/catalog/komplektuyushchie-k-diagosticheskim-naboram-kawe/golovka-oftalmoskopa-dlya-medcenter5000-piccolight-ye56-usa-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>18055</price>
+<price>17405</price>
 <currencyId>RUB</currencyId>
 <categoryId>2819</categoryId>
-<picture>https://kawe.su/upload/iblock/755/75559f8790c85c5764a36a776b4c93a0.jpg</picture>
+<picture>https://kawe.su/upload/iblock/019/01987598ff9055ce437a8c9e2db3d1b7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка офтальмоскопа для MedCenter5000 Piccolight Е56 (USA), KaWe</name>
 <description></description>
@@ -1288,10 +1293,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10342" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor_voronok_mnogorazovyh_2_5_3_5_4_5mm_3_sht/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1103</price>
+<price>1063</price>
 <currencyId>RUB</currencyId>
 <categoryId>3340</categoryId>
-<picture>https://kawe.su/upload/iblock/b5f/b5f9a3b256b0046c7eb05db259c8a242.jpg</picture>
+<picture>https://kawe.su/upload/iblock/a12/a124b0a05dc7ed53607ad4ed6fc39640.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 2,5/3,5/4,5 мм (3 шт. в пластике) 01.72101.001 (24846), KaWe</name>
 <description></description>
@@ -1300,10 +1305,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10343" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-25-mm-3-sht-0172102001-24847/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1103</price>
+<price>1063</price>
 <currencyId>RUB</currencyId>
 <categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/12a/12ad585c8f82a514b476a46d62a06995.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7cd/7cd0c7d5af757c28967ae2180b8b3601.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 2,5 мм (3 шт. в пластике) 01.72102.001 (24847),KaWe</name>
 <description></description>
@@ -1312,10 +1317,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10344" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/podstavka-dlya-rukoyatey-eurolight-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>834</price>
+<price>804</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/2fe/2fe5141a386d2df428f95c929f54c71e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4cf/4cf21ed391fdddf5c0b0369804d4b691.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Подставка для рукоятей EUROLIGHT, KaWe</name>
 <description></description>
@@ -1324,10 +1329,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10345" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-35-mm-3-sht-0172103001-24848/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1103</price>
+<price>1063</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/af3/af33fca16e46d8208f69aceda6597401.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7a2/7a253be27a744b0b2ccb56dde51a7617.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 3,5 мм (3 шт. в пластике) 01.72103.001 (24848) , KaWe</name>
 <description></description>
@@ -1336,10 +1341,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10346" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/podstavka-dlya-piccolight-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>612</price>
+<price>590</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/674/674ab227c7ad25d4d301962067d41ca4.jpg</picture>
+<categoryId>2800</categoryId>
+<picture>https://kawe.su/upload/iblock/ea1/ea103c79f781cd4d99133c4384429e39.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Подставка для PICCOLIGHT, KaWe</name>
 <description></description>
@@ -1348,10 +1353,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10347" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-45-mm-3-sht-0172104001-24849/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1103</price>
+<price>1063</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/3ae/3ae139caf6e12689b94637d73e1c9deb.jpeg</picture>
+<categoryId>3342</categoryId>
+<picture>https://kawe.su/upload/iblock/0bd/0bd87267dce60ad7a0c6775b2ce212cc.jpeg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 4,5 мм (3шт. в пластике) 01.72104.001 (24849), KaWe</name>
 <description></description>
@@ -1360,10 +1365,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10348" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/sumka-kozhzam-na-molnii-dlya-eurolight-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1112</price>
+<price>1072</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/6ea/6ea7ddb89ba763e271bfd181daaa1068.jpg</picture>
+<picture>https://kawe.su/upload/iblock/774/7744343f6bc6bde0a11ff0eec3ac98de.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Сумка кож/зам на молнии для EUROLIGHT, KaWe</name>
 <description></description>
@@ -1372,10 +1377,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10349" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-combilight/kawe-combilight-fo-30-led-35-v-otoskop-fibroopticheskiy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>21006</price>
+<price>20251</price>
 <currencyId>RUB</currencyId>
-<categoryId>2804</categoryId>
-<picture>https://kawe.su/upload/iblock/be6/be69fbf5e59ef95914f14cd8581116ee.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/70e/70ea11fd4e0c081a067dfc7dd902d2e8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe COMBILIGHT FO 30 LED 3.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -1384,10 +1389,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10350" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-25-mm-10-sht-0172212001-26200/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/152/1520b4798988841b274a894866ebc15f.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/0c3/0c386105c60d9f10f8eb8b4b6ce08fbe.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 2,5 мм (10 шт. в пластике) 01.72212.001 (26200), KaWe</name>
 <description></description>
@@ -1396,10 +1401,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10351" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/sumochka-tkanevaya-na-lipuchke-dlya-piccolight-chernaya-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1001</price>
+<price>965</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/42f/42f274c67d45c0a9ca0af228284de7e7.jpg</picture>
+<picture>https://kawe.su/upload/iblock/6dd/6dd65e69ea5ca42b2823e449d8cb6dd9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Сумочка тканевая на липучке для PICCOLIGHT, черная, KaWe</name>
 <description></description>
@@ -1408,10 +1413,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10352" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-combilight/kawe-combilight-fo-30-3-5-v-otoskop-fibroopticheskij/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>17672</price>
+<price>17036</price>
 <currencyId>RUB</currencyId>
-<categoryId>2804</categoryId>
-<picture>https://kawe.su/upload/iblock/2c9/2c9b10460efd43555bd2a4c09670fa0b.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/f85/f85479c4f267b7c7289dc8a69d91bb2a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe COMBILIGHT FO 30 3.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -1420,10 +1425,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10353" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe-eurolight-fo-30-led-35-v-otoskop-fibroopticheskiy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>26008</price>
+<price>25071</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/501/5016ebbca8646f3cc8781fdac6c482d4.jpg</picture>
+<picture>https://kawe.su/upload/iblock/e66/e66222eefb30142a40d08133ef38b8fc.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT FO 30 LED 3.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -1432,10 +1437,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10354" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-4-mm-10-sht-0172213001-26205/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>3340</categoryId>
-<picture>https://kawe.su/upload/iblock/efb/efb62a31cae3519fbba736e58b68b9f5.jpg</picture>
+<categoryId>3342</categoryId>
+<picture>https://kawe.su/upload/iblock/9eb/9eb5a4c52ca99406ed491dc9842d8b65.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 4 мм (10 шт. в пластике) 01.72213.001 (26205), KaWe</name>
 <description></description>
@@ -1444,10 +1449,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10355" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/kronshteyn-osvetitelya-dlya-eurolight-s10-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1556</price>
+<price>1501</price>
 <currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/c43/c43fa2b46d4e006c086da2dac2c7255f.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/418/41819bd7a23eb0534c2b35838a455dfc.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Кронштейн осветителя для EUROLIGHT® С10, KaWe</name>
 <description></description>
@@ -1456,10 +1461,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10356" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe-eurolight-c30-op-led-25-v-lampochnyy-otoskop-operatsionnyy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>15782</price>
+<price>15215</price>
 <currencyId>RUB</currencyId>
-<categoryId>2805</categoryId>
-<picture>https://kawe.su/upload/iblock/dbf/dbfd9954b4a207ee40625a248000ebe7.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/f16/f16169185cb4be97eb03c09744f8d38d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT C30 OP LED 2,5 В Лампочный отоскоп операционный</name>
 <description></description>
@@ -1470,8 +1475,8 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-2540mm-10-sht-0172211001-26210/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
 <price>1614</price>
 <currencyId>RUB</currencyId>
-<categoryId>2806</categoryId>
-<picture>https://kawe.su/upload/iblock/25b/25bb571e42d1284a483b6fdf0cbbb1f5.jpg</picture>
+<categoryId>3342</categoryId>
+<picture>https://kawe.su/upload/iblock/f0a/f0a662e03b7d5a073f5b18a4b04f9a2b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 2,5/4,0мм (10 шт) 01.72211.001 (26210), KaWe</name>
 <description></description>
@@ -1480,10 +1485,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10358" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/nabor-laringealnykh-zerkal-3-i4dlya-eurolight-s10-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>734</price>
+<price>708</price>
 <currencyId>RUB</currencyId>
 <categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/df0/df0a3d440e807fbfc562b4ae9a871df3.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8e0/8e0a5dd00d02b3862e35a40c21b78bbf.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор ларингеальных зеркал №3 и№4,для EUROLIGHT® С10, KaWe</name>
 <description></description>
@@ -1492,10 +1497,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10359" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-eurolight-kawe-germaniya/kawe-eurolight-fo-30-35-v-otoskop-fibroopticheskiy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>22006</price>
+<price>21214</price>
 <currencyId>RUB</currencyId>
-<categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/260/2607061b1d8a4a165f56cd3f2ef98d87.jpg</picture>
+<categoryId>2805</categoryId>
+<picture>https://kawe.su/upload/iblock/314/3140f4fa3111b97b558159549790c518.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe EUROLIGHT FO 30 3.5 В Отоскоп фиброоптический</name>
 <description></description>
@@ -1504,10 +1509,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10360" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-odnorazovye/nabor-voronok-odnorazovykh-25mm-100-sht-0171112001-28912/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>6947</price>
+<price>6696</price>
 <currencyId>RUB</currencyId>
-<categoryId>3340</categoryId>
-<picture>https://kawe.su/upload/iblock/98c/98c2c9066d405c2747237720b535b2f7.jpg</picture>
+<categoryId>2800</categoryId>
+<picture>https://kawe.su/upload/iblock/454/454964fc115e9923dbfd2256c2557cd1.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок одноразовых 2,5мм (100 шт., в пластике) 01.71112.001 (28912), KaWe</name>
 <description></description>
@@ -1516,10 +1521,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10361" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/derzhatel-shpateley-dlya-basic-set-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>401</price>
+<price>386</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/e4d/e4d0003e54b5b54ced5b0bcb76569ea8.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/153/1534cd85ddfa87612fdce48d9690b60f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Держатель шпателей для  Basic-Set, KaWe</name>
 <description></description>
@@ -1528,10 +1533,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10362" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-odnorazovye/nabor-voronok-odnorazovykh-25mm-100-sht-0171122001-28913/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>6947</price>
+<price>6696</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/c92/c925425188ec502d0a9b59b945ce68ec.jpg</picture>
+<categoryId>2806</categoryId>
+<picture>https://kawe.su/upload/iblock/e4b/e4bee6c021f1c5603dde63fd43c961a8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок одноразовых 4,0мм (100 шт. в пластике ) 01.71122.001 (28913), KaWe</name>
 <description></description>
@@ -1540,10 +1545,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10363" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/razdvizhnaya-nazalnaya-voronka-dlya-basic-set-kawe_1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2112</price>
+<price>2036</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/5e7/5e7aa39556e95950b8641034bf734f02.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/bef/beffa0e7b79fe250a5ed4378cc8b823c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Раздвижная назальная воронка для Basic-Set, KaWe</name>
 <description></description>
@@ -1552,10 +1557,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10364" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-odnorazovye/nabor-voronok-odnorazovykh-25mm-1000-sht-v-plastike-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5557</price>
+<price>5357</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/d49/d491fdd568e4593cd87573be267a7969.jpg</picture>
+<categoryId>3344</categoryId>
+<picture>https://kawe.su/upload/iblock/3d6/3d62def217029ad73387881c1d63273a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок одноразовых 2,5мм (100шт. в пластике), KaWe</name>
 <description></description>
@@ -1564,10 +1569,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10365" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-odnorazovye/nabor-voronok-odnorazovykh-25mm-1000-sht-rossypyu-0171211002-28900/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
-<categoryId>3340</categoryId>
-<picture>https://kawe.su/upload/iblock/3f9/3f965627ba092931e15c5625f0fd9c33.jpg</picture>
+<categoryId>3341</categoryId>
+<picture>https://kawe.su/upload/iblock/f90/f9036c59bf46a05173049c7c6d0cdb0c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Воронки одноразовые серые маленькие, ? 2.5 мм, (1000 шт. в карт.упаковке) KaWe</name>
 <description></description>
@@ -1576,10 +1581,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10366" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-odnorazovye/nabor-voronok-odnorazovykh-4mm-100-sht-v-plastike-0171222001-28911/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>557</price>
+<price>536</price>
 <currencyId>RUB</currencyId>
-<categoryId>2806</categoryId>
-<picture>https://kawe.su/upload/iblock/6cb/6cb7ba575198b081c542e94841ba4723.jpg</picture>
+<categoryId>3344</categoryId>
+<picture>https://kawe.su/upload/iblock/967/967e0dc57cce9de84ae3e5a38d6073e7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок одноразовых 4мм (100шт. в пластике), KaWe</name>
 <description></description>
@@ -1588,10 +1593,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10367" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-odnorazovye/nabor-voronok-odnorazovykh-4mm-1000-sht-rossypyu-0171221002-28901/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
-<categoryId>3343</categoryId>
-<picture>https://kawe.su/upload/iblock/043/043b155d9f23f34d21af092e88e2e492.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/5e9/5e9fc09fce372951476692541d25e865.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок одноразовых 4мм (1000 шт. в карт.упаковке) 01.71221.002 (28901), KaWe</name>
 <description></description>
@@ -1600,10 +1605,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10368" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/otoskop-piccolight-fo-chernii-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7225</price>
+<price>6965</price>
 <currencyId>RUB</currencyId>
 <categoryId>2802</categoryId>
-<picture>https://kawe.su/upload/iblock/ade/ade691fd493e3b32e1c2ef64430862ae.jpg</picture>
+<picture>https://kawe.su/upload/iblock/474/474e7516208b44c08f1b2e2f89907129.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Отоскоп PICCOLIGHT F.O. черный, KaWe</name>
 <description></description>
@@ -1612,10 +1617,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10369" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-253545559mm-5-sht-0172106001/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2501</price>
+<price>2411</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/c27/c277528a3c5e9899444c8ce1415cbcbe.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5c4/5c4835cacb5e606c6f44221798046f36.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 2.5, 3.5, 4.5, 5.5, 9.0 мм (5 шт. в пластике)  01.72106.001, KaWe</name>
 <description></description>
@@ -1624,10 +1629,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10370" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-odnorazovykh-25-mm-1000-sht-0171111002-28902/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5625</price>
+<price>5422</price>
 <currencyId>RUB</currencyId>
-<categoryId>3344</categoryId>
-<picture>https://kawe.su/upload/iblock/762/762a0e746c543ce945905521321f6afb.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/852/852a4df44a3afad3869fd635d56c5c73.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок одноразовых 2,5 мм (1000 шт., в карт.упаковке) 01.71111.002 (28902), KaWe</name>
 <description></description>
@@ -1636,10 +1641,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10371" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-odnorazovykh-40-mm-1000-sht-0171121002-28903/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5625</price>
+<price>5422</price>
 <currencyId>RUB</currencyId>
-<categoryId>3343</categoryId>
-<picture>https://kawe.su/upload/iblock/f94/f94f4084b1a4ca9d420cc78cc6c538c7.jpg</picture>
+<categoryId>3340</categoryId>
+<picture>https://kawe.su/upload/iblock/359/359bc3981eb8d755eefa85e00e9a1cfb.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Воронки одноразовые черные большие 4,0 мм (1000 шт., в карт.упаковке) 01.71121.002 (28903), KaWe</name>
 <description></description>
@@ -1648,34 +1653,22 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10372" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/mnogorazovye-ushnye-voronki-dlya-veterinarnogo-otoskopa---nabor--40--50--70-mm-kawe-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2835</price>
+<price>2733</price>
 <currencyId>RUB</currencyId>
-<categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/456/45686a5c33e8bfc7d84e7a9b447db313.jpg</picture>
+<categoryId>2806</categoryId>
+<picture>https://kawe.su/upload/iblock/d61/d6159c4953dd4e9229ecf4b3005db7f3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Многоразовые ушные воронки  для ветеринарного отоскопа -  набор, ? 4.0, 5.0, 7.0 мм, 3 шт. в пластике, KaWe </name>
 <description></description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
-<offer id="10373" available="true">
-<url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-vyet-v-upakovke-3sht-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2891</price>
-<currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/3c0/3c07ee1e2254fce5dc4588c3fc90f5a9.jpg</picture>
-<vendor>Kawe</vendor>
-<name>Набор воронок многоразовых ВЕТ  (в упаковке 3шт), KaWe</name>
-<description></description>
-<sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
-<country_of_origin>Германия</country_of_origin>
-</offer>
 <offer id="10374" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-odnorazovye/nabor-voronok-odnorazovykh-d--25-mm-100sht-d-2-5-mm-v-korobke-kartonnoy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>547</price>
+<price>527</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/02e/02e6c379a2e96ca4d9deb5694c469637.jpg</picture>
+<picture>https://kawe.su/upload/iblock/691/6917fd8a87b65598b5afa3c7a872ee5e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор  воронок одноразовых 100шт d = 2,5 мм в коробке картонной, KaWe</name>
 <description></description>
@@ -1684,10 +1677,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10375" available="true">
 <url>https://kawe.su/catalog/rinoskopy-dlya-lor-vrachej/rinoskop-25-v-v-komplektatsii-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>8113</price>
+<price>7821</price>
 <currencyId>RUB</currencyId>
-<categoryId>2820</categoryId>
-<picture>https://kawe.su/upload/iblock/f5b/f5bdfccf578d20a2acc7e594e4ecb6a9.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/906/90682ccd454a27a287126af475955d9a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Риноскоп стандартного освещения 2,5 V, KaWe</name>
 <description></description>
@@ -1696,10 +1689,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10376" available="true">
 <url>https://kawe.su/catalog/rinoskopy-dlya-lor-vrachej/rinoskop-fibroopt-25-v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9225</price>
+<price>8893</price>
 <currencyId>RUB</currencyId>
 <categoryId>2820</categoryId>
-<picture>https://kawe.su/upload/iblock/b5e/b5e3c044505b1320e4db31dc479fafb9.jpg</picture>
+<picture>https://kawe.su/upload/iblock/40f/40f932d1b66536131e4f2f9f1c482d78.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Риноскоп фиброоптический 2,5 V, KaWe</name>
 <description></description>
@@ -1708,10 +1701,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10377" available="true">
 <url>https://kawe.su/catalog/rinoskopy-dlya-lor-vrachej/rinoskop-35-v-v-komplektatsii-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>14116</price>
+<price>13608</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/c64/c64fa14db0eac7c0fff0125fbf3ecf9e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/71b/71bd0e12e97f97a55c2f4384368617e4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Риноскоп фиброоптический 3,5 V, заряжаемый от зарядного устройства, KaWe</name>
 <description></description>
@@ -1720,10 +1713,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10378" available="true">
 <url>https://kawe.su/catalog/rinoskopy-dlya-lor-vrachej/rinoskop-35-v-v-komplektatsii-kawe_1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>23896</price>
+<price>23036</price>
 <currencyId>RUB</currencyId>
 <categoryId>2820</categoryId>
-<picture>https://kawe.su/upload/iblock/6d0/6d0cc56acd352893adebfc4fbebdfd79.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8ce/8ce6f7d417fd533006e971e1f92d2167.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Риноскоп фиброоптический 3,5 V, заряжаемый от сети, KaWe</name>
 <description></description>
@@ -1732,10 +1725,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10379" available="true">
 <url>https://kawe.su/catalog/diafanoskop/diafanoskop-transillyuminator-25v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>3152</categoryId>
-<picture>https://kawe.su/upload/iblock/549/5499d8b14813fdfae1e78b6b4a4d3dcf.jpg</picture>
+<picture>https://kawe.su/upload/iblock/028/028e8e2ea9aeb9ea650d370591e7c51c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диафаноскоп (трансиллюминатор) 2,5V, KaWe, в комплектации</name>
 <description></description>
@@ -1744,10 +1737,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10380" available="true">
 <url>https://kawe.su/catalog/diafanoskop/diafanoskop-transillyuminator-35v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>14116</price>
+<price>13608</price>
 <currencyId>RUB</currencyId>
 <categoryId>3152</categoryId>
-<picture>https://kawe.su/upload/iblock/16c/16c52248e3487a99766b1995b4abb314.jpg</picture>
+<picture>https://kawe.su/upload/iblock/843/843194e74b6625cdbc9fc5c2335bd8ac.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диафаноскоп (трансиллюминатор) 3,5V, KaWe,в комплектации</name>
 <description></description>
@@ -1756,10 +1749,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10381" available="true">
 <url>https://kawe.su/catalog/diafanoskop/diafanoskop-transillyuminator-35v-kawe_1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>23896</price>
+<price>23036</price>
 <currencyId>RUB</currencyId>
 <categoryId>3152</categoryId>
-<picture>https://kawe.su/upload/iblock/a2a/a2abb3064a848269ebe4538510e2cf44.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ec1/ec112f6da3166babc98416791b46552c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Диафаноскоп (трансиллюминатор) 3,5V, KaWe, в комплектации</name>
 <description></description>
@@ -1768,10 +1761,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10382" available="true">
 <url>https://kawe.su/catalog/klinki-tepro-macintosh-f-o-kawe-germaniya/klinok-flaplight-2-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9114</price>
+<price>8786</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/984/984c08384beef43501d4bcfc224f8bcd.jpg</picture>
+<categoryId>2887</categoryId>
+<picture>https://kawe.su/upload/iblock/dc4/dc4fd4218e4fbc686630ec578ea86e5e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок TEPRO® Macintosh №2 KaWe</name>
 <description></description>
@@ -1780,10 +1773,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10383" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-f-o-kawe-germaniya/klinok-flaplight-2-f-o-s-podvizhnym-nakonechnikom-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>27230</price>
+<price>26250</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/417/41707c3a77a5753aa766c4f8d1ab88cd.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d44/d447adf6e0ef21eb14928c8efc43de83.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа FLAPLIGHT №2 F. O. с подвижным наконечником, со сменным световодом KaWe</name>
 <description></description>
@@ -1792,10 +1785,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10384" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-f-o-kawe-germaniya/klinok_flaplight_3_fo_s_podvizhnym_nakonechnikom_so_smennym_svetovodom_kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>27230</price>
+<price>26250</price>
 <currencyId>RUB</currencyId>
 <categoryId>2888</categoryId>
-<picture>https://kawe.su/upload/iblock/d6d/d6d6e6bd83669c438a25c0f962028a04.jpg</picture>
+<picture>https://kawe.su/upload/iblock/3bd/3bd4301c64c828c3ea79ad5210f5cba9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа FLAPLIGHT №3 F. O. с подвижным наконечником, со сменным световодом KaWe</name>
 <description></description>
@@ -1804,10 +1797,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10385" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-f-o-kawe-germaniya/klinok-flaplight-4-f-o-s-podvizhnym-nakonechnikom-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>27230</price>
+<price>26250</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/9b5/9b51e335fad48dd292c01352ade0a619.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f4a/f4aab48dc13a1cf55eccbd16f5a0e2a5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа FLAPLIGHT №4 F. O. с подвижным наконечником, со сменным световодом KaWe</name>
 <description></description>
@@ -1816,10 +1809,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10386" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-f-o-kawe-germaniya/klinok-megalight-flaplight--2-f-o-s-podvizhnym-nakonechnikom-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>28342</price>
+<price>27322</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/9ff/9ffa7d2c65496d1f85147df401ac09cc.jpg</picture>
+<categoryId>2888</categoryId>
+<picture>https://kawe.su/upload/iblock/88a/88a5628f490805c92610dc8776952038.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа MEGALIGHT FLAPLIGHT №2 F. O. с подвижным наконечником, с интегрированным световодом KaWe</name>
 <description></description>
@@ -1828,10 +1821,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10387" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-f-o-kawe-germaniya/klinok_megalight_flaplight_3_f_o_s_podvizhnym_nakonechnikom_s_integrirovannym_svetovodom_kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>28342</price>
+<price>27322</price>
 <currencyId>RUB</currencyId>
-<categoryId>2888</categoryId>
-<picture>https://kawe.su/upload/iblock/fbe/fbe1fb9242fd3821e85ee87ca0ac8a75.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/c35/c35dfd7a192b6e7b4cdc6724074dbf01.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа MEGALIGHT FLAPLIGHT №3 F. O. с подвижным наконечником, с интегрированным световодом KaWe</name>
 <description></description>
@@ -1840,10 +1833,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10388" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-f-o-kawe-germaniya/klinok-megalight-flaplight--4-f-o-s-podvizhnym-nakonechnikom-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>28342</price>
+<price>27322</price>
 <currencyId>RUB</currencyId>
 <categoryId>2888</categoryId>
-<picture>https://kawe.su/upload/iblock/2f7/2f76244d86e01a2826bff20c8c6f9b7a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/87e/87e53e73e54185cb2ffba112b4d9de8f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа MEGALIGHT FLAPLIGHT №4 F. O. с подвижным наконечником, с интегрированным световодом KaWe</name>
 <description></description>
@@ -1852,10 +1845,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10389" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-f-o-kawe-germaniya/klinok-foregger--0-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/e4b/e4ba6dc7fda977def8ad6c51f2a69dbf.jpg</picture>
+<categoryId>2889</categoryId>
+<picture>https://kawe.su/upload/iblock/011/011cf1b444c0d755ccdb5eb9d679d2a5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинки Foregger №0 (многоразовые, фиброоптический) со сменным световодом KaWe</name>
 <description></description>
@@ -1864,10 +1857,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10390" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-f-o-kawe-germaniya/klinok-foregger-1-f-o-so-smennim-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
 <categoryId>2889</categoryId>
-<picture>https://kawe.su/upload/iblock/1b9/1b9390d51780897e9fb0050517bdcab6.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f70/f70123714c395d489f73d52abed7bcc9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинки Foregger №1 (многоразовые, фиброоптический) со сменным световодом KaWe</name>
 <description></description>
@@ -1876,10 +1869,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10391" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-f-o-kawe-germaniya/klinok-foregger--2-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
 <categoryId>2889</categoryId>
-<picture>https://kawe.su/upload/iblock/5bb/5bbdd42e0224d64b4be5b7eb184d04d9.jpg</picture>
+<picture>https://kawe.su/upload/iblock/60c/60cbf754eb5368e253d50fedf57f0174.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинки Foregger №2 (многоразовые, фиброоптический) со сменным световодом KaWe</name>
 <description></description>
@@ -1888,10 +1881,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10392" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-f-o-kawe-germaniya/klinok-foregger-3-f-o-so-smennim-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2889</categoryId>
-<picture>https://kawe.su/upload/iblock/22d/22d14bf84f90668c9566cccfbbdaf881.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/160/1609841d4a2d7dd9727aad8e634b3c2a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинки Foregger №3 (многоразовые, фиброоптический) со сменным световодом KaWe</name>
 <description></description>
@@ -1900,10 +1893,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10393" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-f-o-kawe-germaniya/klinok-foregger-4-f-o-so-smennim-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/6bb/6bbaa56d7d9f9d55a1a082dd1e5f690f.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ceb/ceb1ba1e2c017b8e6b9533ec4e7cf6d0.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинки Foregger №4 (многоразовые, фиброоптический) со сменным световодом KaWe</name>
 <description></description>
@@ -1912,10 +1905,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10394" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-f-o-kawe-germaniya/klinok-macintosh--0-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/ea5/ea53ca88c49b83e80511f8be38f81cf7.jpg</picture>
+<picture>https://kawe.su/upload/iblock/31d/31da0904fad17dc8eb2c5502dc792221.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №0 F. O. со сменным световодом KaWe</name>
 <description></description>
@@ -1924,10 +1917,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10395" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-f-o-kawe-germaniya/klinok-macintosh--1-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/508/5086efd72547025e48460f7be22ea526.jpg</picture>
+<categoryId>2890</categoryId>
+<picture>https://kawe.su/upload/iblock/369/3694f6348d20f29bfdf9582620ba7196.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №1 F. O. со сменным световодом KaWe</name>
 <description></description>
@@ -1936,10 +1929,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10396" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-f-o-kawe-germaniya/klinok-macintosh--2-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
 <categoryId>2890</categoryId>
-<picture>https://kawe.su/upload/iblock/e83/e83e7a933c3a92213f7f17a090be1a07.jpg</picture>
+<picture>https://kawe.su/upload/iblock/bfc/bfc4ba348ec1a0990e0c6b1084169240.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №2 F. O. со сменным световодом KaWe</name>
 <description></description>
@@ -1948,10 +1941,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10397" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-f-o-kawe-germaniya/klinok-macintosh--3-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/f1b/f1b64eeba2440e08ea492100d812bb14.jpg</picture>
+<categoryId>2890</categoryId>
+<picture>https://kawe.su/upload/iblock/0ea/0ea92c5e0ce9625e16c10d72c9180f0b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №3 F. O. со сменным световодом KaWe</name>
 <description></description>
@@ -1960,10 +1953,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10398" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-f-o-kawe-germaniya/linok-macintosh--4-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2890</categoryId>
-<picture>https://kawe.su/upload/iblock/519/5196682057f7395b4dd1139c9855e111.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/3a7/3a7552194a3e618b571a30b0d03256b5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №4 F. O. со сменным световодом KaWe</name>
 <description></description>
@@ -1972,10 +1965,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10399" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-f-o-kawe-germaniya/klinok-macintosh--5-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2890</categoryId>
-<picture>https://kawe.su/upload/iblock/73e/73e9450f3ee9eccebe238d92007d8ccd.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/9d4/9d4562aa17ed811e9f7427a1e5e297eb.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Macintosh №5 F. O. со сменным световодом KaWe</name>
 <description></description>
@@ -1984,10 +1977,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10400" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-macintosh-f-o-kawe-germaniya/klinok-megalight-macintosh--0-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2892</categoryId>
-<picture>https://kawe.su/upload/iblock/495/4959417029488dd9a67ce7043402c7a9.jpg</picture>
+<picture>https://kawe.su/upload/iblock/386/38667ccebd0f8234e090e661ea3e94b3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Macintosh №0 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -1996,10 +1989,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10401" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-macintosh-f-o-kawe-germaniya/klinok-megalight-macintosh--1-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
-<categoryId>2892</categoryId>
-<picture>https://kawe.su/upload/iblock/e78/e78a1761229e52e19e0170c0f05beba4.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/548/54802e2f8bd8585f584cc9425992c466.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Macintosh №1 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2008,10 +2001,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10402" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-macintosh-f-o-kawe-germaniya/klinok-megalight-macintosh-3-f-o-s-integrirovannim-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2892</categoryId>
-<picture>https://kawe.su/upload/iblock/814/814ae7b1e138c464085ab8bb54715f62.jpg</picture>
+<picture>https://kawe.su/upload/iblock/885/8850a7369533a062878854798c06cabc.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Macintosh №3 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2020,10 +2013,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10403" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-macintosh-f-o-kawe-germaniya/klinok-megalight-macintosh--2-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2892</categoryId>
-<picture>https://kawe.su/upload/iblock/1db/1db9f61e5fedc59c2bc7ec86ab58183a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/852/852ad18803e9f070e3a4577e196718be.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Macintosh №2 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2032,10 +2025,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10404" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-macintosh-f-o-kawe-germaniya/klinok_megalight_macintosh_4_f_o_s_integrirovannym_svetovodom_kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2892</categoryId>
-<picture>https://kawe.su/upload/iblock/7b0/7b0d51e5e1c5049bced3b98e02c0d03e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/e17/e17be78e4ee93be703cbf5dec9bd8a48.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Macintosh №4 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2044,10 +2037,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10405" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-macintosh-f-o-kawe-germaniya/klinok-megalight-macintosh--5-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2892</categoryId>
-<picture>https://kawe.su/upload/iblock/6a7/6a7948eb5f9b104738cea2f863162633.jpg</picture>
+<picture>https://kawe.su/upload/iblock/804/8041b8ec0577bb6d082b255c60ad59b9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Macintosh №5 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2056,10 +2049,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10406" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-miller-f-o-kawe-germaniya/klinok-megalight-miller--00-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/916/916d9013a28a7172076f23cda54f11d0.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f7c/f7c2acd6d58df508c1f0c9aea5fd5e67.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Miller №00 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2068,10 +2061,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10407" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-miller-f-o-kawe-germaniya/klinok-megalight-miller--0-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
-<categoryId>2893</categoryId>
-<picture>https://kawe.su/upload/iblock/770/770ddce1d8e572d85b9012d2db73fc4f.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/8d6/8d6c4a377e1af5ef037bbedf358dbfd8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Miller №0 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2080,10 +2073,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10408" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-miller-f-o-kawe-germaniya/klinok-megalight-miller--1-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/9e5/9e5de44f7dc803ba1f4f31b674b9a031.jpg</picture>
+<picture>https://kawe.su/upload/iblock/b8e/b8e783822204ed8d5b080f59af60a453.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Miller №1 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2092,10 +2085,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10409" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-miller-f-o-kawe-germaniya/klinok-megalight-miller-2-f-o-s-integrirovannim-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/a15/a158c5ddb03c05a5cdab6698cccac4e0.jpg</picture>
+<categoryId>2893</categoryId>
+<picture>https://kawe.su/upload/iblock/474/474cc19f01aa2a3514e518af546ed3ac.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Miller №2 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2104,10 +2097,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10410" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-miller-f-o-kawe-germaniya/klinok-megalight-miller--3-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/2d3/2d325593267cd9f6d00d3897839bc069.jpg</picture>
+<picture>https://kawe.su/upload/iblock/1b3/1b3e46c7561a88ec5311dd6f0ea3dd5c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Miller №3 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2116,10 +2109,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10411" available="true">
 <url>https://kawe.su/catalog/klinki-megalight-miller-f-o-kawe-germaniya/klinok-megalight-miller--4-f-o-s-integrirovannym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9559</price>
+<price>9214</price>
 <currencyId>RUB</currencyId>
 <categoryId>2893</categoryId>
-<picture>https://kawe.su/upload/iblock/8ab/8ab351d887dc3a91876923b9b4d79d04.jpg</picture>
+<picture>https://kawe.su/upload/iblock/a30/a3077e51682cb457829ca07a2930407c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок MEGALIGHT Miller №4 F. O. с интегрированным световодом KaWe</name>
 <description></description>
@@ -2128,10 +2121,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10412" available="true">
 <url>https://kawe.su/catalog/klinki-miller-f-o-kawe-germaniya/klinok-miller--00-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/6b8/6b83ac7acf77cac42b44ad8986dee46f.jpg</picture>
+<categoryId>3146</categoryId>
+<picture>https://kawe.su/upload/iblock/8b3/8b3c5deee46b2667534966c0851b19f9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №00 F. O. со сменным световодом в ларингоскоп KaWe</name>
 <description></description>
@@ -2140,10 +2133,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10413" available="true">
 <url>https://kawe.su/catalog/klinki-miller-f-o-kawe-germaniya/klinok-miller--0-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/a79/a797fd65558c998cee8fa751db6e550d.jpg</picture>
+<categoryId>2894</categoryId>
+<picture>https://kawe.su/upload/iblock/85d/85db651a7ac7b2fc03c7ac36eb0718ab.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №0 F. O. со сменным световодом в ларингоскоп KaWe</name>
 <description></description>
@@ -2152,10 +2145,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10414" available="true">
 <url>https://kawe.su/catalog/klinki-miller-f-o-kawe-germaniya/klinok-miller--1-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2894</categoryId>
-<picture>https://kawe.su/upload/iblock/3f5/3f58f75f76ac669b0dd8e763d9eb0571.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/01d/01d153afa838374a9bc18f369bab153b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №1 F. O. со сменным световодом в ларингоскоп KaWe</name>
 <description></description>
@@ -2164,10 +2157,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10415" available="true">
 <url>https://kawe.su/catalog/klinki-miller-f-o-kawe-germaniya/klinok-miller--2-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2894</categoryId>
-<picture>https://kawe.su/upload/iblock/a42/a42a21b1ac63f92a520e9b9db1ff6adf.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/434/434ff61c5eb6489bb26aab054a07599e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №2 F. O. со сменным световодом в ларингоскоп KaWe</name>
 <description></description>
@@ -2176,10 +2169,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10416" available="true">
 <url>https://kawe.su/catalog/klinki-miller-f-o-kawe-germaniya/klinok-miller--3-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2894</categoryId>
-<picture>https://kawe.su/upload/iblock/0ba/0bab404255544f393b8300b4e45741e4.jpg</picture>
+<categoryId>3146</categoryId>
+<picture>https://kawe.su/upload/iblock/dd9/dd94c9f3700e56d6ca2e88b6cadb878e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №3 F. O. со сменным световодом в ларингоскоп KaWe</name>
 <description></description>
@@ -2188,10 +2181,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10417" available="true">
 <url>https://kawe.su/catalog/klinki-miller-f-o-kawe-germaniya/klinok-miller--4-f-o-so-smennym-svetovodom-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>3146</categoryId>
-<picture>https://kawe.su/upload/iblock/5c4/5c43dc76d5749dfaceef0ec922597741.jpg</picture>
+<categoryId>2894</categoryId>
+<picture>https://kawe.su/upload/iblock/8b6/8b6c86debfd5b25c25c36e853ccdd3fe.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller №4 F. O. со сменным световодом в ларингоскоп KaWe</name>
 <description></description>
@@ -2200,10 +2193,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10418" available="true">
 <url>https://kawe.su/catalog/klinki-polio-f-o-kawe-germaniya/klinok-polio-3/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9003</price>
+<price>8679</price>
 <currencyId>RUB</currencyId>
-<categoryId>2895</categoryId>
-<picture>https://kawe.su/upload/iblock/d64/d640b2d03372b09f667fcef5966a63f3.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/5e3/5e39920552bf8fe4017b2738be6ef5d9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок POLIO №3 KaWe</name>
 <description></description>
@@ -2236,10 +2229,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10428" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-macintosh-economy--0-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
-<categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/cde/cde10018d0cff307d999254df85a2f13.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/08b/08b760ee09255a4ded860d095c95d1bc.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №0 F. O. KaWe</name>
 <description></description>
@@ -2248,10 +2241,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10429" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-miller-economy--00-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
-<categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/59c/59c95de4eca206c8ffb4047806f66092.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/f73/f7369b636a0e83d84a3934ad8f8e1251.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №00 F. O. KaWe</name>
 <description></description>
@@ -2260,10 +2253,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10430" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-flaplight-economy--4-f-o-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>23007</price>
+<price>22179</price>
 <currencyId>RUB</currencyId>
-<categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/7c0/7c05173b398b9eb2c292ee31e8f7ccb7.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/263/263c23decb0949a43d096f6a4c3b2960.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Flaplight Economy №4 F. O. KaWe</name>
 <description></description>
@@ -2272,10 +2265,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10431" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-c-kawe-germaniya/klinok-flaplight-2-c-s-podvizhnym-nakonechnikom-dlinavysota-10021-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>16338</price>
+<price>15750</price>
 <currencyId>RUB</currencyId>
 <categoryId>2877</categoryId>
-<picture>https://kawe.su/upload/iblock/277/277b09bdbc27165d5c59c1ac8fe92f02.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ea9/ea990bd851540b8c6301dca546ca5c81.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопа Flaplight №2 C с подвижным наконечником (длина/высота, 100/21 мм) KaWe</name>
 <description></description>
@@ -2284,10 +2277,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10432" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-c-kawe-germaniya/klinok-flaplight-3-c-s-podvizhnym-nakonechnikom-dlinavysota-13021-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>16338</price>
+<price>15750</price>
 <currencyId>RUB</currencyId>
 <categoryId>2877</categoryId>
-<picture>https://kawe.su/upload/iblock/356/356e2bdd71b81e5e39dabe51106f0e32.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f46/f460ddb1f67fdb71a2021e479e146fbc.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопический Flaplight №3 C с подвижным наконечником (длина/высота, 130/21 мм) KaWe</name>
 <description></description>
@@ -2296,10 +2289,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10433" available="true">
 <url>https://kawe.su/catalog/klinki-flaplight-c-kawe-germaniya/klinok-flaplight-4-c-s-podvizhnym-nakonechnikom-dlinavysota-15025-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>16338</price>
+<price>15750</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/0c5/0c591cfc36b4039b76cd1537959dc6dd.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5d7/5d70c9ffcf596078d15ea31e035c8aa0.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ларингоскопический Flaplight №4 C с подвижным наконечником (длина/высота, 150/25 мм) KaWe</name>
 <description></description>
@@ -2308,10 +2301,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10434" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-c-kawe-germaniya/linok-foregger-2-c-pryamoy-dlinavysota-11215-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/72d/72db376fe0d120e3a2f0cc685609c535.jpg</picture>
+<picture>https://kawe.su/upload/iblock/dc7/dc73e2d1bb24359c881424605ef1ba07.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Foregger №2 C прямой (длина/высота, 112/15 мм) в ларингоскопы KaWe</name>
 <description></description>
@@ -2320,10 +2313,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10435" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-c-kawe-germaniya/klinok-foregger-3-c-pryamoy-dlinavysota-13216-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
 <categoryId>2876</categoryId>
-<picture>https://kawe.su/upload/iblock/33e/33e09e3f397666c8843600a0a5287d59.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d62/d62e02a19d66c1af9ec4fb8f02709a9c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Foregger №3 C прямой (длина/высота, 132/16 мм) в ларингоскопы KaWe</name>
 <description></description>
@@ -2332,10 +2325,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10436" available="true">
 <url>https://kawe.su/catalog/klinki-foregger-c-kawe-germaniya/klinok-foregger-4-c-pryamoy-dlinavysota-15718-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3326</price>
+<price>3206</price>
 <currencyId>RUB</currencyId>
-<categoryId>2876</categoryId>
-<picture>https://kawe.su/upload/iblock/8fc/8fc298e62c11fd5c3dd2a57324a2d3dd.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/4b4/4b4566d0bf986181f6c8dc0ef45a4511.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Foregger №4 C прямой (длина/высота, 157/18 мм) в ларингоскопы KaWe</name>
 <description></description>
@@ -2347,7 +2340,7 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <price>3636</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/6e8/6e87c3d5fc151e198be6ee1e74ae866d.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5cc/5cc29d791861e7bf033d9435ec8bd8b2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинки ТЕПРО Макинтош С №4 (изогнутые, зубосберегающие) многоразовые, KaWe</name>
 <description></description>
@@ -2359,9 +2352,9 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <price>3838</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/211/211fbd1dc16bca1688ffa26d6437e9c2.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7ac/7acb6d6727eff147211bce203a0512c2.jpg</picture>
 <vendor>Kawe</vendor>
-<name>Клинок Polio Макинтош №3 С изогнутый для сложных интубаций KaWe</name>
+<name>Клинок Polio Macintosh №3 С изогнутый для сложных интубаций KaWe</name>
 <description></description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
@@ -2370,20 +2363,20 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <url>https://kawe.su/catalog/klinki-polio-c-kawe-germaniya/klinok-polio-4s-izognutyy-dlya-slozhnykh-intubatsiy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
 <price>3838</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/563/56332c686aea35099d09327ad91ea588.jpg</picture>
+<categoryId>2878</categoryId>
+<picture>https://kawe.su/upload/iblock/bba/bbacec5ea5d7611ef1717246a8a114dc.jpg</picture>
 <vendor>Kawe</vendor>
-<name>Клинок Polio №4С изогнутый для сложных интубаций KaWe</name>
+<name>Клинок Polio Macintosh №4С изогнутый для сложных интубаций KaWe</name>
 <description></description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
 <offer id="10442" available="true">
 <url>https://kawe.su/catalog/klinki-serii-macintosh-yesonomy-c-kawe-germaniya/klinok-macintosh-economy--0-c-dlinavysota-8015-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1845</price>
+<price>1779</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/b8f/b8f946de47c9d552903560fed3276ae5.jpg</picture>
+<categoryId>2881</categoryId>
+<picture>https://kawe.su/upload/iblock/1e1/1e11d4ec9152090a11184ec41d5b8fc6.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №0 C (длина/высота, 80/15 мм) KaWe</name>
 <description></description>
@@ -2392,10 +2385,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10443" available="true">
 <url>https://kawe.su/catalog/klinki-serii-macintosh-yesonomy-c-kawe-germaniya/klinok-macintosh-economy--1-c-dlinavysota-9520-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1845</price>
+<price>1779</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/cf9/cf90de0165d71556e0c0d72f4e4f2a74.jpg</picture>
+<categoryId>2881</categoryId>
+<picture>https://kawe.su/upload/iblock/037/037a99c35bcf1efd963107c4448efbf1.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №1 C (длина/высота, 95/20 мм) KaWe</name>
 <description></description>
@@ -2404,10 +2397,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10444" available="true">
 <url>https://kawe.su/catalog/klinki-serii-macintosh-yesonomy-c-kawe-germaniya/klinok-macintosh-economy--2-c-dlinavysota-11220-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1845</price>
+<price>1779</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/8e4/8e4201a980acd21f0feb1a4a40c8ebf3.jpg</picture>
+<categoryId>2881</categoryId>
+<picture>https://kawe.su/upload/iblock/669/66950e775252d66153efebebce81c374.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №2 C (длина/высота, 112/20 мм) KaWe</name>
 <description></description>
@@ -2416,10 +2409,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10445" available="true">
 <url>https://kawe.su/catalog/klinki-serii-macintosh-yesonomy-c-kawe-germaniya/klinok-macintosh-economy--3-c-dlinavysota-13324-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1845</price>
+<price>1779</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/7bf/7bfb3030b5c94214aec07adff284c459.jpg</picture>
+<categoryId>2881</categoryId>
+<picture>https://kawe.su/upload/iblock/203/203e2d871ed64cbc88bc4822855569a6.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №3 C (длина/высота, 133/24 мм) KaWe</name>
 <description></description>
@@ -2428,10 +2421,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10446" available="true">
 <url>https://kawe.su/catalog/klinki-serii-macintosh-yesonomy-c-kawe-germaniya/klinok-macintosh-economy--4-c-dlinavysota-15325-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1845</price>
+<price>1779</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/2a1/2a11c767f8d4073657c0a5f87bf8a728.jpg</picture>
+<categoryId>2881</categoryId>
+<picture>https://kawe.su/upload/iblock/50b/50b85420131d0752169a3aea378c6749.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №4 C (длина/высота, 153/25 мм) KaWe</name>
 <description></description>
@@ -2440,10 +2433,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10447" available="true">
 <url>https://kawe.su/catalog/klinki-serii-macintosh-yesonomy-c-kawe-germaniya/klinok-macintosh-economy--5-c-dlinavysota-17925-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1845</price>
+<price>1779</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/eb1/eb10bcef78bf2f2d564216be34ccf970.jpg</picture>
+<categoryId>2881</categoryId>
+<picture>https://kawe.su/upload/iblock/f02/f02272ce5923105a8e8bf5eee23699c9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №5 C (длина/высота, 179/25 мм) KaWe</name>
 <description></description>
@@ -2452,10 +2445,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10448" available="true">
 <url>https://kawe.su/catalog/klinki-serii-miller-yesonomy-c-kawe-germaniya/klinok-miller-economy--1-c-dlinavysota-10312-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1835</price>
+<price>1770</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/869/869f6a917b1eb3315cf3ade702577835.jpg</picture>
+<picture>https://kawe.su/upload/iblock/836/836939037ccb20a2cd858065600f74b3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №1 C (длина/высота, 103/12 мм) KaWe</name>
 <description></description>
@@ -2464,10 +2457,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10449" available="true">
 <url>https://kawe.su/catalog/klinki-serii-miller-yesonomy-c-kawe-germaniya/klinok-miller-economy--2-c-dlinavysota-16015-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1835</price>
+<price>1770</price>
 <currencyId>RUB</currencyId>
 <categoryId>2882</categoryId>
-<picture>https://kawe.su/upload/iblock/10b/10b34a8314dde7b2055631cfda8a6734.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8ae/8aef5f0e91dbe2c139cb312ee885fdc0.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №2 C (длина/высота, 160/15 мм) KaWe</name>
 <description></description>
@@ -2476,10 +2469,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10450" available="true">
 <url>https://kawe.su/catalog/klinki-serii-miller-yesonomy-c-kawe-germaniya/klinok-miller-economy--3-c-dlinavysota-20014-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1835</price>
+<price>1770</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/b97/b97f07379d76b828934eb00d45d89e5a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/af7/af73a479b3210a8048cc409fb06513c1.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №3 C (длина/высота, 200/14 мм) KaWe</name>
 <description></description>
@@ -2488,10 +2481,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10451" available="true">
 <url>https://kawe.su/catalog/klinki-serii-miller-yesonomy-c-kawe-germaniya/klinok-miller-economy--4-c-dlinavysota-21017-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1835</price>
+<price>1770</price>
 <currencyId>RUB</currencyId>
 <categoryId>2882</categoryId>
-<picture>https://kawe.su/upload/iblock/970/9707ba4cc83030e9f1b3c5e25a43da14.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5e0/5e0579241c380ca7d7f523a2ec120a9d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №4 C (длина/высота, 210/17 мм) KaWe</name>
 <description></description>
@@ -2500,10 +2493,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10452" available="true">
 <url>https://kawe.su/catalog/klinki-serii-miller-yesonomy-c-kawe-germaniya/klinok-miller-economy--00-c-dlinavysota-6812-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1835</price>
+<price>1770</price>
 <currencyId>RUB</currencyId>
-<categoryId>2882</categoryId>
-<picture>https://kawe.su/upload/iblock/95e/95edf7b88ff7879427c9517811be0d8f.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/b66/b666ca64f295cc7258e4f926053d900a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №00 C (длина/высота, 68/12 мм) KaWe</name>
 <description></description>
@@ -2512,10 +2505,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10453" available="true">
 <url>https://kawe.su/catalog/klinki-serii-miller-yesonomy-c-kawe-germaniya/klinok-miller-economy--0-c-dlinavysota-8112-mm-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1835</price>
+<price>1770</price>
 <currencyId>RUB</currencyId>
-<categoryId>2882</categoryId>
-<picture>https://kawe.su/upload/iblock/8bd/8bd50e56b539c1b97fd15c57108c12b3.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/4ed/4edeee17f6dda3356da2c40a7bbd6105.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №0 C (длина/высота, 81/12 мм) KaWe</name>
 <description></description>
@@ -2524,10 +2517,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10454" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-miller-pryamoy-00-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
 <categoryId>2883</categoryId>
-<picture>https://kawe.su/upload/iblock/e88/e885e69b6c45be07db9e27ab32d8b12b.jpg</picture>
+<picture>https://kawe.su/upload/iblock/0ac/0acacaa289b3ca81d70c56600a4c01ac.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller (прямой) №00  Металл, LED</name>
 <description></description>
@@ -2536,10 +2529,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10455" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-macintosh-izognutyy--0-metall-led-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
 <categoryId>2883</categoryId>
-<picture>https://kawe.su/upload/iblock/efd/efdb3cde1cd93e41d5e285c3253a2590.jpg</picture>
+<picture>https://kawe.su/upload/iblock/a4b/a4b628e9dcd847f38111f84bfec9dc1b.jpg</picture>
 <vendor>Kawe</vendor>
 <name> Клинок Macintosh (изогнутый) №0 Металл, LED</name>
 <description></description>
@@ -2548,10 +2541,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10456" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-led-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-malaya-d19mm-25-v-standartnoy-yarkosti-s-led-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>8002</price>
+<price>7714</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/784/78429a4e9d85a04fe399df3875c40450.jpg</picture>
+<categoryId>3146</categoryId>
+<picture>https://kawe.su/upload/iblock/263/263c6849166106ee74124f6a717d727d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка малая (d=19мм) 2,5 В стандартной яркости с LED осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2560,10 +2553,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10457" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-led-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-malaya-d19mm-25-v-povyshennoy-yarkosti-s-led-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12448</price>
+<price>12000</price>
 <currencyId>RUB</currencyId>
 <categoryId>2902</categoryId>
-<picture>https://kawe.su/upload/iblock/f02/f024367709848381c254fe8350e656b5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/b66/b66ce35d77bd159deba282fcfca53ba5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка малая (d=19мм) 2,5 В повышенной яркости с LED осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2572,10 +2565,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10458" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-led-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-srednyaya-d28mm-25-v-standartnoy-yarkosti-s-led-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>8113</price>
+<price>7821</price>
 <currencyId>RUB</currencyId>
 <categoryId>3146</categoryId>
-<picture>https://kawe.su/upload/iblock/898/8980e0426ddc4a40fd70aadbc9980e56.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2ea/2ea6b270a4ccdc3cab4f0fa4cf805ca5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка средняя (d=28мм) 2,5 В стандартной яркости с LED осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2584,10 +2577,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10459" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-led-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-srednyaya-d28-mm-25-v-povyshennoy-yarkosti-s-led-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12559</price>
+<price>12108</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/eae/eae35a380189b694e77ca4fbb018e14c.jpg</picture>
+<categoryId>3146</categoryId>
+<picture>https://kawe.su/upload/iblock/4e8/4e8957b739a966f623d3a413828be3b0.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка средняя (d=28 мм) 2,5 В повышенной яркости с LED осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2596,10 +2589,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10460" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-led-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-srednyaya-led-d28mm--akkumulyator-35v-li-lon-osvetitelem-povyshennoy-yarkosti-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>21561</price>
+<price>20786</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/0c7/0c7f509a6a5aa918945e1711540b12e2.jpg</picture>
+<categoryId>2902</categoryId>
+<picture>https://kawe.su/upload/iblock/c42/c42d6c8e9659d5485a2449871e080470.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка средняя LED (d=28мм) + аккумулятор 3,5V Li-lon осветителем повышенной яркости для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2608,10 +2601,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10462" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-led-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-malaya-d19mm--akkumulyator-35v-nimh-s-led-osvetitelem-povyshennoy-yarkosti-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>20006</price>
+<price>19286</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/78d/78d3dd91b9005e67247cacf43fcd0891.jpg</picture>
+<categoryId>2902</categoryId>
+<picture>https://kawe.su/upload/iblock/d36/d360e80b983f84c578d1d2e20e74c7f4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка малая (d=19мм) + аккумулятор 3,5V NiMH с LED осветителем повышенной яркости для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2622,7 +2615,7 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-malaya-d19mm-25-v-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
 <price>6481</price>
 <currencyId>RUB</currencyId>
-<categoryId>3146</categoryId>
+<categoryId>2903</categoryId>
 <picture>https://kawe.su/upload/iblock/8c2/8c2cef075e13a6488e84c859107856cb.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка малая  В с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
@@ -2632,10 +2625,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10465" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-srednyaya-d28-mm-25-v-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>6891</price>
+<price>6643</price>
 <currencyId>RUB</currencyId>
 <categoryId>2903</categoryId>
-<picture>https://kawe.su/upload/iblock/e78/e789cc3ac1dd57eb9cfd1b747263f905.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4c1/4c1c3b1541e0f0e05c42c394823d94c8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка средняя (d=28 мм) 2,5 В с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2644,10 +2637,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10466" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-srednyaya-d28mm--akkumulyator-35v-li-lon-nimh-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13781</price>
+<price>13286</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/5a4/5a43aa4ba13b972bfb6d080256dacabe.jpg</picture>
+<categoryId>2903</categoryId>
+<picture>https://kawe.su/upload/iblock/34c/34c0ca3ef01fd3c9de86adad48c3b4ba.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка средняя (d=28мм) + аккумулятор 3,5V Li-lon, NiMH с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2656,10 +2649,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10467" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-srednyaya-d28-mm--akkumulyator-35v-nimh-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>21228</price>
+<price>20465</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/1ce/1cec7ef8b13b3585b15344508fb91c54.jpg</picture>
+<categoryId>2903</categoryId>
+<picture>https://kawe.su/upload/iblock/17b/17b74661cc7e4a179f2cdc73f3f22bfb.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка средняя (d=28 мм) + аккумулятор 3,5V NiMH с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2668,10 +2661,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10468" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-bolshaya-d32-mm-25-v-rabotaet-tolko-ot-batareek-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7225</price>
+<price>6965</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/bde/bdeecbb620bf716ec8d09ef20cf0a738.jpg</picture>
+<categoryId>3146</categoryId>
+<picture>https://kawe.su/upload/iblock/e67/e67cb39046ab80c06077b72e99af80c7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка большая (d=32 мм) 2,5 В (работает только от батареек) с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2680,10 +2673,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10469" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-korotkaya-d32-mm-25-v-rabotaet-tolko-ot-batareek-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7225</price>
+<price>6965</price>
 <currencyId>RUB</currencyId>
 <categoryId>3146</categoryId>
-<picture>https://kawe.su/upload/iblock/9e9/9e9f807f31b72903c126ecf479151a2f.jpg</picture>
+<picture>https://kawe.su/upload/iblock/c3e/c3e3197f9f8c838735aac0ed6b4e7cc7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка короткая (d=32 мм) 2,5 В (работает только от батареек) с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2692,10 +2685,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10470" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyat-25v-ekonom-fo-d-30mm-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5557</price>
+<price>5357</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/bc0/bc03695c2209138ed476aecd20cf66ae.jpg</picture>
+<categoryId>2903</categoryId>
+<picture>https://kawe.su/upload/iblock/fc2/fc2ee6a97df2a959c52f05ba9efd99f6.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка 2,5В (d= 30мм)  Эконом F.O.</name>
 <description></description>
@@ -2704,10 +2697,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10471" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-malaya-d19mm--akkumulyator-35v-nimh-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>15449</price>
+<price>14893</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/020/020059e4e96e69949495ef1a5bc4113d.jpg</picture>
+<categoryId>2903</categoryId>
+<picture>https://kawe.su/upload/iblock/1ea/1ea006e5fc915e0084fc28976f8c2433.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка малая (d=19мм) + аккумулятор 3,5V NiMH с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -2716,10 +2709,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10472" available="true">
 <url>https://kawe.su/catalog/rukoyatki-dlya-lampochnykh-laringoskopov-kawe-germaniya/rukoyatka-malaya-25-v-d19mm-dlya-lampochnykh-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3557</price>
+<price>3429</price>
 <currencyId>RUB</currencyId>
-<categoryId>2904</categoryId>
-<picture>https://kawe.su/upload/iblock/6ad/6ad9b281deb09088e7c591aa7e0f28d7.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/56e/56e5594c74926f2d3523a671958d04d7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка малая 2,5 В (d=19мм) для лампочных ларингоскопов KaWe</name>
 <description></description>
@@ -2728,10 +2721,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10473" available="true">
 <url>https://kawe.su/catalog/rukoyatki-dlya-lampochnykh-laringoskopov-kawe-germaniya/rukoyatka-srednyaya-25-v-d28-mm-dlya-lampochnykh-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3779</price>
+<price>3643</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/fd7/fd7fd106f8e74f151d44875e115fb267.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8ae/8aea7085f0a0f0437d545ac80ab9db0d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка средняя 2,5 В (d=28 мм) для лампочных ларингоскопов KaWe</name>
 <description></description>
@@ -2740,10 +2733,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10474" available="true">
 <url>https://kawe.su/catalog/rukoyatki-dlya-lampochnykh-laringoskopov-kawe-germaniya/rukoyatka-bolshaya-25-v-d32-mm-rabotaet-tolko-ot-batareek-dlya-lampochnykh-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4002</price>
+<price>3857</price>
 <currencyId>RUB</currencyId>
-<categoryId>2904</categoryId>
-<picture>https://kawe.su/upload/iblock/d70/d70dc2d1a3eb8eb1c83080d128ce213f.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/687/6875cd4bffb229f37171c36365f06268.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка большая 2,5 В (d=32 мм) работает только от батареек для лампочных ларингоскопов KaWe</name>
 <description></description>
@@ -2752,10 +2745,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10475" available="true">
 <url>https://kawe.su/catalog/rukoyatki-dlya-lampochnykh-laringoskopov-kawe-germaniya/rukoyatka-economy-25-v-d30mm-rabotaet-tolko-ot-batareek-dlya-lampochnykh-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2891</price>
+<price>2787</price>
 <currencyId>RUB</currencyId>
-<categoryId>2904</categoryId>
-<picture>https://kawe.su/upload/iblock/248/248fe74d255474791b4714ac93afe604.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/196/1967e065883da14640bbf9c18106908c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка Economy 2,5 В (d=30мм) работает только от батареек для лампочных ларингоскопов KaWe</name>
 <description></description>
@@ -2764,10 +2757,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10477" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/futlyar-dlya-laringoskopa-1-rukoyat--3-klinka-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2445</price>
+<price>2357</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/569/5692c3c3f4394c7d65703271a73da3ff.jpg</picture>
+<picture>https://kawe.su/upload/iblock/37c/37c60b4b209fcb51a514d6956c613fde.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Футляр для ларингоскопа (1 рукоять + 3 клинка Макинтош) KaWe</name>
 <description></description>
@@ -2776,10 +2769,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10478" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/futlyar-dlya-laringoskopa-1-rukoyat--5-klinkov--kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3224</price>
+<price>3108</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/38d/38d47fabc837fd37e13040c787769200.jpg</picture>
+<picture>https://kawe.su/upload/iblock/80b/80b7345e395d1a7ad767f0248cbdd2ee.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Футляр для ларингоскопа (1 рукоять + 5 клинков Макинтош) KaWe</name>
 <description></description>
@@ -2788,10 +2781,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10479" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/futlyar-dlya-laringoskopa-1-rukoyat--7-klinkov--kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4002</price>
+<price>3857</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/15b/15b7ad205d6d3ad99444abfe15250414.jpg</picture>
+<picture>https://kawe.su/upload/iblock/49c/49cad6448cd6e9b648303ef32b3c4118.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Футляр для ларингоскопа (1 рукоять + 7 клинков Макинтош и Миллер ) KaWe</name>
 <description></description>
@@ -2800,10 +2793,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10480" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/futlyar-dlya-laringoskopa-rukoyat--2-klinka-flaplight-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4113</price>
+<price>3964</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/89a/89ab913248597127bcb75f1f23bf7003.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8c6/8c65d5c5834b1308cb8713790b140e5e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Футляр для ларингоскопа (рукоять + 2 клинка FLAPLIGHT) KaWe</name>
 <description></description>
@@ -2812,10 +2805,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10481" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/sumochka-dlya-laringoskopa-rukoyat--4-klinka-sinyaya-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>945</price>
+<price>911</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/9c0/9c0ccec837483efbfd5d75d3c2cc246e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ee4/ee4699f709ef888bccf17f9b6d8aaa0f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Сумочка для ларингоскопа (рукоять + 4 клинка) синяя KaWe</name>
 <description></description>
@@ -2824,10 +2817,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10482" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/futlyar-dlya-laringoskopa-rukoyat--1-klinok-flaplight-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4035</price>
+<price>3891</price>
 <currencyId>RUB</currencyId>
 <categoryId>2905</categoryId>
-<picture>https://kawe.su/upload/iblock/0a8/0a8ec232b76af689030c4e73d07d6202.jpg</picture>
+<picture>https://kawe.su/upload/iblock/40a/40a2c98480d206dc16f6935ea16570ce.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Футляр для ларингоскопа (рукоять + 1 клинок FLAPLIGHT) KaWe</name>
 <description></description>
@@ -2836,10 +2829,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10483" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/kartonnyy-boks-na-4-klinka-i-1-rukoyatkwe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>982</price>
+<price>946</price>
 <currencyId>RUB</currencyId>
 <categoryId>2905</categoryId>
-<picture>https://kawe.su/upload/iblock/2ac/2acca27e29b175604d20d81032bbeb77.jpg</picture>
+<picture>https://kawe.su/upload/iblock/a41/a4141a89909d561cc964a4e8cc81609f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Картонный бокс на  4 клинка и 1 рукоять,KaWe</name>
 <description></description>
@@ -2848,10 +2841,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10484" available="true">
 <url>https://kawe.su/catalog/rostomery/nastennyy-rostomer-ruletka-person-check-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1923</price>
+<price>1854</price>
 <currencyId>RUB</currencyId>
-<categoryId>2922</categoryId>
-<picture>https://kawe.su/upload/iblock/0d7/0d77bc9bc6deb08c310f16ee16345b9e.jpg</picture>
+<categoryId>2915</categoryId>
+<picture>https://kawe.su/upload/iblock/05f/05f244cc68696b65107f3059e9bbea0f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Настенный ростомер (рулетка) Person-Check KaWe</name>
 <description></description>
@@ -2860,10 +2853,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10487" available="true">
 <url>https://kawe.su/catalog/shtativy/infuzionnaya-stoyka-iz-nerzhaveyushchey-stali-0911005002-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7724</price>
+<price>7447</price>
 <currencyId>RUB</currencyId>
 <categoryId>3350</categoryId>
-<picture>https://kawe.su/upload/iblock/5c4/5c47c4590998fd493adf917d3a97e5e8.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5af/5af606ca582e6698d284420b2901988d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Инфузионная стойка из нержавеющей стали KaWe</name>
 <description></description>
@@ -2872,10 +2865,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10488" available="true">
 <url>https://kawe.su/catalog/shtativy/infuzionnaya-stoyka-khromirovannaya-0911800002-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5501</price>
+<price>5304</price>
 <currencyId>RUB</currencyId>
-<categoryId>2928</categoryId>
-<picture>https://kawe.su/upload/iblock/378/3782bc42bbe164b096351f507de7dcc4.jpg</picture>
+<categoryId>3348</categoryId>
+<picture>https://kawe.su/upload/iblock/320/320ea3d93a54ccd0f1be59c3641f1012.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Инфузионная стойка хромированная KaWe</name>
 <description></description>
@@ -2884,10 +2877,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10489" available="true">
 <url>https://kawe.su/catalog/shtativy/stoyka-infuzionnaya-peredvizhnaya-iz-nerzhaveyushchey-stali-tyazhyolaya-dlya-infuzomatov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>14671</price>
+<price>14143</price>
 <currencyId>RUB</currencyId>
 <categoryId>2928</categoryId>
-<picture>https://kawe.su/upload/iblock/cfc/cfcaaba896cedc841a2dc45ce9329944.jpg</picture>
+<picture>https://kawe.su/upload/iblock/06a/06ae2b4c98dcab54690ee93455e069a7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стойка инфузионная передвижная из нержавеющей стали тяжёлая (для инфузоматов), KaWe</name>
 <description></description>
@@ -2944,10 +2937,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10495" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/nabor-fonarikov-diagnosticheskikh-cliplight-6-sht-raznogo-tsveta/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5614</price>
+<price>5412</price>
 <currencyId>RUB</currencyId>
-<categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/9b4/9b40facf4675c543154cb271d2240221.jpg</picture>
+<categoryId>2825</categoryId>
+<picture>https://kawe.su/upload/iblock/806/806dff942360715505e3df80d92c65d9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор Фонариков диагностических CLIPLIGHT (6 шт разного цвета), KaWe</name>
 <description></description>
@@ -2956,10 +2949,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10496" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-meditsinskiy-diagnosticheskiy-dialight-xl-chernyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3779</price>
+<price>3643</price>
 <currencyId>RUB</currencyId>
-<categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/4e7/4e7f4938f3a278d4d9be02b75b47704f.jpg</picture>
+<categoryId>2825</categoryId>
+<picture>https://kawe.su/upload/iblock/def/def5739cf1f5f8c4a10fa818b912862d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик медицинский диагностический DIALIGHT XL черный, KaWe</name>
 <description></description>
@@ -2968,10 +2961,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10497" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-cliplight-kawe-diagnosticheskiy-cherniy-klipsa-s-vklyuchatelem/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>712</price>
+<price>686</price>
 <currencyId>RUB</currencyId>
-<categoryId>2825</categoryId>
-<picture>https://kawe.su/upload/iblock/b5b/b5bbe3bb001bbc2e0a27373f2790ed64.jpg</picture>
+<categoryId>2826</categoryId>
+<picture>https://kawe.su/upload/iblock/f79/f792bc591b10142eb39c814050f9069d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик CLIPLIGHT KaWe диагностический черный, клипса с включателем</name>
 <description></description>
@@ -2980,10 +2973,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10498" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/derzhatel-shpatelya-dlya-cliplight-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>145</price>
+<price>139</price>
 <currencyId>RUB</currencyId>
-<categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/22e/22ecd96d5a80a8bbe49fdc4479ea6f19.jpg</picture>
+<categoryId>2825</categoryId>
+<picture>https://kawe.su/upload/iblock/b0d/b0d7a031f313065734ef75fe352ef690.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Держатель шпателя для CLIPLIGHT, Kawe</name>
 <description></description>
@@ -2992,10 +2985,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10499" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-karmannyy-piccolight-e-56-s-led-lampoy-25v-night-chernyy-sumochka-v-komplekte-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13337</price>
+<price>12857</price>
 <currencyId>RUB</currencyId>
-<categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/cbf/cbf7185564f3c9de3c93f1c7b6a47b51.jpg</picture>
+<categoryId>2827</categoryId>
+<picture>https://kawe.su/upload/iblock/43b/43b5026f2919e9ab8a082d8fb8deb794.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп карманный PICCOLIGHT E 56 (с ЛЭД лампой 2,5В) night (черный), сумочка в комплекте, KaWe</name>
 <description></description>
@@ -3004,10 +2997,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10500" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-eurolight-e36-25v-led-lampakawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>17228</price>
+<price>16607</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/531/531662f24c73015134f9ff5bf5c62fdc.jpg</picture>
+<picture>https://kawe.su/upload/iblock/bec/beccb4d5794bd30fd7a7b87348108a45.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп EUROLIGHT® E36  (2,5В ЛЭД лампа),KaWe</name>
 <description></description>
@@ -3040,10 +3033,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10536" available="true">
 <url>https://kawe.su/catalog/meditsinskie-svetilniki-kawe-germania/nastolnoe-kreplenie-dlya-masterlight-klassik-galogen-ili-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3224</price>
+<price>3108</price>
 <currencyId>RUB</currencyId>
 <categoryId>2868</categoryId>
-<picture>https://kawe.su/upload/iblock/4d1/4d16ba306d6d4bce2c4a7ce3b01e52aa.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f72/f72abb8a57f127cdca894389254711f8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Настольное крепление для Masterlight Классик (галоген или LED),Kawe</name>
 <description></description>
@@ -3052,10 +3045,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10537" available="true">
 <url>https://kawe.su/catalog/meditsinskie-svetilniki-kawe-germania/nastennoe-kreplenie-dlya-masterlight-klassik-galogen-ili-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2445</price>
+<price>2357</price>
 <currencyId>RUB</currencyId>
 <categoryId>2868</categoryId>
-<picture>https://kawe.su/upload/iblock/7f6/7f604cf975e5388e0119636242401f0c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7f7/7f7070e7a33ba841c65ad72f31a2c762.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Настенное  крепление  для  Masterlight Классик (галоген или LED),Kawe</name>
 <description></description>
@@ -3064,10 +3057,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10549" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/akkumulyator-na-ogolove-dlya-n-600-led-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>22785</price>
+<price>21964</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/a1d/a1d8602018129efcd642b8b9414396b1.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5fd/5fdfb98df5b0ef440f1f0f77d3227b23.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Аккумулятор на оголовье для Н-600 LED KaWe</name>
 <description></description>
@@ -3076,10 +3069,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10550" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/akkumulyator-na-poyas-dlya-n-600-led-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>28342</price>
+<price>27322</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/7fb/7fbf04c20fc4ca6f930e50449aa7e995.jpg</picture>
+<picture>https://kawe.su/upload/iblock/9f2/9f2e2422a716dd82a8bf3ee2652c8c2a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Аккумулятор на пояс для Н-600 LED  KaWe</name>
 <description></description>
@@ -3088,10 +3081,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10551" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/binokulyarnaya-lupa-25-x-340mm-uvelichenie-kh-rabochee-rasstoyanie-dlya-n-600-led-kawe-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>29175</price>
+<price>28124</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/f67/f67adad00592fa9be5bad7888e85cebf.jpg</picture>
+<picture>https://kawe.su/upload/iblock/6c6/6c677210e777568aaa79c7ad5bf0020b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Бинокулярная лупа 2.5 x 340мм (Увеличение х Рабочее расстояние) для Н-600 LED, KaWe </name>
 <description></description>
@@ -3100,10 +3093,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10552" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/binokulyarnaya-lupa-25-x-420mm-uvelichenie-kh-rabochee-rasstoyanie-dlya-n-600-led-kawe-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>29175</price>
+<price>28124</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/4ea/4ea9008263e656f466002d6e9c97ecbe.jpg</picture>
+<picture>https://kawe.su/upload/iblock/04e/04e783887a841f8feaa416078df9ac98.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Бинокулярная лупа 2.5 x 420мм (Увеличение х Рабочее расстояние) для Н-600 LED, KaWe </name>
 <description></description>
@@ -3112,10 +3105,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10553" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/binokulyarnaya-lupa-35-x-340mm-uvelichenie-kh-rabochee-rasstoyanie-dlya-n-600-led-kawe-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>29175</price>
+<price>28124</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/6e0/6e05651cb1261456f1696904a699cfcb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5a4/5a4307e05d61407d69261cc4caac4dbd.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Бинокулярная лупа 3.5 x 340мм (Увеличение х Рабочее расстояние) для Н-600 LED, KaWe </name>
 <description></description>
@@ -3124,10 +3117,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10554" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/binokulyarnaya-lupa-35-x-420mm-uvelichenie-kh-rabochee-rasstoyanie-dlya-n-600-led-kawe-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>29175</price>
+<price>28124</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/1f6/1f6b87c1833738d3a213ede7221fe6b7.jpg</picture>
+<picture>https://kawe.su/upload/iblock/607/607ae7e4e7566cf34420f891c7c85613.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Бинокулярная лупа 3.5 x 420мм (Увеличение х Рабочее расстояние) для Н-600 LED, KaWe </name>
 <description></description>
@@ -3136,10 +3129,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10555" available="true">
 <url>https://kawe.su/catalog/seriya-buk/nevrologicheskiy-molotochek-buk-90g-metallicheskaya-rukoyatka-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2316</price>
+<price>2232</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/08c/08cdcd2676407e205595f3cc4c441a09.jpg</picture>
+<categoryId>2918</categoryId>
+<picture>https://kawe.su/upload/iblock/75a/75a3a5c775c1d697361d643b09e585fc.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек БУК 90г, металлическая рукоятка,  с кисточкой и иглой KaWe</name>
 <description></description>
@@ -3148,10 +3141,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10556" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-planet-kardiolodzhi-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>17116</price>
+<price>16500</price>
 <currencyId>RUB</currencyId>
-<categoryId>2848</categoryId>
-<picture>https://kawe.su/upload/iblock/dd9/dd9d547c9826d9b384f924a1bdefc3b3.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/c82/c823cf34ffb4642be68d39e14ae97b59.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Планет Кардиолоджи, KaWe</name>
 <description></description>
@@ -3160,10 +3153,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10557" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-top-kardiolodzhi-cherniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12226</price>
+<price>11786</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/e25/e25762a4f463521e19c070fe636fa739.jpg</picture>
+<categoryId>2855</categoryId>
+<picture>https://kawe.su/upload/iblock/546/54674cbe0a0fa372ce6c64d2160a24bc.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп кардиологический Топ-Кардиолоджи черный, KaWe</name>
 <description></description>
@@ -3172,10 +3165,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10558" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-profi-kardiolodzhi-chernii-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>10336</price>
+<price>9965</price>
 <currencyId>RUB</currencyId>
-<categoryId>2853</categoryId>
-<picture>https://kawe.su/upload/iblock/77c/77ceb4377f74c975b917abd81a73d603.jpg</picture>
+<categoryId>2848</categoryId>
+<picture>https://kawe.su/upload/iblock/0ee/0ee93e71628b7b02f4270a34d03f27bd.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп кардиологический Профи-Кардиолоджи черный, KaWe</name>
 <description></description>
@@ -3184,10 +3177,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10559" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetoskop-petifon-kawe-pediatricheskiy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5780</price>
+<price>5572</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/1ce/1ce446661a255edfba0e952d7f452107.jpg</picture>
+<categoryId>2853</categoryId>
+<picture>https://kawe.su/upload/iblock/b24/b24dc1313d744e1fb6de50295f068baf.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетоскоп Петифон KaWe педиатрический</name>
 <description></description>
@@ -3196,10 +3189,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10560" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetoskop-multifon-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5168</price>
+<price>4982</price>
 <currencyId>RUB</currencyId>
-<categoryId>2848</categoryId>
-<picture>https://kawe.su/upload/iblock/038/038cb7b77648ffa0d8f0ccf590be0680.jpg</picture>
+<categoryId>2853</categoryId>
+<picture>https://kawe.su/upload/iblock/920/920388655ea9380b2200ab3ec831fd74.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Stethoscope Мультифон для взрослых, KaWe</name>
 <description></description>
@@ -3208,10 +3201,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10561" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/fonendoskop-kawe-singl-chernii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>550</price>
+<price>531</price>
 <currencyId>RUB</currencyId>
 <categoryId>2848</categoryId>
-<picture>https://kawe.su/upload/iblock/f11/f1118e6f8172abb78c5c0cbdb338ec1e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/fb6/fb631eec14a7ac496feedb758c9fe45f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонендоскоп KaWe Сингл черный</name>
 <description></description>
@@ -3230,23 +3223,11 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
-<offer id="10565" available="true">
-<url>https://kawe.su/catalog/stetoskopy-kawe/zapasnaya-voronka-dlya-multiphon-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>586</price>
-<currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/d27/d27a818671a472a32bbd05b891d9adef.jpg</picture>
-<vendor>Kawe</vendor>
-<name>Запасная воронка для Multiphon, KaWe</name>
-<description></description>
-<sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
-<country_of_origin>Германия</country_of_origin>
-</offer>
 <offer id="10566" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/zapasnaya-voronka-dlya-suprabell-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
 <price>746</price>
 <currencyId>RUB</currencyId>
-<categoryId>2848</categoryId>
+<categoryId>2847</categoryId>
 <picture>https://kawe.su/upload/iblock/27d/27d6bd3d03adb1d4750018d7faf3b638.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Запасная воронка для Suprabell, KaWe</name>
@@ -3258,7 +3239,7 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-uchebnyy-plano-s-2-mya-parami-ushnykh-duzhek-tolko-membrana-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
 <price>2445</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
+<categoryId>2848</categoryId>
 <picture>https://kawe.su/upload/iblock/111/111dcbd77414bb72ea24da40a63b64c2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп учебный PLANO с 2-мя парами ушных дужек, только мембрана, KaWe</name>
@@ -3268,10 +3249,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10570" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-krasnii-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
-<categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/253/25346623cb3d3b33532b508def57b6ab.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/bdd/bdd465e9af762a5ecc8a9663deccb29f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж красный KaWe</name>
 <description></description>
@@ -3280,10 +3261,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10571" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-layt-krasniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2667</price>
+<price>2571</price>
 <currencyId>RUB</currencyId>
 <categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/a85/a85ab176c40319d935ce3e7f38be23dc.jpg</picture>
+<picture>https://kawe.su/upload/iblock/333/333465f4d8635d83e275d286701a60a9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж Лайт красный, KaWe</name>
 <description></description>
@@ -3292,10 +3273,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10572" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya-krasnii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4557</price>
+<price>4394</price>
 <currencyId>RUB</currencyId>
-<categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/f01/f013af8bea19874cad67c04479c4f948.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/28c/28ccec43bf7b9ea288ae9fd63d95eef2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж KaWe детский красный</name>
 <description></description>
@@ -3304,10 +3285,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10573" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-layt-kawe-detskiy-krasniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
 <categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/6e0/6e02a28d46864b08d2d0abea08faae70.jpg</picture>
+<picture>https://kawe.su/upload/iblock/386/3866c251ebdce3fee1d76522a9bd6ead.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж ЛАЙТ KaWe детский красный</name>
 <description></description>
@@ -3316,10 +3297,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10574" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-cherniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4446</price>
+<price>4286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/bba/bba96d478ab15b0ffca37c05a0ba79fc.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2fe/2fed2c5ef33f3d9bfa876f2180279ae8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж KaWe неонатальный черный</name>
 <description></description>
@@ -3328,10 +3309,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10575" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-layt-kawe-neonatalnyy-chernii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
-<categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/82c/82cb323ede3a8f3810fa014db1716d9e.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/02c/02cc0fbcdd8fe37c4ccb6eee25dad616.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж ЛАЙТ KaWe неонатальный черный</name>
 <description></description>
@@ -3340,10 +3321,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10576" available="true">
 <url>https://kawe.su/catalog/nevrologicheskie-molotochki-kawe/nevrologicheskiy-molotochek-varioflyeks-v-forme-toporika-po-fassbenderu-155g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4335</price>
+<price>4179</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/596/59664a31633d06e5c7526fa82fbfcc5f.jpg</picture>
+<categoryId>3357</categoryId>
+<picture>https://kawe.su/upload/iblock/81d/81d8d3e8e9480bf9c4419f55d8f1f06e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек ВАРИОФЛЕКС в форме топорика по Фассбендеру 155г, с иглой и кисточкой, KaWe </name>
 <description></description>
@@ -3352,10 +3333,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10577" available="true">
 <url>https://kawe.su/catalog/nevrologicheskie-molotochki-kawe/nevrologicheskiy-molotochek-babinski-diskoobraznyy-95g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1985</price>
+<price>1913</price>
 <currencyId>RUB</currencyId>
-<categoryId>3357</categoryId>
-<picture>https://kawe.su/upload/iblock/e56/e56dfb36bd4a67d0473d58d394e0d68b.jpg</picture>
+<categoryId>2917</categoryId>
+<picture>https://kawe.su/upload/iblock/936/936db716154949e5174e35b41987cc95.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек БАБИНСКИ дискообразный 95г, KaWe</name>
 <description></description>
@@ -3364,10 +3345,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10579" available="true">
 <url>https://kawe.su/catalog/seriya-buk/nevrologicheskiy-molotochek-buk-80g-plastikovaya-rukoyatka-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2121</price>
+<price>2045</price>
 <currencyId>RUB</currencyId>
-<categoryId>2918</categoryId>
-<picture>https://kawe.su/upload/iblock/a02/a02e53e89da4daa87729cc277c9f7d6a.jpg</picture>
+<categoryId>2917</categoryId>
+<picture>https://kawe.su/upload/iblock/413/4136002418e94a55367571ea231e6235.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек БУК 80г, пластиковая рукоятка, с кисточкой и иглой KaWe</name>
 <description></description>
@@ -3376,10 +3357,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10581" available="true">
 <url>https://kawe.su/catalog/seriya-kolorfleks/nevrologicheskiy-molotochek-koloroflyeks-bolshoy-110g-chernyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2612</price>
+<price>2518</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/201/201a6b13f5bc26e9a27ea16ccef6b9ed.jpg</picture>
+<categoryId>3357</categoryId>
+<picture>https://kawe.su/upload/iblock/fa3/fa357ce8079b3432fd82af4cbdd81d69.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек Colorflex большой 110г, черный, KaWe</name>
 <description></description>
@@ -3388,10 +3369,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10583" available="true">
 <url>https://kawe.su/catalog/seriya-kolorfleks/nevrologicheskiy-molotochek-koloroflyeks-bolshoy-110g-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2612</price>
+<price>2518</price>
 <currencyId>RUB</currencyId>
-<categoryId>3357</categoryId>
-<picture>https://kawe.su/upload/iblock/53c/53cd8eb7645bc684c888bff46f809778.jpg</picture>
+<categoryId>2917</categoryId>
+<picture>https://kawe.su/upload/iblock/336/336cf3c0a52ea2df661878d2124c7167.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек КОЛОРОФЛЕКС большой 110г, синий, KaWe</name>
 <description></description>
@@ -3400,10 +3381,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10584" available="true">
 <url>https://kawe.su/catalog/seriya-kolorfleks/molotochek-koloroflyeks-bolshoy-so-shtyrkom-bez-kistochki-i-igly-ves-110g-iz-plastika-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2612</price>
+<price>2518</price>
 <currencyId>RUB</currencyId>
 <categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/8d3/8d328d68951f9f3786298d726fe3cfc0.jpg</picture>
+<picture>https://kawe.su/upload/iblock/11f/11f08240e4400d408e71a3e2a71a6751.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Молоточек KaWe КОЛОРОФЛЕКС, для диагностики рефлексов, большой, серый</name>
 <description></description>
@@ -3412,10 +3393,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10585" available="true">
 <url>https://kawe.su/catalog/seriya-tromner-i-vitroe/nevrologicheskiy-molotochek-tromnyer-legkiy-175g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3316</price>
+<price>3197</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/3b5/3b57779dfdd7cfa622243bfa2b243c0b.jpg</picture>
+<categoryId>3357</categoryId>
+<picture>https://kawe.su/upload/iblock/828/8284499c19e7467555fa994e1cf25bb7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек ТРОМНЕР легкий 175г, с иглой и кисточкой, KaWe</name>
 <description></description>
@@ -3424,10 +3405,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10586" available="true">
 <url>https://kawe.su/catalog/seriya-tromner-i-vitroe/nevrologicheskiy-molotochek-tromnyer-tyazhelyy-220g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3279</price>
+<price>3161</price>
 <currencyId>RUB</currencyId>
-<categoryId>2920</categoryId>
-<picture>https://kawe.su/upload/iblock/691/691c424fb09bbc12d4a40ba0ff80d467.jpg</picture>
+<categoryId>3357</categoryId>
+<picture>https://kawe.su/upload/iblock/450/450b2ab27e5001e2739a37c73a3a036d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек ТРОМНЕР тяжелый 200г, с иглой и кисточкой, KaWe</name>
 <description></description>
@@ -3436,10 +3417,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10587" available="true">
 <url>https://kawe.su/catalog/seriya-tromner-i-vitroe/nevrologicheskiy-molotochek-tromnyer-tyazhelyy-210g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3687</price>
+<price>3554</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/8b3/8b36fc98ce905e84b3a283855f279ca8.jpg</picture>
+<categoryId>2920</categoryId>
+<picture>https://kawe.su/upload/iblock/5c3/5c3d7b0448f124d321acafc7e5d25bb2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек ТРОМНЕР тяжелый 210г, KaWe</name>
 <description></description>
@@ -3448,10 +3429,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10588" available="true">
 <url>https://kawe.su/catalog/seriya-tromner-i-vitroe/nevrologicheskiy-molotochek-tromnyer-tyazhelyy-190g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3392</price>
+<price>3269</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/3d5/3d5f95fe46650ee918b02f2a20d9b280.jpg</picture>
+<categoryId>3357</categoryId>
+<picture>https://kawe.su/upload/iblock/9e0/9e08dc1ab2572f2e1a875c01cb1a46fa.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек ТРОМНЕР тяжелый 190г, с кисточкой, KaWe</name>
 <description></description>
@@ -3460,10 +3441,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10589" available="true">
 <url>https://kawe.su/catalog/seriya-tromner-i-vitroe/nevrologicheskiy-molotochek-tromnyer-legkiy-150g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2946</price>
+<price>2840</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/b41/b41bc5920493ee0127c14dcfae320a08.jpg</picture>
+<categoryId>2920</categoryId>
+<picture>https://kawe.su/upload/iblock/3a6/3a6dfb5a51f96a43ac387b80729926aa.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек ТРОМНЕР легкий 150г, KaWe</name>
 <description></description>
@@ -3472,10 +3453,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10590" available="true">
 <url>https://kawe.su/catalog/seriya-tromner-i-vitroe/nevrologicheskiy-molotochek-vitroye-tyazhelyy-210g-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3004</price>
+<price>2896</price>
 <currencyId>RUB</currencyId>
-<categoryId>2917</categoryId>
-<picture>https://kawe.su/upload/iblock/ccc/ccc746492ac59097985ce3650a48f1da.jpg</picture>
+<categoryId>2920</categoryId>
+<picture>https://kawe.su/upload/iblock/47b/47b2e776f212f944b741ced0d977e42c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Неврологический молоточек ВИТРОЕ (Witroe) тяжелый 198 г, с иглой и кисточкой, KaWe</name>
 <description></description>
@@ -3484,10 +3465,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10592" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/kawe-h-800-lyed-nalobnyy-osvetitel-s-akkumulyatorom-nalobnyy-osvetitel-led-v-komplekte--2-akkumulyatora--kreplenie-na-ogolove--kreplenie-na-poyas/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>116697</price>
+<price>112498</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/e62/e6221ece9539c90c6be4e1e947bac692.jpg</picture>
+<picture>https://kawe.su/upload/iblock/641/64197ca3958d502700894e67b05ba9b7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe H-800 LЕD Налобный осветитель с аккумулятором (Налобный осветитель LED в комплекте + 2 аккумулятора ( крепление на оголовье + крепление на пояс))</name>
 <description></description>
@@ -3496,10 +3477,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="10593" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-fonariki-kawe-germaniya/fonarik-diagnosticheskiy-cliplight-led-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>936</price>
+<price>902</price>
 <currencyId>RUB</currencyId>
-<categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/e8f/e8f67573aad250f0e95574d7cd121d61.jpg</picture>
+<categoryId>2825</categoryId>
+<picture>https://kawe.su/upload/iblock/997/99778b782bade8650f045edb91373cbe.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик диагностический CLIPLIGHT LED синий, KaWe</name>
 <description></description>
@@ -3508,10 +3489,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73705" available="true">
 <url>https://kawe.su/catalog/laringoskopy/klinok-macintosh-economy-2-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/47a/47a8c0da2b3723b18f47f641895dffeb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2b7/2b7d7ff73c2eb8d97525d5b7f6d238c8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №2 F. O. KaWe</name>
 <description></description>
@@ -3520,10 +3501,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73706" available="true">
 <url>https://kawe.su/catalog/laringoskopy/klinok-macintosh-economy-3-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/fd4/fd4cfe2cf37098fb5a03438d12f8ec88.jpg</picture>
+<picture>https://kawe.su/upload/iblock/59d/59d4c1eb6f3517b71155177d4862824a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №3 F. O. KaWe</name>
 <description></description>
@@ -3532,10 +3513,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73707" available="true">
 <url>https://kawe.su/catalog/laringoskopy/klinok-macintosh-economy-4-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
-<categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/b1e/b1edf5c9cdbee4909e944bea136fd9ec.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/b53/b53ce5f358915e3982be313488432b39.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №4 F. O. KaWe</name>
 <description></description>
@@ -3544,10 +3525,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73708" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-macintosh-economy-5-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/96f/96fa63c44653818a1a652caa506e92db.jpg</picture>
+<picture>https://kawe.su/upload/iblock/fa0/fa0096a139054573f0256ae1bf320980.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №5 F. O. KaWe</name>
 <description></description>
@@ -3556,10 +3537,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73709" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-flaplight-economy--3-f-o-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>23007</price>
+<price>22179</price>
 <currencyId>RUB</currencyId>
 <categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/704/70406dbe8a58b839119c248ae1f9f266.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4bd/4bd200ed154f90dec49472bbdb85cb7c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Flaplight Economy №3 F. O. KaWe</name>
 <description></description>
@@ -3568,10 +3549,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73710" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-miller-economy--0-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/83c/83c16104581323d157fe6c7f7e597cf9.jpg</picture>
+<categoryId>2900</categoryId>
+<picture>https://kawe.su/upload/iblock/dd1/dd13a0ee0f75ff8ad5d759066f778ccd.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №0 F. O. KaWe</name>
 <description></description>
@@ -3580,10 +3561,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73711" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-miller-economy--1-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/480/480daf8891569d67460f7e46756eb766.jpg</picture>
+<picture>https://kawe.su/upload/iblock/fa1/fa1ac27bfa0251ecc42ecf13ee7fb51a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №1 F. O. KaWe</name>
 <description></description>
@@ -3592,10 +3573,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73712" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-miller-economy--2-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/5c8/5c8083b558e64331d30d4c62af9bec6a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/3e0/3e0e12ce6405d85c866a1d19e82bc74e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №2 F. O. KaWe</name>
 <description></description>
@@ -3604,10 +3585,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73713" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-miller-economy--3-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/b97/b9742ecc7deec6571a7618847336ca35.jpg</picture>
+<picture>https://kawe.su/upload/iblock/9ac/9ac32dc4b03a60775f7d9e70dfc1f231.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №3 F. O. KaWe</name>
 <description></description>
@@ -3616,10 +3597,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73714" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-miller-economy--4-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
-<categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/2d7/2d70155ccab3bef3681e6721a253d9fb.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/e1a/e1a9b31cc499c429b3517f134d018424.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller Economy №4 F. O. KaWe</name>
 <description></description>
@@ -3628,10 +3609,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73715" available="true">
 <url>https://kawe.su/catalog/klinki-tepro-macintosh-f-o-kawe-germaniya/klinok-flaplight-3/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9114</price>
+<price>8786</price>
 <currencyId>RUB</currencyId>
-<categoryId>2887</categoryId>
-<picture>https://kawe.su/upload/iblock/98f/98faecab1d480e31dcc29aa5d0efce0b.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/539/539085ffb32f5670426723b4455a7fc7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок TEPRO® Macintosh №3 KaWe</name>
 <description></description>
@@ -3642,7 +3623,7 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <url>https://kawe.su/catalog/rasprodazha/klinok-polio-4/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
 <price>6666</price>
 <currencyId>RUB</currencyId>
-<categoryId>2895</categoryId>
+<categoryId>2871</categoryId>
 <picture>https://kawe.su/upload/iblock/080/080eb82836fbfbc113eccb7a2a73593a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок POLIO Macintosh №4 FO, KaWe</name>
@@ -3652,10 +3633,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73717" available="true">
 <url>https://kawe.su/catalog/klinki-tepro-macintosh-f-o-kawe-germaniya/klinok-flaplight-4/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>9114</price>
+<price>8786</price>
 <currencyId>RUB</currencyId>
-<categoryId>2887</categoryId>
-<picture>https://kawe.su/upload/iblock/b61/b61c8f395f985bdbaa387b4b230050de.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/f3c/f3c3789539b4e2421be6bc110bdb66bd.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок TEPRO® Macintosh №4 KaWe</name>
 <description></description>
@@ -3664,10 +3645,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73718" available="true">
 <url>https://kawe.su/catalog/klinki-serii-economy-f-o-kawe-germaniya/klinok-macintosh-economy-1-f-o-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4890</price>
+<price>4715</price>
 <currencyId>RUB</currencyId>
 <categoryId>2900</categoryId>
-<picture>https://kawe.su/upload/iblock/75e/75e5f8f89b9d7cf4425e7aae5b3055d8.jpg</picture>
+<picture>https://kawe.su/upload/iblock/dbc/dbccebc40c7c40cfe61325494067b364.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Macintosh Economy №1 F. O. KaWe</name>
 <description></description>
@@ -3679,19 +3660,19 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <price>3636</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/469/469af7065edc1ee2a851f9dad5a9a931.jpg</picture>
+<picture>https://kawe.su/upload/iblock/fbb/fbb9adc1afc0203f331b1f99fd41dcb4.jpg</picture>
 <vendor>Kawe</vendor>
-<name>Клинок ТЕПРО Макинтош С №2 (изогнутые, зубосберегающие) многоразовые, KaWe</name>
+<name>Клинок TEPRO Macintosh С №2 (изогнутые, зубосберегающие) многоразовые, KaWe</name>
 <description></description>
 <sales_notes>Минимальный заказ 1т.р Работаем с физ.,юр.лицами</sales_notes>
 <country_of_origin>Германия</country_of_origin>
 </offer>
 <offer id="73720" available="true">
 <url>https://kawe.su/catalog/klinki-macintosh-c-kawe-germaniya/klinok-tyepro-makintosh-s-3-izognutye-zubosberegayushchie-mnogorazovye-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4426</price>
+<price>4267</price>
 <currencyId>RUB</currencyId>
-<categoryId>2874</categoryId>
-<picture>https://kawe.su/upload/iblock/078/078e6b34c1abde6feda84aa20d0a7952.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/f1e/f1ea8df72d008ecc9259c916b2fcf28c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок ТЕПРО Макинтош С №3 (изогнутые, зубосберегающие) многоразовые, KaWe</name>
 <description></description>
@@ -3700,10 +3681,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73721" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-miller-pryamoy-0-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
-<categoryId>2883</categoryId>
-<picture>https://kawe.su/upload/iblock/e70/e702c56da9462b2e217dcec7b16f9132.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/9ab/9ab5dd528e3bc2f063a3cae3c9747203.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller (прямой) №0  Металл, LED </name>
 <description></description>
@@ -3712,10 +3693,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73722" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-miller-pryamoy-1-metall-led-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/8e2/8e25265788a1a14d297a14e0d412d6a2.jpg</picture>
+<categoryId>2883</categoryId>
+<picture>https://kawe.su/upload/iblock/d30/d3085ec15ecad26f460dbef6c84ad509.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller (прямой) №1  Металл, LED</name>
 <description></description>
@@ -3724,10 +3705,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73723" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-miller-pryamoy-00-metall-led-2-1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
 <categoryId>2883</categoryId>
-<picture>https://kawe.su/upload/iblock/6af/6afa16d968ae1528dc970f85babf6817.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2e2/2e2707382560641d175d3abaea73f93d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller (прямой) №2 Металл, LED </name>
 <description></description>
@@ -3736,10 +3717,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73724" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-miller-pryamoy-3-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/4e9/4e9fa83770c8742f552a13a5f9c658a1.jpg</picture>
+<picture>https://kawe.su/upload/iblock/40f/40f109287180451b107ace03d9000735.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller (прямой) №3 Металл, LED</name>
 <description></description>
@@ -3748,10 +3729,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73725" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-miller-pryamoy-4-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
-<categoryId>2883</categoryId>
-<picture>https://kawe.su/upload/iblock/a9f/a9f15e72afe2ae6fa50b9fd72b42db21.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/ef7/ef718ad8f0ef7739edfff8719dce3543.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Клинок Miller (прямой) №4 Металл, LED </name>
 <description></description>
@@ -3760,10 +3741,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73726" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-macintosh-izognutyy-1-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
-<categoryId>2883</categoryId>
-<picture>https://kawe.su/upload/iblock/036/0360125e1aa24f28d3d5b50f230775f0.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/f53/f5327998910b9e3b9f1a587b2d0f2c8c.jpg</picture>
 <vendor>Kawe</vendor>
 <name> Клинок Macintosh (изогнутый) №1 Металл, LED</name>
 <description></description>
@@ -3772,10 +3753,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73727" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-macintosh-izognutyy-2-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/a44/a4474f8e4934f97bd69f725603878f92.jpg</picture>
+<categoryId>2883</categoryId>
+<picture>https://kawe.su/upload/iblock/329/32938e3aae363c48390bddb52bb688fb.jpg</picture>
 <vendor>Kawe</vendor>
 <name> Клинок Macintosh (изогнутый) №2 Металл, LED</name>
 <description></description>
@@ -3784,10 +3765,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73728" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-macintosh-izognutyy-3-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/f33/f33243f251b324bfd7d4e2434b7bf23a.jpg</picture>
+<categoryId>2883</categoryId>
+<picture>https://kawe.su/upload/iblock/27f/27f6987969489832413f33f33256e85c.jpg</picture>
 <vendor>Kawe</vendor>
 <name> Клинок Macintosh (изогнутый) №3 Металл, LED </name>
 <description></description>
@@ -3796,10 +3777,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73729" available="true">
 <url>https://kawe.su/catalog/klinki-miller-c-kawe-led-germaniya/klinok-macintosh-izognutyy-4-metall-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>561</price>
+<price>540</price>
 <currencyId>RUB</currencyId>
-<categoryId>2883</categoryId>
-<picture>https://kawe.su/upload/iblock/1fa/1fa6d9a1b2e01dd75327db4099e4a208.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/826/8260263704f33925b575eda3b991bd7c.jpg</picture>
 <vendor>Kawe</vendor>
 <name> Клинок Macintosh (изогнутый) №4 Металл, LED</name>
 <description></description>
@@ -3808,10 +3789,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73732" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlya-neonatologii-i-pediatrii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>35485</price>
+<price>34209</price>
 <currencyId>RUB</currencyId>
 <categoryId>2939</categoryId>
-<picture>https://kawe.su/upload/iblock/184/18424f188b88b5e5c44d8e94f5937737.jpg</picture>
+<picture>https://kawe.su/upload/iblock/fae/fae3cf3a6fe1475be4ef0d6c9d009cd3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для неонатологии и педиатрии (на батарейках, лампочка ксенон)</name>
 <description></description>
@@ -3820,10 +3801,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73733" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-led-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-korotkaya-rabotaet-ot-batareek-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>11126</price>
+<price>10725</price>
 <currencyId>RUB</currencyId>
 <categoryId>2902</categoryId>
-<picture>https://kawe.su/upload/iblock/7da/7dacb7689b478230bdf846e1069e9280.jpg</picture>
+<picture>https://kawe.su/upload/iblock/79b/79ba3e4b6c1e934af31ced3c1d858282.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка короткая (d=32мм) 2,5 В (работает от батареек) с LED осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -3832,10 +3813,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73734" available="true">
 <url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyatka-malaya-d19-mm-25-v-batareechnayaakkumulyatornaya-s-ksenonovym-osvetitelem-dlya-f-o-laringoskopov-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7796</price>
+<price>7515</price>
 <currencyId>RUB</currencyId>
 <categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/ce4/ce48bf52f6b469190b1740b90e7d6d13.jpg</picture>
+<picture>https://kawe.su/upload/iblock/39a/39a43c6794996f8b636c378021f76482.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоятка малая (d=19 мм) 2,5 В (батареечная/аккумуляторная) + аккумулятор с ксеноновым осветителем для F. O. ларингоскопов KaWe</name>
 <description></description>
@@ -3846,7 +3827,7 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/%D0%BDabor-laringoskopov-dlja-vzroslyh/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
 <price>30208</price>
 <currencyId>RUB</currencyId>
-<categoryId>3141</categoryId>
+<categoryId>2939</categoryId>
 <picture>https://kawe.su/upload/iblock/9b3/9b371c070d2e527cac5fdbcc73612190.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для взрослых (на батарейках, лампа ксенон)</name>
@@ -3856,10 +3837,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73736" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlya-vzroslykh-dlya-provedeniya-zatrudnennoy-intubatsii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>64810</price>
+<price>62478</price>
 <currencyId>RUB</currencyId>
 <categoryId>3141</categoryId>
-<picture>https://kawe.su/upload/iblock/bd5/bd5ec860a4943ed50acbf82fb9490f8c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/98e/98e399e2870b922cb63f7db7e6b673ad.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для взрослых (для проведения затрудненной интубации) (на батарейках, лампочка ксенон)</name>
 <description></description>
@@ -3868,10 +3849,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73737" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/universalnyy-nabor-neonatologiya-pediatriya-vzrozlye/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>52376</price>
+<price>50491</price>
 <currencyId>RUB</currencyId>
 <categoryId>3142</categoryId>
-<picture>https://kawe.su/upload/iblock/062/0627a16663565d926adf9749c1dff47e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/84f/84fd689886a0ac7654d1cdbddefdd875.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков / Универсальный набор (неонатология, педиатрия, взрослые, на батарейках, лампочка ксенон)</name>
 <description></description>
@@ -3880,10 +3861,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73738" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlya-neonatologii-i-pediatrii-na-batareykakh-lampochka-led_1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>41098</price>
+<price>39618</price>
 <currencyId>RUB</currencyId>
-<categoryId>3145</categoryId>
-<picture>https://kawe.su/upload/iblock/634/6347488c8f1318f95f15c2108bc3edf2.jpg</picture>
+<categoryId>3142</categoryId>
+<picture>https://kawe.su/upload/iblock/c86/c868228683378082316bcc0e90a1ec79.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для неонатологии и педиатрии (на батарейках, лампа LED)</name>
 <description></description>
@@ -3892,10 +3873,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73739" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlya-vzroslykh-na-batareykakh-lampochka-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>70422</price>
+<price>67887</price>
 <currencyId>RUB</currencyId>
-<categoryId>3142</categoryId>
-<picture>https://kawe.su/upload/iblock/91c/91ce728ac2e4813711cdfc4738f3c868.jpg</picture>
+<categoryId>3144</categoryId>
+<picture>https://kawe.su/upload/iblock/11b/11b128b772765a98fa2e07b991555daa.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для взрослых (для проведения затрудненной интубации) (на батарейках, лампочка LED)</name>
 <description></description>
@@ -3904,10 +3885,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73740" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/universalnyy-nabor-neonatologiya-pediatriya-vzrozlye-na-batareykakh-lampochka-led/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>57987</price>
+<price>55900</price>
 <currencyId>RUB</currencyId>
-<categoryId>3142</categoryId>
-<picture>https://kawe.su/upload/iblock/ab0/ab04a125c2e03da11a8c3279f1feaa99.jpg</picture>
+<categoryId>3145</categoryId>
+<picture>https://kawe.su/upload/iblock/087/0874fa4330262b0fd147531792025631.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков, Универсальный набор (неонатология, педиатрия, взрослые) (на батарейках, лампочка LED)</name>
 <description></description>
@@ -3916,10 +3897,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73741" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlya-vzroslykh-na-batareykakh-lampochka-led-1/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>34165</price>
+<price>32935</price>
 <currencyId>RUB</currencyId>
-<categoryId>3144</categoryId>
-<picture>https://kawe.su/upload/iblock/dbe/dbe32768ae24aabf4d2f843ef4be9367.jpg</picture>
+<categoryId>2939</categoryId>
+<picture>https://kawe.su/upload/iblock/9aa/9aa933392047d390fddfda2d624bf5eb.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для взрослых (на батарейках, лампочка LED)</name>
 <description></description>
@@ -3928,10 +3909,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73742" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/23109/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>49679</price>
+<price>47891</price>
 <currencyId>RUB</currencyId>
 <categoryId>3142</categoryId>
-<picture>https://kawe.su/upload/iblock/d41/d4198c313790da77ac05527e348a0c8f.jpg</picture>
+<picture>https://kawe.su/upload/iblock/885/8856830acd0ec9136f699ead0ca5d132.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для неонатологии и педиатрии (на аккумуляторах, лампа ксенон)</name>
 <description></description>
@@ -3940,10 +3921,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73743" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlya-vzroslykh-na-akkumulyatorakh-lampochka-ksenon-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>42748</price>
+<price>41210</price>
 <currencyId>RUB</currencyId>
-<categoryId>2939</categoryId>
-<picture>https://kawe.su/upload/iblock/253/253751e9855a82cfaee0cb57ed707370.jpg</picture>
+<categoryId>3142</categoryId>
+<picture>https://kawe.su/upload/iblock/820/82016bfc03dc169a09eef6fe552ad799.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для взрослых (на аккумуляторах, лампочка ксенон)</name>
 <description></description>
@@ -3952,10 +3933,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73744" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlya-vzroslykh-dlya-provedeniya-zatrudnennoy-intubatsii-na-akkumulyatorakh-lampochka-ksenon-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>79004</price>
+<price>76161</price>
 <currencyId>RUB</currencyId>
-<categoryId>2939</categoryId>
-<picture>https://kawe.su/upload/iblock/943/943749bd9f60893c1b3536c1ea86d3de.jpg</picture>
+<categoryId>3142</categoryId>
+<picture>https://kawe.su/upload/iblock/6df/6dfd5874c22ef7168320d81673c51bb3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с комплектом клинков для взрослых (для проведения затрудненной интубации) (на аккумуляторах, лампочка ксенон)</name>
 <description></description>
@@ -3964,10 +3945,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73745" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/universalnyy-nabor-neonatologiya-pediatriya-vzrozlye-na-akkumulyatorakh-lampochka-ksenon-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>66569</price>
+<price>64173</price>
 <currencyId>RUB</currencyId>
-<categoryId>3142</categoryId>
-<picture>https://kawe.su/upload/iblock/b37/b370fe5e12571164440de73c4aa046d8.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/151/15114677b762bde8ef675f5a688a3839.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков, универсальный набор (неонатология, педиатрия, взрослые) (на аккумуляторах, лампочка ксенон)</name>
 <description></description>
@@ -3976,10 +3957,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="73916" available="true">
 <url>https://kawe.su/catalog/nevrologicheskie-molotochki-kawe/molotochek-babinski-diskoobraznyy-ves-70g-gibkaya-rukoyatka-iz-plastika-s-rezboy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1779</price>
+<price>1715</price>
 <currencyId>RUB</currencyId>
-<categoryId>3357</categoryId>
-<picture>https://kawe.su/upload/iblock/d08/d08192fadd5d6cb7580760457f60524e.jpg</picture>
+<categoryId>2917</categoryId>
+<picture>https://kawe.su/upload/iblock/c45/c45b12139c4e6fc603c301786c4ea0b7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Молоточек БАБИНСКИ дискообразный вес 70г, гибкая рукоятка из пластика с резьбой, KaWe</name>
 <description></description>
@@ -4096,10 +4077,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74432" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-ce56-35-eu-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>56978</price>
+<price>54928</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/c60/c60d4373662f14fbb294cf78a789f368.jpg</picture>
+<categoryId>2807</categoryId>
+<picture>https://kawe.su/upload/iblock/54d/54db56f23696b6e74207fe57062ade34.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор C/E56, EU, 3,5 V, KaWe</name>
 <description></description>
@@ -4108,10 +4089,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74433" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-ce25-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>87708</price>
+<price>84552</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/233/2334e381ecb12dce72234562d5f9cdf3.jpg</picture>
+<categoryId>2808</categoryId>
+<picture>https://kawe.su/upload/iblock/783/7832afdbe679911e8d24c6ec996df141.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор C/E25, 3,5 V, KaWe</name>
 <description></description>
@@ -4120,10 +4101,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74434" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-fo-lede55-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>61451</price>
+<price>59241</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/f28/f289466301a14f39a98252e889c3bbc8.jpg</picture>
+<picture>https://kawe.su/upload/iblock/9b7/9b772c087dbcbb96d4613c81a084e828.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор FO LED/E55, 3,5 V, KaWe</name>
 <description></description>
@@ -4132,10 +4113,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74435" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-ce55-s-modulem-voronok-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>59599</price>
+<price>57455</price>
 <currencyId>RUB</currencyId>
-<categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/228/2287b9bb4bd4724ba8f659a2a56a783b.jpg</picture>
+<categoryId>2807</categoryId>
+<picture>https://kawe.su/upload/iblock/11b/11b512bb5239d1a2558354ed82d65b43.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор C/E55, с модулем воронок, 3,5 V, KaWe</name>
 <description></description>
@@ -4144,10 +4125,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74436" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-ce25-s-modulem-voronok-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>91970</price>
+<price>88660</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/a70/a7041f6fd1c9685ac5e8ea73fa273222.jpg</picture>
+<picture>https://kawe.su/upload/iblock/1bb/1bb910c106316916009e3aed39ffccad.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор C/E25, с модулем воронок, 3,5 V, KaWe</name>
 <description></description>
@@ -4156,10 +4137,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74437" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-fo-lede25-s-modulem-voronok-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>98267</price>
+<price>94731</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/cd0/cd0648e7d93e81f6315561e1da9d354e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/c58/c582906e9db62df639f5b229442d3b5a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор FO LED/E25, с модулем воронок, 3,5 V, KaWe</name>
 <description></description>
@@ -4168,10 +4149,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74438" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-ce56-s-modulem-voronok-eu-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>61239</price>
+<price>59036</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/e2b/e2b11ba62b8e00c62152629d5fa9c815.jpg</picture>
+<picture>https://kawe.su/upload/iblock/371/3715e26c878a882bd427a88583c9d9c3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор C/E56, с модулем воронок, EU, 3,5 V, KaWe</name>
 <description></description>
@@ -4180,10 +4161,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74439" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-fo-lede56-s-modulem-voronok-eu-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>67537</price>
+<price>65107</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/8df/8dfbf2b9bdb427ba5045d0ba2b4e7f34.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4db/4db241b9f68085cd96a5dc409b801dbe.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор FO LED/E56, с модулем воронок EU, 3,5 V, KaWe</name>
 <description></description>
@@ -4192,10 +4173,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74440" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-fo-lede55-s-modulem-voronok-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>65805</price>
+<price>63437</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/0eb/0eb7fe7f9dce1af3c07679b6c37a51fb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4da/4dad53bdb8997cbe66ef6d775fa1457f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор FO LED/E55, с модулем воронок, 3,5 V, KaWe</name>
 <description></description>
@@ -4204,10 +4185,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74441" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/oftalmoskop-piccolight-c-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>32695</price>
+<price>31518</price>
 <currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/832/8327ebaf234ead816e617ce81fe29aac.jpg</picture>
+<categoryId>2802</categoryId>
+<picture>https://kawe.su/upload/iblock/439/4393b15a2439d95c6429c3b37dcbf4cb.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп PICCOLIGHT C 3.5 V KaWe</name>
 <description></description>
@@ -4216,10 +4197,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74442" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/golovka-transillyuminatora-25v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4224</price>
+<price>4072</price>
 <currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/6b3/6b30d5be9dba90fa3a65233d53e69007.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/556/556787f7a6a99e536104af6510288c0e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка трансиллюминатора 2,5V, KaWe</name>
 <description></description>
@@ -4228,10 +4209,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74443" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/oftalmoskop-piccolight-c-35-v-s-modulem-voronok-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>36955</price>
+<price>35625</price>
 <currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/f34/f34fc6f5e0cf52481f139a57ca9b0eb4.jpg</picture>
+<categoryId>2802</categoryId>
+<picture>https://kawe.su/upload/iblock/4e0/4e0f98d3bdceb7ac5f6782d753f56abd.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп PICCOLIGHT C 3.5 V с модулем воронок, KaWe</name>
 <description></description>
@@ -4240,10 +4221,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74444" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/golovka-transillyuminatora-35v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4335</price>
+<price>4179</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/e1e/e1e758ea727ac19078ed7677de6ccd31.jpg</picture>
+<categoryId>2800</categoryId>
+<picture>https://kawe.su/upload/iblock/667/667ea3347669e0aaabe9f0b86bea827c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Головка трансиллюминатора 3,5V, KaWe</name>
 <description></description>
@@ -4252,10 +4233,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74445" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/piccolight-fo-led-35-v-tsvet-belyy-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>38899</price>
+<price>37499</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/5c9/5c99cd8ebefd6a2819b3bba590a82775.jpg</picture>
+<categoryId>2802</categoryId>
+<picture>https://kawe.su/upload/iblock/b8e/b8e67cc624ef4c4f03b6081f87a6ebde.jpg</picture>
 <vendor>Kawe</vendor>
 <name>PICCOLIGHT® F.O. LED 3.5 V, цвет белый, KaWe</name>
 <description></description>
@@ -4264,10 +4245,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74446" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/nazalnyy-osvetitel-fibroopticheskiy-25v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3891</price>
+<price>3750</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/9a0/9a00cc4601c345cafd714fcad5c176f6.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/3a1/3a1b8e84543f0be57674c818ba6ae1df.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Назальный осветитель фиброоптический 2,5V, KaWe</name>
 <description></description>
@@ -4276,10 +4257,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74447" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/piccolight-fo-led-35-v-tsvet-belyy-s-modulem-voronok-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>43252</price>
+<price>41696</price>
 <currencyId>RUB</currencyId>
-<categoryId>2802</categoryId>
-<picture>https://kawe.su/upload/iblock/5c9/5c99816ea16484af5f7de303fcf3af8e.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/d27/d275e96f8349e1b9a74a9c4afbba33ad.jpg</picture>
 <vendor>Kawe</vendor>
 <name>PICCOLIGHT® F.O. LED 3.5 V, цвет белый, с модулем воронок, KaWe</name>
 <description></description>
@@ -4288,10 +4269,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74448" available="true">
 <url>https://kawe.su/catalog/otoskopy-kawe-germaniya/nazalnyy-osvetitel-fibroopticheskiy-35v-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4335</price>
+<price>4179</price>
 <currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/bda/bda1e056c7f5e26f80b0f9d67889677b.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/04c/04cf22c9aab1e2ac7fae3dc755dc1ae4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Назальный осветитель фиброоптический 3,5V, KaWe</name>
 <description></description>
@@ -4300,10 +4281,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74452" available="true">
 <url>https://kawe.su/catalog/keysy-dlya-laringoskopov-kawe/keys-na-6-klinkov-miller-i-1-rukoyat-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4002</price>
+<price>3857</price>
 <currencyId>RUB</currencyId>
-<categoryId>2871</categoryId>
-<picture>https://kawe.su/upload/iblock/c44/c447a348915a473ed530eafab7a24f04.jpg</picture>
+<categoryId>2905</categoryId>
+<picture>https://kawe.su/upload/iblock/b99/b99bd720d2ac1f0b0fa46497e070ba1e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Кейс на 6 клинков Miller и 1 рукоять, KaWe</name>
 <description></description>
@@ -4312,10 +4293,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74453" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-eurolight-e25-35-v-tsvet-belyy-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>70297</price>
+<price>67767</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/654/6547ef3e49eff8ed64b6bdfaa7532a69.jpg</picture>
+<picture>https://kawe.su/upload/iblock/4bb/4bba5e2b7f40460d2cb4e29b26884e8e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп EUROLIGHT® E25, 3.5 V, цвет белый, KaWe</name>
 <description></description>
@@ -4336,10 +4317,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74455" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/piccolight-e56-35-v-tsvet-belyy-usa-versiya-siniy-filtr/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>39567</price>
+<price>38143</price>
 <currencyId>RUB</currencyId>
-<categoryId>2827</categoryId>
-<picture>https://kawe.su/upload/iblock/7a0/7a039834d15e85885246951fc30af3c3.jpg</picture>
+<categoryId>2828</categoryId>
+<picture>https://kawe.su/upload/iblock/683/683066a55f417a187f8e8603d1476125.jpg</picture>
 <vendor>Kawe</vendor>
 <name>PICCOLIGHT® E56, 3.5 V, цвет белый, USA-версия, синий фильтр, KaWe</name>
 <description></description>
@@ -4384,10 +4365,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74459" available="true">
 <url>https://kawe.su/catalog/stetoskopy-i-fonendoskopy/stetofonendoskop-planophon-ploskaya-golovka-kawe-germaniya-/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>550</price>
+<price>531</price>
 <currencyId>RUB</currencyId>
 <categoryId>2848</categoryId>
-<picture>https://kawe.su/upload/iblock/a1f/a1f838b58bd3201c9369f73a2dfd0784.jpg</picture>
+<picture>https://kawe.su/upload/iblock/646/6467893d5f0d121ef5585afd06ecb0d4.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Planophon, плоская головка, KaWe</name>
 <description></description>
@@ -4396,10 +4377,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="74460" available="true">
 <url>https://kawe.su/catalog/stetoskopy-i-fonendoskopy/stetofonendoskop-duoscope-dvoynaya-golovka-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>590</price>
+<price>569</price>
 <currencyId>RUB</currencyId>
-<categoryId>2848</categoryId>
-<picture>https://kawe.su/upload/iblock/35e/35e3dba458a9817b5cd9d87bd9e98afb.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/0ec/0ec39ac31d4f1431c941849e345dd051.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Duoscope, двойная головка, KaWe</name>
 <description></description>
@@ -4408,10 +4389,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75432" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-50-mm-10-sht-0172216001-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2806</categoryId>
-<picture>https://kawe.su/upload/iblock/4eb/4eb8fca04c306b68760a6644150e981f.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/e07/e07f14f112458a7326d4b1e4dffe9dab.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 5,0 мм (10 шт), KaWe</name>
 <description></description>
@@ -4420,10 +4401,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75433" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-20-mm-10-sht-0172214001-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2800</categoryId>
-<picture>https://kawe.su/upload/iblock/9fe/9fe59758bd6b03ee5e230e87f5559b58.jpg</picture>
+<categoryId>2806</categoryId>
+<picture>https://kawe.su/upload/iblock/e50/e5045c971dc8564a8c4fcde82187f7f7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 2,0 мм (10 шт), KaWe</name>
 <description></description>
@@ -4432,10 +4413,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75434" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-20-25-30-40-50-mm-10-sht-0172210001-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
 <categoryId>2806</categoryId>
-<picture>https://kawe.su/upload/iblock/53f/53ffb536346f3f1b1e227ea37887e93c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/e36/e36d3be86abc013d919f8c63c3e9c3a5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 2.0, 2.5, 3.0, 4.0, 5.0 мм (10 шт), KaWe</name>
 <description></description>
@@ -4444,10 +4425,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75435" available="true">
 <url>https://kawe.su/catalog/voronki-ushnye-k-otoskopam-kawe-germaniya/nabor-voronok-mnogorazovykh-30-mm-10-sht-0172215001-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2806</categoryId>
-<picture>https://kawe.su/upload/iblock/a3c/a3cb95b249355b3fdec9d60db6efd8e7.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/66e/66e8a21d08a512e5aab05c564b7807a0.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор воронок многоразовых 3,0 мм (10 шт), KaWe</name>
 <description></description>
@@ -4455,11 +4436,11 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <country_of_origin>Германия</country_of_origin>
 </offer>
 <offer id="75436" available="true">
-<url>https://kawe.su/catalog/rukoyatki-dlya-lampochnykh-laringoskopov-kawe-germaniya/rukoyat-25v-malaya-d19mm/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7002</price>
+<url>https://kawe.su/catalog/rukoyati-s-ksenonovym-osvetitelem-dlya-fo-laringoskopov-kawe-germaniya/rukoyat-25v-malaya-d19mm/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
+<price>6751</price>
 <currencyId>RUB</currencyId>
-<categoryId>2904</categoryId>
-<picture>https://kawe.su/upload/iblock/dde/ddea94ed43f7a93c80d4eef4bcb16365.jpg</picture>
+<categoryId>2903</categoryId>
+<picture>https://kawe.su/upload/iblock/69d/69d7b5d995898bf8252b9672ab0a3b57.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Рукоять 2,5 В малая (d=19мм) Ф.О. ксенон, KaWe </name>
 <description></description>
@@ -4468,10 +4449,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75437" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-diagnosticheskiy-cliplight-led-krasnyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>934</price>
+<price>901</price>
 <currencyId>RUB</currencyId>
-<categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/f75/f75452a283b7adb7ce205aa1b3105c3c.jpg</picture>
+<categoryId>2825</categoryId>
+<picture>https://kawe.su/upload/iblock/3d8/3d888c38fc5da1065c989b99eec99519.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик диагностический CLIPLIGHT LED красный, KaWe</name>
 <description></description>
@@ -4480,10 +4461,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75438" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-fonariki-kawe-germaniya/fonarik-diagnosticheskiy-cliplight-led-chernyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>936</price>
+<price>902</price>
 <currencyId>RUB</currencyId>
 <categoryId>2825</categoryId>
-<picture>https://kawe.su/upload/iblock/9e7/9e7a704abdeeafdd2f6bea37af9eb686.jpg</picture>
+<picture>https://kawe.su/upload/iblock/6b4/6b49fae3b7331f4eff016811dc168ae2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик диагностический CLIPLIGHT LED черный, KaWe</name>
 <description></description>
@@ -4492,10 +4473,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75439" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-fonariki-kawe-germaniya/fonarik-diagnosticheskiy-cliplight-led-zhyoltyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>936</price>
+<price>902</price>
 <currencyId>RUB</currencyId>
-<categoryId>2825</categoryId>
-<picture>https://kawe.su/upload/iblock/4d1/4d119cd02ca41bb590d1a59d9a4d76bb.jpg</picture>
+<categoryId>2826</categoryId>
+<picture>https://kawe.su/upload/iblock/454/454195058dbb3ad9c996d7b5c58ce7e7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик диагностический CLIPLIGHT LED жёлтый, KaWe</name>
 <description></description>
@@ -4504,10 +4485,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75440" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-diagnosticheskiy-cliplight-led-fioletovyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>936</price>
+<price>902</price>
 <currencyId>RUB</currencyId>
 <categoryId>2825</categoryId>
-<picture>https://kawe.su/upload/iblock/942/9427536141fef848fcfdbf2251a5733b.jpg</picture>
+<picture>https://kawe.su/upload/iblock/12b/12b9b3d9b957c6c008f9bda4e06b7ddd.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик диагностический CLIPLIGHT LED фиолетовый, KaWe</name>
 <description></description>
@@ -4516,10 +4497,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75441" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-diagnosticheskiy-cliplight-led-seryy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>936</price>
+<price>902</price>
 <currencyId>RUB</currencyId>
-<categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/305/305c592088dec5aec275b98ae84111cb.jpg</picture>
+<categoryId>2825</categoryId>
+<picture>https://kawe.su/upload/iblock/b01/b016dac01c1e47caa3016176f7e63240.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик диагностический CLIPLIGHT LED серый, KaWe</name>
 <description></description>
@@ -4528,10 +4509,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75442" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-eurolight-e36-25v/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>16338</price>
+<price>15750</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/e7e/e7e512402d8d49da19e2d8a65146cf2c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ea6/ea6f71638222d769e4a31531ae625f44.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Eurolight E36 2,5V KaWe</name>
 <description></description>
@@ -4540,10 +4521,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75443" available="true">
 <url>https://kawe.su/catalog/stetoskopy-rapporta/stetofonendoskop-rapport-krasnyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2848</categoryId>
-<picture>https://kawe.su/upload/iblock/a3c/a3c8a260ebc7c161eff09fe550000eb0.jpg</picture>
+<categoryId>2853</categoryId>
+<picture>https://kawe.su/upload/iblock/acb/acb172ca1ad9bf82054b720eba282947.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Раппорт (Rapport) красный KaWe</name>
 <description></description>
@@ -4552,10 +4533,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75444" available="true">
 <url>https://kawe.su/catalog/stetoskopy-i-fonendoskopy/stetofonendoskop-rapport-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2854</categoryId>
-<picture>https://kawe.su/upload/iblock/f51/f5194a3489fe849b99b287dc9cae5466.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/9b3/9b362ce8bcf49b71f42bcacecea0fe96.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Раппорт (Rapport) синий KaWe</name>
 <description></description>
@@ -4564,10 +4545,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75445" available="true">
 <url>https://kawe.su/catalog/stetoskopy-rapporta/stetofonendoskop-rapport-zelenyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2853</categoryId>
-<picture>https://kawe.su/upload/iblock/fd0/fd00cb9777082874be42b9b9459da5ab.jpg</picture>
+<categoryId>2848</categoryId>
+<picture>https://kawe.su/upload/iblock/862/8623e9701153674845fd740bd28298c2.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Раппорт (Rapport) зеленый KaWe</name>
 <description></description>
@@ -4576,10 +4557,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75446" available="true">
 <url>https://kawe.su/catalog/stetoskopy-i-fonendoskopy/stetofonendoskop-rapport-fioletovyy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>1668</price>
+<price>1608</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/143/143d2ecca5f6b0e9bbd17c6eea519002.jpg</picture>
+<categoryId>2848</categoryId>
+<picture>https://kawe.su/upload/iblock/a70/a700b8a0b2fbd506877b20fac1a5d341.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Раппорт фиолетовый KaWe</name>
 <description></description>
@@ -4588,10 +4569,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75447" available="true">
 <url>https://kawe.su/catalog/stetoskopy-i-fonendoskopy/stetofonendoskop-rapport-chernyy-black-line-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2001</price>
+<price>1929</price>
 <currencyId>RUB</currencyId>
 <categoryId>2854</categoryId>
-<picture>https://kawe.su/upload/iblock/426/426d381ad2b892f9d0f0e6034082a2d5.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f63/f63b480ae223e639f2312dfc283b64ed.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Раппорт (Rapport) черный (Black line) KaWe</name>
 <description></description>
@@ -4600,10 +4581,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75504" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-fo-lede56-s-modulem-voronok-us-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>67537</price>
+<price>65107</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/ebc/ebc6a077301ea60d7c75c1d104211f84.jpg</picture>
+<picture>https://kawe.su/upload/iblock/bb2/bb2ff103b7473e9100ac81980a9fee99.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор FO LED/E56, с модулем воронок US, 3,5 V, KaWe</name>
 <description></description>
@@ -4612,10 +4593,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75505" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-ce56-s-modulem-voronok-us-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>61239</price>
+<price>59036</price>
 <currencyId>RUB</currencyId>
 <categoryId>2808</categoryId>
-<picture>https://kawe.su/upload/iblock/40c/40c4377212ebfb4e03129d3504d9bcbe.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7e8/7e82efd702ada11cb283e47512773696.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор C/E56, с модулем воронок US, 3,5 V, KaWe</name>
 <description></description>
@@ -4624,10 +4605,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75506" available="true">
 <url>https://kawe.su/catalog/diagnosticheskie-lornabory-kawe/medcenter-5000-nabor-ce56-us-35-v-kawe-germaniya/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>56978</price>
+<price>54928</price>
 <currencyId>RUB</currencyId>
-<categoryId>2807</categoryId>
-<picture>https://kawe.su/upload/iblock/277/2774936d140d18e2d67974b26cf31a5f.jpg</picture>
+<categoryId>2808</categoryId>
+<picture>https://kawe.su/upload/iblock/0e8/0e8c842d268e66ade5097747c1921c13.jpg</picture>
 <vendor>Kawe</vendor>
 <name>MedCenter® 5000 Набор C/E56, US, 3,5 V, KaWe</name>
 <description></description>
@@ -4636,10 +4617,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75507" available="true">
 <url>https://kawe.su/catalog/otoskopy-lor/nabor-voronok-odnorazovykh-d--25-mm-100sht-d-4-0-mm-v-korobke-kartonnoy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>547</price>
+<price>527</price>
 <currencyId>RUB</currencyId>
-<categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/ab0/ab0350b9d9020fb2042381885425a5f4.jpg</picture>
+<categoryId>3343</categoryId>
+<picture>https://kawe.su/upload/iblock/32f/32f0c9c6a00bcdd6cf473e1e31ff43a8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Набор  воронок одноразовых 100шт d = 4,0 мм в коробке картонной, KaWe</name>
 <description></description>
@@ -4648,10 +4629,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75508" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/kawe-piccolight-c-25-v-otoskop-lampochnyy-temno-siniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5557</price>
+<price>5357</price>
 <currencyId>RUB</currencyId>
-<categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/444/444f03e1d931f61ddae5b05d82027aca.jpg</picture>
+<categoryId>2799</categoryId>
+<picture>https://kawe.su/upload/iblock/ade/adedbe6c88bddf26c439c3b0069f13fe.jpg</picture>
 <vendor>Kawe</vendor>
 <name>PICCOLIGHT C 2,5 В Отоскоп лампочный темно-синий, KaWe </name>
 <description></description>
@@ -4660,10 +4641,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75509" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/kawe-piccolight-c-25-v-otoskop-lampochnyy-chernii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>5557</price>
+<price>5357</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/2b5/2b5b9218cf0c02e0948d3ca65357a469.jpg</picture>
+<picture>https://kawe.su/upload/iblock/9ab/9abf32e0981226964f6c663fd9d16aa5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>PICCOLIGHT C 2,5 В Отоскоп лампочный черный, KaWe</name>
 <description></description>
@@ -4672,10 +4653,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75510" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/otoskop-piccolight-fo-zeleniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7225</price>
+<price>6965</price>
 <currencyId>RUB</currencyId>
 <categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/583/583efe8a5a470cc9451fe2bf34fe2efa.jpg</picture>
+<picture>https://kawe.su/upload/iblock/e1e/e1e18684c9a2f4b24d7ef0b3d9448498.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Отоскоп PICCOLIGHT F.O. зеленый KaWe</name>
 <description></description>
@@ -4684,10 +4665,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75511" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/otoskop-piccolight-fo-goluboy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7225</price>
+<price>6965</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/473/473361b297eeebf2decf7eb0d03cb5b6.jpg</picture>
+<picture>https://kawe.su/upload/iblock/98c/98c42bb7b7c7ad292bcd68e31d46f922.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Отоскоп PICCOLIGHT F.O. голубой KaWe</name>
 <description></description>
@@ -4696,10 +4677,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75512" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/otoskop-piccolight-fo-temno-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7225</price>
+<price>6965</price>
 <currencyId>RUB</currencyId>
 <categoryId>2799</categoryId>
-<picture>https://kawe.su/upload/iblock/54e/54e1e5ed107fba5116a5a9993f5b9833.jpg</picture>
+<picture>https://kawe.su/upload/iblock/445/44514ac4e6c7dfa5c44dfb7585a4b1aa.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Отоскоп PICCOLIGHT F.O. темно-синий, KaWe</name>
 <description></description>
@@ -4708,10 +4689,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75513" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/otoskop-piccolight-fo-seriy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>7225</price>
+<price>6965</price>
 <currencyId>RUB</currencyId>
 <categoryId>2802</categoryId>
-<picture>https://kawe.su/upload/iblock/a6f/a6fbd21cbc4f3ec64f0d2ba97c8756d1.jpg</picture>
+<picture>https://kawe.su/upload/iblock/f03/f0339bc336288ef27f75c08e45665374.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Отоскоп PICCOLIGHT F.O. серый KaWe</name>
 <description></description>
@@ -4720,10 +4701,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75514" available="true">
 <url>https://kawe.su/catalog/fibroopticheskie-otoskopy/kawe-piccolight-fo-led-otoskop-fibroopticheskiy-temno-siniy-povyshennaya-yarkost-cherniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12893</price>
+<price>12429</price>
 <currencyId>RUB</currencyId>
-<categoryId>2802</categoryId>
-<picture>https://kawe.su/upload/iblock/f98/f98092b0cd4af71356f8c3ad1ef95078.jpg</picture>
+<categoryId>2800</categoryId>
+<picture>https://kawe.su/upload/iblock/4ee/4eee5a1acd1af2679712be4ee8a91cd6.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe PICCOLIGHT FO LED Отоскоп фиброоптический повышенная яркость черный</name>
 <description></description>
@@ -4732,10 +4713,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75515" available="true">
 <url>https://kawe.su/catalog/fibroopticheskie-otoskopy/kawe-piccolight-fo-led-otoskop-fibroopticheskiy-temno-siniy-povyshennaya-yarkost-temno-seriy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12893</price>
+<price>12429</price>
 <currencyId>RUB</currencyId>
-<categoryId>2801</categoryId>
-<picture>https://kawe.su/upload/iblock/b88/b88c6ae9cdfc18aa176315ba812922fa.jpg</picture>
+<categoryId>2802</categoryId>
+<picture>https://kawe.su/upload/iblock/abb/abb87e3168a397af37af56594fcf3722.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe PICCOLIGHT FO LED Отоскоп фиброоптический повышенная яркость серый</name>
 <description></description>
@@ -4744,10 +4725,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75516" available="true">
 <url>https://kawe.su/catalog/otoskopy-serii-piccolight/kawe-piccolight-fo-led-otoskop-fibroopticheskiy-chernyy-standartnaya-yarkost-seriy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>8002</price>
+<price>7714</price>
 <currencyId>RUB</currencyId>
-<categoryId>2802</categoryId>
-<picture>https://kawe.su/upload/iblock/b3f/b3f293c7978df012b2cff0923e11ab54.jpg</picture>
+<categoryId>2801</categoryId>
+<picture>https://kawe.su/upload/iblock/245/245cf0f4823859e32bd430b08749e740.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe PICCOLIGHT FO LED Отоскоп фиброоптический стандартная яркость серый</name>
 <description></description>
@@ -4756,10 +4737,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75517" available="true">
 <url>https://kawe.su/catalog/fibroopticheskie-otoskopy/kawe-piccolight-fo-led-otoskop-fibroopticheskiy-chernyy-standartnaya-yarkost-temno-siniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>8002</price>
+<price>7714</price>
 <currencyId>RUB</currencyId>
-<categoryId>2802</categoryId>
-<picture>https://kawe.su/upload/iblock/d57/d576d409b0a492cc314e137dd42e7bb4.jpg</picture>
+<categoryId>2800</categoryId>
+<picture>https://kawe.su/upload/iblock/c2c/c2cac3610a652475f4748190f33fd524.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe PICCOLIGHT FO LED Отоскоп фиброоптический стандартная яркость темно-синий</name>
 <description></description>
@@ -4768,10 +4749,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75518" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/laringoskop-s-naborom-klinkov-klassicheskiy-macintosh-1-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>14553</price>
+<price>14030</price>
 <currencyId>RUB</currencyId>
-<categoryId>2939</categoryId>
-<picture>https://kawe.su/upload/iblock/dd6/dd6ff5716d8c0dc9c3bf65a806cea00c.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/f59/f59040070d5af1c26c554f8fcdb72054.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для взрослых (на батарейках, лампочка вакумная)</name>
 <description></description>
@@ -4780,10 +4761,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75519" available="true">
 <url>https://kawe.su/catalog/laringoskop-s-naborom-klinkov/laringoskop-s-naborom-klinkov-klassicheskiy-macintosh-2-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>28555</price>
+<price>27527</price>
 <currencyId>RUB</currencyId>
-<categoryId>2939</categoryId>
-<picture>https://kawe.su/upload/iblock/3fd/3fd5c0b617e5692afedb38a0de1a826e.jpg</picture>
+<categoryId>2871</categoryId>
+<picture>https://kawe.su/upload/iblock/831/8315c16e2ca281b7df2535872c78bf48.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Ларингоскоп с набором клинков для взрослых (на батарейках, лампочка ксенон)</name>
 <description></description>
@@ -4792,10 +4773,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75520" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-meditsinskiy-diagnosticheskiy-dialight-xl-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>3779</price>
+<price>3643</price>
 <currencyId>RUB</currencyId>
-<categoryId>2825</categoryId>
-<picture>https://kawe.su/upload/iblock/538/53882d661d29e42b4a8d99c76a7c10dd.jpg</picture>
+<categoryId>2826</categoryId>
+<picture>https://kawe.su/upload/iblock/f81/f816cb9052c516b11795ce434b4d0be0.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик медицинский диагностический DIALIGHT XL синий, KaWe</name>
 <description></description>
@@ -4804,10 +4785,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75521" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-cliplight-kawe-diagnosticheskiy-krasniy-klipsa-s-vklyuchatelem/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>712</price>
+<price>686</price>
 <currencyId>RUB</currencyId>
-<categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/c25/c2541fa562f4301a525f3438c719d38c.jpg</picture>
+<categoryId>2825</categoryId>
+<picture>https://kawe.su/upload/iblock/d38/d38e2d1e40506fe42f84202c18f1c161.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик CLIPLIGHT KaWe диагностический красный, клипса с включателем</name>
 <description></description>
@@ -4816,10 +4797,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75522" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-cliplight-kawe-diagnosticheskiy-siniy-klipsa-s-vklyuchatelem/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>712</price>
+<price>686</price>
 <currencyId>RUB</currencyId>
 <categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/f40/f408bccc57fb36d0f47c8c145795c93c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/c54/c5448e78285f068278869c0fbaea8e13.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик CLIPLIGHT KaWe диагностический синий, клипса с включателем</name>
 <description></description>
@@ -4828,10 +4809,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75523" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-cliplight-kawe-diagnosticheskiy-seriy-klipsa-s-vklyuchatelem/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>712</price>
+<price>686</price>
 <currencyId>RUB</currencyId>
 <categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/19d/19d66ca81a8fa1284d7ea2b577196cec.jpg</picture>
+<picture>https://kawe.su/upload/iblock/033/033992222bc37445782e491b596e6445.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик CLIPLIGHT KaWe диагностический серый, клипса с включателем</name>
 <description></description>
@@ -4840,10 +4821,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75524" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-cliplight-kawe-diagnosticheskiy-jeltiy-klipsa-s-vklyuchatelem/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>712</price>
+<price>686</price>
 <currencyId>RUB</currencyId>
-<categoryId>2825</categoryId>
-<picture>https://kawe.su/upload/iblock/9ed/9ed8a7259ce385a24514f229c39dec87.jpg</picture>
+<categoryId>2826</categoryId>
+<picture>https://kawe.su/upload/iblock/86c/86cbea3db769ce54d846829f44ae2dd6.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик CLIPLIGHT KaWe диагностический желтый, клипса с включателем</name>
 <description></description>
@@ -4852,10 +4833,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75525" available="true">
 <url>https://kawe.su/catalog/diagnosticheckie-fonariki/fonarik-cliplight-kawe-diagnosticheskiy-tsvetnoy-klipsa-s-vklyuchatelem/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>712</price>
+<price>686</price>
 <currencyId>RUB</currencyId>
 <categoryId>2826</categoryId>
-<picture>https://kawe.su/upload/iblock/c2b/c2b2720ad005b544557fa47e2b55f4bb.jpg</picture>
+<picture>https://kawe.su/upload/iblock/c85/c858183132bf5b059a977903384d1fa7.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Фонарик CLIPLIGHT KaWe диагностический фиолетовый, клипса с включателем</name>
 <description></description>
@@ -4864,10 +4845,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75526" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy/oftalmoskop-pikkolayt-ye50-seriy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>10003</price>
+<price>9643</price>
 <currencyId>RUB</currencyId>
-<categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/e9a/e9a2b623da89ffd9967fac2a151c0034.jpg</picture>
+<categoryId>2827</categoryId>
+<picture>https://kawe.su/upload/iblock/15a/15a5815bfb26736d20eee59d61dc2bf5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт Е50 серый KaWe</name>
 <description></description>
@@ -4876,10 +4857,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75527" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy/oftalmoskop-pikkolayt-ye50-temno-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>10003</price>
+<price>9643</price>
 <currencyId>RUB</currencyId>
 <categoryId>2827</categoryId>
-<picture>https://kawe.su/upload/iblock/7c4/7c4aa1336d61c1f28e91bf3be3ad03db.jpg</picture>
+<picture>https://kawe.su/upload/iblock/14f/14fe936a05273249e86c2d4dd940966b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт Е50 темно-синий KaWe</name>
 <description></description>
@@ -4888,10 +4869,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75528" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-pikkolayt-e56-night-usa-versiya-siniy-filtr-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13337</price>
+<price>12857</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/e8a/e8ad5315e3a90d269cb3ef5abb566100.jpg</picture>
+<picture>https://kawe.su/upload/iblock/208/208c0face49e2d8667fa10248412301b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт E56, USA-версия, синий фильтр, KaWe</name>
 <description></description>
@@ -4900,10 +4881,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75529" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-pikkolayt-e56-temno-siniy-eu-versiya-zeleniy-filtr-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12448</price>
+<price>12000</price>
 <currencyId>RUB</currencyId>
-<categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/660/6601b976870791b58b07de19d129bd42.jpg</picture>
+<categoryId>2827</categoryId>
+<picture>https://kawe.su/upload/iblock/597/597f34da3ef4e4efde4c927c6a581e34.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт E56 темно-синий, EU-версия, зеленый фильтр, KaWe</name>
 <description></description>
@@ -4912,10 +4893,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75530" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-pikkolayt-e56-seriy-eu-versiya-zeleniy-filtr-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12448</price>
+<price>12000</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/0b3/0b3b5b167c98bdf941a3373eb8f52a4a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/3ee/3ee2564d910eb2e97d176103a447542e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт E56 серый, EU-версия, зеленый фильтр, KaWe</name>
 <description></description>
@@ -4924,10 +4905,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75531" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-pikkolayt-e56-stone-usa-versiya-siniy-filtr-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13337</price>
+<price>12857</price>
 <currencyId>RUB</currencyId>
-<categoryId>2827</categoryId>
-<picture>https://kawe.su/upload/iblock/c64/c640e3325734441f9b377d2c04144cbd.jpg</picture>
+<categoryId>2828</categoryId>
+<picture>https://kawe.su/upload/iblock/957/957dd9e7c36cb454f201a49f9fdbad72.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт E56 stone, USA-версия, синий фильтр, KaWe</name>
 <description></description>
@@ -4936,10 +4917,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75532" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-pikkolayt-e56-sky-usa-versiya-siniy-filtr-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13337</price>
+<price>12857</price>
 <currencyId>RUB</currencyId>
 <categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/79e/79e678366bf9399018f5d634d0949bc4.jpg</picture>
+<picture>https://kawe.su/upload/iblock/dd8/dd8b2f69b1013066bbce9d7fb233e2f3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп Пикколайт E56 sky, USA-версия, синий фильтр, KaWe</name>
 <description></description>
@@ -4948,10 +4929,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75533" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-karmannyy-piccolight-e-56-s-led-lampoy-25v-stone-seryy-sumochka-v-komplekte-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13337</price>
+<price>12857</price>
 <currencyId>RUB</currencyId>
-<categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/747/74730e25367b6402700913be386355d5.jpg</picture>
+<categoryId>2827</categoryId>
+<picture>https://kawe.su/upload/iblock/49b/49b1993f6d7a3e5fabea50cb85a697e6.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп карманный PICCOLIGHT E 56 (с ЛЭД лампой 2,5В) stone (серый), сумочка в комплекте, KaWe</name>
 <description></description>
@@ -4960,10 +4941,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75534" available="true">
 <url>https://kawe.su/catalog/oftalmoskopy-kawe/oftalmoskop-karmannyy-piccolight-e-56-s-led-lampoy-25v-sky-temno-siniy-sumochka-v-komplekte-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>13337</price>
+<price>12857</price>
 <currencyId>RUB</currencyId>
-<categoryId>2828</categoryId>
-<picture>https://kawe.su/upload/iblock/5b4/5b47dd84caf9a9ade6087c79873359e8.jpg</picture>
+<categoryId>2827</categoryId>
+<picture>https://kawe.su/upload/iblock/cb2/cb2aa4ff3353905a1bfafa42a0e41f75.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Офтальмоскоп карманный PICCOLIGHT E 56 (с ЛЭД лампой 2,5В) sky (темно-синий), сумочка в комплекте, KaWe</name>
 <description></description>
@@ -4972,10 +4953,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75537" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/kawe-h-800-lyed-nalobnyy-osvetitel-s-akkumulyatorom-kreplenie-na-poyas/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>102249</price>
+<price>98570</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/916/91650d61b6a3490a0e46a6d052be1483.jpg</picture>
+<picture>https://kawe.su/upload/iblock/0bf/0bfc8e725b8fdd44def4db0343e61b5b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe H-800 LЕD Налобный осветитель с аккумулятором, крепление на пояс</name>
 <description></description>
@@ -4984,10 +4965,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75538" available="true">
 <url>https://kawe.su/catalog/nalobnye-osvetiteli-kawe-germaniya/kawe-h-800-lyed-nalobnyy-osvetitel-s-akkumulyatorom-kreplenie-na-ogolove/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>97804</price>
+<price>94285</price>
 <currencyId>RUB</currencyId>
 <categoryId>2870</categoryId>
-<picture>https://kawe.su/upload/iblock/f93/f93f9ef7b8613c60e9dc29691058c9d6.jpg</picture>
+<picture>https://kawe.su/upload/iblock/1a2/1a2900d5c60022eeba0e274988380a1f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>KaWe H-800 LЕD Налобный осветитель с аккумулятором, крепление на оголовье</name>
 <description></description>
@@ -4996,10 +4977,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75539" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-planet-air-kardiolodzhi-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>11003</price>
+<price>10607</price>
 <currencyId>RUB</currencyId>
 <categoryId>2855</categoryId>
-<picture>https://kawe.su/upload/iblock/db4/db4ebfb2d9de43b29dcac2f71d123a0a.jpg</picture>
+<picture>https://kawe.su/upload/iblock/81f/81f7b3e872dc18528618d7ab59d83ab1.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп ПЛАНЕТ Air Кардиолоджи, KaWe</name>
 <description></description>
@@ -5008,10 +4989,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75540" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-dubl-krasniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>593</price>
+<price>572</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/8be/8bec70b0f3fa6b5a5928e6384be6dc79.jpg</picture>
+<categoryId>2853</categoryId>
+<picture>https://kawe.su/upload/iblock/4e0/4e0f3400f9721c9a556b4f3ba08e61b9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Дубль красный KaWe</name>
 <description></description>
@@ -5020,10 +5001,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75541" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-dubl-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>593</price>
+<price>572</price>
 <currencyId>RUB</currencyId>
-<categoryId>2853</categoryId>
-<picture>https://kawe.su/upload/iblock/d48/d48794c8e4e12d8cd11135945e6b5b0d.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/8c2/8c2347e81193fabed0141c84808c134e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Дубль синий, KaWe</name>
 <description></description>
@@ -5032,10 +5013,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75542" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-top-kardiolodzhi-bordoviy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>12226</price>
+<price>11786</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/37d/37d705b6a64980186e4934bfe66f26be.jpg</picture>
+<categoryId>2855</categoryId>
+<picture>https://kawe.su/upload/iblock/bcb/bcbf2d05f373ad2f19a238e484c51d61.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп кардиологический Топ-Кардиолоджи бордовый, KaWe</name>
 <description></description>
@@ -5044,10 +5025,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75543" available="true">
 <url>https://kawe.su/catalog/stetoskopy-kawe/stetofonendoskop-profi-kardiolodzhi-bordoviy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>10336</price>
+<price>9965</price>
 <currencyId>RUB</currencyId>
-<categoryId>2855</categoryId>
-<picture>https://kawe.su/upload/iblock/964/964e5b03639a523b15c4c5ca745234a0.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/670/67006b27ddab147444c9c33dcf804f39.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп кардиологический Профи-Кардиолоджи бордовый KaWe</name>
 <description></description>
@@ -5056,10 +5037,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75544" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-layt-kawe-detskiy-cherniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/22b/22b3df18ec29be8070013a6b6a9ce8fc.jpg</picture>
+<categoryId>2851</categoryId>
+<picture>https://kawe.su/upload/iblock/155/155dccff3480b538119ea08e19f60a10.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж ЛАЙТ KaWe детский черный</name>
 <description></description>
@@ -5068,10 +5049,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75545" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-layt-kawe-detskiy-siniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
 <categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/03d/03d069757f6f54334bbc894a12066e2c.jpg</picture>
+<picture>https://kawe.su/upload/iblock/8ce/8ced5fcecc98392326723c36c1760890.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж ЛАЙТ KaWe детский синий</name>
 <description></description>
@@ -5080,10 +5061,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75546" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-layt-kawe-detskiy-zeleniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
-<categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/9c0/9c045541175f6b7aad6b9e0159dcea53.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/2a4/2a40ff24a5179b7611f34a7ed261519f.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж ЛАЙТ KaWe детский зеленый</name>
 <description></description>
@@ -5092,10 +5073,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75547" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-layt-kawe-detskiy-fioletoviy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/7c6/7c6f30e64ce9e7b50cacae7327d6d7c5.jpg</picture>
+<categoryId>2851</categoryId>
+<picture>https://kawe.su/upload/iblock/e90/e908d789cbd6aa06cb64ac9f047475e9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж ЛАЙТ KaWe детский фиолетовый</name>
 <description></description>
@@ -5104,10 +5085,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75548" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-layt-kawe-detskiy-seriy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
 <categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/6a2/6a2568af4ff8929b00978c0ab43e416f.jpg</picture>
+<picture>https://kawe.su/upload/iblock/6f7/6f7511df6f3257d115170d313be9c058.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж ЛАЙТ KaWe детский серый</name>
 <description></description>
@@ -5116,10 +5097,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75549" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya-fioletovii/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4557</price>
+<price>4394</price>
 <currencyId>RUB</currencyId>
 <categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/326/326b1e04ceb4cc0622dad0846ee668b6.jpg</picture>
+<picture>https://kawe.su/upload/iblock/1d0/1d08bfa0a8b2f4d3184bff03aeda6c43.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж KaWe детский фиолетовый</name>
 <description></description>
@@ -5128,10 +5109,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75550" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya-cherniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4557</price>
+<price>4394</price>
 <currencyId>RUB</currencyId>
 <categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/571/57199686271a590b8e60eae3ba13765d.jpg</picture>
+<picture>https://kawe.su/upload/iblock/bd1/bd1f8dfb9b8e607d9779dac2fbd3f93c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж KaWe детский черный</name>
 <description></description>
@@ -5140,10 +5121,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75551" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya-siniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4557</price>
+<price>4394</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/c50/c5043f5b135a69c04a3dae149644e4cc.jpg</picture>
+<categoryId>2851</categoryId>
+<picture>https://kawe.su/upload/iblock/0fd/0fd122eee1685ba631ea3925c5bb61be.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж KaWe детский синий</name>
 <description></description>
@@ -5152,10 +5133,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75552" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya-bordoviy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4557</price>
+<price>4394</price>
 <currencyId>RUB</currencyId>
 <categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/e03/e03922c6fb517f5be41b4f31dee13699.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d88/d886ef95043c2faa493002b41085c60e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж KaWe детский бордовый</name>
 <description></description>
@@ -5164,10 +5145,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75553" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya-seriy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4557</price>
+<price>4394</price>
 <currencyId>RUB</currencyId>
-<categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/78b/78b2edaf84faccfb70925077ea6b2822.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/94d/94d02c430beda083df1fa15f86e63df8.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж KaWe детский серый</name>
 <description></description>
@@ -5176,10 +5157,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75554" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-layt-seriy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2667</price>
+<price>2571</price>
 <currencyId>RUB</currencyId>
 <categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/10a/10a804de6b877b39d8bd9a6c27acbe72.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5c6/5c60818dc2a372ae8ac73d4622aaabca.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж Лайт серый, KaWe</name>
 <description></description>
@@ -5188,10 +5169,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75555" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-layt-fioletoviy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2667</price>
+<price>2571</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/974/97441391b982a02a784614a1490e5e7b.jpg</picture>
+<categoryId>2850</categoryId>
+<picture>https://kawe.su/upload/iblock/b44/b4487508402de77462e5d94346f6334e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж Лайт фиолетовый, KaWe</name>
 <description></description>
@@ -5200,10 +5181,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75556" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-layt-zeleniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2667</price>
+<price>2571</price>
 <currencyId>RUB</currencyId>
-<categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/01e/01e62f74ab44a8244871d6835b3f453b.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/556/55640ca283c13f852e51da76bda36f74.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж Лайт зеленый, KaWe</name>
 <description></description>
@@ -5212,10 +5193,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75557" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-layt-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2667</price>
+<price>2571</price>
 <currencyId>RUB</currencyId>
 <categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/d4d/d4d19d84f9c5e7e39f92bb021043f91d.jpg</picture>
+<picture>https://kawe.su/upload/iblock/5c6/5c6d0a83443837806e1f6aa36d46d3f9.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж Лайт синий, KaWe</name>
 <description></description>
@@ -5224,10 +5205,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75558" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-layt-cherniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2667</price>
+<price>2571</price>
 <currencyId>RUB</currencyId>
 <categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/f15/f15e4c00160d0e25a8be100d45cf74c3.jpg</picture>
+<picture>https://kawe.su/upload/iblock/468/468c0e32a11bdb23d19664e4bc2dad04.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж Лайт черный, KaWe</name>
 <description></description>
@@ -5236,10 +5217,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75559" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-bordoviy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/d34/d3445284552064a9bb82f48c9b77151e.jpg</picture>
+<categoryId>2850</categoryId>
+<picture>https://kawe.su/upload/iblock/6af/6afbbe9bd100013ecdb52d387f151b9e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж бордовый KaWe</name>
 <description></description>
@@ -5248,10 +5229,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75560" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-fioletoviy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
-<categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/04c/04c682a30b1c66793d823529545df72a.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/c42/c4240b5882cb9b13b2631cb77df7b77b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж фиолетовый KaWe</name>
 <description></description>
@@ -5260,10 +5241,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75561" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-zeleniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
 <categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/996/99605ccb6a0dd598128c4a18c430b506.jpg</picture>
+<picture>https://kawe.su/upload/iblock/07b/07b6ac1cfd1afa88831bca0e0108526d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж зеленый KaWe</name>
 <description></description>
@@ -5272,10 +5253,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75562" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-siniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
 <categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/1b2/1b2d255c86db3af6a9c555f43cbcb7ee.jpg</picture>
+<picture>https://kawe.su/upload/iblock/70d/70d9380467faa90bea4825ff7c6c6d23.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж синий KaWe</name>
 <description></description>
@@ -5284,10 +5265,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75563" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-cherniy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
 <categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/f00/f00c6cab96d8fe1e1655177d7b39dee7.jpg</picture>
+<picture>https://kawe.su/upload/iblock/dd9/dd956b58a9c54ec306fad94d5165187e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж черный KaWe</name>
 <description></description>
@@ -5296,10 +5277,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75564" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-standart-prestizh-kawe-germaniya/stetofonendoskop-standart-prestizh-seriy-kawe/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4668</price>
+<price>4501</price>
 <currencyId>RUB</currencyId>
 <categoryId>2850</categoryId>
-<picture>https://kawe.su/upload/iblock/f8c/f8c2af8945ba137f732734577e9994e3.jpg</picture>
+<picture>https://kawe.su/upload/iblock/2aa/2aa467ab1059229cc5e1332444517559.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Стандарт-Престиж серый KaWe</name>
 <description></description>
@@ -5308,10 +5289,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75565" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-layt-kawe-neonatalnyy-krasniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
 <categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/e8a/e8a21fa007d2103c23e1b396ec49a58d.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7e7/7e770782ef29afa67cad8c6106874b40.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж ЛАЙТ KaWe неонатальный красный</name>
 <description></description>
@@ -5320,10 +5301,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75566" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-layt-kawe-neonatalnyy-seriy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/e0c/e0c752930b37efb64be2f432ca32fa4e.jpg</picture>
+<categoryId>2852</categoryId>
+<picture>https://kawe.su/upload/iblock/3fd/3fd704b1803e11859a05bd5f73c27c0b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж ЛАЙТ KaWe неонатальный серый</name>
 <description></description>
@@ -5332,10 +5313,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75567" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-layt-kawe-neonatalnyy-siniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
-<categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/a1a/a1a67a0a71daa84f0868aae669f7589f.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/c8e/c8e2dadf1777b768cc36873e657f8ed5.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж ЛАЙТ KaWe неонатальный синий</name>
 <description></description>
@@ -5344,10 +5325,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75568" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-layt-kawe-neonatalnyy-zeleniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
 <categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/006/006112394bb042a4163616e1707dbfc3.jpg</picture>
+<picture>https://kawe.su/upload/iblock/ac6/ac6ddf3e95e758f7fcbb16154993c0cf.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж ЛАЙТ KaWe неонатальный зеленый</name>
 <description></description>
@@ -5356,10 +5337,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75569" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-layt-kawe-neonatalnyy-fioletoviy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>2556</price>
+<price>2464</price>
 <currencyId>RUB</currencyId>
-<categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/419/419e981933ab0c12f882e12051d65378.jpg</picture>
+<categoryId>2852</categoryId>
+<picture>https://kawe.su/upload/iblock/c0e/c0e69c01724b2512c0a2ec3b473f3c6c.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж ЛАЙТ KaWe неонатальный фиолетовый</name>
 <description></description>
@@ -5368,10 +5349,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75570" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya/stetofonendoskop-kinder-prestizh-kawe-detskiy-germaniya-zeleniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4557</price>
+<price>4394</price>
 <currencyId>RUB</currencyId>
 <categoryId>2851</categoryId>
-<picture>https://kawe.su/upload/iblock/8fe/8fee4cdf7bde025e407b445e859c7369.jpg</picture>
+<picture>https://kawe.su/upload/iblock/376/3768359a82eaae2757c2ec170a2e259e.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Киндер-Престиж KaWe детский зеленый</name>
 <description></description>
@@ -5380,10 +5361,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75571" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-krasniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4446</price>
+<price>4286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/ec4/ec4d2a03b2391390fb6cea815f9f1639.jpg</picture>
+<picture>https://kawe.su/upload/iblock/750/75081763aeecff10dca2e5ae0eb46d5b.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж KaWe неонатальный красный</name>
 <description></description>
@@ -5392,10 +5373,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75572" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-siniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4446</price>
+<price>4286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/921/9210d8bb8736cbd36e72cae2496ed430.jpg</picture>
+<picture>https://kawe.su/upload/iblock/7c2/7c27d71b2f0364cae4c71edd3beb93b3.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж KaWe неонатальный синий</name>
 <description></description>
@@ -5404,10 +5385,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75573" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-zeleniy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4446</price>
+<price>4286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2847</categoryId>
-<picture>https://kawe.su/upload/iblock/305/3056b487fd6af55c6e8381770d7b31ba.jpg</picture>
+<picture>https://kawe.su/upload/iblock/d19/d197d0d86f5d192bd3e5b4df7853e97a.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж KaWe неонатальный зеленый</name>
 <description></description>
@@ -5416,10 +5397,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75574" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-fioletoviy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4446</price>
+<price>4286</price>
 <currencyId>RUB</currencyId>
-<categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/99c/99cb4cf4b136989a2acd678598aca00f.jpg</picture>
+<categoryId>2847</categoryId>
+<picture>https://kawe.su/upload/iblock/0b4/0b4bfc343b9db6772ed2a37e5b415e2d.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж KaWe неонатальный фиолетовый</name>
 <description></description>
@@ -5428,10 +5409,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75575" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-bordoviy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4446</price>
+<price>4286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/00b/00b912b08e66dffc6d541582d5a25e5b.jpg</picture>
+<picture>https://kawe.su/upload/iblock/eaf/eaff777b97d2b0f8b8598ca2a911c5de.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж KaWe неонатальный бордовый</name>
 <description></description>
@@ -5440,10 +5421,10 @@ echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 </offer>
 <offer id="75576" available="true">
 <url>https://kawe.su/catalog/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-germaniya/stetofonendoskop-bebi-prestizh-kawe-neonatalnyy-seriy/?r1=<?=$strReferer1; ?>&amp;r2=<?=$strReferer2; ?></url>
-<price>4446</price>
+<price>4286</price>
 <currencyId>RUB</currencyId>
 <categoryId>2852</categoryId>
-<picture>https://kawe.su/upload/iblock/904/904d84127707d5b18152ff4b6a022b3e.jpg</picture>
+<picture>https://kawe.su/upload/iblock/162/162e0cd9803b9b7cb250942525a78cdf.jpg</picture>
 <vendor>Kawe</vendor>
 <name>Стетофонендоскоп Бэби-Престиж KaWe неонатальный серый</name>
 <description></description>

@@ -151,7 +151,5 @@ $APPLICATION->IncludeComponent(
 <!-- /Yandex.Metrika counter -->
 
 
-
-
 </body>
 </html>
