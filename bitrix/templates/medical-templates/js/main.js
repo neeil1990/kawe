@@ -89,5 +89,10 @@ $(function() {
         $(this).toggleClass("active"), $(".header__contact").toggleClass("active")
     }), $("body").innerWidth() > 752 && $(".tabs__nav").eq(0).addClass("active"), $(".tabs__nav").click(function(e) {
         e.preventDefault(), $(this).addClass("active").siblings(".tabs__nav").removeClass("active")
-    })
+    });
+
+    $('[data-text]').each(function(i, el){
+        let self = $(el);
+        self.html(self.data('text'));
+    });
 });

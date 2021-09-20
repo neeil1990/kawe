@@ -7,6 +7,7 @@
 <ul class="catalog__menu">
 <?
 $previousLevel = 0;
+
 foreach($arResult as $key => $arItem):
 ?>
 	<?if ($previousLevel && $arItem["DEPTH_LEVEL"] < $previousLevel):?>
@@ -15,14 +16,24 @@ foreach($arResult as $key => $arItem):
 
 	<?if ($arItem["IS_PARENT"]):?>
 			<li<?if($arItem["CHILD_SELECTED"] !== true):?> <?endif?> class="catalog__item">
-				<a href="<?=$arItem["LINK"]?>" class="catalog__link"><?=$arItem["TEXT"]?></a>
-				<i class="catalog__submenu_toggle icon-arrow_down"></i>
+
+                <? if(in_array($arItem["PARAMS"]["ID"], $arResult['PROPERTIES']['UF_DELETE_INDEX'])): ?>
+                    <a href="<?=$arItem["LINK"]?>" class="catalog__link" data-text="<?=$arItem["TEXT"]?>"></a>
+                <? else: ?>
+                    <a href="<?=$arItem["LINK"]?>" class="catalog__link"><?=$arItem["TEXT"]?></a>
+                <? endif; ?>
+
+                <i class="catalog__submenu_toggle icon-arrow_down"></i>
 				<ul class="catalog__submenu">
 	<?else:?>
 
 		<?if ($arItem["PERMISSION"] > "D"):?>
 				<li <?if($arItem["DEPTH_LEVEL"] == 1):?>class="catalog__item"<?endif;?>>
-					<a href="<?=$arItem["LINK"]?>" class="<?if($arItem["DEPTH_LEVEL"] > 1):?>catalog__submenu_link<?else:?>catalog__link<?endif;?>"><?=$arItem["TEXT"]?></a>
+                    <? if(in_array($arItem["PARAMS"]["ID"], $arResult['PROPERTIES']['UF_DELETE_INDEX'])): ?>
+                        <a href="<?=$arItem["LINK"]?>" class="<?if($arItem["DEPTH_LEVEL"] > 1):?>catalog__submenu_link<?else:?>catalog__link<?endif;?>" data-text="<?=$arItem["TEXT"]?>"></a>
+                    <? else: ?>
+                        <a href="<?=$arItem["LINK"]?>" class="<?if($arItem["DEPTH_LEVEL"] > 1):?>catalog__submenu_link<?else:?>catalog__link<?endif;?>"><?=$arItem["TEXT"]?></a>
+                    <? endif; ?>
 				</li>
 		<?endif?>
 

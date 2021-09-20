@@ -2,6 +2,11 @@
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 	die();
 
+$page = $APPLICATION->GetCurPage();
+$code = explode('/', $page);
+$dbRes = CIBlockSection::GetList(array(), ["IBLOCK_ID" => IBLOCK_CATALOG, "CODE" => $code[2]], false, array("ID", "UF_*"));
+if ($arCurSection = $dbRes->Fetch())
+	$arResult['PROPERTIES'] = $arCurSection;
 //determine if child selected
 
 $bWasSelected = false;
