@@ -14,6 +14,12 @@ use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 
 $this->setFrameMode(true);
+
+if($_REQUEST['TEMPLATE_THEME'])
+    $_SESSION['TEMPLATE_THEME'] = $_REQUEST['TEMPLATE_THEME'];
+elseif(empty($_REQUEST['TEMPLATE_THEME']) && empty($_SESSION['TEMPLATE_THEME']))
+    $_SESSION['TEMPLATE_THEME'] = ($arParams['SECTIONS_VIEW_MODE'] == 'LINE') ? 'list' : '.default';
+
 $arResult["VARIABLES"]["SECTION_CODE"] = str_replace(' ', '-', $arResult["VARIABLES"]["SECTION_CODE"]);
 ?>
 

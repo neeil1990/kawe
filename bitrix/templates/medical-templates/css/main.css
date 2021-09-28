@@ -57,7 +57,9 @@ ol,ul
 
 
 
-.catalog-text ul{
+.catalog-text ul,
+.goods__text ul
+{
     list-style: unset;
     margin-left: 15px;
 }
