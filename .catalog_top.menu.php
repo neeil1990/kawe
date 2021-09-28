@@ -2,7 +2,7 @@
 
 global $APPLICATION;
 $aMenuLinksExt = $APPLICATION->IncludeComponent(
-    "bitrix:menu.sections",
+    "nbrains:menu.sections",
     "",
     array(
         "CACHE_TIME" => "36000000",

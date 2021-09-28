@@ -50,7 +50,10 @@ $arSectionDeleteParams = array("CONFIRM" => GetMessage('CT_BCSL_ELEMENT_DELETE_C
 ?>
 
 <div class="categories">
-	<? foreach($arResult['SECTIONS'] as $section):?>
+	<? foreach($arResult['SECTIONS'] as $section):
+        if($section['UF_HIDE_SECTION'])
+            continue;
+        ?>
 	<a href="<?=$section['SECTION_PAGE_URL']?>" class="categories__item">
 		<span class="categories__item_wrapper">
 			<span class="categories__img"><img src="<?=$section['PICTURE']['SRC']?>" alt="categories"></span>
