@@ -32,18 +32,6 @@ $arResult["VARIABLES"]["SECTION_CODE"] = str_replace(' ', '-', $arResult["VARIAB
 	<?
 	}
 
-	// Скрыть раздел с сайта
-	if($arSection['UF_HIDE_SECTION']){
-        \Bitrix\Iblock\Component\Tools::process404(
-            $arParams['MESSAGE_404'],
-            true,
-            $arParams['SET_STATUS_404'],
-            $arParams['SHOW_404'],
-            $arParams['FILE_404']
-        );
-    }
-
-
 $APPLICATION->IncludeComponent(
 	"bitrix:catalog.section.list",
 	"",

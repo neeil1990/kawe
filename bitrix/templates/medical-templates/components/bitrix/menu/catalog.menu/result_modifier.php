@@ -13,19 +13,8 @@ $bWasSelected = false;
 $arParents = array();
 $depth = 1;
 
-$one = null;
 foreach($arResult as $i => $arMenu)
 {
-	if($arMenu['DEPTH_LEVEL'] > $one && !is_null($one))
-		unset($arResult[$i]);
-	else
-		$one = null;
-
-	if($arMenu['PARAMS']['HIDE_SECTION']){
-		$one = $arMenu['DEPTH_LEVEL'];
-		unset($arResult[$i]);
-	}
-
 	$depth = $arMenu['DEPTH_LEVEL'];
 
 	if($arMenu['IS_PARENT'] == true)
