@@ -131,7 +131,13 @@ $ElementID = $APPLICATION->IncludeComponent(
 		'SHOW_BASIS_PRICE' => (isset($arParams['DETAIL_SHOW_BASIS_PRICE']) ? $arParams['DETAIL_SHOW_BASIS_PRICE'] : 'Y')
 	),
 	$component
-);?><?
+);
+
+if($elementData = CIBlockElement::GetByID($ElementID)->GetNext())
+	$APPLICATION->AddChainItem($elementData['NAME']);
+?>
+
+<?
 $GLOBALS["CATALOG_CURRENT_ELEMENT_ID"] = $ElementID;
 unset($basketAction);
 

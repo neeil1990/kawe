@@ -13,7 +13,7 @@
 $this->setFrameMode(true);
 ?>
 
-	<h1 class="title"><?=htmlspecialchars_decode($arResult['NAME'])?></h1>
+	<h1 class="title"><?=htmlspecialchars_decode($arResult['META_TAGS']['TITLE'])?></h1>
 	<div class="cart">
 
 		<div class="cart__gallery">

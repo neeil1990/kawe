@@ -18,7 +18,7 @@ if(empty($arResult['ITEMS']))
 
 ?>
 		<div class="goods__list goods__list-2">
-			<? foreach($arResult['ITEMS'] as $item):?>
+			<? foreach($arResult['ITEMS'] as $item): ?>
 			<div class="goods__item goods__item_list">
 				<?if($item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]):?>
 					<div class="goods__alert">-<?=$item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]?>%</div>
@@ -27,7 +27,7 @@ if(empty($arResult['ITEMS']))
 					<a href="<?=$item['DETAIL_PAGE_URL'];?>"><img src="<?=$item['PREVIEW_PICTURE']['SRC']?>" alt="<?=$item['NAME']?>"></a>
 				</div>
 				<div class="goods__content">
-					<a href="<?=$item['DETAIL_PAGE_URL'];?>" class="goods__name"><?=$item['NAME']?></a>
+					<a href="<?=$item['DETAIL_PAGE_URL'];?>" class="goods__name"><?=$item['IPROPERTY_VALUES']['ELEMENT_PAGE_TITLE']?></a>
 					<div class="goods__text">
 						<?=$item['PREVIEW_TEXT']?>
 					</div>
