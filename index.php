@@ -1,6 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetPageProperty("description", "Инструменты и приборы KAWE (КаВе) от производителя - интернет магазин 8-800-551-90-39 Звоните! Медицинское оборудование с доставкой по РФ");
+$APPLICATION->SetPageProperty("description", "Инструменты и приборы KAWE (КаВе) от производителя - интернет магазин. Звоните! Медицинское оборудование с доставкой по РФ");
 $APPLICATION->SetPageProperty("title", "Инструменты и приборы KAWE (КаВе) от производителя - интернет магазин с доставкой по РФ");
 $APPLICATION->SetTitle("KAWE - поставки медицинской техники от производителя по всей России");
 ?><?$APPLICATION->IncludeComponent(

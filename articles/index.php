@@ -2,7 +2,7 @@
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Статьи</h1>");
 $APPLICATION->SetPageProperty("title", "Статьи - магазин медицинской техники KaWe");
-$APPLICATION->SetPageProperty("description", "Статьи - интернет магазин медицинской техники 8-800-551-90-39 Звоните! Низкие цены, доставка по России");
+$APPLICATION->SetPageProperty("description", "Статьи - интернет магазин медицинской техники. Звоните! Низкие цены, доставка по России");
 $APPLICATION->SetTitle("Статьи");
 ?>
 
