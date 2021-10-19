@@ -135,6 +135,7 @@ $intSectionID = 0;
 	"bitrix:catalog.section",
 	$_SESSION['TEMPLATE_THEME'],
 	array(
+        "SECTION_USER_FIELDS" => ["UF_*"],
 		"IBLOCK_TYPE" => $arParams["IBLOCK_TYPE"],
 		"IBLOCK_ID" => $arParams["IBLOCK_ID"],
 		"ELEMENT_SORT_FIELD" => $arParams["ELEMENT_SORT_FIELD"],

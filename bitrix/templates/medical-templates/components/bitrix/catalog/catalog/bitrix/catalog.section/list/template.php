@@ -14,11 +14,9 @@ $this->setFrameMode(true);
 
 if(empty($arResult['ITEMS']))
 	return false;
-
-
 ?>
 		<div class="goods__list goods__list-2">
-			<? foreach($arResult['ITEMS'] as $item): ?>
+			<? foreach($arResult['ITEMS'] as $let => $item): ?>
 			<div class="goods__item goods__item_list">
 				<?if($item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]):?>
 					<div class="goods__alert">-<?=$item["PRICES"]["BASE"]["DISCOUNT_DIFF_PERCENT"]?>%</div>
@@ -42,11 +40,22 @@ if(empty($arResult['ITEMS']))
 						<i class="icon-star-o"></i>
 					</div>-->
 					<?if($item['PRICES']['BASE']['VALUE']):?>
-						<div class="goods__price">Цена <?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?></div>
+						<div class="goods__price">
+                            <? if($let >= $arResult["UF_HIDE_PRICE"] && !is_null($arResult["UF_HIDE_PRICE"])): ?>
+                                <span data-text="Цена "></span>
+                            <? else: ?>
+                                <span>Цена </span>
+                            <? endif; ?>
+                            <?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
+                        </div>
 					<?else:?>
 						<div class="goods__price tooltip" style="font-size: 15px;">Цена по запросу</div>
 					<?endif;?>
-					<span>за штуку</span>
+                    <? if($let >= $arResult["UF_HIDE_PIECE"] && !is_null($arResult["UF_HIDE_PIECE"])): ?>
+					    <span data-text="за штуку"></span>
+					<? else: ?>
+                        <span>за штуку</span>
+					<? endif; ?>
                     <!--<div class="goods__article">Арт: <?/*=TruncateText($item['PROPERTIES']['CML2_ARTICLE']['VALUE'], 12);*/?></div>-->
 					<div class="goods__counter">
 						<div class="goods__counter_subtract">-</div>
@@ -54,10 +63,18 @@ if(empty($arResult['ITEMS']))
 						<div class="goods__counter_add">+</div>
 					</div>
                     <? if(count($item['PROPERTIES']['ARTICLS']['VALUE']) > 1): ?>
-                        <a href="javascript:void(0)" class="goods__buy" onclick="$('#more_option_<?=$item[ID]?>').bPopup({zIndex:1000});">Купить</a>
+                        <? if($let >= $arResult["UF_HIDE_BUY"] && !is_null($arResult["UF_HIDE_BUY"])): ?>
+                            <a href="javascript:void(0)" class="goods__buy" onclick="$('#more_option_<?=$item[ID]?>').bPopup({zIndex:1000});" data-text="Купить"></a>
+                        <? else: ?>
+                            <a href="javascript:void(0)" class="goods__buy" onclick="$('#more_option_<?=$item[ID]?>').bPopup({zIndex:1000});">Купить</a>
+                        <? endif; ?>
                     <?else:?>
                         <input type="hidden" name="article" value="<?=$item['PROPERTIES']['ARTICLS']['VALUE'][0]?>">
-                        <a href="javascript:void(0)" class="goods__buy" onclick="addToBasket2(<?=$item['ID']?>, $('#goods__counter_input_<?=$item['ID']?>').val(),this);">Купить</a>
+                        <? if($let >= $arResult["UF_HIDE_BUY"] && !is_null($arResult["UF_HIDE_BUY"])): ?>
+                            <a href="javascript:void(0)" class="goods__buy" onclick="addToBasket2(<?=$item['ID']?>, $('#goods__counter_input_<?=$item['ID']?>').val(),this);" data-text="Купить"></a>
+                        <? else: ?>
+                            <a href="javascript:void(0)" class="goods__buy" onclick="addToBasket2(<?=$item['ID']?>, $('#goods__counter_input_<?=$item['ID']?>').val(),this);">Купить</a>
+                        <? endif; ?>
                     <?endif;?>
 
 				</div>
