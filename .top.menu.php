@@ -28,13 +28,7 @@ $aMenuLinks = Array(
 		Array("FROM_IBLOCK"=>"1", "IS_PARENT"=>"", "DEPTH_LEVEL"=>"1"), 
 		"" 
 	),
-	Array(
-		"Новости", 
-		"/news/", 
-		Array("/news/"), 
-		Array("FROM_IBLOCK"=>"1", "IS_PARENT"=>"", "DEPTH_LEVEL"=>"1"), 
-		"" 
-	),
+
 	Array(
 		"Клиентам", 
 		"/klientam/", 

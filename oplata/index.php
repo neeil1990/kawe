@@ -1,11 +1,10 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("title", "Информация о способах оплаты в интернет-магазине KaWe.su");
 $APPLICATION->SetPageProperty("description", "Уже более 7 лет мы поставляем продукцию KaWe покупателям и процессы отлажены до мелочей - от формирования КП до передачи товара клиенту.");
 $APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Оплата</h1>");
-$APPLICATION->SetTitle("Оплата");
-?>
-
-    <div class="wrapper">
+$APPLICATION->SetTitle("Оплата2");
+?>    <div class="wrapper">
         <div class="sidebar">
 
             <?$APPLICATION->IncludeComponent(
@@ -39,7 +38,7 @@ $APPLICATION->SetTitle("Оплата");
         </div>
 
         <div class="main text">
-            <div class="title"><?$APPLICATION->ShowTitle()?></div>
+            <h1 class="title">Оплата</h1>
             <div class="content">
 
                 <?

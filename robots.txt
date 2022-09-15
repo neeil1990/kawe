@@ -1,13 +1,11 @@
 User-Agent: *
 ########################
-########################
 Allow: /bitrix/components/
 Allow: /bitrix/cache/
 Allow: /bitrix/js/
 Allow: /bitrix/templates/
 Allow: /bitrix/panel/
-Host: https://kawe.su/
-Sitemap: https://kawe.su/sitemap.xml
+########################
 Disallow: */index.php
 Disallow: /bitrix/
 Disallow: /*show_include_exec_time=
@@ -40,6 +38,8 @@ Disallow: /*?bxajaxid=
 Disallow: /*&bxajaxid=
 Disallow: /*?view_result=
 Disallow: /*&view_result=
+########################
+########################
 Disallow: *rk.php?goto=
 Disallow: *rk.php?
 Disallow: *click.php
@@ -76,3 +76,21 @@ Disallow: /oplata/content.php
 Disallow: /desktop_app/storage.php
 Disallow: /search/
 Disallow: /test/
+Disallow: /catalog/zaryadnye-ustroystva-kawe-germaniya-2/
+Disallow: /catalog/operatsionnye-svetilniki-rossiya/
+catalog/svetilniki-operatsionnye-alfa-rossiya/
+########################
+Disallow: /klientam/
+Allow: /about/
+Allow: /dostavka/
+Allow: /oplata/
+Allow: /klientam/kak-zakazat/
+########################
+Disallow: /articles/
+Disallow: /news/
+########################
+Disallow: /*?TEMPLATE_THEME=
+Disallow: /*?PAGE_ELEMENT_COUNT=
+########################
+Host: https://kawe.su/
+Sitemap: https://kawe.su/sitemap.xml

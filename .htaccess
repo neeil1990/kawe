@@ -74,3 +74,6 @@ RewriteRule ^(.*)$ /bitrix/virtual_file_system.php [L]
   ExpiresByType text/css "access plus 3 day"
   ExpiresByType application/javascript "access plus 3 day"  
 </IfModule>
+
+Redirect 301 /catalog/zaryadnye-ustroystva-kawe-germaniya-2/ /catalog/zaryadnye-ustroystva-kawe-germaniya/
+Redirect 301 /catalog/laringoskop-s-naborom-klinkov/нabor-laringoskopov-dlja-vzroslyh/ /catalog/laringoskop-s-naborom-klinkov/nabor-laringoskopov-dlja-vzroslyh/

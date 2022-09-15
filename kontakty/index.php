@@ -1,10 +1,10 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("title", "Контакты интернет-магазина KaWe.su - все способы связи с нами");
 $APPLICATION->SetPageProperty("description", "Мы осуществляем доставку по всей России, подробнее об этом в Доставка.");
 $APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Контакты</h1>");
 $APPLICATION->SetTitle("Контакты");
 ?>
-
     <div class="wrapper">
         <div class="sidebar">
 
@@ -39,7 +39,7 @@ $APPLICATION->SetTitle("Контакты");
         </div>
 
         <div class="main text">
-            <div class="title"><?$APPLICATION->ShowTitle()?></div>
+            <h1 class="title">Контакты</h1>
             <div class="content">
 
                 <?

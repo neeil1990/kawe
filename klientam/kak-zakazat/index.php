@@ -1,10 +1,10 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetPageProperty("title", "Как оформить заказ в интернет-магазине KaWe.su");
 $APPLICATION->SetPageProperty("description", "Выберите интересующие вас товары в каталоге. Все приборы и инструменты рассортированы по тематическим категориям, например, дерматоскопы Kawe - в дерматологии.");
 $APPLICATION->SetPageProperty("titlePage", "<h1 class='title'>Как заказать?</h1>");
-$APPLICATION->SetTitle("Как заказать?");
+$APPLICATION->SetTitle("Как оформить заказ в интернет-магазине KaWe.su");
 ?>
-
     <div class="wrapper">
         <div class="sidebar">
 
@@ -39,7 +39,7 @@ $APPLICATION->SetTitle("Как заказать?");
         </div>
 
         <div class="main text">
-            <div class="title"><?$APPLICATION->ShowTitle()?></div>
+            <h1 class="title">Как заказать?</h1>
             <div class="content">
 
                 <?

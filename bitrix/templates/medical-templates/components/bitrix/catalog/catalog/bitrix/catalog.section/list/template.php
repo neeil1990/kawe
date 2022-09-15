@@ -49,7 +49,7 @@ if(empty($arResult['ITEMS']))
                             <?=$item['PRICES']['BASE']['PRINT_DISCOUNT_VALUE']?>
                         </div>
 					<?else:?>
-						<div class="goods__price tooltip" style="font-size: 15px;">Цена по запросу</div>
+						<div class="goods__price tooltip" style="font-size: 15px;" data-text="Цена по запросу"></div>
 					<?endif;?>
                     <? if($let >= $arResult["UF_HIDE_PIECE"] && !is_null($arResult["UF_HIDE_PIECE"])): ?>
 					    <span data-text="за штуку"></span>
