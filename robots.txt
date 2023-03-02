@@ -78,7 +78,7 @@ Disallow: /search/
 Disallow: /test/
 Disallow: /catalog/zaryadnye-ustroystva-kawe-germaniya-2/
 Disallow: /catalog/operatsionnye-svetilniki-rossiya/
-catalog/svetilniki-operatsionnye-alfa-rossiya/
+Disallow: /catalog/svetilniki-operatsionnye-alfa-rossiya/
 ########################
 Disallow: /klientam/
 Allow: /about/
