@@ -130,6 +130,8 @@ UpdateStepper = (function() {
 	};
 	d.prototype = {
 		show : function(steps, count) {
+			if (BX(this.nodes.container))
+				this.nodes.container.setAttribute("data-bx-steps-count", count);
 			var progress = 100;
 			if (count > 0)
 				progress = parseInt(steps * 100 / count);
@@ -243,7 +245,10 @@ UpdateStepper = (function() {
 			}
 			this.data = result;
 			if (steps < count && count > 0)
+			{
 				this.show(steps, count);
+				BX.onCustomEvent(window, "onStepperProgress", [this]);
+			}
 			else
 			{
 				this.hide();

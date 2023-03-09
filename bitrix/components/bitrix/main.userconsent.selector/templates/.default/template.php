@@ -3,7 +3,11 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
 use Bitrix\Main\Localization\Loc;
 
-CJSCore::Init("sidepanel");
+\Bitrix\Main\UI\Extension::load([
+	'ui.design-tokens',
+	'sidepanel',
+]);
+
 /** @var array $arParams */
 /** @var array $arResult */
 ?>
@@ -34,7 +38,11 @@ CJSCore::Init("sidepanel");
 				<?endforeach;?>
 			</select>
 
-			<a class="main-user-consent-selector-block-link main-user-consent-selector-block-link-bold" href="#" data-bx-link-edit="" data-bx-slider-href="" data-bx-link-tmpl="<?=htmlspecialcharsbx($arParams['PATH_TO_EDIT'])?>">
+			<a class="main-user-consent-selector-block-link main-user-consent-selector-block-link-bold"
+				href="#" data-bx-link-edit="" data-bx-slider-href=""
+				data-bx-slider-reload="1"
+				data-bx-link-tmpl="<?=htmlspecialcharsbx($arParams['PATH_TO_EDIT'])?>"
+			>
 				<?=Loc::getMessage('MAIN_USER_CONSENT_SELECTOR_BTN_EDIT')?>
 			</a>
 		</div>
@@ -47,7 +55,7 @@ CJSCore::Init("sidepanel");
 	<div class="main-user-consent-selector-footer">
 		<a class="main-user-consent-selector-block-link" data-bx-link-add="" data-bx-slider-href="" data-bx-slider-reload="true" href="<?=htmlspecialcharsbx($arParams['PATH_TO_ADD'])?>">
 			<span class="main-user-consent-selector-block-plus-icon">&#43;</span>
-			<?=Loc::getMessage('MAIN_USER_CONSENT_SELECTOR_BTN_CREATE')?>
+			<?=Loc::getMessage('MAIN_USER_CONSENT_SELECTOR_BTN_CREATE_1')?>
 		</a>
 	</div>
 </div>

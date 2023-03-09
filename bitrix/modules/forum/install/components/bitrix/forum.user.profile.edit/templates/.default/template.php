@@ -4,7 +4,7 @@ if (!$this->__component->__parent || empty($this->__component->__parent->__name)
 	$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/components/bitrix/forum/templates/.default/themes/blue/style.css');
 	$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/components/bitrix/forum/templates/.default/styles/additional.css');
 endif;
-$path = str_replace(array("\\", "//"), "/", dirname(__FILE__)."/interface.php");
+$path = str_replace(array("\\", "//"), "/", __DIR__."/interface.php");
 include_once($path);
 // *****************************************************************************************
 if (!empty($arResult["ERROR_MESSAGE"])): 
@@ -49,7 +49,7 @@ $aTabs = array(
 
 // ********************* User properties ***************************************************
 if($arResult["USER_PROPERTIES"]["SHOW"] == "Y"):
-	$aTabs[] = array("DIV" => "forum_5", "TAB" => strLen(trim($arParams["USER_PROPERTY_NAME"])) > 0 ? $arParams["USER_PROPERTY_NAME"] : GetMessage("USER_TYPE_EDIT_TAB"), "TITLE" => strLen(trim($arParams["USER_PROPERTY_NAME"])) > 0 ? $arParams["USER_PROPERTY_NAME"] : GetMessage("USER_TYPE_EDIT_TAB"));
+	$aTabs[] = array("DIV" => "forum_5", "TAB" => trim($arParams["USER_PROPERTY_NAME"]) <> '' ? $arParams["USER_PROPERTY_NAME"] : GetMessage("USER_TYPE_EDIT_TAB"), "TITLE" => trim($arParams["USER_PROPERTY_NAME"]) <> '' ? $arParams["USER_PROPERTY_NAME"] : GetMessage("USER_TYPE_EDIT_TAB"));
 endif;
 // ******************** /User properties ***************************************************
 

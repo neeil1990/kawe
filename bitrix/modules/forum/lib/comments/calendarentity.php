@@ -5,11 +5,11 @@ namespace Bitrix\Forum\Comments;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Loader;
 
-final class TaskEntity extends Entity
+final class CalendarEntity extends Entity
 {
-	const ENTITY_TYPE = 'ev';
+	public const ENTITY_TYPE = 'ev';
 	const MODULE_ID = 'calendar';
-	const XML_ID_PREFIX = 'EVENT_';
+	public const XML_ID_PREFIX = 'EVENT_';
 
 	protected static $permissions = array();
 
@@ -24,7 +24,7 @@ final class TaskEntity extends Entity
 		{
 			return $this->canRead;
 		}
-		$this->canRead = \CCalendarEvent::canView($this->entityId, $userId);
+		$this->canRead = \CCalendarEvent::canView($this->getId(), $userId);
 
 		return $this->canRead;
 	}

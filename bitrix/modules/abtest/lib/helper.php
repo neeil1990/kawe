@@ -2,6 +2,7 @@
 
 namespace Bitrix\ABTest;
 
+use Bitrix\Main;
 use Bitrix\Main\Type;
 
 class Helper
@@ -24,7 +25,7 @@ class Helper
 		{
 			$cache = new \CPHPCache();
 
-			if ($cache->initCache(30*24*3600, 'abtest_active_'.SITE_ID, '/abtest'))
+			if ($cache->initCache(30*24*3600, 'abtest_active_'.SITE_ID, 'abtest/'))
 			{
 				$abtest = $cache->getVars();
 			}
@@ -33,10 +34,11 @@ class Helper
 				$abtest = ABTestTable::getList(array(
 					'order' => array('SORT' => 'ASC'),
 					'filter' => array(
-						'SITE_ID'      => SITE_ID,
-						'ACTIVE'       => 'Y',
+						'=SITE_ID'      => SITE_ID,
+						'=ACTIVE'       => 'Y',
 						'<=START_DATE' => new Type\DateTime()
-					)
+					),
+					'limit' => 1
 				))->fetch() ?: null;
 
 				$cache->startDataCache();
@@ -154,13 +156,15 @@ class Helper
 				}
 			}
 
+			$cookieValue = $APPLICATION->get_cookie('ABTEST_'.SITE_ID);
+
 			if (empty($context) && !empty($activeTest))
 			{
 				$abtest = $activeTest;
 
-				if ($cookie = $APPLICATION->get_cookie('ABTEST_'.SITE_ID))
+				if (!empty($cookieValue))
 				{
-					if (preg_match('/^'.intval($abtest['ID']).'\|(A|B|N)$/i', $cookie, $matches))
+					if (preg_match('/^'.intval($abtest['ID']).'\|(A|B|N)$/i', $cookieValue, $matches))
 						$section = $matches[1];
 				}
 
@@ -179,10 +183,16 @@ class Helper
 				$context = Helper::context($abtest, $section);
 			}
 
-			if (empty($activeTest))
-				$APPLICATION->set_cookie('ABTEST_'.SITE_ID, null);
-			else if ($activeTest['ID'] == $context['abtest'])
-				$APPLICATION->set_cookie('ABTEST_'.SITE_ID, intval($context['abtest']).'|'.$context['section']);
+			if (empty($activeTest) || $activeTest['ID'] == $context['abtest'])
+			{
+				$newValue = empty($activeTest) ? null : sprintf('%u|%s', $context['abtest'], $context['section']);
+				if (!(empty($cookieValue) && empty($newValue)) && $cookieValue !== $newValue)
+				{
+					$cookie = new Main\Web\Cookie(sprintf('ABTEST_%s', SITE_ID), $newValue);
+
+					Main\Context::getCurrent()->getResponse()->addCookie($cookie);
+				}
+			}
 		}
 
 		return $context;

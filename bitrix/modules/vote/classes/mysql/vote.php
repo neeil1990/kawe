@@ -93,13 +93,13 @@ class CVote extends CAllVote
 			";
 		$z = $DB->Query($strSql, false, $err_mess.__LINE__);
 		$zr = $z->Fetch();
-		if (strlen($zr["MIN_DATE_START"])<=0)
+		if ($zr["MIN_DATE_START"] == '')
 			return GetTime(time()+CTimeZone::GetOffset(), "FULL");
 		else
 			return $zr["MIN_DATE_START"];
 	}
 
-	public static function GetList(&$by, &$order, $arFilter=Array(), &$is_filtered)
+	public static function GetList($by = 's_id', $order = 'desc', $arFilter = [])
 	{
 		global $DB;
 		$err_mess = (CVote::err_mess())."<br>Function: GetList<br>Line: ";
@@ -174,14 +174,14 @@ class CVote extends CAllVote
 		elseif ($by == "s_channel")			$strSqlOrder = "ORDER BY V.CHANNEL_ID";
 		else
 		{
-			$by = "s_id";
 			$strSqlOrder = "ORDER BY V.ID";
 		}
-		if ($order!="asc")
+
+		if ($order != "asc")
 		{
 			$strSqlOrder .= " desc ";
-			$order="desc";
 		}
+
 		$strSqlSearch = GetFilterSqlSearch($arSqlSearch);
 		$strSql = "
 			SELECT VV.*, C.TITLE as CHANNEL_TITLE, C.ACTIVE as CHANNEL_ACTIVE,
@@ -207,7 +207,7 @@ class CVote extends CAllVote
 			$strSqlOrder;
 		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
 		$res = new _CVoteDBResult($res);
-		$is_filtered = IsFiltered($strSqlSearch);
+
 		return $res;
 	}
 
@@ -221,7 +221,7 @@ class CVote extends CAllVote
 		foreach ($arFilter as $key => $val)
 		{
 			$key_res = CVote::GetFilterOperation($key);
-			$key = strtoupper($key_res["FIELD"]);
+			$key = mb_strtoupper($key_res["FIELD"]);
 			$strNegative = $key_res["NEGATIVE"];
 			$strOperation = $key_res["OPERATION"];
 
@@ -277,9 +277,9 @@ class CVote extends CAllVote
 		$arSqlOrder = array();
 		foreach($arOrder as $by => $order)
 		{
-			$by = strtoupper($by);
+			$by = mb_strtoupper($by);
 			$by = (in_array($by, array("ID", "TITLE", "DATE_START", "DATE_END", "COUNTER", "ACTIVE", "C_SORT", "CHANNEL_ID")) ? $by : "ID");
-			$arSqlOrder[] = "V.".$by." ".(strtoupper($order) == "ASC" ? "ASC" : "DESC");
+			$arSqlOrder[] = "V.".$by." ".(mb_strtoupper($order) == "ASC" ? "ASC" : "DESC");
 		}
 		DelDuplicateSort($arSqlOrder);
 		$strSqlOrder = (!empty($arSqlOrder) ? "ORDER BY ".implode(",", $arSqlOrder) : "");
@@ -301,9 +301,12 @@ class CVote extends CAllVote
 				CASE WHEN (C.ACTIVE = 'Y' AND V.ACTIVE = 'Y' AND V.DATE_START <= NOW() AND NOW() <= V.DATE_END)
 					THEN IF (C.VOTE_SINGLE != 'Y', 'green', 'yellow')
 					ELSE 'red'
-				END AS LAMP
+				END AS LAMP,
+				U.NAME, U.LAST_NAME, U.SECOND_NAME, U.PERSONAL_PHOTO, U.LOGIN, 
+				".$DB->Concat("U.LAST_NAME", "' '", "U.NAME")." AUTH_USER_NAME
 			FROM b_vote V
 			INNER JOIN b_vote_channel C ON (V.CHANNEL_ID = C.ID)
+			LEFT JOIN b_user U ON (V.AUTHOR_ID = U.ID)
 			WHERE 1=1 ".$strSqlSearch." ".$strSqlOrder;
 		return new _CVoteDBResult($DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__));
 	}
@@ -321,7 +324,7 @@ class CVote extends CAllVote
 		{
 			if (empty($val) || (is_string($val) && $val === "NOT_REF"))
 				continue;
-			$key = strtoupper($key);
+			$key = mb_strtoupper($key);
 			switch($key)
 			{
 				case "SITE":

@@ -41,6 +41,17 @@ class CBitrixSaleLocationImportComponent extends CBitrixComponent
 	{
 		self::tryParseInt($arParams['INITIAL_TIME']);
 
+		if (
+			isset($_REQUEST["IFRAME"]) && $_REQUEST["IFRAME"] === "Y" &&
+			isset($_REQUEST["IFRAME_TYPE"]) && $_REQUEST["IFRAME_TYPE"] === "SIDE_SLIDER" &&
+			isset($_REQUEST["publicSidePanel"]) && $_REQUEST["publicSidePanel"] === "Y"
+		)
+		{
+			$arParams['PATH_TO_IMPORT'] = \CHTTP::urlAddParams($arParams['PATH_TO_IMPORT'], array(
+				"IFRAME" => "Y", "IFRAME_TYPE" => "Y", "publicSidePanel" => "Y"
+			));
+		}
+
 		return $arParams;
 	}
 
@@ -78,7 +89,7 @@ class CBitrixSaleLocationImportComponent extends CBitrixComponent
 		if($parameters['CHECK_CSRF'])
 		{
 			$post = \Bitrix\Main\Context::getCurrent()->getRequest()->getPostList();
-			if(!strlen($post['csrf']) || bitrix_sessid() != $post['csrf'])
+			if(!mb_strlen($post['csrf']) || bitrix_sessid() != $post['csrf'])
 				$errors[] = 'CSRF token is not valid';
 		}
 
@@ -378,7 +389,7 @@ class CBitrixSaleLocationImportComponent extends CBitrixComponent
 					(string) $pName[ToUpper(LANGUAGE_ID)]['NAME'] != '' ? $pName[ToUpper(LANGUAGE_ID)]['NAME'] : $pName['EN']['NAME'],
 					$childrenHtml,
 					$parameters['INPUT_NAME'], //!strlen($childrenHtml) ? $parameters['INPUT_NAME'] : '',
-					strlen($childrenHtml) ? $parameters['EXPANDER_CLASS'] : ''
+			$childrenHtml <> ''? $parameters['EXPANDER_CLASS'] : ''
 				), $parameters['TEMPLATE']);
 	}
 

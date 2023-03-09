@@ -1,8 +1,11 @@
-<?
+<?php
 /** @global CMain $APPLICATION */
+
 use Bitrix\Main,
 	Bitrix\Main\Loader,
 	Bitrix\Main\Localization\Loc,
+	Bitrix\Catalog\Access\AccessController,
+	Bitrix\Catalog\Access\ActionDictionary,
 	Bitrix\Catalog;
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
@@ -10,10 +13,19 @@ require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/catalog/prolog.php');
 
 Loc::loadMessages(__FILE__);
 
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_group')))
-	$APPLICATION->AuthForm('');
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$listUrl = $selfFolderUrl."cat_round_list.php?lang=".LANGUAGE_ID;
+$listUrl = $adminSidePanelHelper->editUrlToPublicPage($listUrl);
+
 Loader::includeModule('catalog');
-$readOnly = !$USER->CanDoOperation('catalog_group');
+
+$accessController = AccessController::getCurrent();
+if (!($accessController->check(ActionDictionary::ACTION_CATALOG_READ) || $accessController->check(ActionDictionary::ACTION_PRICE_GROUP_EDIT)))
+{
+	$APPLICATION->AuthForm('');
+}
+
+$readOnly = !$accessController->check(ActionDictionary::ACTION_PRICE_GROUP_EDIT);
 
 $request = Main\Context::getCurrent()->getRequest();
 
@@ -25,7 +37,7 @@ $rawReturnUrl = (string)$request->get('return_url');
 if ($rawReturnUrl != '')
 {
 	$currentUrl = $APPLICATION->GetCurPage();
-	if (strtolower(substr($rawReturnUrl, strlen($currentUrl))) != strtolower($currentUrl))
+	if (mb_strtolower(mb_substr($rawReturnUrl, mb_strlen($currentUrl))) != mb_strtolower($currentUrl))
 		$returnUrl = $rawReturnUrl;
 }
 unset($rawReturnUrl);
@@ -62,6 +74,8 @@ if (
 	&& (string)$request->getPost('Update') == 'Y'
 )
 {
+	$adminSidePanelHelper->decodeUriComponent($request);
+
 	$rawData = $request->getPostList();
 
 	if (!empty($rawData['CATALOG_GROUP_ID']))
@@ -92,10 +106,28 @@ if (
 
 	if (empty($errors))
 	{
-		if ((string)$request->getPost('apply') != '')
-			LocalRedirect('cat_round_edit.php?lang='.LANGUAGE_ID.'&ID='.$ruleId.'&'.$control->ActiveTabParam().GetFilterParams('filter_', false));
+		if ($adminSidePanelHelper->isAjaxRequest())
+		{
+			$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $ruleId));
+		}
 		else
-			LocalRedirect('cat_round_list.php?lang='.LANGUAGE_ID.GetFilterParams('filter_', false));
+		{
+			if ((string)$request->getPost('apply') != '')
+			{
+				$applyUrl = $selfFolderUrl."cat_round_edit.php?lang=".LANGUAGE_ID."&ID=".$ruleId.'&'.$control->ActiveTabParam();
+				$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+				LocalRedirect($applyUrl);
+			}
+			else
+			{
+				$adminSidePanelHelper->localRedirect($listUrl);
+				LocalRedirect($listUrl);
+			}
+		}
+	}
+	else
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($errors);
 	}
 }
 
@@ -115,28 +147,37 @@ $contextMenuItems = array(
 	array(
 		'ICON' => 'btn_list',
 		'TEXT' => Loc::getMessage('PRICE_ROUND_EDIT_CONTEXT_LIST'),
-		'LINK' => 'cat_round_list.php?lang='.LANGUAGE_ID.GetFilterParams('filter_')
+		'LINK' => $listUrl
 	)
 );
 if (!$readOnly && $ruleId > 0)
 {
 	if (!$copy)
 	{
+		$addUrl = $selfFolderUrl."cat_round_edit.php?lang=".LANGUAGE_ID;
+		$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
 		$contextMenuItems[] = array('SEPARATOR' => 'Y');
 		$contextMenuItems[] = array(
 			'ICON' => 'btn_new',
 			'TEXT' => Loc::getMessage('PRICE_ROUND_EDIT_CONTEXT_NEW'),
-			'LINK' => 'cat_round_list.php?lang='.LANGUAGE_ID.GetFilterParams('filter_')
+			'LINK' => $addUrl
 		);
 		$contextMenuItems[] = array(
 			'ICON' => 'btn_copy',
 			'TEXT' => Loc::getMessage('PRICE_ROUND_EDIT_CONTEXT_COPY'),
-			'LINK' => 'cat_round_list.php?lang='.LANGUAGE_ID.'&ID='.$ruleId.'&action=copy'.GetFilterParams('filter_')
+			'LINK' => $addUrl.'&ID='.$ruleId.'&action=copy'
 		);
+		$deleteUrl = $selfFolderUrl."cat_round_list.php?lang=".LANGUAGE_ID."&ID=".$ruleId."&action=delete&".bitrix_sessid_get()."";
+		$buttonAction = "LINK";
+		if ($adminSidePanelHelper->isPublicFrame())
+		{
+			$deleteUrl = $adminSidePanelHelper->editUrlToPublicPage($deleteUrl);
+			$buttonAction = "ONCLICK";
+		}
 		$contextMenuItems[] = array(
 			'ICON' => 'btn_delete',
 			'TEXT' => Loc::getMessage('PRICE_ROUND_EDIT_CONTEXT_DELETE'),
-			'LINK' => "javascript:if (confirm('".CUtil::JSEscape(Loc::getMessage('PRICE_ROUND_EDIT_CONTEXT_DELETE_CONFIRM'))."')) window.location='/bitrix/admin/cat_round_list.php?lang=".LANGUAGE_ID."&ID=".$ruleId."&action=delete&".bitrix_sessid_get()."';",
+			$buttonAction => "javascript:if (confirm('".CUtil::JSEscape(Loc::getMessage('PRICE_ROUND_EDIT_CONTEXT_DELETE_CONFIRM'))."')) top.window.location.href='".$deleteUrl."';",
 			'WARNING' => 'Y',
 		);
 	}
@@ -208,9 +249,9 @@ if (!empty($returnUrl))
 }
 echo bitrix_sessid_post();
 $control->EndEpilogContent();
-$control->Begin(array(
-	'FORM_ACTION' => 'cat_round_edit.php?lang='.LANGUAGE_ID
-));
+$formActionUrl = $selfFolderUrl.'cat_round_edit.php?lang='.LANGUAGE_ID;
+$formActionUrl = $adminSidePanelHelper->setDefaultQueryParams($formActionUrl);
+$control->Begin(array('FORM_ACTION' => $formActionUrl));
 $control->BeginNextFormTab();
 
 if ($ruleId > 0 && !$copy)
@@ -238,11 +279,6 @@ $control->AddDropDownField(
 	$roundValues,
 	$rule['ROUND_PRECISION']
 );
-$control->Buttons(
-	array(
-		'disabled' => $readOnly,
-		'back_url' => "cat_round_list.php?lang=".LANGUAGE_ID.GetFilterParams('filter_')
-	)
-);
+$control->Buttons(array('disabled' => $readOnly, 'back_url' => $listUrl));
 $control->Show();
 require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');

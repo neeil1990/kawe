@@ -2,7 +2,6 @@
 
 namespace Bitrix\Seo\Retargeting;
 
-use Bitrix\Main\Error;
 use Bitrix\Main\Result;
 
 abstract class Response extends Result
@@ -10,6 +9,7 @@ abstract class Response extends Result
 	const TYPE_CODE = '';
 
 	protected $id;
+	protected $type;
 	protected $adapter;
 	protected $responseText;
 
@@ -80,7 +80,7 @@ abstract class Response extends Result
 			$result = array();
 			foreach ($row as $k => $v)
 			{
-				$result[strtoupper($k)] = $v;
+				$result[mb_strtoupper($k)] = $v;
 			}
 
 			return $result;

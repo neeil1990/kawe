@@ -741,9 +741,12 @@ BX.Sale.Input = (function () {
 				settings.SIZE = 30;
 			}
 
-			if (settings.PATTERN && settings.PATTERN.length)
+			if (settings.PATTERN
+				&& settings.PATTERN.length > 0
+				&& settings.PATTERN[0] === settings.PATTERN[settings.PATTERN.length-1]
+			)
 			{
-				var clearPattern = settings.PATTERN.substr(1, settings.PATTERN.lastIndexOf(settings.PATTERN[0]) - 1);
+				var clearPattern = settings.PATTERN.substr(1, settings.PATTERN.length - 2);
 				if (clearPattern && clearPattern.length)
 				{
 					settings.PATTERN = clearPattern;
@@ -816,13 +819,16 @@ BX.Sale.Input = (function () {
 		var s, size = 5, settings = this.settings;
 
 		if ((s = settings.MIN) && s.toString().length > size)
-			size = s;
+			size = s.toString().length;
 
 		if ((s = settings.MAX) && s.toString().length > size)
-			size = s;
+			size = s.toString().length;
 
 		if ((s = settings.STEP) && s.toString().length > size)
-			size = s;
+			size = s.toString().length;
+
+		if (size > 30)
+			size = 30;
 
 		var element = document.createElement('input');
 		element.type  = 'text';
@@ -1597,6 +1603,56 @@ BX.Sale.Input = (function () {
 		loc.bindEvent('after-deselect-item', action);
 
 		return true;
+	};
+
+	// Address ////////////////////////////////////////////////////////////////////////////////////////////////////////
+	Module.AddressInput = AddressInput;
+	Utils.extend(AddressInput, BaseInput);
+	Module.Manager.register('ADDRESS', AddressInput);
+
+	function AddressInput(name, settings, value, publicO)
+	{
+		AddressInput.__super__.constructor.call(this, name, settings, value, publicO);
+	}
+
+	AddressInput.prototype.getValuePath = function ()
+	{
+	};
+
+	AddressInput.prototype.createEditorSingle = function (name, value)
+	{
+		if (!BX.Sale.AddressControlConstructor)
+		{
+			return [document.createElement('span')];
+		}
+
+		var addressControl = new BX.Sale.AddressControlConstructor({
+			propsData: {
+				name: name,
+				initValue: value ? JSON.stringify(value) : null,
+				isLocked: false,
+			}
+		});
+
+		addressControl.$mount();
+
+		return [addressControl.$el];
+	};
+
+	AddressInput.prototype.setValueSingle = function (item, value)
+	{
+	};
+
+	AddressInput.prototype.getValueSingle = function (item)
+	{
+	};
+
+	AddressInput.prototype.setDisabledSingle = function (item, disabled)
+	{
+	};
+
+	AddressInput.prototype.addEventSingle = function (item, name, action)
+	{
 	};
 
 	Module.UserFieldInput = UserFieldInput;

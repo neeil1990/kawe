@@ -1,9 +1,13 @@
 <?
 /** @global CMain $APPLICATION */
 /**	@global CUser $USER */
+
 use Bitrix\Main,
 	Bitrix\Highloadblock as HL,
-	Bitrix\Currency;
+	Bitrix\Currency,
+	Bitrix\Catalog,
+	Bitrix\Catalog\Access\ActionDictionary,
+	Bitrix\Catalog\Access\AccessController;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 IncludeModuleLangFile(__FILE__);
@@ -22,7 +26,7 @@ $arJSDescription = array(
 CJSCore::RegisterExt('iblock_generator', $arJSDescription);
 CJSCore::Init(array('iblock_generator', 'file_input'));
 
-define('IB_SEG_ROW_PREFIX','IB_SEG_');
+const IB_SEG_ROW_PREFIX = 'IB_SEG_';
 
 $subIBlockId = intval($_REQUEST["subIBlockId"]);
 $subPropValue = intval($_REQUEST["subPropValue"]);
@@ -33,7 +37,7 @@ $arSKUInfo = CCatalogSku::GetInfoByOfferIBlock($subIBlockId);
 CUtil::decodeURIComponent($_POST['PRODUCT_NAME']);
 $parentProductName = trim($_POST['PRODUCT_NAME']);
 
-$useStoreControl = ((string)Main\Config\Option::get('catalog', 'default_use_store_control') == 'Y');
+$useStoreControl = Catalog\Config\State::isUsedInventoryManagement();
 
 if($arSKUInfo == false)
 {
@@ -49,9 +53,8 @@ $APPLICATION->SetTitle(GetMessage("IB_SEG_MAIN_TITLE"));
  */
 function __AddCellPriceType($intRangeID, $strPrefix)
 {
-	$dbCatalogGroups = CCatalogGroup::GetList(array("SORT" => "ASC","NAME" => "ASC","ID" => "ASC"));
 	$priceTypeCellOption = '';
-	while($arCatalogGroup = $dbCatalogGroups->Fetch())
+	foreach (CCatalogGroup::GetListArray() as $arCatalogGroup)
 	{
 		$priceTypeCellOption .= "<option value=".$arCatalogGroup['ID'].">".htmlspecialcharsbx($arCatalogGroup["NAME"])."</option>";
 	}
@@ -103,9 +106,14 @@ function __showPopup($element_id, $items)
 {
 	echo
 		'<script type="text/javascript">
-			top.BX.ready(function(){
-				top.BX.bind(top.BX("'.$element_id.'"), "click", function() {
-					top.BX.adminShowMenu(this, '.CAdminPopup::PhpToJavaScript($items).');
+			var currentWindow = top.window;
+			if (top.BX.SidePanel && top.BX.SidePanel.Instance && top.BX.SidePanel.Instance.getTopSlider())
+			{
+				currentWindow = top.BX.SidePanel.Instance.getTopSlider().getWindow();
+			}
+			currentWindow.BX.ready(function(){
+				currentWindow.BX.bind(currentWindow.BX("'.$element_id.'"), "click", function() {
+					currentWindow.BX.adminShowMenu(this, '.CAdminPopup::PhpToJavaScript($items).');
 				});
 			});
 		</script>';
@@ -325,7 +333,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$bReadOnly && check_bitrix_sessid()
 	$title = $_POST["IB_SEG_TITLE"];
 	if(trim($title) == '')
 		$title = '{=this.property.CML2_LINK.NAME} ';
-	if(is_array($_POST['IB_SEG_PRICETYPE']))
+	if (isset($_POST['IB_SEG_PRICETYPE']) && is_array($_POST['IB_SEG_PRICETYPE']))
 	{
 		foreach($_POST['IB_SEG_PRICETYPE'] as $key => $priceTypeId)
 		{
@@ -354,7 +362,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$bReadOnly && check_bitrix_sessid()
 
 	$arIBlockElement = $dbIBlockElement->Fetch();
 
-	if(strlen($_POST['save']) > 0)
+	if($_POST['save'] <> '')
 	{
 		$parentElementId = (0 < $subPropValue ? $subPropValue : -$subTmpId);
 		$parentElement = new \Bitrix\Iblock\Template\Entity\Element($parentElementId);
@@ -377,7 +385,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$bReadOnly && check_bitrix_sessid()
 		);
 		if (!$useStoreControl)
 			$productData['QUANTITY'] = $_POST['IB_SEG_QUANTITY'];
-		if ($USER->CanDoOperation('catalog_purchas_info') && !$useStoreControl)
+		if (AccessController::getCurrent()->check(ActionDictionary::ACTION_PRODUCT_PURCHASE_INFO_VIEW) && !$useStoreControl)
 		{
 			if (!empty($_POST['IB_SEG_PURCHASING_CURRENCY']) && $_POST['IB_SEG_PURCHASING_PRICE'] !== '')
 			{
@@ -544,12 +552,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$bReadOnly && check_bitrix_sessid()
 		{
 			?>
 			<script type="text/javascript">
-				top.BX.closeWait();
-				if (!!top.BX.WindowManager.Get())
+				var currentWindow = top.window;
+				if (top.BX.SidePanel && top.BX.SidePanel.Instance && top.BX.SidePanel.Instance.getTopSlider())
 				{
-					top.BX.WindowManager.Get().AllowClose(); top.BX.WindowManager.Get().Close();
-					if (!!top.ReloadSubList)
-						top.ReloadSubList();
+					currentWindow = top.BX.SidePanel.Instance.getTopSlider().getWindow();
+				}
+				currentWindow.BX.closeWait();
+				if (!!currentWindow.BX.WindowManager.Get())
+				{
+					currentWindow.BX.WindowManager.Get().AllowClose();
+					currentWindow.BX.WindowManager.Get().Close();
+					if (!!currentWindow.ReloadSubList)
+						currentWindow.ReloadSubList();
 				}
 			</script>
 			<?
@@ -736,9 +750,9 @@ else
 			<td class="adm-detail-content-cell-l"><?= GetMessage("IB_SEG_TITLE") ?>:</td>
 			<td class="adm-detail-content-cell-r" style="white-space: nowrap !important;">
 				<input type="text" style="width: 637px;" class="adm-input" id="IB_SEG_TITLE" name="IB_SEG_TITLE" >
-				<input type="button" id="IB_SEG_ADD_PROP_IN_TITLE" title="..." value="<?= GetMessage("IB_SEG_SKU_PROPERTIES") ?>">
-				<input type="button" id="IB_SEG_ADD_PROP_IN_TITLE2" title="..." value="<?= GetMessage("IB_SEG_PARENT_PROPERTIES") ?>">
-				<a class="adm-input-help-icon" onmouseover="BX.hint(this, '<?=GetMessage('IB_SEG_TOOLTIP_TITLE')?>')" href="#"></a>
+				<input type="button" id="IB_SEG_ADD_PROP_IN_TITLE" title="..." value="<?=htmlspecialcharsbx(GetMessage("IB_SEG_SKU_PROPERTIES")); ?>">
+				<input type="button" id="IB_SEG_ADD_PROP_IN_TITLE2" title="..." value="<?=htmlspecialcharsbx(GetMessage("IB_SEG_PARENT_PROPERTIES")); ?>">
+				<a class="adm-input-help-icon" onmouseover="BX.hint(this, '<?=htmlspecialcharsbx(CUtil::JSEscape(GetMessage('IB_SEG_TOOLTIP_TITLE'))); ?>')" href="#"></a>
 			</td>
 		</tr>
 		<tr>
@@ -751,7 +765,7 @@ else
 				<input type="text" id="CAT_BASE_WIDTH" name="IB_SEG_BASE_WIDTH" style="width: 120px;  margin-right: 10px">
 				<?echo GetMessage("IB_SEG_BASE_HEIGHT")?>:
 				<input type="text" id="CAT_BASE_HEIGHT" name="IB_SEG_BASE_HEIGHT" style="width: 120px;">
-				<a class="adm-input-help-icon" onmouseover="BX.hint(this, '<?=GetMessage('IB_SEG_TOOLTIP_WEIGHT')?>')" href="#"></a>
+				<a class="adm-input-help-icon" onmouseover="BX.hint(this, '<?=htmlspecialcharsbx(CUtil::JSEscape(GetMessage('IB_SEG_TOOLTIP_WEIGHT'))); ?>')" href="#"></a>
 			</td>
 		</tr>
 		<tr>
@@ -795,8 +809,9 @@ else
 			</td>
 		</tr>
 		<?
-		if ($USER->CanDoOperation('catalog_purchas_info') && !$useStoreControl)
+		if (AccessController::getCurrent()->check(ActionDictionary::ACTION_PRODUCT_PURCHASE_INFO_VIEW) && !$useStoreControl)
 		{
+			$baseCurrency = Currency\CurrencyManager::getBaseCurrency();
 		?>
 		<tr>
 			<td class="adm-detail-content-cell-l"><? echo GetMessage("IB_SEG_PURCHASING_PRICE") ?></td>
@@ -807,7 +822,7 @@ else
 				<?
 				foreach (Currency\CurrencyManager::getCurrencyList() as $id => $title)
 				{
-					?><option value="<?=$id; ?>"><?=htmlspecialcharsbx($title); ?></option><?
+					?><option value="<?=$id; ?>"<?=($id == $baseCurrency ? ' selected' : ''); ?>><?=htmlspecialcharsbx($title); ?></option><?
 				}
 				unset($id, $title);
 				?>
@@ -816,6 +831,8 @@ else
 		</tr>
 		<?
 		}
+		$priceTypeList = CCatalogGroup::GetListArray();
+		if (!empty($priceTypeList)):
 		?>
 		<tr>
 			<td class="adm-detail-content-cell-l"><?= GetMessage("IB_SEG_PRICE_SHORT") ?>:</td>
@@ -837,13 +854,16 @@ else
 				<input type="hidden" value="1" id="generator_price_table_max_id">
 			</td>
 		</tr>
+		<?
+		endif;
+		?>
 	</table>
 	</div></div>
 </td></tr>
 <tr>
 	<td colspan="2" class="adm-detail-content-cell" style="padding-bottom: 0;">
 		<div class="adm-shop-toolbar">
-			<span class="adm-btn adm-btn-add" id="mnu_ADD_PROPERTY"><?= GetMessage("IB_SEG_PROPERTY_ADD") ?></span><span class="adm-btn adm-btn-download" id="mnu_ADD_ALL_PROPERTY" onclick="obPropertyTable.loadAllProperties()"><?= GetMessage("IB_SEG_PROPERTY_ADD_ALL") ?></span><a class="adm-input-help-icon" onmouseover="BX.hint(this, '<?=GetMessage('IB_SEG_TOOLTIP_PROPERTIES')?>')" href="#"></a>
+			<span class="adm-btn adm-btn-add" id="mnu_ADD_PROPERTY"><?= GetMessage("IB_SEG_PROPERTY_ADD") ?></span><span class="adm-btn adm-btn-download" id="mnu_ADD_ALL_PROPERTY" onclick="obPropertyTable.loadAllProperties()"><?= GetMessage("IB_SEG_PROPERTY_ADD_ALL") ?></span><a class="adm-input-help-icon" onmouseover="BX.hint(this, '<?=htmlspecialcharsbx(CUtil::JSEscape(GetMessage('IB_SEG_TOOLTIP_PROPERTIES'))); ?>')" href="#"></a>
 		</div>
 	</td>
 </tr>

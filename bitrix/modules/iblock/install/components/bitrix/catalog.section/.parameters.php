@@ -4,13 +4,16 @@
  * @var string $componentPath
  * @var string $componentName
  * @var array $arCurrentValues
+ * @var array $templateProperties
  * @global CUserTypeManager $USER_FIELD_MANAGER
  */
 
-use Bitrix\Main\Loader;
-use Bitrix\Main\Web\Json;
-use Bitrix\Iblock;
-use Bitrix\Currency;
+use Bitrix\Main\ModuleManager,
+	Bitrix\Main\Loader,
+	Bitrix\Main\Web\Json,
+	Bitrix\Iblock,
+	Bitrix\Catalog,
+	Bitrix\Currency;
 
 global $USER_FIELD_MANAGER;
 
@@ -19,9 +22,24 @@ if (!Loader::includeModule('iblock'))
 
 $catalogIncluded = Loader::includeModule('catalog');
 CBitrixComponent::includeComponentClass($componentName);
+
+$usePropertyFeatures = Iblock\Model\PropertyFeature::isEnabledFeatures();
+
 $iblockExists = (!empty($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] > 0);
 
 $arIBlockType = CIBlockParameters::GetIBlockTypes();
+
+$offersIblock = array();
+if ($catalogIncluded)
+{
+	$iterator = Catalog\CatalogIblockTable::getList(array(
+		'select' => array('IBLOCK_ID'),
+		'filter' => array('!=PRODUCT_IBLOCK_ID' => 0)
+	));
+	while ($row = $iterator->fetch())
+		$offersIblock[$row['IBLOCK_ID']] = true;
+	unset($row, $iterator);
+}
 
 $arIBlock = array();
 $iblockFilter = !empty($arCurrentValues['IBLOCK_TYPE'])
@@ -31,9 +49,13 @@ $iblockFilter = !empty($arCurrentValues['IBLOCK_TYPE'])
 $rsIBlock = CIBlock::GetList(array('SORT' => 'ASC'), $iblockFilter);
 while ($arr = $rsIBlock->Fetch())
 {
-	$arIBlock[$arr['ID']] = '['.$arr['ID'].'] '.$arr['NAME'];
+	$id = (int)$arr['ID'];
+	if (isset($offersIblock[$id]))
+		continue;
+	$arIBlock[$id] = '['.$id.'] '.$arr['NAME'];
 }
-unset($arr, $rsIBlock, $iblockFilter);
+unset($id, $arr, $rsIBlock, $iblockFilter);
+unset($offersIblock);
 
 $defaultValue = array('-' => GetMessage('CP_BCS_EMPTY'));
 
@@ -157,14 +179,13 @@ $arSort = CIBlockParameters::GetElementSortFields(
 $arPrice = array();
 if ($catalogIncluded)
 {
-	$arOfferSort = array_merge($arSort, CCatalogIBlockParameters::GetCatalogSortFields());
+	$arSort = array_merge($arSort, CCatalogIBlockParameters::GetCatalogSortFields());
 	if (isset($arSort['CATALOG_AVAILABLE']))
 		unset($arSort['CATALOG_AVAILABLE']);
 	$arPrice = CCatalogIBlockParameters::getPriceTypesList();
 }
 else
 {
-	$arOfferSort = $arSort;
 	$arPrice = $arProperty_N;
 }
 
@@ -338,6 +359,12 @@ $arComponentParameters = array(
 			'TYPE' => 'STRING',
 			'DEFAULT' => 'SECTION_ID',
 		),
+		'ALLOW_SEO_DATA' => array(
+			'PARENT' => 'ADDITIONAL_SETTINGS',
+			'NAME' => GetMessage('CP_BCS_ALLOW_SEO_DATA'),
+			'TYPE' => 'CHECKBOX',
+			'DEFAULT' => 'N',
+		),
 		'SET_TITLE' => array(),
 		'SET_BROWSER_TITLE' => array(
 			'PARENT' => 'ADDITIONAL_SETTINGS',
@@ -442,7 +469,7 @@ $arComponentParameters = array(
 			'PARENT' => 'SORT_SETTINGS',
 			'NAME' => GetMessage('CP_BCS_OFFERS_SORT_FIELD'),
 			'TYPE' => 'LIST',
-			'VALUES' => $arOfferSort,
+			'VALUES' => $arSort,
 			'ADDITIONAL_VALUES' => 'Y',
 			'DEFAULT' => 'sort',
 		),
@@ -458,7 +485,7 @@ $arComponentParameters = array(
 			'PARENT' => 'SORT_SETTINGS',
 			'NAME' => GetMessage('CP_BCS_OFFERS_SORT_FIELD2'),
 			'TYPE' => 'LIST',
-			'VALUES' => $arOfferSort,
+			'VALUES' => $arSort,
 			'ADDITIONAL_VALUES' => 'Y',
 			'DEFAULT' => 'id',
 		),
@@ -602,9 +629,35 @@ $arComponentParameters = array(
 	),
 );
 
+if (
+	ModuleManager::isModuleInstalled('bitrix24')
+	|| (isset($arCurrentValues['LANDING_MODE']) && $arCurrentValues['LANDING_MODE'] === 'Y')
+)
+{
+	unset($arComponentParameters['PARAMETERS']['SET_TITLE']);
+	unset($arComponentParameters['PARAMETERS']['SET_BROWSER_TITLE']);
+	unset($arComponentParameters['PARAMETERS']['BROWSER_TITLE']);
+	unset($arComponentParameters['PARAMETERS']['SET_META_KEYWORDS']);
+	unset($arComponentParameters['PARAMETERS']['META_KEYWORDS']);
+	unset($arComponentParameters['PARAMETERS']['SET_META_DESCRIPTION']);
+	unset($arComponentParameters['PARAMETERS']['META_DESCRIPTION']);
+}
+else
+{
+	unset($arComponentParameters['PARAMETERS']['ALLOW_SEO_DATA']);
+}
+
 if (isset($arCurrentValues['COMPATIBLE_MODE']) && $arCurrentValues['COMPATIBLE_MODE'] === 'N')
 {
 	unset($arComponentParameters['PARAMETERS']['OFFERS_LIMIT']);
+}
+
+if ($usePropertyFeatures)
+{
+	unset($arComponentParameters['PARAMETERS']['PROPERTY_CODE']);
+	unset($arComponentParameters['PARAMETERS']['OFFERS_PROPERTY_CODE']);
+	if (isset($arComponentParameters['PARAMETERS']['PRODUCT_PROPERTIES']))
+		unset($arComponentParameters['PARAMETERS']['PRODUCT_PROPERTIES']);
 }
 
 // hack for correct sort
@@ -624,12 +677,12 @@ CIBlockParameters::AddPagerSettings(
 	true, //$bDescNumbering
 	true, //$bShowAllParam
 	true, //$bBaseLink
-	$arCurrentValues['PAGER_BASE_LINK_ENABLE'] === 'Y' //$bBaseLinkEnabled
+	(isset($arCurrentValues['PAGER_BASE_LINK_ENABLE']) && $arCurrentValues['PAGER_BASE_LINK_ENABLE'] === 'Y') //$bBaseLinkEnabled
 );
 
 CIBlockParameters::Add404Settings($arComponentParameters, $arCurrentValues);
 
-if ($arCurrentValues['SEF_MODE'] === 'Y')
+if (isset($arCurrentValues['SEF_MODE']) && $arCurrentValues['SEF_MODE'] === 'Y')
 {
 	$arComponentParameters['PARAMETERS']['SECTION_CODE_PATH'] = array(
 		'NAME' => GetMessage('CP_BCS_SECTION_CODE_PATH'),
@@ -644,12 +697,12 @@ if ($catalogIncluded)
 	{
 		$arComponentParameters['PARAMETERS']['CUSTOM_FILTER'] = array(
 			'PARENT' => 'DATA_SOURCE',
-			'NAME' => GetMessage('CP_BCS_TPL_CUSTOM_FILTER'),
+			'NAME' => GetMessage('CP_BCS_CUSTOM_FILTER'),
 			'TYPE' => 'CUSTOM',
 			'JS_FILE' => CatalogSectionComponent::getSettingsScript($componentPath, 'filter_conditions'),
 			'JS_EVENT' => 'initFilterConditionsControl',
 			'JS_MESSAGES' => Json::encode(array(
-				'invalid' => GetMessage('CP_BCS_TPL_SETTINGS_INVALID_CONDITION')
+				'invalid' => GetMessage('CP_BCS_SETTINGS_INVALID_CONDITION')
 			)),
 			'JS_DATA' => Json::encode($filterDataValues),
 			'DEFAULT' => ''
@@ -703,7 +756,8 @@ if ($catalogIncluded)
 if (empty($offers))
 {
 	unset($arComponentParameters['PARAMETERS']['OFFERS_FIELD_CODE']);
-	unset($arComponentParameters['PARAMETERS']['OFFERS_PROPERTY_CODE']);
+	if (isset($arComponentParameters['PARAMETERS']['OFFERS_PROPERTY_CODE']))
+		unset($arComponentParameters['PARAMETERS']['OFFERS_PROPERTY_CODE']);
 	unset($arComponentParameters['PARAMETERS']['OFFERS_SORT_FIELD']);
 	unset($arComponentParameters['PARAMETERS']['OFFERS_SORT_ORDER']);
 	unset($arComponentParameters['PARAMETERS']['OFFERS_SORT_FIELD2']);
@@ -711,14 +765,17 @@ if (empty($offers))
 }
 else
 {
-	$arComponentParameters['PARAMETERS']['OFFERS_CART_PROPERTIES'] = array(
-		'PARENT' => 'BASKET',
-		'NAME' => GetMessage('CP_BCS_OFFERS_CART_PROPERTIES'),
-		'TYPE' => 'LIST',
-		'MULTIPLE' => 'Y',
-		'VALUES' => $arProperty_OffersWithoutFile,
-		'HIDDEN' => (isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] === 'N' ? 'Y' : 'N')
-	);
+	if (!$usePropertyFeatures)
+	{
+		$arComponentParameters['PARAMETERS']['OFFERS_CART_PROPERTIES'] = array(
+			'PARENT' => 'BASKET',
+			'NAME' => GetMessage('CP_BCS_OFFERS_CART_PROPERTIES'),
+			'TYPE' => 'LIST',
+			'MULTIPLE' => 'Y',
+			'VALUES' => $arProperty_OffersWithoutFile,
+			'HIDDEN' => (isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] === 'N' ? 'Y' : 'N')
+		);
+	}
 }
 
 $arComponentParameters['PARAMETERS']['DISPLAY_COMPARE'] = array(
@@ -736,5 +793,11 @@ if (isset($arCurrentValues['DISPLAY_COMPARE']) && $arCurrentValues['DISPLAY_COMP
 		'NAME' => GetMessage('CP_BCS_COMPARE_PATH'),
 		'TYPE' => 'STRING',
 		'DEFAULT' => ''
+	);
+	$arComponentParameters['PARAMETERS']['USE_COMPARE_LIST'] = array(
+		'PARENT' => 'COMPARE',
+		'NAME' => GetMessage('CP_BCS_USE_COMPARE_LIST'),
+		'TYPE' => 'CHECKBOX',
+		'DEFAULT' => 'N'
 	);
 }

@@ -11,6 +11,10 @@
 	 */
 	if (window.BXMobileApp) return;
 
+	if ( typeof BXMobileAppContext != "undefined" ) {
+		BXMobileAppContext["useNativeWebSocket"] = false;
+	}
+
 	var syncApiObject = function (objectName){
 		this.objectName = objectName;
 
@@ -204,7 +208,6 @@
 						UI.Page.params.get({
 							callback: function (data)
 							{
-
 								BX.localStorage.set('mobileReloadPageData', {url: location.pathname + location.search, data: data});
 								app.reload();
 							}
@@ -240,7 +243,7 @@
 						},
 						get: function (params)
 						{
-							if(BX.localStorage)
+							if(BX.localStorage && BX.message['USER_ID'])
 							{
 								var data = BX.localStorage.get('mobileReloadPageData');
 								if (data && data.url == location.pathname + location.search && params.callback)
@@ -316,9 +319,21 @@
 							{
 								app.titleAction("hide")
 							},
-							setImage: function (imageUrl)
+							setImage: function (imageUrl, color)
 							{
 								this.params.imageUrl = imageUrl;
+
+								if (color)
+								{
+									this.params.imageColor = color || '';
+								}
+
+								this.redraw();
+							},
+							setImageColor: function (color)
+							{
+								this.params.imageColor = color || '';
+
 								this.redraw();
 							},
 							setText: function (text)
@@ -329,6 +344,11 @@
 							setDetailText: function (text)
 							{
 								this.params.detailText = text;
+								this.redraw();
+							},
+							setUseLetterImage: function (flag)
+							{
+								this.params.useLetterImage = flag === true;
 								this.redraw();
 							},
 							setCallback: function (callback)
@@ -389,7 +409,8 @@
 							pulltext: "Pull to refresh",
 							downtext: "Release to refresh",
 							loadtext: "Loading...",
-							timeout: "60"
+							timeout: "60",
+							backgroundColor: ''
 						},
 						setParams: function (params)
 						{
@@ -399,6 +420,7 @@
 							this.params.callback = (params.callback ? params.callback : this.params.callback);
 							this.params.enable = (typeof params.enabled == "boolean" ? params.enabled : this.params.enable);
 							this.params.timeout = (params.timeout ? params.timeout : this.params.timeout);
+							this.params.backgroundColor = (params.backgroundColor ? params.backgroundColor : this.params.backgroundColor);
 							app.pullDown(this.params);
 						},
 						setEnabled: function (enabled)
@@ -675,13 +697,29 @@
 			}
 		},
 		PageManager: {
-			loadPageBlank: function (params)
+			loadPageBlank: function (params, skipResolve)
 			{
 				/**
 				 * Notice:
 				 * use "bx24ModernStyle:true" to get new look of navigation bar
 				 */
-				app.loadPageBlank(params);
+				if (typeof BX.MobileTools === 'undefined' || skipResolve)
+				{
+					app.loadPageBlank(params);
+					return;
+				}
+
+				if(params.url) {
+					const { url, ...restParams } = params;
+					const func = BX.MobileTools.resolveOpenFunction(url, restParams);
+
+					if(func)
+					{
+						func();
+					}
+
+				}
+
 			},
 			loadPageUnique: function (params)
 			{
@@ -875,8 +913,24 @@
 			},
 			postToComponent: function (eventName, params, code)
 			{
-				window.webkit.messageHandlers.components.postMessage({event:eventName, params:params, code:code})
-			},
+				if(app.enableInVersion(25))
+				{
+					if (typeof(params) == "object")
+					{
+						params = JSON.stringify(params);
+					}
+
+					app.exec("fireEvent", {
+						eventName: eventName,
+						params: params,
+						componentCode:code
+					}, false);
+
+					return true;
+				}
+
+				return false;
+            },
 			addEventListener: function (eventObject, eventName, listener)
 			{
 				BXMobileApp.addCustomEvent(eventObject, eventName,listener)
@@ -1305,8 +1359,30 @@
 	{
 		window.WebSocket = function(server)
 		{
+			var handlerAliases = {
+				open: "onopen",
+				close: "onclose",
+				error: "onerror",
+				message: "onmessage",
+			};
+
 			this.open =  BX.proxy(websocketPlugin.open, websocketPlugin);
 			this.close =  BX.proxy(websocketPlugin.close, websocketPlugin);
+			this.addEventListener = function(event, handler)
+			{
+				if(typeof handlerAliases[event] != undefined)
+				{
+					this[handlerAliases[event]] = handler;
+				}
+			};
+
+			this.removeEventListener = function(event, handler)
+			{
+				if(typeof handlerAliases[event] != undefined)
+				{
+					this[handlerAliases[event]] = nil;
+				}
+			};
 
 			var onSocketClosed = BX.proxy(function (data)
 			{
@@ -1348,6 +1424,8 @@
 				onerror:onSocketError
 			});
 		};
+
+
 	}
 
 

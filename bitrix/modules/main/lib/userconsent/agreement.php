@@ -9,9 +9,11 @@ namespace Bitrix\Main\UserConsent;
 
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UserConsent\Internals\FieldTable;
+use Bitrix\Main\Error;
 use Bitrix\Main\ErrorCollection;
 use Bitrix\Main\Type\DateTime;
-use Bitrix\Main\Entity\Result as EntityResult;
+use Bitrix\Main\ORM;
+use Bitrix\Main\Web\Uri;
 
 Loc::loadLanguageFile(__FILE__);
 
@@ -46,6 +48,8 @@ class Agreement
 
 	/** @var DataProvider|null $dataProvider Data provider. */
 	protected $dataProvider;
+
+	private $isAgreementTextHtml;
 
 	/**
 	 * Get active agreement list.
@@ -93,6 +97,8 @@ class Agreement
 		$this->intl = new Intl();
 		$this->load($id);
 		$this->setReplace($replace);
+
+		$this->isAgreementTextHtml = ($this->data['IS_AGREEMENT_TEXT_HTML'] == 'Y');
 	}
 
 	/**
@@ -106,12 +112,14 @@ class Agreement
 		$this->id = null;
 		if (!$id)
 		{
+			$this->errors->setError(new Error('Parameter `Agreement ID` required.'));
 			return false;
 		}
 
 		$data = Internals\AgreementTable::getRowById($id);
 		if (!$data)
 		{
+			$this->errors->setError(new Error("Agreement with id `$id` not found."));
 			return false;
 		}
 
@@ -126,17 +134,18 @@ class Agreement
 	 * Set replace.
 	 *
 	 * @param array $replace Replace data.
-	 * @return string
+	 * @return $this
 	 */
 	public function setReplace(array $replace)
 	{
-		return $this->replace = $replace;
+		$this->replace = $replace;
+		return $this;
 	}
 
 	/**
 	 * Get errors.
 	 *
-	 * @return array
+	 * @return Error[]
 	 */
 	public function getErrors()
 	{
@@ -156,7 +165,7 @@ class Agreement
 	/**
 	 * Get agreement ID.
 	 *
-	 * @return string
+	 * @return int
 	 */
 	public function getId()
 	{
@@ -166,7 +175,7 @@ class Agreement
 	/**
 	 * Get agreement data.
 	 *
-	 * @return string
+	 * @return array
 	 */
 	public function getData()
 	{
@@ -183,6 +192,8 @@ class Agreement
 	{
 		unset($data['ID']);
 		$this->data = $data;
+
+		$this->isAgreementTextHtml = ($this->data['IS_AGREEMENT_TEXT_HTML'] == 'Y');
 	}
 
 	/**
@@ -212,6 +223,11 @@ class Agreement
 		if(!$this->check())
 		{
 			return;
+		}
+
+		if ($this->isAgreementTextHtml)
+		{
+			(new \CBXSanitizer)->sanitizeHtml($data['AGREEMENT_TEXT']);
 		}
 
 		if($this->id)
@@ -246,7 +262,7 @@ class Agreement
 		//$fields = $data['FIELDS'];
 		unset($data['FIELDS']);
 
-		$result = new EntityResult;
+		$result = new ORM\Data\Result;
 		Internals\AgreementTable::checkFields($result, $this->id, $data);
 		if (!$result->isSuccess())
 		{
@@ -276,6 +292,11 @@ class Agreement
 		return ($this->data['ACTIVE'] == self::ACTIVE);
 	}
 
+	public function isAgreementTextHtml(): bool
+	{
+		return $this->isAgreementTextHtml;
+	}
+
 	/**
 	 * Return true if is custom type.
 	 *
@@ -287,11 +308,70 @@ class Agreement
 	}
 
 	/**
-	 * Get text.
+	 * Get title.
 	 *
 	 * @return string
 	 */
-	public function getText()
+	public function getTitle()
+	{
+		return trim($this->getTitleFromText($this->getText()));
+	}
+
+	protected static function getTitleFromText($text)
+	{
+		$text = trim($text);
+		$maxLength = 50;
+		$pos = min(
+			mb_strpos($text, "\n")?: 50,
+			mb_strpos($text, "<br>")?: 50,
+			mb_strpos($text, ".")?: 50,
+			$maxLength
+		);
+
+		return mb_substr($text, 0, $pos);
+	}
+
+	/**
+	 * Get text.
+	 *
+	 * @param bool $cutTitle Cut title.
+	 * @return string
+	 */
+	public function getText($cutTitle = false)
+	{
+		$text = $this->getContent($cutTitle);
+
+		return ($this->isAgreementTextHtml ? strip_tags($text) : $text);
+	}
+
+	/**
+	 * Get html.
+	 * @return string
+	 */
+	public function getHtml()
+	{
+		$text = $this->getContent();
+
+		$text = ($this->isAgreementTextHtml ? $text : nl2br($text));
+		$sanitizer = new \CBXSanitizer;
+		$sanitizer->setLevel(\CBXSanitizer::SECURE_LEVEL_MIDDLE);
+		$sanitizer->allowAttributes([
+			'target' => [
+				'tag' => function ($tag)
+				{
+					return $tag === 'a';
+				},
+				'content' => function ($tag)
+				{
+					return true;
+				},
+			]
+		]);
+
+		return $sanitizer->sanitizeHtml($text);
+	}
+
+	private function getContent($cutTitle = false)
 	{
 		if ($this->isCustomType())
 		{
@@ -305,7 +385,18 @@ class Agreement
 		$replaceData = $replaceData + $this->getDataProviderValues();
 		$replaceData = $replaceData + $this->getReplaceFieldValues();
 
-		return Text::replace($text, $replaceData, true);
+		$text = Text::replace($text, $replaceData, true);
+		$text = trim($text);
+		if ($cutTitle)
+		{
+			$title = self::getTitleFromText($text);
+			if (mb_strlen($title) !== 50 && $title === mb_substr($text, 0, mb_strlen($title)))
+			{
+				$text = trim(mb_substr($text, mb_strlen($title)));
+			}
+		}
+
+		return $text;
 	}
 
 	/**
@@ -315,13 +406,64 @@ class Agreement
 	 */
 	public function getLabelText()
 	{
-		if ($this->isCustomType())
+		return str_replace('%', '', $this->getLabel());
+	}
+
+	/**
+	 * Get url.
+	 *
+	 * @return string
+	 */
+	public function getUrl()
+	{
+		return ($this->data['USE_URL'] === 'Y' && $this->data['URL'])
+			? (new Uri($this->data['URL']))->getLocator()
+			: null;
+	}
+
+	/**
+	 * Get label with synbols '%' for link in label text.
+	 *
+	 * @return string
+	 */
+	public function getLabel()
+	{
+		$text = $this->isCustomType() ? $this->data['LABEL_TEXT'] : $this->intl->getLabelText();
+		$text = Text::replace($text, $this->replace);
+
+		if ($this->data['USE_URL'] !== 'Y' || !$this->data['URL'])
 		{
-			return $this->data['LABEL_TEXT'];
+			return str_replace('%', '', $text);
 		}
 
-		$label = $this->intl->getLabelText();
-		return Text::replace($label, $this->replace);
+		$text = trim(trim($text), "%");
+		$text = explode('%', $text);
+		$text = array_filter($text);
+
+		/** @var array $text */
+		switch (count($text))
+		{
+			case 0:
+			case 1:
+			$text = array_merge([''], $text, ['']);
+				break;
+
+			case 2:
+				$text[] = '';
+				break;
+
+			case 3:
+				break;
+
+			default:
+				$text = array_merge(
+					array_slice($text, 0, 2),
+					[implode('', array_slice($text, 2))]
+				);
+				break;
+		}
+
+		return implode('%', $text);
 	}
 
 	/**

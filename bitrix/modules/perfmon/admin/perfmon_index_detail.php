@@ -1,4 +1,6 @@
 <?
+use Bitrix\Main\Loader;
+
 define("ADMIN_MODULE_NAME", "perfmon");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 /** @global CMain $APPLICATION */
@@ -11,7 +13,7 @@ if($RIGHT == "D")
 
 $isAdmin = $USER->CanDoOperation('edit_php');
 
-if(!CModule::IncludeModule('perfmon'))
+if(!Loader::includeModule('perfmon'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/perfmon/prolog.php");
@@ -391,7 +393,7 @@ $tabControl->BeginNextTab();
 					<td><?echo GetMessage("PERFMON_IDETAIL_F_ROWS");?></td>
 					<td><?echo GetMessage("PERFMON_IDETAIL_F_EXTRA");?></td>
 				</tr>
-				<?foreach(unserialize($arSuggest["SQL_EXPLAIN"]) as $arRes):?>
+				<?foreach(unserialize($arSuggest["SQL_EXPLAIN"], ['allowed_classes' => false]) as $arRes):?>
 					<tr>
 						<td><?echo htmlspecialcharsEx($arRes["select_type"]);?></td>
 						<td><?echo htmlspecialcharsEx($arRes["table"]);?></td>
@@ -418,7 +420,7 @@ $tabControl->BeginNextTab();
 		<tr>
 			<td><?echo GetMessage("PERFMON_IDETAIL_CREATE_INDEX_DDL")?>:</td>
 			<?
-				$prefix = substr("ix_perf_".trim($arSuggest["TABLE_NAME"], "`"), 0, 27)."_";
+				$prefix = mb_substr("ix_perf_".trim($arSuggest["TABLE_NAME"], "`"), 0, 27)."_";
 				$i = 1;
 				while(array_key_exists($prefix.$i, $arIndexes))
 					$i++;

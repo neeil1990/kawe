@@ -1,20 +1,29 @@
-<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+<?php
+
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
+{
+	die();
+}
+
 /**
  * @var CMain $APPLICATION
  * @var array $arParams
  * @var array $arResult
  */
 CUtil::InitJSCore(array('ajax'));
+
 $request = \Bitrix\Main\Context::getCurrent()->getRequest();
 // ************************* Input params***************************************************************
 ?>
 <div class="feed-wrap">
 <div class="feed-comments-block">
 	<a name="comments"></a>
-<?
+	<?php
 // *************************/Input params***************************************************************
 
-$link = $APPLICATION->GetCurPageParam("MID=#ID#", array("MID", "sessid", "AJAX_POST", "ENTITY_XML_ID", "ENTITY_TYPE", "ENTITY_ID", "REVIEW_ACTION", "MODE", "FILTER", "result"));
+$url = (new \Bitrix\Main\Web\Uri($arParams["URL"]))
+	->deleteParams(["MID", "ID", "sessid", "AJAX_POST", "ENTITY_XML_ID", "ENTITY_TYPE", "ENTITY_ID", "REVIEW_ACTION", "ACTION", "MODE", "FILTER", "result"]);
+$link = ForumAddPageParams($url->getPathQuery(), array("MID" => "#ID#"), false, false);
 
 if (isset($arParams["PUBLIC_MODE"]) && $arParams["PUBLIC_MODE"])
 {
@@ -33,6 +42,8 @@ else
 	);
 }
 
+$canCreateTask = ($arResult['POST_CONTENT_TYPE_ID'] && !$arParams['PUBLIC_MODE']);
+
 $arResult["OUTPUT_LIST"] = $APPLICATION->IncludeComponent(
 	"bitrix:main.post.list",
 	"",
@@ -48,18 +59,24 @@ $arResult["OUTPUT_LIST"] = $APPLICATION->IncludeComponent(
 		"RIGHTS" => array(
 			"MODERATE" =>  $arResult["PANELS"]["MODERATE"],
 			"EDIT" => $editRight,
-			"DELETE" => $editRight
+			"DELETE" => $editRight,
+			'CREATETASK' => ($arResult['POST_CONTENT_TYPE_ID'] && !$arParams['PUBLIC_MODE'] ? 'Y' : 'N'),
+			'CREATESUBTASK' => ($canCreateTask && $arParams['ENTITY_TYPE'] === 'TK' ? 'Y' : 'N')
 		),
-		"VISIBLE_RECORDS_COUNT" => 3,
+		'POST_CONTENT_TYPE_ID' => $arResult['POST_CONTENT_TYPE_ID'],
+		'COMMENT_CONTENT_TYPE_ID' => 'FORUM_POST',
+
+		"VISIBLE_RECORDS_COUNT" => $arResult["VISIBLE_RECORDS_COUNT"],
 
 		"ERROR_MESSAGE" => $arResult["ERROR_MESSAGE"],
 		"OK_MESSAGE" => $arResult["OK_MESSAGE"],
 		"RESULT" => ($arResult["RESULT"] ?: $request->getQuery("MID")),
 		"PUSH&PULL" => $arResult["PUSH&PULL"],
+		"MODE" => $arResult["MODE"],
 		"VIEW_URL" => ($arParams["SHOW_LINK_TO_MESSAGE"] == "Y" && !(isset($arParams["PUBLIC_MODE"]) && $arParams["PUBLIC_MODE"]) ? $link : ""),
-		"EDIT_URL" => ForumAddPageParams($link, array("REVIEW_ACTION" => "GET"), false, false),
-		"MODERATE_URL" => ForumAddPageParams($link, array("REVIEW_ACTION" => "#ACTION#"), false, false),
-		"DELETE_URL" => ForumAddPageParams($link, array("REVIEW_ACTION" => "DEL"), false, false),
+		"EDIT_URL" => ForumAddPageParams($link, array("ACTION" => "GET"), false, false),
+		"MODERATE_URL" => ForumAddPageParams($link, array("ACTION" => "#ACTION#"), false, false),
+		"DELETE_URL" => ForumAddPageParams($link, array("ACTION" => "DEL"), false, false),
 		"AUTHOR_URL" => $arParams["URL_TEMPLATES_PROFILE_VIEW"],
 
 		"AVATAR_SIZE" => $arParams["AVATAR_SIZE_COMMENT"],
@@ -72,7 +89,9 @@ $arResult["OUTPUT_LIST"] = $APPLICATION->IncludeComponent(
 		"NOTIFY_TAG" => ($arParams["bFromList"] ? "BLOG|COMMENT" : ""),
 		"NOTIFY_TEXT" => ($arParams["bFromList"] ? TruncateText(str_replace(Array("\r\n", "\n"), " ", $arParams["POST_DATA"]["~TITLE"]), 100) : ""),
 		"SHOW_MINIMIZED" => $arParams["SHOW_MINIMIZED"],
-		"SHOW_POST_FORM" => $arResult["SHOW_POST_FORM"],
+
+		"FORM_ID" => $arParams["FORM_ID"], // instead of SHOW_POST_FORM
+		"SHOW_POST_FORM" => $arResult["SHOW_POST_FORM"], // for old main.post.list
 
 		"IMAGE_SIZE" => $arParams["IMAGE_SIZE"],
 		"BIND_VIEWER" => $arParams["BIND_VIEWER"],
@@ -81,7 +100,7 @@ $arResult["OUTPUT_LIST"] = $APPLICATION->IncludeComponent(
 	),
 	$this->__component
 );
-?><?=$arResult["OUTPUT_LIST"]["HTML"]?><?
+?><?=$arResult["OUTPUT_LIST"]["HTML"]?><?php
 if ($arResult["SHOW_POST_FORM"] == "Y")
 {
 	include(__DIR__."/form.php");

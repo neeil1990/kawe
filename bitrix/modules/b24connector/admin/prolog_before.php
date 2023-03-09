@@ -23,8 +23,12 @@ if(!\Bitrix\Main\Loader::includeModule("socialservices"))
 	));
 }
 
+\Bitrix\Main\UI\Extension::load([
+	"main.core",
+	"ui.design-tokens"
+]);
+
 Asset::getInstance()->addString('<link rel="stylesheet" type="text/css" href="/bitrix/css/b24connector/style.css">');
-Asset::getInstance()->addJs("/bitrix/js/main/core/core.js");
 Asset::getInstance()->addJs("/bitrix/js/b24connector/connector.js");
 
 $jsLangMesIds = array(

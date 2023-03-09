@@ -1,5 +1,11 @@
-<?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
 <?
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
+{
+	die();
+}
+
+\Bitrix\Main\UI\Extension::load(['ui.design-tokens']);
+
 if(!empty($arResult["OK_MESSAGE"]))
 {
 	foreach($arResult["OK_MESSAGE"] as $v)
@@ -27,13 +33,13 @@ if(!empty($arResult["ERROR_MESSAGE"]))
 		<?
 	}
 }
-if(strlen($arResult["FATAL_ERROR"])>0)
+if($arResult["FATAL_ERROR"] <> '')
 {
 	?>
 	<span class='errortext'><?=$arResult["FATAL_ERROR"]?></span><br /><br />
 	<?
 }
-elseif(count($arResult["POST"])>0)
+elseif(is_array($arResult["POST"]) && count($arResult["POST"])>0)
 {
 	foreach($arResult["POST"] as $CurPost)
 	{
@@ -47,12 +53,12 @@ elseif(count($arResult["POST"])>0)
 						<span class="blog-post-date"><?=$CurPost["DATE_PUBLISH_FORMATED"]?>
 						<br /><b><?=$CurPost["TITLE"]?></b></span>
 					</td>
-					<?if(strLen($CurPost["urlToEdit"])>0):?>
+					<?if($CurPost["urlToEdit"] <> ''):?>
 						<td>
 							<a href="<?=$CurPost["urlToEdit"]?>" class="blog-post-edit"></a>
 						</td>
 					<?endif;?>
-					<?if(strLen($CurPost["urlToDelete"])>0):?>
+					<?if($CurPost["urlToDelete"] <> ''):?>
 						<td>
 							<a href="javascript:if(confirm('<?=GetMessage("BLOG_MES_DELETE_POST_CONFIRM")?>')) window.location='<?=$CurPost["urlToDelete"]?>'" class="blog-post-delete"></a>
 						</td>
@@ -96,4 +102,4 @@ elseif(count($arResult["POST"])>0)
 }
 else
 	echo GetMessage("B_B_DRAFT_NO_MES");
-?>	
+?>

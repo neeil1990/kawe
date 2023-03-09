@@ -10,6 +10,22 @@ namespace Bitrix\Sale\Internals;
 use Bitrix\Main;
 use Bitrix\Sale;
 
+/**
+ * Class OrderArchiveTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_OrderArchive_Query query()
+ * @method static EO_OrderArchive_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_OrderArchive_Result getById($id)
+ * @method static EO_OrderArchive_Result getList(array $parameters = array())
+ * @method static EO_OrderArchive_Entity getEntity()
+ * @method static \Bitrix\Sale\Internals\EO_OrderArchive createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Internals\EO_OrderArchive_Collection createCollection()
+ * @method static \Bitrix\Sale\Internals\EO_OrderArchive wakeUpObject($row)
+ * @method static \Bitrix\Sale\Internals\EO_OrderArchive_Collection wakeUpCollection($rows)
+ */
 class OrderArchiveTable extends Main\Entity\DataManager
 {
 	/**
@@ -151,6 +167,14 @@ class OrderArchiveTable extends Main\Entity\DataManager
 			new Main\Entity\StringField('ORDER_DATA'),
 
 			new Main\Entity\ReferenceField(
+				'BASKET_ARCHIVE',
+				'Bitrix\Sale\Internals\BasketArchive',
+				array(
+					'=ref.ARCHIVE_ID' => 'this.ID'
+				)
+			),
+
+			new Main\Entity\ReferenceField(
 				'ORDER_PACKED',
 				'Bitrix\Sale\Internals\OrderArchivePacked',
 				array('=this.ID' => 'ref.ORDER_ARCHIVE_ID'),
@@ -253,7 +277,7 @@ class OrderArchiveTable extends Main\Entity\DataManager
 
 			while ($packed = $packedData->fetch())
 			{
-				$orderData = unserialize($packed['ORDER_DATA']);
+				$orderData = unserialize($packed['ORDER_DATA'], ['allowed_classes' => false]);
 				if (is_array($orderData['ORDER']))
 				{
 					$preparedOrderData = array_intersect_key($orderData['ORDER'], array_flip(Sale\Archive\Manager::getOrderFieldNames()));

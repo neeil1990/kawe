@@ -7,9 +7,10 @@ use Bitrix\Main\Localization\Loc;
 </div>
 
 <?
-if(strlen($arResult["ID"])>0)
+if($arResult["ID"] <> '')
 {
 	ShowError($arResult["ERROR_MESSAGE"]);
+	CJSCore::Init(array('date'));
 	?>
 	<form method="post"  class="col-md-12 sale-profile-detail-form" action="<?=POST_FORM_ACTION_URI?>" enctype="multipart/form-data">
 		<?=bitrix_sessid_post()?>
@@ -45,13 +46,14 @@ if(strlen($arResult["ID"])>0)
 					</h4>
 				</div>
 				<?
-				foreach($block["PROPS"] as $key => $property)
+				foreach($block["PROPS"] as $property)
 				{
-					$name = "ORDER_PROP_".(int)$property["ID"];
+					$key = (int)$property["ID"];
+					$name = "ORDER_PROP_".$key;
 					$currentValue = $arResult["ORDER_PROPS_VALUES"][$name];
 					$alignTop = ($property["TYPE"] === "LOCATION" && $arParams['USE_AJAX_LOCATIONS'] === 'Y') ? "vertical-align-top" : "";
 					?>
-					<div class="form-group sale-personal-profile-detail-property-<?=strtolower($property["TYPE"])?>">
+					<div class="form-group sale-personal-profile-detail-property-<?= mb_strtolower($property["TYPE"])?>">
 						<label class="sale-personal-profile-detail-form-label col-md-3 text-md-right <?=$alignTop?>" for="sppd-property-<?=$key?>">
 							<?= $property["NAME"]?>:
 							<?
@@ -186,16 +188,16 @@ if(strlen($arResult["ID"])>0)
 									if (empty($currentValue) || !is_array($currentValue))
 										$currentValue = array($property["DEFAULT_VALUE"]);
 
-									foreach ($currentValue as $key => $elementValue)
+									foreach ($currentValue as $code => $elementValue)
 									{
 										$locationValue = intval($elementValue) ? $elementValue : $property["DEFAULT_VALUE"];
 										CSaleLocation::proxySaleAjaxLocationsComponent(
 											array(
-												"ID" => "propertyLocation".$name."[$key]",
+												"ID" => "propertyLocation".$name."[$code]",
 												"AJAX_CALL" => "N",
 												'CITY_OUT_LOCATION' => 'Y',
 												'COUNTRY_INPUT_NAME' => $name.'_COUNTRY',
-												'CITY_INPUT_NAME' => $name."[$key]",
+												'CITY_INPUT_NAME' => $name."[$code]",
 												'LOCATION_VALUE' => $locationValue,
 											),
 											array(
@@ -209,7 +211,7 @@ if(strlen($arResult["ID"])>0)
 									<span class="btn-themes btn-default btn-md btn input-add-multiple"
 										  data-add-type=<?=$property["TYPE"]?>
 										  data-add-name="<?=$name?>"
-										  data-add-last-key="<?=$key?>"
+										  data-add-last-key="<?=$code?>"
 										  data-add-template="<?=$locationTemplate?>"><?=Loc::getMessage('SPPD_ADD')?></span>
 									<?
 								}
@@ -301,8 +303,35 @@ if(strlen($arResult["ID"])>0)
 								<span class="sale-personal-profile-detail-load-file-cancel sale-personal-profile-hide"></span>
 								<?
 							}
+							elseif ($property["TYPE"] === 'DATE')
+							{
+								if ($property["MULTIPLE"] === 'Y')
+								{
+									$name .= '[]';
+								}
+								$currentValue = is_array($currentValue) ? $currentValue : [$currentValue];
+								?>
+								<div class='sale-personal-profile-detail-form-date'>
+									<?
+										foreach ($currentValue as $dataInputValue)
+										{
+											?>
+											<div class="form-group">
+												<div class='input-group date'>
+													<input class="form-control mb-1" type="text" name="<?=$name?>" maxlength="50" value="<?=$dataInputValue?>"/>
+													<span class="input-group-addon">
+													<i class="bx-calendar"></i>
+												</span>
+												</div>
+											</div>
+											<?
+										}
+									?>
+								</div>
+								<?
+							}
 
-							if (strlen($property["DESCRIPTION"]) > 0)
+							if ($property["DESCRIPTION"] <> '')
 							{
 								?>
 								<br /><small><?= $property["DESCRIPTION"] ?></small>

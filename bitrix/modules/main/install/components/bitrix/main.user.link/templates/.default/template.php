@@ -5,7 +5,11 @@
 /** @global CUser $USER */
 /** @global CMain $APPLICATION */
 
-if(strlen($arResult["FatalError"])>0)
+use Bitrix\Main\UI;
+
+UI\Extension::load("ui.tooltip");
+
+if($arResult["FatalError"] <> '')
 {
 	?><span class='errortext'><?=$arResult["FatalError"]?></span><br /><br /><?
 }
@@ -15,24 +19,35 @@ else
 	
 	if ($arParams["INLINE"] != "Y")
 	{
-		if (strlen($arResult["User"]["DETAIL_URL"]) > 0 && $arResult["CurrentUserPerms"]["Operations"]["viewprofile"])
+		$tooltipUserId = (
+			$arResult["User"]["DETAIL_URL"] <> ''
+			&& $arResult["CurrentUserPerms"]["Operations"]["viewprofile"]
+			&& (
+				!array_key_exists("USE_TOOLTIP", $arResult)
+				|| $arResult["USE_TOOLTIP"]
+			)
+				? $arResult["User"]["ID"]
+				: ''
+		);
+
+		if ($arResult["User"]["DETAIL_URL"] <> '' && $arResult["CurrentUserPerms"]["Operations"]["viewprofile"])
 		{
-			?><table cellspacing="0" cellpadding="0" border="0" id="anchor_<?=$anchor_id?>" class="bx-user-info-anchor"><?
+			?><table cellspacing="0" cellpadding="0" border="0" id="anchor_<?=$anchor_id?>" class="bx-user-info-anchor" bx-tooltip-user-id="<?=$tooltipUserId?>"><?
 		}
 		else
 		{
-			?><table cellspacing="0" cellpadding="0" border="0" id="anchor_<?=$anchor_id?>" class="bx-user-info-anchor-nolink"><?
+			?><table cellspacing="0" cellpadding="0" border="0" id="anchor_<?=$anchor_id?>" class="bx-user-info-anchor-nolink" bx-tooltip-user-id="<?=$tooltipUserId?>"><?
 		}
 		?><tr><?
 		if ($arParams["USE_THUMBNAIL_LIST"] == "Y")
 		{
 			?><td class="bx-user-info-anchor-cell"><div class="bx-user-info-thumbnail" align="center" valign="middle" <?if (intval($arParams["THUMBNAIL_LIST_SIZE"]) > 0): echo 'style="width: '.intval($arParams["THUMBNAIL_LIST_SIZE"]).'px; height: '.intval($arParams["THUMBNAIL_LIST_SIZE"]+2).'px;"'; endif;?>><?
-			if (strlen($arResult["User"]["HREF"]) > 0)
+			if ($arResult["User"]["HREF"] <> '')
 			{
 				?><a href="<?=$arResult["User"]["HREF"]?>"<?=($arParams["SEO_USER"] == "Y" ? ' rel="nofollow"' : '')?>><?=$arResult["User"]["PersonalPhotoImgThumbnail"]["Image"]?></a><?
 			}
 			elseif (
-				strlen($arResult["User"]["DETAIL_URL"]) > 0 
+				$arResult["User"]["DETAIL_URL"] <> '' 
 				&& $arResult["CurrentUserPerms"]["Operations"]["viewprofile"]
 			)
 			{
@@ -45,12 +60,12 @@ else
 			?></div></td><?
 		}
 		?><td class="bx-user-info-anchor-cell" valign="top"><?
-		if (strlen($arResult["User"]["HREF"]) > 0)
+		if ($arResult["User"]["HREF"] <> '')
 		{
 			?><a class="bx-user-info-name" href="<?=$arResult["User"]["HREF"]?>"<?=($arParams["SEO_USER"] == "Y" ? ' rel="nofollow"' : '')?>><?=$arResult["User"]["NAME_FORMATTED"]?></a><?
 		}
 		elseif (
-			strlen($arResult["User"]["DETAIL_URL"]) > 0 
+			$arResult["User"]["DETAIL_URL"] <> '' 
 			&& $arResult["CurrentUserPerms"]["Operations"]["viewprofile"]
 		)
 		{
@@ -60,7 +75,7 @@ else
 		{
 			?><div class="bx-user-info-name"><?=$arResult["User"]["NAME_FORMATTED"]?></div><?
 		}
-		?><?=(strlen($arResult["User"]["NAME_DESCRIPTION"]) > 0 ? " (".$arResult["User"]["NAME_DESCRIPTION"].")": "")?><?
+		?><?=($arResult["User"]["NAME_DESCRIPTION"] <> '' ? " (".$arResult["User"]["NAME_DESCRIPTION"].")": "")?><?
 		if ($arResult["bSocialNetwork"])
 		{
 			if (array_key_exists("IS_ONLINE", $arParams))
@@ -72,12 +87,12 @@ else
 				$online_class_attrib = '';
 			}
 
-			if (strlen($arResult["User"]["HREF"]) > 0)
+			if ($arResult["User"]["HREF"] <> '')
 			{
 				$link = $arResult["User"]["HREF"];
 			}
 			elseif (
-				strlen($arResult["User"]["DETAIL_URL"]) > 0 
+				$arResult["User"]["DETAIL_URL"] <> '' 
 				&& $arResult["CurrentUserPerms"]["Operations"]["viewprofile"]
 			)
 			{
@@ -91,7 +106,7 @@ else
 			<div class="bx-user-info-online-cell"><?
 			if (!$link)
 			{
-				?><div id="<?=$arResult["User"]["HTML_ID"]?>"<?=$online_class_attrib?> /></div><?
+				?><div id="<?=$arResult["User"]["HTML_ID"]?>"<?=$online_class_attrib?>></div><?
 			}
 			else
 			{
@@ -102,39 +117,17 @@ else
 		?></td>
 		</tr>
 		</table><?
-		if (
-			strlen($arResult["User"]["DETAIL_URL"]) > 0 
-			&& $arResult["CurrentUserPerms"]["Operations"]["viewprofile"] 
-			&& (
-				!array_key_exists("USE_TOOLTIP", $arResult) 
-				|| $arResult["USE_TOOLTIP"]
-			)
-		)
-		{
-			?><script type="text/javascript">
-				BX.tooltip(<?=$arResult["User"]["ID"]?>, "anchor_<?=$anchor_id?>", "<?=CUtil::JSEscape($arResult["ajax_page"])?>");
-			</script><?
-		}
 	}
 	else
 	{
 		if (
-			strlen($arResult["User"]["DETAIL_URL"]) > 0 
+			$arResult["User"]["DETAIL_URL"] <> '' 
 			&& $arResult["CurrentUserPerms"]["Operations"]["viewprofile"]
 		)
 		{
-			?><a href="<?=$arResult["User"]["DETAIL_URL"]?>"<?=($arParams["SEO_USER"] == "Y" ? ' rel="nofollow"' : '')?> id="anchor_<?=$anchor_id?>"><?=$arResult["User"]["NAME_FORMATTED"]?></a><?
-			if (
-				!array_key_exists("USE_TOOLTIP", $arResult) 
-				|| $arResult["USE_TOOLTIP"]
-			)
-			{
-				?><script type="text/javascript">
-				BX.tooltip(<?=$arResult["User"]["ID"]?>, "anchor_<?=$anchor_id?>", "<?=CUtil::JSEscape($arResult["ajax_page"])?>");
-			</script><?
-			}
+			?><a href="<?=$arResult["User"]["DETAIL_URL"]?>"<?=($arParams["SEO_USER"] == "Y" ? ' rel="nofollow"' : '')?> id="anchor_<?=$anchor_id?>" bx-tooltip-user-id="<?=$arResult["User"]["ID"]?>"><?=$arResult["User"]["NAME_FORMATTED"]?></a><?
 		}
-		elseif (strlen($arResult["User"]["DETAIL_URL"]) > 0 && !$arResult["bSocialNetwork"])
+		elseif ($arResult["User"]["DETAIL_URL"] <> '' && !$arResult["bSocialNetwork"])
 		{
 			?><a href="<?=$arResult["User"]["DETAIL_URL"]?>"<?=($arParams["SEO_USER"] == "Y" ? ' rel="nofollow"' : '')?> id="anchor_<?=$anchor_id?>"><?=$arResult["User"]["NAME_FORMATTED"]?></a><?
 		}
@@ -142,7 +135,7 @@ else
 		{
 			?><?=$arResult["User"]["NAME_FORMATTED"]?><?
 		}
-		?><?=(strlen($arResult["User"]["NAME_DESCRIPTION"]) > 0 ? " (".$arResult["User"]["NAME_DESCRIPTION"].")": "")?><?
+		?><?=($arResult["User"]["NAME_DESCRIPTION"] <> '' ? " (".$arResult["User"]["NAME_DESCRIPTION"].")": "")?><?
 	}
 }
 ?>

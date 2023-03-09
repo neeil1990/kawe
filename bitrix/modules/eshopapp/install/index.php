@@ -15,7 +15,7 @@ Class eshopapp extends CModule
 	var $MODULE_CSS;
 	var $MODULE_GROUP_RIGHTS = "Y";
 
-	function eshopapp()
+	public function __construct()
 	{
 		$arModuleVersion = array();
 

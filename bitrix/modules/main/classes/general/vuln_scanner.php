@@ -1,6 +1,8 @@
 <?php
 IncludeModuleLangFile(__FILE__);
 
+if (!defined("T_BAD_CHARACTER")) define("T_BAD_CHARACTER", 401);
+
 class CVariableDeclare
 {
 	public $line = 0;
@@ -41,7 +43,7 @@ class CVariable
 		$this->secure = false;
 		$this->requestInitialization = true;
 	}
-	
+
 	public function newDeclare($id, $line, $start, $end, $tokens, $comment, $dependencies, $tainted_vars)
 	{
 		$this->declares[] = new CVariableDeclare($id, $line, $start, $end, $tokens, $comment, $dependencies, $tainted_vars);
@@ -163,9 +165,9 @@ class CVulnScanner
 		$secure = false;
 		$cur_brace = -1;
 
-		for ($i = 0, $count = count($tokens); $i < $count; $i++) 
+		for ($i = 0, $count = count($tokens); $i < $count; $i++)
 		{
-			if(is_array($tokens[$i])) 
+			if(is_array($tokens[$i]))
 			{
 				$token = $tokens[$i][0];
 				$token_value = $tokens[$i][1];
@@ -295,7 +297,7 @@ class CVulnScanner
 
 			if($skip)
 			{
-				while (!($tokens[$i + 1] === ', ') && $i + 1 < $count) 
+				while (!($tokens[$i + 1] === ', ') && $i + 1 < $count)
 				{
 					if($tokens[$i + 1] === ')')
 						$braces--;
@@ -335,7 +337,10 @@ class CVulnScanner
 
 	private function dependencyHave($tokens, $type)
 	{
-
+		if (!is_array($tokens))
+		{
+			return false;
+		}
 		for ($i = 1, $tokens_count = count($tokens) - 1; $i < $tokens_count; $i++)
 		{
 			if(is_array($tokens[$i]))
@@ -358,9 +363,10 @@ class CVulnScanner
 
 	public function process()
 	{
+		$this->objects = array();
 		for ($i = 0, $tokens_count = count($this->tokens); $i < $tokens_count; $i++)
 		{
-		
+
 			if((time() - $this->arParams['time_start']) >= $this->arParams['time_out'])
 				return false;
 
@@ -374,6 +380,14 @@ class CVulnScanner
 				{
 					if($this->tokens[$i + 1] === '=' || (is_array($this->tokens[$i + 1]) && in_array($this->tokens[$i + 1][0], $this->tokens_type['ASSIGNMENT'])))
 					{
+						if (
+							is_array($this->tokens[$i + 2]) && ($this->tokens[$i + 2][0] === T_NEW)
+							&& ($className = $this->getClassName($i + 3))
+						)
+						{
+							$this->objects[$token_value] = ltrim(strtoupper($className), '\\');
+							$i += $this->getBraceEnd($this->tokens, $i);
+						}
 						if(!(is_array($this->tokens[$i + 2]) && $this->tokens[$i + 2][0] === T_ARRAY))
 							$this->addVariable($this->tokens[$i], $i, $cur_line, $i, $this->getBraceEnd($this->tokens, $i), '');
 						else
@@ -387,10 +401,10 @@ class CVulnScanner
 							unset($this->variables[$val]);
 				}
 				elseif(
-					in_array($token, $this->tokens_type['FUNCTIONS']) 
+					in_array($token, $this->tokens_type['FUNCTIONS'])
 					|| ($this->search_xss && !$this->global_xss_ignore && in_array($token, $this->tokens_type['XSS']))
 					|| in_array($token, $this->tokens_type['INCLUDES'])
-				) 
+				)
 				{
 					if(in_array($token, $this->tokens_type['INCLUDES']))
 					{
@@ -406,7 +420,7 @@ class CVulnScanner
 									//if(!empty(substr($this->tokens[$i+2][1], 1, -1)))
 									$component_name = substr($this->tokens[$i + 2][1], 1, -1);
 								}
-								$component_name = self::strtolower($component_name);
+								$component_name = strtolower($component_name);
 								if(empty($component_name)) // || strpos($component_name, 'bitrix:') === 0)
 									continue;
 
@@ -428,7 +442,7 @@ class CVulnScanner
 
 								if($this->tokens[$i + 1] === '(' && $this->tokens[$i + 4][0] === T_CONSTANT_ENCAPSED_STRING)
 									$component_template = substr($this->tokens[$i + 4][1], 1, -1);
-								
+
 								//$additional_tokens=array(array(T_VARIABLE, '$arParams', 0), '=', array(T_CONSTANT_ENCAPSED_STRING, ' ', 0), ';', array(T_VARIABLE, '$arResult', 0), '=', array(T_CONSTANT_ENCAPSED_STRING, ' ', 0), ';');
 								$scanner = new CVulnScanner($inc_file, $this->arParams, $this->template, $component_template);
 								$result = $scanner->process();
@@ -459,7 +473,7 @@ class CVulnScanner
 								$skip = 1;
 								$component_path = array_pop(explode('bitrix/components', dirname($this->current_file)));
 								$component_template = (!empty($this->tokens[$i][3]) ? $this->tokens[$i][3] : '.default');
-								if(is_file($this->arParams['doc_root_path'].'/bitrix/templates/'.$this->template.'/components'.$component_path.'/'.$component_template.'/result_modifier.php')) 
+								if(is_file($this->arParams['doc_root_path'].'/bitrix/templates/'.$this->template.'/components'.$component_path.'/'.$component_template.'/result_modifier.php'))
 									$inc_file = $this->arParams['doc_root_path'].'/bitrix/templates/'.$this->template.'/components'.$component_path.'/'.$component_template.'/result_modifier.php';
 								elseif(is_file($this->arParams['doc_root_path'].'/bitrix/templates/'.$component_template.'/components'.$component_path.'/.default/result_modifier.php'))
 									$inc_file = $this->arParams['doc_root_path'].'/bitrix/templates/'.$component_template.'/components'.$component_path.'/.default/result_modifier.php';
@@ -499,7 +513,7 @@ class CVulnScanner
 									$inc_file = $this->arParams['doc_root_path'].'/bitrix/templates/.default/components'.$component_path.'/'.$component_template.'/'.$template_name.'.php';
 								else
 									$inc_file = dirname($this->current_file).'/templates/'.$component_template.'/'.$template_name.'.php';
-								
+
 
 								unset($component_path);
 							}
@@ -541,7 +555,7 @@ class CVulnScanner
 						if(!is_file($try_file)) // && strpos($try_file, $this->arParams['path'] !== 0))
 						{
 							$try_file = dirname($this->current_file).'/'.$inc_file;
-
+							$try_file = str_replace('//', '/', $try_file);
 						}
 
 						//not including bitrix core, too hard:(
@@ -559,6 +573,7 @@ class CVulnScanner
 
 									$tokens_count = count($this->tokens);
 									$this->current_file = & realpath($try_file);
+									$this->file_history[] = $try_file;
 
 									$this->comment = str_replace(realpath(trim($this->arParams['path'])), '', realpath(trim($try_file))).' ';
 								}
@@ -571,11 +586,24 @@ class CVulnScanner
 						&& !(($this->tokens[$i + 1] === '(' && $this->tokens[$i + 2] === ')') || $this->tokens[$i + 1] === ';') //skip function with empty parameter list
 					)
 					{
-
-						if($this->tokens[$i + 1] === '(')
+						//check if query function is NOT belong to CHTTP object
+						if (
+							$token_value === 'query'
+							&& (is_array($this->tokens[$i-2]) && $this->tokens[$i-2][0] === T_VARIABLE)
+							&& isset($this->objects[$this->tokens[$i-2][1]])
+							&& $this->objects[$this->tokens[$i-2][1]] === 'CHTTP'
+						)
+						{
+							$result = false;
+						}
+						elseif($this->tokens[$i + 1] === '(')
+						{
 							$result = $this->getTokensInfo(array_slice($this->tokens, $i + 2, $this->getBraceEnd($this->tokens, $i + 2) - 1), false, $token_value);
+						}
 						else
+						{
 							$result = $this->getTokensInfo(array_slice($this->tokens, $i + 1, $this->getBraceEnd($this->tokens, $i + 1)), false, $token_value);
+						}
 
 						if($result !== false)
 						{
@@ -699,6 +727,23 @@ class CVulnScanner
 		return $result;
 	}
 
+	private function getClassName($token)
+	{
+		$className = '';
+		while(
+			is_array($this->tokens[$token])
+			&& (
+				($this->tokens[$token][0] === T_STRING)
+				|| ($this->tokens[$token][0] === T_NS_SEPARATOR)
+			)
+		)
+		{
+			$className .= $this->tokens[$token][1];
+			$token++;
+		}
+		return $className;
+	}
+
 	private function getVarName($token, $level = -1)
 	{
 		$var_name = $token[1];
@@ -760,7 +805,7 @@ class CVulnScanner
 			$taintedVars = array();
 			foreach ($tokensInfo[1] as $res)
 				$taintedVars[] = $res['varName'];
-			
+
 			if(!isset($this->variables[$varName]))
 				$var = new CVariable($varName);
 			else
@@ -818,7 +863,7 @@ class CVulnScanner
 						unset($tokens[$i + $f]);
 						$f++;
 					}
-				
+
 					$f++;
 					while ($braces !== 0 && ($i + $f) < $c)
 					{
@@ -829,7 +874,7 @@ class CVulnScanner
 						unset($tokens[$i + $f]);
 						$f++;
 					}
-				
+
 					for ($j = $i; $j < $i + $f + 1; $j++)
 						unset($tokens[$j]);
 					$i += $f;
@@ -840,7 +885,7 @@ class CVulnScanner
 
 					if(is_array($tokens[$i + 1]) && $tokens[$i + 1][0] === T_STRING)
 					{
-						$this->sec_func['STRING'][] = self::strtolower($tokens[$i + 1][1]);
+						$this->sec_func['STRING'][] = strtolower($tokens[$i + 1][1]);
 					}
 					else
 					{
@@ -851,7 +896,7 @@ class CVulnScanner
 						}
 						if(is_array($tokens[$i + $f - 1]) && $tokens[$i + $f - 1][0] === T_STRING)
 						{
-							$this->sec_func['STRING'][] = self::strtolower($tokens[$i + $f - 1][1]);
+							$this->sec_func['STRING'][] = strtolower($tokens[$i + $f - 1][1]);
 						}
 					}
 
@@ -930,18 +975,18 @@ class CVulnScanner
 			}
 			elseif(is_array($tokens[$i]))
 			{
-				if(is_array($tokens[$i]) && (self::strtolower($tokens[$i][1]) === 'includecomponenttemplate' || self::strtolower($tokens[$i][1]) === 'initcomponenttemplate'))
+				if(is_array($tokens[$i]) && (strtolower($tokens[$i][1]) === 'includecomponenttemplate' || strtolower($tokens[$i][1]) === 'initcomponenttemplate'))
 				{
 					$tokens[$i][3] = $component_template;
-					$tokens[$i][1] = self::strtolower($tokens[$i][1]);
+					$tokens[$i][1] = strtolower($tokens[$i][1]);
 					$tokens[$i][0] = T_INCLUDE_COMPONENTTEMPLATE;
 					$tmp = array(array(T_INCLUDE_RESULT_MODIFIER, 'include_result_modifier', $tokens[$i][2], $component_template));
 					array_splice($tokens, $i - 1, 0, $tmp);
 					$i++;
 				}
-				elseif(is_array($tokens[$i]) && (self::strtolower($tokens[$i][1]) == 'includecomponent'))
+				elseif(is_array($tokens[$i]) && (strtolower($tokens[$i][1]) == 'includecomponent'))
 				{
-					$tokens[$i][1] = self::strtolower($tokens[$i][1]);
+					$tokens[$i][1] = strtolower($tokens[$i][1]);
 					$tokens[$i][0] = T_INCLUDE_COMPONENT;
 				}
 				elseif(($tokens[$i][0] === T_IF || $tokens[$i][0] === T_ELSEIF || $tokens[$i][0] === T_FOR
@@ -1119,11 +1164,11 @@ class CVulnScanner
 				}
 				elseif($tokens[$i][0] === T_FUNCTION)
 				{
-					$tokens[$i + 1][1] = self::strtolower($tokens[$i + 1][1]);
+					$tokens[$i + 1][1] = strtolower($tokens[$i + 1][1]);
 				}
 				elseif($tokens[$i][0] === T_STRING && $tokens[$i + 1] === '(')
 				{
-					$tokens[$i][1] = self::strtolower($tokens[$i][1]);
+					$tokens[$i][1] = strtolower($tokens[$i][1]);
 				}
 				elseif($tokens[$i][0] === T_DO)
 				{
@@ -1283,7 +1328,7 @@ class CVulnScanner
 					{
 						if($tokens[$i][1] === 'DIRECTORY_SEPARATOR' || $tokens[$i][1] === 'PATH_SEPARATOR')
 							$value .= '/';
-						elseif(self::strtolower($tokens[$i][1]) === '$componentpath')
+						elseif(strtolower($tokens[$i][1]) === '$componentpath')
 							$value = dirname($file_name);
 						elseif($tokens[$i][1] === '$_SERVER' && $tokens[$i][3][0] === 'DOCUMENT_ROOT')
 							$value .= $this->arParams['doc_root_path'];
@@ -1585,7 +1630,7 @@ class CVulnScanner
 			if(($find = self::searchSimilarVuln($output, $i)) !== false)
 			{
 				$output[$find]->additional_text .= '<div class="checklist-vulnscan-dangerous-is-here">';
-				$output[$find]->additional_text .= $this->highlightLine($output[$i]->line, $output[$i]->tokens, key($output[$i]->tainted_vars), $output[$i]->comment);
+				$output[$find]->additional_text .= $this->highlightLine($output[$i]->line, $output[$i]->tokens, $output[$i]->tainted_vars, $output[$i]->comment);
 				$output[$find]->additional_text .= '</div>';
 				unset($output[$i]);
 			}
@@ -1662,19 +1707,6 @@ class CVulnScanner
 		}
 		return $result;
 	}
-
-	protected static function strtolower($pString)
-	{
-		if(function_exists("mb_orig_strtolower"))
-		{
-			return mb_orig_strtolower($pString);
-		}
-		else
-		{
-			return strtolower($pString);
-		}
-	}
-
 }
 
 class CQAACheckListTests
@@ -2193,9 +2225,9 @@ class CQAACheckListTests
 	{
 		if(extension_loaded('tokenizer') === true)
 		{
-		if(!$_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']])
-			$_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']] = Array();
-		$NS = &$_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']];
+		if(!\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']])
+			\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']] = Array();
+		$NS = &\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']];
 
 		$arScanParams = self::defineScanParams();
 		$phpMaxExecutionTime = ini_get("max_execution_time");
@@ -2296,7 +2328,7 @@ class CQAACheckListTests
 						$vulnCount += $file_output['VULN_COUNT'];
 					}
 
-			unset($_SESSION['BX_CHECKLIST'][$arParams['TEST_ID']]);
+			unset(\Bitrix\Main\Application::getInstance()->getSession()['BX_CHECKLIST'][$arParams['TEST_ID']]);
 
 			$arResult = Array(
 				'MESSAGE' => Array(

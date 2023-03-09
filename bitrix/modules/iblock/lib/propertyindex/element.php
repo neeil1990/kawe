@@ -11,6 +11,7 @@ class Element
 	protected $iblockId = 0;
 	protected $elementId = 0;
 	protected static $catalog = null;
+	protected static $filterPropertyID = array();
 	protected $skuIblockId = 0;
 	protected $skuPropertyId = 0;
 	protected $elementPropertyValues = array();
@@ -79,11 +80,8 @@ class Element
 		$this->elementPrices = array();
 		if (self::$catalog)
 		{
-			$elements = $this->elementPropertyValues["IBLOCK_ELEMENT_ID"];
-			if ($elements)
-			{
-				$this->loadElementPrices($elements);
-			}
+			$elements = $this->elementPropertyValues["IBLOCK_ELEMENT_ID"] ?? [$this->elementId];
+			$this->loadElementPrices($elements);
 		}
 
 		$this->elementSections = array();
@@ -93,14 +91,41 @@ class Element
 	/**
 	 * Fills member elementPropertyValues member with property values.
 	 *
-	 * @param integer $iblockId Information block identifier.
+	 * @param int $iblockId Information block identifier.
 	 * @param array[string]string $elementFilter Element property values criteria.
 	 *
 	 * @return void
 	 */
-	protected function loadElementProperties($iblockId, array $elementFilter)
+	protected function loadElementProperties(int $iblockId, array $elementFilter)
 	{
-		$elementList = \CIBlockElement::getPropertyValues($iblockId, $elementFilter);
+		if (!isset(self::$filterPropertyID[$iblockId]))
+		{
+			self::$filterPropertyID[$iblockId] = [];
+			$properties = \Bitrix\Iblock\SectionPropertyTable::getList(array(
+				"select" => array("PROPERTY_ID"),
+				"filter" => array(
+					"=IBLOCK_ID" => array($this->iblockId, $this->skuIblockId),
+					"=SMART_FILTER" => "Y",
+				),
+			));
+			while ($property = $properties->fetch())
+			{
+				self::$filterPropertyID[$iblockId][$property['PROPERTY_ID']] = $property['PROPERTY_ID'];
+			}
+			unset($property);
+			unset($properties);
+
+			self::$filterPropertyID[$iblockId] = array_values(self::$filterPropertyID[$iblockId]);
+			sort(self::$filterPropertyID[$iblockId]);
+		}
+
+		$elementList = \CIBlockElement::getPropertyValues(
+			$iblockId,
+			$elementFilter,
+			false,
+			array('ID' => self::$filterPropertyID[$iblockId])
+		);
+
 		while ($element = $elementList->fetch())
 		{
 			foreach ($element as $propertyId => $value)

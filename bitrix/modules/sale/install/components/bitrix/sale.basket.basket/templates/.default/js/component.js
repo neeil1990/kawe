@@ -4,46 +4,14 @@
 	BX.namespace('BX.Sale.BasketComponent');
 
 	BX.Sale.BasketComponent = {
-		isMobile: BX.browser.IsMobile(),
-		isTouch: BX.hasClass(document.documentElement, 'bx-touch'),
-		lastAction: 'initialLoad',
 		maxItemsShowCount: 30,
-
 		precisionFactor: Math.pow(10, 6),
-
-		quantityDelay: null,
-		quantityTimer: null,
-
 		stickyHeaderOffset: 0,
 
 		duration: {
 			priceAnimation: 300,
 			filterTimer: 300
 		},
-
-		imagePopup: null,
-		loadingScreen: null,
-
-		templates: {},
-		nodes: {},
-
-		/** Object of all basket items (itemId => itemArray) */
-		items: {},
-
-		/** Array of all basket items to show sorted by field SORT */
-		sortedItems: [],
-
-		/** Array of basket items showed on screen */
-		shownItems: [],
-
-		/** Array of basket items changed since last request */
-		changedItems: [],
-
-		/** Array of basket items postponed by pool to edit */
-		postponedItems: [],
-
-		/** Array of basket items with warnings */
-		warningItems: [],
 
 		ids: {
 			item: 'basket-item-',
@@ -64,13 +32,52 @@
 			warning: 'basket-warning'
 		},
 
+		initializePrimaryFields: function()
+		{
+			this.templates = {};
+			this.nodes = {};
+
+			/** Object of all basket items (itemId => itemArray) */
+			this.items = {};
+
+			/** Array of all basket items to show sorted by field SORT */
+			this.sortedItems = [];
+
+			/** Array of basket items showed on screen */
+			this.shownItems = [];
+
+			/** Array of basket items changed since last request */
+			this.changedItems = [];
+
+			/** Array of basket items postponed by pool to edit */
+			this.postponedItems = [];
+
+			/** Array of basket items with warnings */
+			this.warningItems = [];
+
+			this.isMobile = BX.browser.IsMobile();
+			this.isTouch = BX.hasClass(document.documentElement, 'bx-touch');
+
+			this.lastAction = 'initialLoad';
+			this.coupons = null;
+
+			this.imagePopup = null;
+			this.loadingScreen = null;
+
+			this.quantityDelay = null;
+			this.quantityTimer = null;
+		},
+
 		init: function(parameters)
 		{
+			this.initializePrimaryFields();
+
 			this.params = parameters.params || {};
 			this.template = parameters.template || '';
 			this.signedParamsString = parameters.signedParamsString || '';
 			this.siteId = parameters.siteId || '';
-			this.ajaxUrl = parameters.ajaxUrl || '';
+			this.siteTemplateId = parameters.siteTemplateId || '';
+			this.ajaxUrl = this.params.AJAX_PATH || '';
 			this.templateFolder = parameters.templateFolder || '';
 
 			this.useDynamicScroll = this.params.USE_DYNAMIC_SCROLL === 'Y';
@@ -90,7 +97,6 @@
 			this.editTotal();
 			this.editWarnings();
 
-			this.adjustBasketWrapperHeight();
 			this.getCacheNode(this.ids.basketRoot).style.opacity = 1;
 
 			this.bindInitialEvents();
@@ -145,7 +151,6 @@
 			BX.bind(window, 'scroll', BX.proxy(this.lazyLoad, this));
 
 			BX.bind(window, 'resize', BX.throttle(this.checkStickyHeaders, 20, this));
-			BX.bind(window, 'resize', BX.throttle(this.adjustBasketWrapperHeight, 20, this));
 		},
 
 		bindWarningEvents: function()
@@ -261,7 +266,7 @@
 			var border = 2, offset = 0;
 			var scrollTop = this.getDocumentScrollTop();
 			var basketPosition = BX.pos(this.getCacheNode(this.ids.basketRoot));
-			var basketScrolledToEnd = scrollTop + 400 >= basketPosition.bottom;
+			var basketScrolledToEnd = scrollTop + 200 >= basketPosition.bottom;
 
 			if (BX.util.in_array('top', this.params.TOTAL_BLOCK_DISPLAY))
 			{
@@ -284,18 +289,6 @@
 								node.style.width = node.clientWidth + border + 'px';
 								BX.addClass(node, 'basket-checkout-container-fixed');
 							}
-
-							if (basketScrolledToEnd)
-							{
-								if (!BX.hasClass(node, 'basket-checkout-container-fixed-hide'))
-								{
-									BX.addClass(node, 'basket-checkout-container-fixed-hide');
-								}
-							}
-							else if (BX.hasClass(node, 'basket-checkout-container-fixed-hide'))
-							{
-								BX.removeClass(node, 'basket-checkout-container-fixed-hide');
-							}
 						}
 						else if (BX.hasClass(node, 'basket-checkout-container-fixed'))
 						{
@@ -303,6 +296,18 @@
 
 							node.style.width = '';
 							BX.removeClass(node, 'basket-checkout-container-fixed');
+						}
+
+						if (basketScrolledToEnd)
+						{
+							if (!BX.hasClass(node, 'basket-checkout-container-fixed-hide'))
+							{
+								BX.addClass(node, 'basket-checkout-container-fixed-hide');
+							}
+						}
+						else if (BX.hasClass(node, 'basket-checkout-container-fixed-hide'))
+						{
+							BX.removeClass(node, 'basket-checkout-container-fixed-hide');
 						}
 					}
 				}
@@ -347,14 +352,7 @@
 				}
 			}
 
-			var offsetChanged = this.stickyHeaderOffset === offset;
-
 			this.stickyHeaderOffset = offset;
-
-			if (offsetChanged && !basketScrolledToEnd)
-			{
-				this.adjustBasketWrapperHeight();
-			}
 		},
 
 		getDocumentScrollTop: function()
@@ -385,29 +383,14 @@
 				BX.onCustomEvent('OnBasketChange');
 			}
 
-			if (this.result.GIFTS_RELOAD)
+			if (this.params.HIDE_COUPON !== 'Y')
 			{
-				// ToDo call some event for gifts reload
-			}
-		},
-
-		adjustBasketWrapperHeight: function()
-		{
-			var itemListContainer = this.getCacheNode(this.ids.itemListContainer),
-				itemList = this.getCacheNode(this.ids.itemList);
-
-			if (BX.type.isDomNode(itemListContainer) && BX.type.isDomNode(itemList))
-			{
-				if (itemListContainer.clientHeight + this.stickyHeaderOffset > window.innerHeight)
+				if (this.coupons !== null && this.coupons !== this.result.COUPON_LIST)
 				{
-					itemListContainer.style.minHeight = 'calc(100vh - 15px - ' + this.stickyHeaderOffset + 'px)';
-					itemList.style.minHeight = 'calc(100vh - 15px - ' + this.stickyHeaderOffset + 'px)';
+					BX.onCustomEvent('OnCouponApply');
 				}
-				else
-				{
-					itemListContainer.style.minHeight = itemListContainer.clientHeight + 'px';
-					itemList.style.minHeight = itemListContainer.clientHeight + 'px';
-				}
+
+				this.coupons = this.result.COUPON_LIST;
 			}
 		},
 
@@ -682,7 +665,6 @@
 					this.editBasketItems(this.getItemsToEdit());
 					this.editTotal();
 
-					this.adjustBasketWrapperHeight();
 					this.applyPriceAnimation();
 					this.editWarnings();
 
@@ -959,6 +941,7 @@
 			data[this.params.ACTION_VARIABLE] = this.lastAction;
 			data.via_ajax = 'Y';
 			data.site_id = this.siteId;
+			data.site_template_id = this.siteTemplateId;
 			data.sessid = BX.bitrix_sessid();
 			data.template = this.template;
 			data.signedParamsString = this.signedParamsString;
@@ -2326,13 +2309,34 @@
 
 			for (var i in data.basket)
 			{
-				if (data.basket.hasOwnProperty(i) && i.indexOf('QUANTITY_') >= 0)
+				if (data.basket.hasOwnProperty(i))
 				{
-					itemId = i.substr(9);
-
-					if (this.items[itemId])
+					if (i.indexOf('QUANTITY_') >= 0)
 					{
-						itemsDiff[itemId] = parseFloat(data.basket[i]) - parseFloat(BX(this.ids.quantity + itemId).getAttribute('data-value'));
+						itemId = i.substr(9);
+
+						if (this.items[itemId])
+						{
+							itemsDiff[itemId] = parseFloat(data.basket[i]) - parseFloat(BX(this.ids.quantity + itemId).getAttribute('data-value'));
+						}
+					}
+					else if (i.indexOf('DELETE_') >= 0)
+					{
+						itemId = i.substr(7);
+
+						if (this.items[itemId])
+						{
+							itemsDiff[itemId] = -parseFloat(this.items[itemId].QUANTITY);
+						}
+					}
+					else if (i.indexOf('RESTORE_') >= 0)
+					{
+						itemId = i.substr(8);
+
+						if (this.items[itemId])
+						{
+							itemsDiff[itemId] = parseFloat(this.items[itemId].QUANTITY);
+						}
 					}
 				}
 			}
@@ -2407,7 +2411,7 @@
 
 			return {
 				'name': this.items[itemId].NAME || '',
-				'id': this.items[itemId].ID || '',
+				'id': this.items[itemId].PRODUCT_ID || '',
 				'price': this.items[itemId].PRICE || 0,
 				'brand': brand,
 				'variant': variants.join('/'),

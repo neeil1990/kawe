@@ -41,16 +41,26 @@ final class UrlManager
 	 * @param string $action The fully qualified action name.
 	 * @param array $params Additional parameters for action.
 	 *
+	 * @param bool $absolute Generate absolute uri or not.
+	 *
 	 * @return Uri
 	 * @throws \Bitrix\Main\ArgumentNullException
 	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
 	 */
-	public function create($action, $params = array())
+	public function create($action, $params = [], $absolute = false)
 	{
-		$uri = $this->getEndPoint();
-		$uri->addParams(array(
+		$uri = $this->getEndPoint($absolute);
+		$uri->addParams([
 			'action' => $action,
-		));
+		]);
+
+		if (defined('SITE_ID') && !Context::getCurrent()->getRequest()->isAdminSection())
+		{
+			$uri->addParams([
+				'SITE_ID' => SITE_ID,
+			]);
+		}
+
 		$uri->addParams($params);
 
 		return $uri;
@@ -63,16 +73,47 @@ final class UrlManager
 	 * @param string $action Relative action name.
 	 * @param array $params Additional parameters for action.
 	 *
+	 * @param bool $absolute Generate absolute uri or not.
+	 *
 	 * @return Uri
 	 * @throws \Bitrix\Main\ArgumentNullException
 	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
 	 */
-	public function createByController(Controller $controller, $action, $params = array())
+	public function createByController(Controller $controller, $action, $params = array(), $absolute = false)
 	{
+		$name = Resolver::getNameByController($controller);
+		if (!$controller->isLocatedUnderPsr4())
+		{
+			$name = mb_strtolower($name);
+		}
+
+		list($vendor) = $this->getVendorAndModule($controller->getModuleId());
+		if ($vendor === 'bitrix')
+		{
+			$name = mb_substr($name, mb_strlen('bitrix:'));
+		}
+
 		return $this->create(
-			$controller->getModuleId() . '.' . Resolver::getNameByController($controller) . '.' . $action,
-			$params
+			$name . '.' . $action,
+			$params,
+			$absolute
 		);
+	}
+
+	protected function getVendorAndModule($moduleId)
+	{
+		$parts = explode('.', $moduleId);
+		if (!isset($parts[1]))
+		{
+			return ['bitrix', $moduleId];
+		}
+
+		if ($parts[0] === 'bitrix')
+		{
+			return ['bitrix', $moduleId];
+		}
+
+		return [$parts[0], $moduleId];
 	}
 
 	/**
@@ -82,15 +123,22 @@ final class UrlManager
 	 * @param string $action Relative action name.
 	 * @param array $params Additional parameters for action.
 	 *
+	 * @param bool $absolute Generate absolute uri or not.
+	 *
 	 * @return Uri
 	 * @throws \Bitrix\Main\ArgumentNullException
 	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
+	 * @throws \ReflectionException
 	 */
-	public function createByComponentController(Controller $controller, $action, $params = array())
+	public function createByComponentController(Controller $controller, $action, $params = array(), $absolute = false)
 	{
 		$reflector = new \ReflectionClass($controller);
 		$path = dirname($reflector->getFileName());
-		$pathWithoutLocal = substr($path, strpos($path, '/components/') + strlen('/components/'));
+		if (DIRECTORY_SEPARATOR === '\\')
+		{
+			$path = str_replace('\\', '/', $path);
+		}
+		$pathWithoutLocal = mb_substr($path, mb_strpos($path, '/components/') + mb_strlen('/components/'));
 		list($vendor, $componentName) = explode('/', $pathWithoutLocal);
 
 		if (!$componentName)
@@ -107,7 +155,8 @@ final class UrlManager
 
 		return $this->create(
 			$action,
-			$params
+			$params,
+			$absolute
 		);
 	}
 
@@ -119,18 +168,21 @@ final class UrlManager
 	 * @param string $action Relative action name.
 	 * @param array $params Additional parameters for action.
 	 *
+	 * @param bool $absolute Generate absolute uri or not.
+	 *
 	 * @return Uri
 	 * @throws \Bitrix\Main\ArgumentNullException
 	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
 	 */
-	public function createByBitrixComponent(\CBitrixComponent $component, $action, $params = array())
+	public function createByBitrixComponent(\CBitrixComponent $component, $action, $params = array(), $absolute = false)
 	{
 		$params['c'] = $component->getName();
 		$params['mode'] = Router::COMPONENT_MODE_CLASS;
 
 		return $this->create(
 			$action,
-			$params
+			$params,
+			$absolute
 		);
 	}
 
@@ -158,38 +210,30 @@ final class UrlManager
 	 * Returns host url with port and scheme.
 	 *
 	 * @return string
-	 * @throws \Bitrix\Main\ArgumentNullException
-	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
 	 */
-	public function getHostUrl()
+	public function getHostUrl(): string
 	{
-		$context = Context::getCurrent();
-		$server = $context->getServer();
-		$protocol = $context->getRequest()->isHttps() ? 'https' : 'http';
+		$request = Context::getCurrent()->getRequest();
 
-		if (defined("SITE_SERVER_NAME") && SITE_SERVER_NAME)
+		$protocol = $request->isHttps() ? 'https' : 'http';
+		$port = (int)$request->getServerPort();
+
+		if (defined('SITE_SERVER_NAME') && SITE_SERVER_NAME)
 		{
 			$host = SITE_SERVER_NAME;
 		}
 		else
 		{
-			$host = Option::get('main', 'server_name', $server->getHttpHost()) ? : $server->getHttpHost();
+			$host = Option::get('main', 'server_name', $request->getHttpHost()) ? : $request->getHttpHost();
 		}
 
-		$port = $server->getServerPort();
-		if ($port <> 80 && $port <> 443 && $port > 0 && strpos($host, ':') === false)
+		$portSuffix = '';
+		if ($port && !in_array($port, [443, 80], true))
 		{
-			$host .= ':'.$port;
+			$portSuffix = ':' . $port;
 		}
-		elseif ($protocol == 'http' && $port == 80)
-		{
-			$host = str_replace(':80', '', $host);
-		}
-		elseif ($protocol == 'https' && $port == 443)
-		{
-			$host = str_replace(':443', '', $host);
-		}
+		$parsedUri = new Uri($protocol . '://' . $host . $portSuffix);
 
-		return $protocol . '://' . $host;
+		return rtrim($parsedUri->getLocator(), '/');
 	}
 }

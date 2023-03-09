@@ -8,6 +8,8 @@
 
 namespace Bitrix\Main;
 
+use Bitrix\Main\DB\SqlExpression;
+
 class Result
 {
 	/** @var bool */
@@ -22,6 +24,11 @@ class Result
 	public function __construct()
 	{
 		$this->errors = new ErrorCollection();
+	}
+
+	public function __clone()
+	{
+		$this->errors = clone $this->errors;
 	}
 
 	/**
@@ -90,8 +97,11 @@ class Result
 	 */
 	public function addErrors(array $errors)
 	{
-		$this->isSuccess = false;
-		$this->errors->add($errors);
+		if ($errors)
+		{
+			$this->isSuccess = false;
+			$this->errors->add($errors);
+		}
 		return $this;
 	}
 
@@ -102,7 +112,17 @@ class Result
 	 */
 	public function setData(array $data)
 	{
+		// do not save sql expressions
+		foreach ($data as $k => $v)
+		{
+			if ($v instanceof SqlExpression)
+			{
+				unset($data[$k]);
+			}
+		}
+
 		$this->data = $data;
+
 		return $this;
 	}
 

@@ -1,5 +1,8 @@
 <?
 /** @global CMain $APPLICATION */
+
+use Bitrix\Iblock;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 CModule::IncludeModule("iblock");
 IncludeModuleLangFile(__FILE__);
@@ -156,18 +159,17 @@ $dbrFProps = CIBlockProperty::GetList(
 $arProps = array();
 while($arFProps = $dbrFProps->GetNext())
 {
-	if(strlen($arFProps["USER_TYPE"])>0)
-		$arFProps["PROPERTY_USER_TYPE"] = CIBlockProperty::GetUserType($arFProps["USER_TYPE"]);
-	else
-		$arFProps["PROPERTY_USER_TYPE"] = array();
+	$arFProps["USER_TYPE"] = (string)$arFProps["USER_TYPE"];
+	$arFProps["PROPERTY_USER_TYPE"] = ($arFProps["USER_TYPE"] !== '' ? CIBlockProperty::GetUserType($arFProps["USER_TYPE"]) : array());
 
 	$arProps[] = $arFProps;
 }
 
 foreach($arProps as $prop)
 {
-	if($prop["FILTRABLE"]=="Y" && $prop["PROPERTY_TYPE"]!="F")
-		$arFilterFields[] = "find_el_property_".$prop["ID"];
+	if ($prop["FILTRABLE"] != "Y" || $prop["PROPERTY_TYPE"] == Iblock\PropertyTable::TYPE_FILE)
+		continue;
+	$arFilterFields[] = "find_el_property_".$prop["ID"];
 }
 
 $oSort = new CAdminSorting($sTableID, "NAME", "ASC");
@@ -175,7 +177,7 @@ if (!isset($by))
 	$by = 'NAME';
 if (!isset($order))
 	$order = 'ASC';
-$arOrder = (strtoupper($by) === "ID"? array($by => $order): array($by => $order, "ID" => "ASC"));
+$arOrder = (mb_strtoupper($by) === "ID"? array($by => $order): array($by => $order, "ID" => "ASC"));
 $lAdmin = new CAdminList($sTableID, $oSort);
 
 $lAdmin->InitFilter($arFilterFields);
@@ -200,7 +202,7 @@ elseif($IBLOCK_ID > 0)
 else
 	$arFilter["IBLOCK_ID"] = -1;
 
-if(intval($filter_section)<0 || strlen($filter_section)<=0)
+if(intval($filter_section)<0 || $filter_section == '')
 	unset($arFilter["SECTION_ID"]);
 elseif($filter_subsections=="Y")
 {
@@ -219,8 +221,28 @@ if (!empty($filter_status) && strcasecmp($filter_status, "NOT_REF")) $arFilter["
 
 foreach($arProps as $prop)
 {
-	if($prop["FILTRABLE"]=="Y" && $prop["PROPERTY_TYPE"]!="F" && !empty(${"find_el_property_".$prop["ID"]}))
-		$arFilter["?PROPERTY_".$prop["ID"]] = ${"find_el_property_".$prop["ID"]};
+	if ($prop["FILTRABLE"] != 'Y' || $prop["PROPERTY_TYPE"] == Iblock\PropertyTable::TYPE_FILE)
+		continue;
+
+	if (!empty($prop['PROPERTY_USER_TYPE']) && isset($prop["PROPERTY_USER_TYPE"]["AddFilterFields"]))
+	{
+		call_user_func_array($prop["PROPERTY_USER_TYPE"]["AddFilterFields"], array(
+			$prop,
+			array("VALUE" => "find_el_property_".$prop["ID"]),
+			&$arFilter,
+			&$filtered,
+		));
+	}
+	else
+	{
+		$value = ${"find_el_property_".$prop["ID"]};
+		if(is_array($value) || mb_strlen($value))
+		{
+			if($value === "NOT_REF")
+				$value = false;
+			$arFilter["?PROPERTY_".$prop["ID"]] = $value;
+		}
+	}
 }
 
 $arFilter["CHECK_PERMISSIONS"]="Y";
@@ -312,7 +334,7 @@ $lAdmin->NavText($rsData->GetNavPrint($arIBlock["ELEMENTS_NAME"]));
 
 function GetElementName($ID)
 {
-	$ID = IntVal($ID);
+	$ID = intval($ID);
 	static $cache = array();
 	if(!array_key_exists($ID, $cache) && $ID > 0)
 	{
@@ -323,7 +345,7 @@ function GetElementName($ID)
 }
 function GetSectionName($ID)
 {
-	$ID = IntVal($ID);
+	$ID = intval($ID);
 	static $cache = array();
 	if(!array_key_exists($ID, $cache) && $ID > 0)
 	{
@@ -334,7 +356,7 @@ function GetSectionName($ID)
 }
 function GetIBlockTypeID($IBLOCK_ID)
 {
-	$IBLOCK_ID = IntVal($IBLOCK_ID);
+	$IBLOCK_ID = intval($IBLOCK_ID);
 	static $cache = array();
 	if(!array_key_exists($IBLOCK_ID, $cache))
 	{
@@ -353,16 +375,13 @@ if($IBLOCK_ID <= 0)
 	$lAdmin->EndPrologContent();
 }
 
-$elementsName = array();
-
 while($arRes = $rsData->GetNext())
 {
 	$index = ($get_xml_id ? $arRes["XML_ID"]: $arRes["ID"]);
 
-	$elementsName[$index] = $arRes["~NAME"];
-	$arRes["MODIFIED_BY"] = (int)$arRes["MODIFIED_BY"];
-	$arRes["CREATED_BY"] = (int)$arRes["CREATED_BY"];
-	$arRes["WF_LOCKED_BY"] = (int)$arRes["WF_LOCKED_BY"];
+	$arRes["MODIFIED_BY"] = (int)($arRes["MODIFIED_BY"] ?? 0);
+	$arRes["CREATED_BY"] = (int)($arRes["CREATED_BY"] ?? 0);
+	$arRes["WF_LOCKED_BY"] = (int)($arRes["WF_LOCKED_BY"] ?? 0);
 	foreach($arSelectedProps as $aProp)
 	{
 		if($arRes["PROPERTY_".$aProp['ID'].'_ENUM_ID']>0)
@@ -371,9 +390,14 @@ while($arRes = $rsData->GetNext())
 			$arRes["PROPERTY_".$aProp['ID']] = $arRes["PROPERTY_".$aProp['ID'].'_VALUE'];
 	}
 
-	$row =& $lAdmin->AddRow($arRes["ID"], $arRes);
+	$row =& $lAdmin->AddRow(
+		$arRes["ID"],
+		$arRes,
+		"javascript:SelEl('".CUtil::JSEscape($index)."', '".htmlspecialcharsbx(CUtil::JSEscape($arRes["~NAME"]), ENT_QUOTES)."')",
+		GetMessage("IBLOCK_ELSEARCH_SELECT")
+	);
 
-	$row->AddViewField("NAME", $arRes["NAME"].'<input type="hidden" name="n'.$arRes["ID"].'" id="index_'.$arRes["ID"].'" value="'.$index.'">');
+	$row->AddViewField("NAME", $arRes["NAME"].'<input type="hidden" name="n'.$arRes["ID"].'" id="index_'.$arRes["ID"].'" value="'.$index.'"><div style="display:none" id="name_'.$arRes["ID"].'">'.$arRes["NAME"].'</div>');
 	if ($arRes["MODIFIED_BY"] > 0)
 		$row->AddViewField("USER_NAME", '[<a target="_blank" href="user_edit.php?lang='.LANGUAGE_ID.'&ID='.$arRes["MODIFIED_BY"].'">'.$arRes["MODIFIED_BY"].'</a>]&nbsp;'.$arRes["USER_NAME"]);
 	else
@@ -411,7 +435,7 @@ while($arRes = $rsData->GetNext())
 		$row->AddViewField("LOCKED_USER_NAME", '');
 
 	$arProperties = array();
-	if(count($arSelectedProps) > 0)
+	if(!empty($arSelectedProps))
 	{
 		$rsProperties = CIBlockElement::GetProperty($IBLOCK_ID, $arRes["ID"]);
 		while($ar = $rsProperties->GetNext())
@@ -424,10 +448,7 @@ while($arRes = $rsData->GetNext())
 
 	foreach($arSelectedProps as $aProp)
 	{
-		if(strlen($aProp["USER_TYPE"])>0)
-			$arUserType = CIBlockProperty::GetUserType($aProp["USER_TYPE"]);
-		else
-			$arUserType = array();
+		$arUserType = $aProp['PROPERTY_USER_TYPE'];
 		$v = '';
 		foreach($arProperties[$aProp['ID']] as $property_value_id => $property_value)
 		{
@@ -435,7 +456,7 @@ while($arRes = $rsData->GetNext())
 			$VALUE_NAME = 'FIELDS['.$arRes["ID"].'][PROPERTY_'.$property_value['ID'].']['.$property_value['PROPERTY_VALUE_ID'].'][VALUE]';
 			$DESCR_NAME = 'FIELDS['.$arRes["ID"].'][PROPERTY_'.$property_value['ID'].']['.$property_value['PROPERTY_VALUE_ID'].'][DESCRIPTION]';
 			$res = '';
-			if(array_key_exists("GetAdminListViewHTML", $arUserType))
+			if(isset($arUserType["GetAdminListViewHTML"]))
 			{
 				$res = call_user_func_array($arUserType["GetAdminListViewHTML"],
 					array(
@@ -499,14 +520,13 @@ while($arRes = $rsData->GetNext())
 
 		if ($v != "")
 			$row->AddViewField("PROPERTY_".$aProp['ID'], $v);
-		unset($arSelectedProps[$aProp['ID']]["CACHE"]);
 	}
 
 	$row->AddActions(array(
 		array(
 			"DEFAULT" => "Y",
 			"TEXT" => GetMessage("IBLOCK_ELSEARCH_SELECT"),
-			"ACTION"=>"javascript:SelEl('".CUtil::JSEscape($index)."')",
+			"ACTION"=>"javascript:SelEl('".CUtil::JSEscape($index)."', '".htmlspecialcharsbx(htmlspecialcharsbx(CUtil::JSEscape($arRes["~NAME"]), ENT_QUOTES))."')",
 		),
 	));
 }
@@ -531,12 +551,6 @@ if($m)
 }
 
 $lAdmin->AddAdminContextMenu(array(), false);
-
-?>
-<script type="text/javascript">
-var elementsName = <?=CUtil::PhpToJSObject($elementsName); ?>;
-</script>
-<?
 
 $lAdmin->CheckListMode();
 
@@ -627,12 +641,9 @@ function deleteFilter(el)
 	return false;
 }
 
-function SelEl(id)
+function SelEl(id, name)
 {
-	var el,
-		name;
-
-	name = BX.util.htmlspecialchars(elementsName[id]);
+	var el;
 	<?
 		if ('' != $lookup)
 		{
@@ -687,7 +698,7 @@ function SelAll()
 		{
 			v = e.value;
 			n = BX('index_'+v).value;
-			SelEl(n);
+			SelEl(n, BX('name_'+v).innerHTML);
 		}
 		else if(e)
 		{
@@ -697,7 +708,7 @@ function SelAll()
 				{
 					v = e[i].value;
 					n = BX('index_'+v).value;
-					SelEl(n);
+					SelEl(n, BX('name_'+v).innerHTML);
 				}
 			}
 		}

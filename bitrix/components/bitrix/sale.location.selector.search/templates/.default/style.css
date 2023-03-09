@@ -11,6 +11,14 @@
 	background-color: #fff;
 }
 
+.bx-sls .dropdown-block-ui {
+	font-size: 14px;
+	padding: 0 22px 0 30px;
+	position: relative;
+	background-color: #fff;
+	margin-top: 5px;
+}
+
 .bx-sls .dropdown-arrow {
 	background: url(/bitrix/components/bitrix/sale.location.selector.search/templates/.default/images/dropdown-errow.png) no-repeat center center;
 	height: 100%;
@@ -202,7 +210,7 @@
 	background-position: right 1px;
 	background-repeat: no-repeat;
 
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	font-size: 14px;
 	height: 33px;
 	width: 100%;

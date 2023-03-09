@@ -28,10 +28,17 @@ final class ClosureAction extends Action
 	{
 		if ($this->binder === null)
 		{
-			$this->binder = Binder::buildForFunction(
-				$this->callable,
-				$this->getController()->getSourceParametersList()
-			);
+			$controller = $this->getController();
+			$this->binder = AutoWire\ControllerBinder::buildForFunction($this->callable)
+				->setController($controller)
+				->setSourcesParametersToMap($controller->getSourceParametersList())
+				->setAutoWiredParameters(
+					array_filter(array_merge(
+						[$controller->getPrimaryAutoWiredParameter()],
+						$controller->getAutoWiredParameters()
+					))
+				)
+			;
 		}
 
 		return $this;

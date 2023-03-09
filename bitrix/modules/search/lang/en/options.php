@@ -36,4 +36,5 @@ $MESS["SEARCH_OPTIONS_SPHINX_ERROR"] = "Error connecting Sphinx server:";
 $MESS["SEARCH_OPTIONS_FULL_TEXT_ENGINE_MYSQL"] = "MySql full-text search";
 $MESS["SEARCH_OPTIONS_MYSQL_ERROR"] = "Error enabling full-text search:";
 $MESS["SEARCH_OPTIONS_MYSQL_NOTE"] = "If you get error 1214 when you're trying to enable full-text search, you have to update your MySQL to version 5.6.4 or newer.";
+$MESS["SEARCH_OPTIONS_MAX_BODY_SIZE"] = "Maximum text fragment size to highlight search results (0 - unlimited)";
 ?>

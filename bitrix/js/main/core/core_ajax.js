@@ -35,7 +35,6 @@ other parameters:
 any of the default parameters can be overridden. defaults can be changed by BX.ajax.Setup() - for all further requests!
 */
 	},
-	ajax_session = null,
 	loadedScripts = {},
 	loadedScriptsQueue = [],
 	r = {
@@ -88,9 +87,16 @@ BX.ajax = function(config)
 	if (!config.cache && config.method == 'GET')
 		config.url = BX.ajax._uncache(config.url);
 
-	if (config.method == 'POST' && config.preparePost)
+	if (config.method == 'POST')
 	{
-		config.data = BX.ajax.prepareData(config.data);
+		if (config.preparePost)
+		{
+			config.data = BX.ajax.prepareData(config.data);
+		}
+		else if (getLastContentTypeHeader(config.headers) === 'application/json')
+		{
+			config.data = JSON.stringify(config.data);
+		}
 	}
 
 	var bXHR = true;
@@ -136,6 +142,16 @@ BX.ajax = function(config)
 			BX.localStorage.set('ajax-' + config.lsId, 'BXAJAXWAIT', config.lsTimeout);
 		}
 
+		if (BX.Type.isFunction(config.onprogress))
+		{
+			BX.bind(config.xhr, 'progress', config.onprogress);
+		}
+
+		if (BX.Type.isFunction(config.onprogressupload) && config.xhr.upload)
+		{
+			BX.bind(config.xhr.upload, 'progress', config.onprogressupload);
+		}
+
 		config.xhr.open(config.method, config.url, config.async);
 
 		if (!config.skipBxHeader && !BX.ajax.isCrossDomain(config.url))
@@ -153,11 +169,6 @@ BX.ajax = function(config)
 				config.xhr.setRequestHeader(config.headers[i].name, config.headers[i].value);
 		}
 
-		if(!!config.onprogress)
-		{
-			BX.bind(config.xhr, 'progress', config.onprogress);
-		}
-
 		var bRequestCompleted = false;
 		var onreadystatechange = config.xhr.onreadystatechange = function(additional)
 		{
@@ -168,7 +179,7 @@ BX.ajax = function(config)
 			{
 				if (config.onfailure)
 				{
-					config.onfailure("timeout");
+					config.onfailure('timeout', '', config);
 				}
 
 				BX.onCustomEvent(config.xhr, 'onAjaxFailure', ['timeout', '', config]);
@@ -199,7 +210,7 @@ BX.ajax = function(config)
 						{
 							if (config.onfailure)
 							{
-								config.onfailure("auth", config.xhr.status);
+								config.onfailure('auth', config.xhr.status, config);
 							}
 
 							BX.onCustomEvent(config.xhr, 'onAjaxFailure', ['auth', config.xhr.status, config]);
@@ -220,7 +231,7 @@ BX.ajax = function(config)
 					{
 						if (config.onfailure)
 						{
-							config.onfailure("status", config.xhr.status);
+							config.onfailure('status', config.xhr.status, config);
 						}
 
 						BX.onCustomEvent(config.xhr, 'onAjaxFailure', ['status', config.xhr.status, config]);
@@ -326,7 +337,7 @@ BX.ajax.getHostPort = function(protocol, host)
 	return "";
 };
 
-BX.ajax.__prepareOnload = function(scripts)
+BX.ajax.__prepareOnload = function(scripts, ajax_session)
 {
 	if (scripts.length > 0)
 	{
@@ -345,7 +356,7 @@ BX.ajax.__prepareOnload = function(scripts)
 	BX.CaptureEvents(window, 'load');
 };
 
-BX.ajax.__runOnload = function()
+BX.ajax.__runOnload = function(ajax_session)
 {
 	if (null != BX.ajax['onload_' + ajax_session])
 	{
@@ -394,9 +405,10 @@ BX.ajax.processRequestData = function(data, config)
 	{
 		case 'JSON':
 
-			BX.addCustomEvent(config.xhr, 'onParseJSONFailure', BX.proxy(BX.ajax._onParseJSONFailure, config));
-			result = BX.parseJSON(data, config.xhr);
-			BX.removeCustomEvent(config.xhr, 'onParseJSONFailure', BX.proxy(BX.ajax._onParseJSONFailure, config));
+			var context = config.xhr || {};
+			BX.addCustomEvent(context, 'onParseJSONFailure', BX.proxy(BX.ajax._onParseJSONFailure, config));
+			result = BX.parseJSON(data, context);
+			BX.removeCustomEvent(context, 'onParseJSONFailure', BX.proxy(BX.ajax._onParseJSONFailure, config));
 
 			if(!!result && BX.type.isArray(result['bxjs']))
 			{
@@ -434,31 +446,27 @@ BX.ajax.processRequestData = function(data, config)
 		break;
 	}
 
-	var bSessionCreated = false;
-	if (null == ajax_session)
+	if (styles.length > 0)
+	{
+		BX.loadCSS(styles);
+	}
+
+	let ajax_session = null;
+	if (config.emulateOnload)
 	{
 		ajax_session = parseInt(Math.random() * 1000000);
-		bSessionCreated = true;
+		BX.ajax.__prepareOnload(scripts, ajax_session);
 	}
 
-	if (styles.length > 0)
-		BX.loadCSS(styles);
-
-	if (config.emulateOnload)
-			BX.ajax.__prepareOnload(scripts);
-
-	var cb = BX.DoNothing;
-	if(config.emulateOnload || bSessionCreated)
+	const cb = BX.defer(function()
 	{
-		cb = BX.defer(function()
+		if (config.emulateOnload)
 		{
-			if (config.emulateOnload)
-				BX.ajax.__runOnload();
-			if (bSessionCreated)
-				ajax_session = null;
-			BX.onCustomEvent(config.xhr, 'onAjaxSuccessFinish', [config]);
-		});
-	}
+			BX.ajax.__runOnload(ajax_session);
+		}
+
+		BX.onCustomEvent(config.xhr, 'onAjaxSuccessFinish', [config]);
+	});
 
 	try
 	{
@@ -663,26 +671,25 @@ BX.ajax.promise = function(config)
 	{
 		result.fulfill(data);
 	};
-	config.onfailure = function(reason, data)
+	config.onfailure = function(reason, httpStatus, config)
 	{
 		result.reject({
 			reason: reason,
-			data: data
+			data: httpStatus,
+			ajaxConfig: config,
+			xhr: config.xhr
 		});
-	};
-	config.onprogress = function(data)
-	{
-		if (data.position == 0 && data.totalSize == 0)
-		{
-			result.reject({
-				reason: 'progress',
-				data: data
-			});
-		}
 	};
 
 	var xhr = BX.ajax(config);
-	if (!xhr)
+	if (xhr)
+	{
+		if (typeof config.onrequeststart === 'function')
+		{
+			config.onrequeststart(xhr);
+		}
+	}
+	else
 	{
 		result.reject({
 			reason: "init",
@@ -771,11 +778,28 @@ BX.ajax.loadJSON = function(url, data, callback, callback_failure)
 	});
 };
 
+var getLastContentTypeHeader = function (headers) {
+	if (!BX.Type.isArray(headers))
+	{
+		return null;
+	}
+	var lastHeader = headers
+		.filter(function (header) {
+			return header.name === 'Content-Type';
+		})
+		.pop();
+
+	return lastHeader ? lastHeader.value : null;
+};
 
 var prepareAjaxGetParameters = function(config)
 {
-	var getParameters = {};
-	if (typeof config.analyticsLabel !== 'undefined')
+	var getParameters = config.getParameters || {};
+	if (BX.type.isNotEmptyString(config.analyticsLabel))
+	{
+		getParameters.analyticsLabel = config.analyticsLabel;
+	}
+	else if (BX.type.isNotEmptyObject(config.analyticsLabel))
 	{
 		getParameters.analyticsLabel = config.analyticsLabel;
 	}
@@ -783,9 +807,24 @@ var prepareAjaxGetParameters = function(config)
 	{
 		getParameters.mode = config.mode;
 	}
-	if (config.navigation && config.navigation.page)
+	if (config.navigation)
 	{
-		getParameters.nav = 'page-' + config.navigation.page;
+		if(config.navigation.page)
+		{
+			getParameters.nav = 'page-' + config.navigation.page;
+		}
+		if(config.navigation.size)
+		{
+			if(getParameters.nav)
+			{
+				getParameters.nav += '-';
+			}
+			else
+			{
+				getParameters.nav = '';
+			}
+			getParameters.nav += 'size-' + config.navigation.size;
+		}
 	}
 
 	return getParameters;
@@ -794,16 +833,42 @@ var prepareAjaxGetParameters = function(config)
 var prepareAjaxConfig = function(config)
 {
 	config = BX.type.isPlainObject(config) ? config : {};
-	config.data = BX.type.isPlainObject(config.data) ? config.data : {};
+
+	config.headers = config.headers || [];
+	config.headers.push({name: 'X-Bitrix-Csrf-Token', value: BX.bitrix_sessid()});
 	if (BX.message.SITE_ID)
 	{
-		config.data.SITE_ID = BX.message.SITE_ID;
+		config.headers.push({name: 'X-Bitrix-Site-Id', value: BX.message.SITE_ID});
 	}
-	config.data.sessid = BX.bitrix_sessid();
-	if (typeof config.signedParameters !== 'undefined')
+
+	if (typeof config.json !== 'undefined')
 	{
-		config.data.signedParameters = config.signedParameters;
+		if (!BX.type.isPlainObject(config.json))
+		{
+			throw new Error('Wrong `config.json`, plain object expected.')
+		}
+
+		config.headers.push({name: 'Content-Type', value: 'application/json'});
+		config.data = config.json;
+		config.preparePost = false;
 	}
+	else if (config.data instanceof FormData)
+	{
+		config.preparePost = false;
+		if (typeof config.signedParameters !== 'undefined')
+		{
+			config.data.append('signedParameters', config.signedParameters);
+		}
+	}
+	else if (BX.type.isPlainObject(config.data) || BX.Type.isNil(config.data))
+	{
+		config.data = BX.type.isPlainObject(config.data) ? config.data : {};
+		if (typeof config.signedParameters !== 'undefined')
+		{
+			config.data.signedParameters = config.signedParameters;
+		}
+	}
+
 	if (!config.method)
 	{
 		config.method = 'POST'
@@ -816,6 +881,25 @@ var buildAjaxPromiseToRestoreCsrf = function(config, withoutRestoringCsrf)
 {
 	withoutRestoringCsrf = withoutRestoringCsrf || false;
 	var originalConfig = BX.clone(config);
+	var request = null;
+
+	var onrequeststart = config.onrequeststart;
+	config.onrequeststart = function(xhr) {
+		request = xhr;
+		if (BX.type.isFunction(onrequeststart))
+		{
+			onrequeststart(xhr);
+		}
+	};
+	var onrequeststartOrig = originalConfig.onrequeststart;
+	originalConfig.onrequeststart = function(xhr) {
+		request = xhr;
+		if (BX.type.isFunction(onrequeststartOrig))
+		{
+			onrequeststartOrig(xhr);
+		}
+	};
+
 	var promise = BX.ajax.promise(config);
 
 	return promise.then(function(response) {
@@ -826,7 +910,12 @@ var buildAjaxPromiseToRestoreCsrf = function(config, withoutRestoringCsrf)
 				if (error.code === 'invalid_csrf' && error.customData.csrf)
 				{
 					BX.message({'bitrix_sessid': error.customData.csrf});
-					originalConfig.data.sessid = BX.bitrix_sessid();
+
+					originalConfig.headers = originalConfig.headers || [];
+					originalConfig.headers = originalConfig.headers.filter(function(header) {
+						return header && header.name !== 'X-Bitrix-Csrf-Token';
+					});
+					originalConfig.headers.push({name: 'X-Bitrix-Csrf-Token', value: BX.bitrix_sessid()});
 
 					csrfProblem = true;
 				}
@@ -847,6 +936,80 @@ var buildAjaxPromiseToRestoreCsrf = function(config, withoutRestoringCsrf)
 		}
 
 		return response;
+	}).catch(function(data) {
+		var ajaxReject = new BX.Promise();
+
+		var originalJsonResponse;
+		if (BX.type.isPlainObject(data) && data.xhr && data.xhr.responseText)
+		{
+			try
+			{
+				originalJsonResponse = JSON.parse(data.xhr.responseText);
+				data = originalJsonResponse;
+			}
+			catch (err)
+			{}
+		}
+
+		if (BX.type.isPlainObject(data) && data.status && data.hasOwnProperty('data'))
+		{
+			ajaxReject.reject(data);
+		}
+		else
+		{
+			ajaxReject.reject({
+				status: 'error',
+				data: {
+					ajaxRejectData: data
+				},
+				errors: [
+					{
+						code: 'NETWORK_ERROR',
+						message: 'Network error'
+					}
+				]
+			});
+		}
+
+		return ajaxReject;
+	}).then(function(response){
+
+		var assetsLoaded = new BX.Promise();
+
+		var headers = request.getAllResponseHeaders().trim().split(/[\r\n]+/);
+		var headerMap = {};
+		headers.forEach(function (line) {
+			var parts = line.split(': ');
+			var header = parts.shift().toLowerCase();
+			headerMap[header] = parts.join(': ');
+		});
+
+		if (!headerMap['x-process-assets'])
+		{
+			assetsLoaded.fulfill(response);
+
+			return assetsLoaded;
+		}
+
+		var assets = BX.prop.getObject(BX.prop.getObject(response, "data", {}), "assets", {});
+		var promise = new Promise(function(resolve, reject) {
+			var css = BX.prop.getArray(assets, "css", []);
+			BX.load(css, function(){
+				BX.loadScript(
+					BX.prop.getArray(assets, "js", []),
+					resolve
+				);
+			});
+		});
+		promise.then(function(){
+			var strings = BX.prop.getArray(assets, "string", []);
+			var stringAsset = strings.join('\n');
+			BX.html(document.head, stringAsset, { useAdjacentHTML: true }).then(function(){
+				assetsLoaded.fulfill(response);
+			});
+		});
+
+		return assetsLoaded;
 	});
 };
 
@@ -854,9 +1017,10 @@ var buildAjaxPromiseToRestoreCsrf = function(config, withoutRestoringCsrf)
  *
  * @param {string} action
  * @param {Object} config
- * @param {?string} [config.analyticsLabel]
+ * @param {?string|?Object} [config.analyticsLabel]
  * @param {string} [config.method='POST']
  * @param {Object} [config.data]
+ * @param {?Object} [config.getParameters]
  * @param {?Object} [config.headers]
  * @param {?Object} [config.timeout]
  * @param {Object} [config.navigation]
@@ -868,15 +1032,18 @@ BX.ajax.runAction = function(action, config)
 	var getParameters = prepareAjaxGetParameters(config);
 	getParameters.action = action;
 
-	var url = BX.util.add_url_param('/bitrix/services/main/ajax.php', getParameters);
-
+	var url = '/bitrix/services/main/ajax.php?' + BX.ajax.prepareData(getParameters);
 	return buildAjaxPromiseToRestoreCsrf({
 		method: config.method,
 		dataType: 'json',
 		url: url,
 		data: config.data,
 		timeout: config.timeout,
-		headers: config.headers
+		preparePost: config.preparePost,
+		headers: config.headers,
+		onrequeststart: config.onrequeststart,
+		onprogress: config.onprogress,
+		onprogressupload: config.onprogressupload
 	});
 };
 
@@ -885,11 +1052,12 @@ BX.ajax.runAction = function(action, config)
  * @param {string} component
  * @param {string} action
  * @param {Object} config
- * @param {?string} [config.analyticsLabel]
+ * @param {?string|?Object} [config.analyticsLabel]
  * @param {?string} [config.signedParameters]
  * @param {string} [config.method='POST']
  * @param {string} [config.mode='ajax'] Ajax or class.
  * @param {Object} [config.data]
+ * @param {?Object} [config.getParameters]
  * @param {?array} [config.headers]
  * @param {?number} [config.timeout]
  * @param {Object} [config.navigation]
@@ -903,7 +1071,7 @@ BX.ajax.runComponentAction = function (component, action, config)
 	getParameters.c = component;
 	getParameters.action = action;
 
-	var url = BX.util.add_url_param('/bitrix/services/main/ajax.php', getParameters);
+	var url = '/bitrix/services/main/ajax.php?' + BX.ajax.prepareData(getParameters);
 
 	return buildAjaxPromiseToRestoreCsrf({
 		method: config.method,
@@ -911,7 +1079,11 @@ BX.ajax.runComponentAction = function (component, action, config)
 		url: url,
 		data: config.data,
 		timeout: config.timeout,
-		headers: config.headers
+		preparePost: config.preparePost,
+		headers: config.headers,
+		onrequeststart: (config.onrequeststart ? config.onrequeststart : null),
+		onprogress: config.onprogress,
+		onprogressupload: config.onprogressupload
 	});
 };
 
@@ -1123,12 +1295,21 @@ BX.ajax.prepareForm = function(obForm, data)
 		}
 
 		i = 0; length = 0;
-		var current = data, name, rest, pp;
+		var current = data, name, rest, pp, tmpKey;
 
 		while(i < _data.length)
 		{
 			var p = _data[i].name.indexOf('[');
-			if (p == -1) {
+			if (tmpKey)
+			{
+				current[_data[i].name] = {};
+				current[_data[i].name][tmpKey.replace(/\[|\]/gi, '')] = _data[i].value;
+				current = data;
+				tmpKey = null;
+				i++;
+			}
+			else if (p == -1)
+			{
 				current[_data[i].name] = _data[i].value;
 				current = data;
 				i++;
@@ -1153,6 +1334,8 @@ BX.ajax.prepareForm = function(obForm, data)
 					//No index specified - so take the next integer
 					current = current[name];
 					_data[i].name = '' + current.length;
+					if (rest.substring(pp+1).indexOf('[') === 0)
+						tmpKey = rest.substring(0, pp) + rest.substring(pp+1);
 				}
 				else
 				{
@@ -1320,7 +1503,7 @@ BX.ajax.UpdatePageTitle = function(title)
 	var obTitle = BX('pagetitle');
 	if (obTitle)
 	{
-		obTitle.removeChild(obTitle.firstChild);
+		BX.remove(obTitle.firstChild);
 		if (!obTitle.firstChild)
 			obTitle.appendChild(document.createTextNode(title));
 		else
@@ -1364,7 +1547,7 @@ BX.userOptions.save = function(sCategory, sName, sValName, sVal, bCommon)
 
 	var sParam = BX.userOptions.__get();
 	if (sParam != '')
-		document.cookie = BX.message('COOKIE_PREFIX')+"_LAST_SETTINGS=" + encodeURIComponent(sParam) + "&sessid="+BX.bitrix_sessid()+"; expires=Thu, 31 Dec 2020 23:59:59 GMT; path=/;";
+		document.cookie = BX.message('COOKIE_PREFIX')+"_LAST_SETTINGS=" + encodeURIComponent(sParam) + "&sessid="+BX.bitrix_sessid()+"; expires=Thu, 31 Dec " + ((new Date()).getFullYear() + 1) + " 23:59:59 GMT; path=/;";
 
 	if(!BX.userOptions.bSend)
 	{

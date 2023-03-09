@@ -150,6 +150,7 @@ final class DiscountCache
 		{
 			$currentList = array();
 
+			\CTimeZone::Disable();
 			$currentDatetime = new DateTime();
 			$discountSelect = array(
 				'ID', 'PRIORITY', 'SORT', 'LAST_DISCOUNT', 'LAST_LEVEL_DISCOUNT', 'UNPACK', 'APPLICATION', 'USE_COUPONS', 'EXECUTE_MODULE',
@@ -162,12 +163,12 @@ final class DiscountCache
 				'@EXECUTE_MODULE' => $executeModuleFilter,
 				array(
 					'LOGIC' => 'OR',
-					'ACTIVE_FROM' => '',
+					'=ACTIVE_FROM' => null,
 					'<=ACTIVE_FROM' => $currentDatetime
 				),
 				array(
 					'LOGIC' => 'OR',
-					'ACTIVE_TO' => '',
+					'=ACTIVE_TO' => null,
 					'>=ACTIVE_TO' => $currentDatetime
 				)
 			);
@@ -216,16 +217,26 @@ final class DiscountCache
 			while($discount = $discountIterator->fetch())
 			{
 				$discount['ID'] = (int)$discount['ID'];
-				if($discount['USE_COUPONS'] == 'Y')
-				{
+				if ($discount['USE_COUPONS'] == 'Y')
 					$discount['COUPON'] = $couponList[$couponsDiscount[$discount['ID']]];
-				}
 				$discount['CONDITIONS'] = $discount['CONDITIONS_LIST'];
 				$discount['ACTIONS'] = $discount['ACTIONS_LIST'];
 				$discount['PREDICTIONS'] = $discount['PREDICTIONS_LIST'];
 				$discount['MODULE_ID'] = 'sale';
+				$discount['MODULES'] = array();
 				unset($discount['ACTIONS_LIST'], $discount['CONDITIONS_LIST'], $discount['PREDICTIONS_LIST']);
 				$currentList[$discount['ID']] = $discount;
+			}
+			unset($discount, $discountIterator);
+
+			\CTimeZone::Enable();
+
+			if (!empty($currentList))
+			{
+				$discountModules = static::getDiscountModules(array_keys($currentList));
+				foreach ($discountModules as $id => $modules)
+					$currentList[$id]['MODULES'] = $modules;
+				unset($id, $modules, $discountModules);
 			}
 
 			$this->discounts[$cacheKey] = $currentList;

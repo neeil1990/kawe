@@ -11,6 +11,8 @@
 /** @var string $componentPath */
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
+
+\Bitrix\Main\UI\Extension::load('ui.fonts.opensans');
 $this->addExternalCss("/bitrix/css/main/bootstrap.css");
 $this->addExternalCss("/bitrix/css/main/font-awesome.css");
 $this->addExternalCss($this->GetFolder().'/themes/'.$arParams['TEMPLATE_THEME'].'/style.css');
@@ -28,7 +30,7 @@ $this->addExternalCss($this->GetFolder().'/themes/'.$arParams['TEMPLATE_THEME'].
 	<div class="bx-newslist-container col-sm-6 col-md-4" id="<?=$this->GetEditAreaId($arItem['ID']);?>">
 	<div class="bx-newslist-block">
 		<?if($arParams["DISPLAY_PICTURE"]!="N"):?>
-			<?if ($arItem["VIDEO"]):?>
+			<?if (isset($arItem["VIDEO"]) && $arItem["VIDEO"]):?>
 				<div class="bx-newslist-youtube embed-responsive embed-responsive-16by9" style="display: block;">
 					<iframe
 						src="<?echo $arItem["VIDEO"]?>"
@@ -36,7 +38,7 @@ $this->addExternalCss($this->GetFolder().'/themes/'.$arParams['TEMPLATE_THEME'].
 						allowfullscreen=""
 						></iframe>
 				</div>
-			<?elseif ($arItem["SOUND_CLOUD"]):?>
+			<?elseif (isset($arItem["SOUND_CLOUD"]) && $arItem["SOUND_CLOUD"]):?>
 				<div class="bx-newslist-audio">
 					<iframe
 						width="100%"
@@ -46,7 +48,7 @@ $this->addExternalCss($this->GetFolder().'/themes/'.$arParams['TEMPLATE_THEME'].
 						src="https://w.soundcloud.com/player/?url=<?echo urlencode($arItem["SOUND_CLOUD"])?>&amp;color=ff5500&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"
 						></iframe>
 				</div>
-			<?elseif ($arItem["SLIDER"] && count($arItem["SLIDER"]) > 1):?>
+			<?elseif (isset($arItem["SLIDER"]) && $arItem["SLIDER"] && count($arItem["SLIDER"]) > 1):?>
 				<div class="bx-newslist-slider">
 					<div class="bx-newslist-slider-container" style="width: <?echo count($arItem["SLIDER"])*100?>%;left: 0;">
 						<?foreach ($arItem["SLIDER"] as $file):?>
@@ -74,7 +76,7 @@ $this->addExternalCss($this->GetFolder().'/themes/'.$arParams['TEMPLATE_THEME'].
 						});
 					});
 				</script>
-			<?elseif ($arItem["SLIDER"]):?>
+			<?elseif ($arItem["SLIDER"] ?? false):?>
 				<div class="bx-newslist-img">
 					<?if(!$arParams["HIDE_LINK_WHEN_NO_DETAIL"] || ($arItem["DETAIL_TEXT"] && $arResult["USER_HAVE_ACCESS"])):?>
 						<a href="<?=$arItem["DETAIL_PAGE_URL"]?>"><img

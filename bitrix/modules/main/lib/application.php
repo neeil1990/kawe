@@ -3,26 +3,35 @@
  * Bitrix Framework
  * @package bitrix
  * @subpackage main
- * @copyright 2001-2012 Bitrix
+ * @copyright 2001-2022 Bitrix
  */
 namespace Bitrix\Main;
 
+use Bitrix\Main\Config\Configuration;
 use Bitrix\Main\Data;
+use Bitrix\Main\DI\ServiceLocator;
 use Bitrix\Main\Diag;
-use Bitrix\Main\IO;
+use Bitrix\Main\Routing\Route;
+use Bitrix\Main\Routing\Router;
+use Bitrix\Main\Session\CompositeSessionManager;
+use Bitrix\Main\Session\KernelSessionProxy;
+use Bitrix\Main\Session\SessionConfigurationResolver;
+use Bitrix\Main\Session\SessionInterface;
 
 /**
  * Base class for any application.
  */
 abstract class Application
 {
+	const JOB_PRIORITY_NORMAL = 100;
+	const JOB_PRIORITY_LOW = 50;
+
 	/**
 	 * @var Application
 	 */
-	protected static $instance = null;
+	protected static $instance;
 
-	protected $isBasicKernelInitialized = false;
-	protected $isExtendedKernelInitialized = false;
+	protected bool $initialized = false;
 
 	/**
 	 * Execution context.
@@ -31,112 +40,179 @@ abstract class Application
 	 */
 	protected $context;
 
+	/** @var Router */
+	protected $router;
+
+	/** @var Route */
+	protected $currentRoute;
+
 	/**
 	 * Pool of database connections.
-	 *
 	 * @var Data\ConnectionPool
 	 */
 	protected $connectionPool;
 
 	/**
 	 * Managed cache instance.
-	 *
 	 * @var \Bitrix\Main\Data\ManagedCache
 	 */
 	protected $managedCache;
 
 	/**
 	 * Tagged cache instance.
-	 *
 	 * @var \Bitrix\Main\Data\TaggedCache
 	 */
 	protected $taggedCache;
 
-	/**
-	 * LRU cache instance.
-	 *
-	 * @var \Bitrix\Main\Data\LruCache
-	 */
-	protected $lruCache;
+	/** @var SessionInterface */
+	protected $session;
+	/** @var SessionInterface */
+	protected $kernelSession;
+	/** @var CompositeSessionManager */
+	protected $compositeSessionManager;
+	/** @var Data\LocalStorage\SessionLocalStorageManager */
+	protected $sessionLocalStorageManager;
 
-	/**
-	 * @var \Bitrix\Main\Diag\ExceptionHandler
+	/*
+	 * @var \SplPriorityQueue
 	 */
-	protected $exceptionHandler = null;
+	protected $backgroundJobs;
 
-	/**
-	 * @var Dispatcher
-	 */
-	private $dispatcher = null;
+	/** @var License */
+	protected $license;
 
 	/**
 	 * Creates new application instance.
 	 */
 	protected function __construct()
 	{
-
-	}
-
-	/**
-	 * Returns current instance of the Application.
-	 *
-	 * @return Application
-	 * @throws SystemException
-	 */
-	public static function getInstance()
-	{
-		if (!isset(static::$instance))
-			static::$instance = new static();
-
-		return static::$instance;
-	}
-
-	/**
-	 * Does minimally possible kernel initialization
-	 *
-	 * @throws SystemException
-	 */
-	public function initializeBasicKernel()
-	{
-		if ($this->isBasicKernelInitialized)
-			return;
-		$this->isBasicKernelInitialized = true;
-
+		ServiceLocator::getInstance()->registerByGlobalSettings();
+		$this->backgroundJobs = new \SplPriorityQueue();
 		$this->initializeExceptionHandler();
 		$this->initializeCache();
 		$this->createDatabaseConnection();
 	}
 
 	/**
-	 * Does full kernel initialization. Should be called somewhere after initializeBasicKernel()
+	 * Returns current instance of the Application.
+	 *
+	 * @return Application | HttpApplication
+	 */
+	public static function getInstance()
+	{
+		if (!isset(static::$instance))
+		{
+			static::$instance = new static();
+		}
+		return static::$instance;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function hasInstance()
+	{
+		return isset(static::$instance);
+	}
+
+	/**
+	 * @deprecated
+	 * Does nothing, will be removed soon.
+	 */
+	public function initializeBasicKernel()
+	{
+	}
+
+	/**
+	 * Does full kernel initialization. Should be called somewhere after initializeBasicKernel().
 	 *
 	 * @param array $params Parameters of the current request (depends on application type)
-	 * @throws SystemException
 	 */
 	public function initializeExtendedKernel(array $params)
 	{
-		if ($this->isExtendedKernelInitialized)
-			return;
-		$this->isExtendedKernelInitialized = true;
-
 		$this->initializeContext($params);
 
-		//$this->initializeDispatcher();
+		if (!$this->initialized)
+		{
+			$this->initializeSessions();
+			$this->initializeSessionLocalStorage();
+
+			$this->initialized = true;
+		}
 	}
 
-	final public function getDispatcher()
+	private function initializeSessions()
 	{
-		if (is_null($this->dispatcher))
-			throw new NotSupportedException();
-		if (!($this->dispatcher instanceof Dispatcher))
-			throw new NotSupportedException();
+		$resolver = new SessionConfigurationResolver(Configuration::getInstance());
+		$resolver->resolve();
 
-		return clone $this->dispatcher;
+		$this->session = $resolver->getSession();
+		$this->kernelSession = $resolver->getKernelSession();
+
+		$this->compositeSessionManager = new CompositeSessionManager(
+			$this->kernelSession,
+			$this->session
+		);
+	}
+
+	private function initializeSessionLocalStorage()
+	{
+		$cacheEngine = Data\Cache::createCacheEngine();
+		if ($cacheEngine instanceof Data\LocalStorage\Storage\CacheEngineInterface)
+		{
+			$localSessionStorage = new Data\LocalStorage\Storage\CacheStorage($cacheEngine);
+		}
+		else
+		{
+			$localSessionStorage = new Data\LocalStorage\Storage\NativeSessionStorage(
+				$this->getSession()
+			);
+		}
+
+		$this->sessionLocalStorageManager = new Data\LocalStorage\SessionLocalStorageManager($localSessionStorage);
+		$configLocalStorage = Config\Configuration::getValue("session_local_storage") ?: [];
+		if (isset($configLocalStorage['ttl']))
+		{
+			$this->sessionLocalStorageManager->setTtl($configLocalStorage['ttl']);
+		}
+	}
+
+	/**
+	 * @return Router
+	 */
+	public function getRouter(): Router
+	{
+		return $this->router;
+	}
+
+	/**
+	 * @param Router $router
+	 */
+	public function setRouter(Router $router): void
+	{
+		$this->router = $router;
+	}
+
+	/**
+	 * @return Route
+	 */
+	public function getCurrentRoute(): Route
+	{
+		return $this->currentRoute;
+	}
+
+	/**
+	 * @param Route $currentRoute
+	 */
+	public function setCurrentRoute(Route $currentRoute): void
+	{
+		$this->currentRoute = $currentRoute;
 	}
 
 	/**
 	 * Initializes context of the current request.
 	 * Should be implemented in subclass.
+	 * @param array $params
 	 */
 	abstract protected function initializeContext(array $params);
 
@@ -149,11 +225,12 @@ abstract class Application
 	/**
 	 * Runs controller and its action and sends response to the output.
 	 *
-	 * It's a stub method and we can't mark it as abstract because there is compatibility.
+	 * It's a stub method, and we can't mark it as abstract because there is compatibility.
 	 * @return void
 	 */
 	public function run()
-	{}
+	{
+	}
 
 	/**
 	 * Ends work of application.
@@ -164,27 +241,74 @@ abstract class Application
 	 * @param Response|null $response
 	 *
 	 * @return void
-	 * @throws SystemException
 	 */
 	public function end($status = 0, Response $response = null)
 	{
-		$response = $response?: $this->context->getResponse();
+		if($response === null)
+		{
+			//use default response
+			$response = $this->context->getResponse();
+
+			//it's possible to have open buffers
+			$content = '';
+			$n = ob_get_level();
+			while(($c = ob_get_clean()) !== false && $n > 0)
+			{
+				$content .= $c;
+				$n--;
+			}
+
+			if($content <> '')
+			{
+				$response->appendContent($content);
+			}
+		}
+
+		$this->handleResponseBeforeSend($response);
+		//this is the last point of output - all output below will be ignored
 		$response->send();
 
 		$this->terminate($status);
 	}
 
+	protected function handleResponseBeforeSend(Response $response): void
+	{
+		$kernelSession = $this->getKernelSession();
+		if (!($kernelSession instanceof KernelSessionProxy) && $kernelSession->isStarted())
+		{
+			//save session data in cookies
+			$kernelSession->getSessionHandler()->setResponse($response);
+			$kernelSession->save();
+		}
+	}
+
 	/**
 	 * Terminates application by invoking exit().
-	 * It's the right way to finish application @see \CMain::finalActions().
+	 * It's the right way to finish application.
 	 *
 	 * @param int $status
 	 * @return void
 	 */
 	public function terminate($status = 0)
 	{
-		/** @noinspection PhpUndefinedClassInspection */
-		\CMain::finalActions();
+		//old kernel staff
+		\CMain::RunFinalActionsInternal();
+
+		//Release session
+		session_write_close();
+
+		$pool = $this->getConnectionPool();
+
+		$pool->useMasterOnly(true);
+
+		$this->runBackgroundJobs();
+
+		$pool->useMasterOnly(false);
+
+		Data\ManagedCache::finalize();
+
+		$pool->disconnect();
+
 		exit($status);
 	}
 
@@ -200,7 +324,7 @@ abstract class Application
 	 *			'assertion_throws_exception' => true,       // assertion throws exception
 	 *			'assertion_error_type' => 256,
 	 *			'log' => array(
-	 *              'class_name' => 'MyLog',        // custom log class, must extends ExceptionHandlerLog; can be omited, in this case default Diag\FileExceptionHandlerLog will be used
+	 *              'class_name' => 'MyLog',        // custom log class, must extend ExceptionHandlerLog; can be omited, in this case default Diag\FileExceptionHandlerLog will be used
 	 *              'extension' => 'MyLogExt',      // php extension, is used only with 'class_name'
 	 *              'required_file' => 'modules/mylog.module/mylog.php'     // included file, is used only with 'class_name'
 	 *				'settings' => array(        // any settings for 'class_name'
@@ -245,14 +369,17 @@ abstract class Application
 			array($this, "createExceptionHandlerLog")
 		);
 
-		$this->exceptionHandler = $exceptionHandler;
+		ServiceLocator::getInstance()->addInstance('exceptionHandler', $exceptionHandler);
 	}
 
 	public function createExceptionHandlerLog()
 	{
 		$exceptionHandling = Config\Configuration::getValue("exception_handling");
-		if ($exceptionHandling === null || !is_array($exceptionHandling) || !isset($exceptionHandling["log"]) || !is_array($exceptionHandling["log"]))
+
+		if (!is_array($exceptionHandling) || !isset($exceptionHandling["log"]) || !is_array($exceptionHandling["log"]))
+		{
 			return null;
+		}
 
 		$options = $exceptionHandling["log"];
 
@@ -261,14 +388,20 @@ abstract class Application
 		if (isset($options["class_name"]) && !empty($options["class_name"]))
 		{
 			if (isset($options["extension"]) && !empty($options["extension"]) && !extension_loaded($options["extension"]))
+			{
 				return null;
+			}
 
 			if (isset($options["required_file"]) && !empty($options["required_file"]) && ($requiredFile = Loader::getLocal($options["required_file"])) !== false)
+			{
 				require_once($requiredFile);
+			}
 
 			$className = $options["class_name"];
 			if (!class_exists($className))
+			{
 				return null;
+			}
 
 			$log = new $className();
 		}
@@ -323,21 +456,12 @@ abstract class Application
 			Data\Cache::setClearCache($_GET["clear_cache"] === 'Y');
 	}
 
-	/*
-	final private function initializeDispatcher()
-	{
-		$dispatcher = new Dispatcher();
-		$dispatcher->initialize();
-		$this->dispatcher = $dispatcher;
-	}
-	*/
-
 	/**
 	 * @return \Bitrix\Main\Diag\ExceptionHandler
 	 */
 	public function getExceptionHandler()
 	{
-		return $this->exceptionHandler;
+		return ServiceLocator::getInstance()->get('exceptionHandler');
 	}
 
 	/**
@@ -353,7 +477,7 @@ abstract class Application
 	/**
 	 * Returns context of the current request.
 	 *
-	 * @return Context
+	 * @return Context | HttpContext
 	 */
 	public function getContext()
 	{
@@ -370,13 +494,23 @@ abstract class Application
 		$this->context = $context;
 	}
 
+	public function getLicense(): License
+	{
+		if (!$this->license)
+		{
+			$this->license = new License();
+		}
+
+		return $this->license;
+	}
+
 	/**
 	 * Static method returns database connection for the specified name.
 	 * If name is empty - default connection is returned.
 	 *
 	 * @static
 	 * @param string $name Name of database connection. If empty - default connection.
-	 * @return DB\Connection
+	 * @return Data\Connection|DB\Connection
 	 */
 	public static function getConnection($name = "")
 	{
@@ -422,6 +556,31 @@ abstract class Application
 		}
 
 		return $this->taggedCache;
+	}
+
+	final public function getSessionLocalStorageManager(): Data\LocalStorage\SessionLocalStorageManager
+	{
+		return $this->sessionLocalStorageManager;
+	}
+
+	final public function getLocalSession($name): Data\LocalStorage\SessionLocalStorage
+	{
+		return $this->sessionLocalStorageManager->get($name);
+	}
+
+	final public function getKernelSession(): SessionInterface
+	{
+		return $this->kernelSession;
+	}
+
+	final public function getSession(): SessionInterface
+	{
+		return $this->session;
+	}
+
+	final public function getCompositeSessionManager(): CompositeSessionManager
+	{
+		return $this->compositeSessionManager;
 	}
 
 	/**
@@ -493,7 +652,7 @@ abstract class Application
 				return $personalRoot = $server->getPersonalRoot();
 		}
 
-		return isset($_SERVER["BX_PERSONAL_ROOT"]) ? $_SERVER["BX_PERSONAL_ROOT"] : "/bitrix";
+		return $_SERVER["BX_PERSONAL_ROOT"] ?? '/bitrix';
 	}
 
 	/**
@@ -512,5 +671,64 @@ abstract class Application
 			accelerator_reset();
 		elseif (function_exists("wincache_refresh_if_changed"))
 			wincache_refresh_if_changed();
+	}
+
+	/**
+	 * Adds a job to do after the response was sent.
+	 * @param callable $job
+	 * @param array $args
+	 * @param int $priority
+	 * @return $this
+	 */
+	public function addBackgroundJob(callable $job, array $args = [], $priority = self::JOB_PRIORITY_NORMAL)
+	{
+		$this->backgroundJobs->insert([$job, $args], $priority);
+
+		return $this;
+	}
+
+	protected function runBackgroundJobs()
+	{
+		$lastException = null;
+		$exceptionHandler = $this->getExceptionHandler();
+
+		//jobs can be added from jobs
+		while($this->backgroundJobs->valid())
+		{
+			//clear the queue
+			$jobs = [];
+			foreach ($this->backgroundJobs as $job)
+			{
+				$jobs[] = $job;
+			}
+
+			//do job
+			foreach ($jobs as $job)
+			{
+				try
+				{
+					call_user_func_array($job[0], $job[1]);
+				}
+				catch (\Throwable $exception)
+				{
+					$lastException = $exception;
+					$exceptionHandler->writeToLog($exception);
+				}
+			}
+		}
+
+		if ($lastException !== null)
+		{
+			throw $lastException;
+		}
+	}
+
+	/**
+	 * Returns true if the application is fully initialized.
+	 * @return bool
+	 */
+	public function isInitialized()
+	{
+		return $this->initialized;
 	}
 }

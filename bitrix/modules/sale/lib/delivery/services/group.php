@@ -11,6 +11,9 @@ Loc::loadMessages(__FILE__);
 
 class Group extends Base
 {
+	/** @var string */
+	protected $handlerCode = 'BITRIX_GROUP';
+
 	public function __construct(array $initParams)
 	{
 		if(!isset($initParams["ACTIVE"]))
@@ -65,6 +68,11 @@ class Group extends Base
 	}
 
 	public static function canHasChildren()
+	{
+		return true;
+	}
+
+	public static function isHandlerCompatible()
 	{
 		return true;
 	}

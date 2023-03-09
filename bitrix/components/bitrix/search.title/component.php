@@ -1,18 +1,14 @@
 <?
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
-if(!IsModuleInstalled("search"))
-{
-	ShowError(GetMessage("CC_BST_MODULE_NOT_INSTALLED"));
-	return;
-}
+$isSearchInstalled = CModule::IncludeModule("search");
 
-if(!isset($arParams["PAGE"]) || strlen($arParams["PAGE"])<=0)
+if(!isset($arParams["PAGE"]) || $arParams["PAGE"] == '')
 	$arParams["PAGE"] = "#SITE_DIR#search/index.php";
 
 $arResult["CATEGORIES"] = array();
 
-$query = ltrim($_POST["q"]);
+$query = ltrim($_POST["q"] ?? '');
 if(
 	!empty($query)
 	&& $_REQUEST["ajax_call"] === "y"
@@ -20,10 +16,14 @@ if(
 		!isset($_REQUEST["INPUT_ID"])
 		|| $_REQUEST["INPUT_ID"] == $arParams["INPUT_ID"]
 	)
-	&& CModule::IncludeModule("search")
 )
 {
 	CUtil::decodeURIComponent($query);
+	if (!$isSearchInstalled)
+	{
+		require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/search/tools/language.php");
+		require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/search/tools/stemming.php");
+	}
 
 	$arResult["alt_query"] = "";
 	if($arParams["USE_LANGUAGE_GUESS"] !== "N")
@@ -53,7 +53,7 @@ if(
 		{
 			foreach($arParams["CATEGORY_".$i] as $categoryCode)
 			{
-				if ((strpos($categoryCode, 'custom_') !== 0))
+				if ((mb_strpos($categoryCode, 'custom_') !== 0))
 				{
 					$bCustom = false;
 					break;
@@ -62,7 +62,7 @@ if(
 		}
 		else
 		{
-			$bCustom = (strpos($arParams["CATEGORY_".$i], 'custom_') === 0);
+			$bCustom = (mb_strpos($arParams["CATEGORY_".$i], 'custom_') === 0);
 		}
 
 		if ($bCustom)
@@ -84,59 +84,69 @@ if(
 			"ITEMS" => array()
 		);
 
-		$exFILTER = array(
-			0 => CSearchParameters::ConvertParamsToFilter($arParams, "CATEGORY_".$i),
-		);
-		$exFILTER[0]["LOGIC"] = "OR";
-
-		if($arParams["CHECK_DATES"] === "Y")
-			$exFILTER["CHECK_DATES"] = "Y";
-
-		$arOthersFilter[] = $exFILTER;
-
-		$j = 0;
-		$obTitle = new CSearchTitle;
-		$obTitle->setMinWordLength($_REQUEST["l"]);
-		if($obTitle->Search(
-			$arResult["alt_query"]? $arResult["alt_query"]: $arResult["query"]
-			,$arParams["TOP_COUNT"]
-			,$exFILTER
-			,false
-			,$arParams["ORDER"]
-		))
+		if ($isSearchInstalled)
 		{
-			while($ar = $obTitle->Fetch())
+			$exFILTER = array(
+				0 => CSearchParameters::ConvertParamsToFilter($arParams, "CATEGORY_".$i),
+			);
+			$exFILTER[0]["LOGIC"] = "OR";
+
+			if($arParams["CHECK_DATES"] === "Y")
+				$exFILTER["CHECK_DATES"] = "Y";
+
+			$arOthersFilter[] = $exFILTER;
+
+			$j = 0;
+			$obTitle = new CSearchTitle;
+			$obTitle->setMinWordLength($_REQUEST["l"]);
+			if($obTitle->Search(
+				$arResult["alt_query"]? $arResult["alt_query"]: $arResult["query"]
+				,$arParams["TOP_COUNT"]
+				,$exFILTER
+				,false
+				,$arParams["ORDER"]
+			))
 			{
-				$j++;
-				if($j > $arParams["TOP_COUNT"])
+				while($ar = $obTitle->Fetch())
 				{
-					$params = array("q" => $arResult["alt_query"]? $arResult["alt_query"]: $arResult["query"]);
+					$j++;
+					if($j > $arParams["TOP_COUNT"])
+					{
+						$params = array("q" => $arResult["alt_query"]? $arResult["alt_query"]: $arResult["query"]);
 
-					$url = CHTTP::urlAddParams(
-						str_replace("#SITE_DIR#", SITE_DIR, $arParams["PAGE"])
-						,$params
-						,array("encode"=>true)
-					).CSearchTitle::MakeFilterUrl("f", $exFILTER);
+						$url = CHTTP::urlAddParams(
+								str_replace("#SITE_DIR#", SITE_DIR, $arParams["PAGE"])
+								,$params
+								,array("encode"=>true)
+							).CSearchTitle::MakeFilterUrl("f", $exFILTER);
 
-					$arResult["CATEGORIES"][$i]["ITEMS"][] = array(
-						"NAME" => GetMessage("CC_BST_MORE"),
-						"URL" => htmlspecialcharsex($url),
-					);
-					break;
-				}
-				else
-				{
-					$arResult["CATEGORIES"][$i]["ITEMS"][] = array(
-						"NAME" => $ar["NAME"],
-						"URL" => htmlspecialcharsbx($ar["URL"]),
-						"MODULE_ID" => $ar["MODULE_ID"],
-						"PARAM1" => $ar["PARAM1"],
-						"PARAM2" => $ar["PARAM2"],
-						"ITEM_ID" => $ar["ITEM_ID"],
-					);
+						$arResult["CATEGORIES"][$i]["ITEMS"][] = array(
+							"NAME" => GetMessage("CC_BST_MORE"),
+							"URL" => htmlspecialcharsex($url),
+							"TYPE" => "all"
+						);
+						break;
+					}
+					else
+					{
+						$arResult["CATEGORIES"][$i]["ITEMS"][] = array(
+							"NAME" => $ar["NAME"],
+							"URL" => htmlspecialcharsbx($ar["URL"]),
+							"MODULE_ID" => $ar["MODULE_ID"],
+							"PARAM1" => $ar["PARAM1"],
+							"PARAM2" => $ar["PARAM2"],
+							"ITEM_ID" => $ar["ITEM_ID"],
+						);
+					}
 				}
 			}
+
+			if(!$j)
+			{
+				unset($arResult["CATEGORIES"][$i]);
+			}
 		}
+
 		/* This code adds not fixed keyboard link to the category
 		if($arResult["alt_query"] != "")
 		{
@@ -157,13 +167,9 @@ if(
 			);
 		}
 		*/
-		if(!$j)
-		{
-			unset($arResult["CATEGORIES"][$i]);
-		}
 	}
 
-	if($arParams["SHOW_OTHERS"] === "Y")
+	if($arParams["SHOW_OTHERS"] === "Y" && $isSearchInstalled)
 	{
 		$arResult["CATEGORIES"]["others"] = array(
 			"TITLE" => htmlspecialcharsbx($arParams["CATEGORY_OTHERS_TITLE"]),
@@ -207,10 +213,9 @@ if(
 		{
 			unset($arResult["CATEGORIES"]["others"]);
 		}
-
 	}
 
-	if(!empty($arResult["CATEGORIES"]))
+	if(!empty($arResult["CATEGORIES"]) && $isSearchInstalled)
 	{
 		$arResult["CATEGORIES"]["all"] = array(
 			"TITLE" => "",
@@ -250,12 +255,23 @@ if(
 		}
 		*/
 	}
+
+	$arResult['CATEGORIES_ITEMS_EXISTS'] = false;
+	foreach ($arResult["CATEGORIES"] as $category)
+	{
+		if (!empty($category['ITEMS']) && is_array($category['ITEMS']))
+		{
+			$arResult['CATEGORIES_ITEMS_EXISTS'] = true;
+			break;
+		}
+	}
 }
 
 $arResult["FORM_ACTION"] = htmlspecialcharsbx(str_replace("#SITE_DIR#", SITE_DIR, $arParams["PAGE"]));
 
 if (
-	$_REQUEST["ajax_call"] === "y"
+	isset($_REQUEST["ajax_call"])
+	&& $_REQUEST["ajax_call"] === "y"
 	&& (
 		!isset($_REQUEST["INPUT_ID"])
 		|| $_REQUEST["INPUT_ID"] == $arParams["INPUT_ID"]
@@ -275,4 +291,3 @@ else
 	CUtil::InitJSCore(array('ajax'));
 	$this->IncludeComponentTemplate();
 }
-?>

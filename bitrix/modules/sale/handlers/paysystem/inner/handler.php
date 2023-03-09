@@ -39,8 +39,10 @@ class InnerHandler extends PaySystem\BaseServiceHandler implements PaySystem\IRe
 				if ($res->isSuccess())
 				{
 					$res = $order->save();
-					if ($res)
+					if (!$res->isSuccess())
+					{
 						$result->addErrors($res->getErrors());
+					}
 				}
 				else
 				{
@@ -82,6 +84,7 @@ class InnerHandler extends PaySystem\BaseServiceHandler implements PaySystem\IRe
 		}
 
 		UserBudgetPool::addPoolItem($order, $refundableSum, UserBudgetPool::BUDGET_TYPE_ORDER_UNPAY, $payment);
+		$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
 
 		return $result;
 	}

@@ -10,6 +10,22 @@ use Bitrix\Main,
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class CatalogViewedProductTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_CatalogViewedProduct_Query query()
+ * @method static EO_CatalogViewedProduct_Result getByPrimary($primary, array $parameters = [])
+ * @method static EO_CatalogViewedProduct_Result getById($id)
+ * @method static EO_CatalogViewedProduct_Result getList(array $parameters = [])
+ * @method static EO_CatalogViewedProduct_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_CatalogViewedProduct createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_CatalogViewedProduct_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_CatalogViewedProduct wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_CatalogViewedProduct_Collection wakeUpCollection($rows)
+ */
 class CatalogViewedProductTable extends Main\Entity\DataManager
 {
 	/**
@@ -39,7 +55,7 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('VIEWED_PRODUCT_ENTITY_FUSER_ID_FIELD')
 			)),
 			'DATE_VISIT' => new Main\Entity\DatetimeField('DATE_VISIT', array(
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('VIEWED_PRODUCT_ENTITY_DATE_VISIT_FIELD')
 			)),
 			'PRODUCT_ID' => new Main\Entity\IntegerField('PRODUCT_ID', array(
@@ -124,6 +140,12 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 	public static function refresh($productId, $fuserId, $siteId = SITE_ID, $elementId = 0, $recommendationId = '')
 	{
 		$rowId = -1;
+
+		if (Option::get('catalog', 'enable_viewed_products') !== 'Y')
+		{
+			return $rowId;
+		}
+
 		$productId = (int)$productId;
 		$fuserId = (int)$fuserId;
 		$siteId = (string)$siteId;
@@ -441,8 +463,12 @@ class CatalogViewedProductTable extends Main\Entity\DataManager
 	 *
 	 * @return string
 	 */
-	public static function clearAgent()
+	public static function clearAgent(): string
 	{
+		if (Option::get('catalog', 'enable_viewed_products') !== 'Y')
+		{
+			return '';
+		}
 		self::clear((int)Option::get('catalog', 'viewed_time'));
 		return '\Bitrix\Catalog\CatalogViewedProductTable::clearAgent();';
 	}

@@ -10,7 +10,7 @@ class AudienceGoogle extends Audience
 
 	const MAX_CONTACTS_PER_PACKET = 0;
 	const MIN_CONTACTS_FOR_ACTIVATING = 5000;
-	const URL_AUDIENCE_LIST = 'https://adwords.google.com/mcm/Mcm#uls.uls&app=mcm.audp';
+	const URL_AUDIENCE_LIST = 'https://ads.google.com/aw/audiences/management';
 
 	protected static $listRowMap = array(
 		'ID' => 'ID',
@@ -37,7 +37,7 @@ class AudienceGoogle extends Audience
 
 	public static function isSupportAccount()
 	{
-		return false;
+		return true;
 	}
 
 	public static function isSupportRemoveContacts()
@@ -50,6 +50,7 @@ class AudienceGoogle extends Audience
 		$response = $this->request->send(array(
 			'methodName' => 'audience.add',
 			'parameters' => array(
+				'ACCOUNT_ID' => $this->accountId,
 				'NAME' => $data['NAME'],
 				'DESCRIPTION' => ''
 			)
@@ -90,6 +91,7 @@ class AudienceGoogle extends Audience
 		$response = $this->request->send(array(
 			'methodName' => 'audience.importcontacts',
 			'parameters' => array(
+				'ACCOUNT_ID' => $this->accountId,
 				'AUDIENCE_ID' => $audienceId,
 				'LIST' => $this->prepareContacts($contacts, $options['type'])
 			)
@@ -103,6 +105,7 @@ class AudienceGoogle extends Audience
 		$response = $this->request->send(array(
 			'methodName' => 'audience.removecontacts',
 			'parameters' => array(
+				'ACCOUNT_ID' => $this->accountId,
 				'AUDIENCE_ID' => $audienceId,
 				'LIST' => $this->prepareContacts($contacts, $options['type'])
 			)
@@ -115,7 +118,9 @@ class AudienceGoogle extends Audience
 	{
 		$response = $this->request->send(array(
 			'methodName' => 'audience.list',
-			'parameters' => array()
+			'parameters' => array(
+				'ACCOUNT_ID' => $this->accountId,
+			)
 		));
 
 		return $response;
@@ -125,5 +130,10 @@ class AudienceGoogle extends Audience
 	{
 		$key = 'ID';
 		return (is_array($row) && $row[$key]) ? $row[$key] : null;
+	}
+
+	public static function isSupportAddAudience()
+	{
+		return true;
 	}
 }

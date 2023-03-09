@@ -6,10 +6,10 @@ if (!function_exists("CreatePattern"))
 		$separator = "";
 		$NotWord = "\s.,;:!?\#\-\*\|\[\]\(\)";
 		$word_separator = "[".$NotWord."]";
+
+		$pattern = mb_strtolower(trim($pattern));
 		
-		$pattern = strToLower(trim($pattern));
-		
-		if (strLen($pattern) <= 0)
+		if ($pattern == '')
 			return false;
 			
 		$DICTIONARY_ID = intval($DICTIONARY_ID);
@@ -37,30 +37,30 @@ if (!function_exists("CreatePattern"))
 			for ($ii = 0; $ii < $count; $ii++)
 			{
 				$arrRepl[$ii] = trim($arrRepl[$ii]);
-				if (strLen($lett["LETTER"])==1)
+				if (mb_strlen($lett["LETTER"]) == 1)
 				{
-					if (strLen($arrRepl[$ii]) == 1 )
+					if (mb_strlen($arrRepl[$ii]) == 1 )
 						$arrRes[$ii] = $arrRepl[$ii]."+";
-					elseif (substr($arrRepl[$ii], 0, 1) == "(" && (substr($arrRepl[$ii], -1, 1) == ")" || substr($arrRepl[$ii], -2, 1) == ")"))
+					elseif (mb_substr($arrRepl[$ii], 0, 1) == "(" && (mb_substr($arrRepl[$ii], -1, 1) == ")" || mb_substr($arrRepl[$ii], -2, 1) == ")"))
 					{
-						if (substr($arrRepl[$ii], -1, 1) == ")")
+						if (mb_substr($arrRepl[$ii], -1, 1) == ")")
 							$arrRes[$ii] = $arrRepl[$ii]."+";
 						else
 							$arrRes[$ii] = $arrRepl[$ii];
 					}
-					elseif (strLen($arrRepl[$ii]) > 1 )
+					elseif (mb_strlen($arrRepl[$ii]) > 1 )
 						$arrRes[$ii] = "[".$arrRepl[$ii]."]+";
 					else 
 						$space = true;
 				}
 				else 
 				{
-					if (strLen($arrRepl[$ii]) > 0)
+					if ($arrRepl[$ii] <> '')
 						$arrRes[$ii] = $arrRepl[$ii];
 				}
 			}
 			
-			if (strLen($lett["LETTER"])==1)
+			if (mb_strlen($lett["LETTER"]) == 1)
 			{
 				if ($space)
 					$arrRes[] = "";
@@ -74,14 +74,14 @@ if (!function_exists("CreatePattern"))
 		}
 		foreach ($lettersPatt as $key => $val)
 			$pattern = preg_replace($key, $val, $pattern);
-		$len = strlen($pattern);
+		$len = mb_strlen($pattern);
 		for ($ii = 0; $ii < $len; $ii++)
 		{
-			if (is_set($lettPatt, substr($pattern, $ii, 1)))
-				$res .= "(".$lettPatt[substr($pattern, $ii, 1)].")";
+			if (is_set($lettPatt, mb_substr($pattern, $ii, 1)))
+				$res .= "(".$lettPatt[mb_substr($pattern, $ii, 1)].")";
 			else 
 			{
-				$ord = ord(substr($pattern, $ii, 1));
+				$ord = ord(mb_substr($pattern, $ii, 1));
 				if ((48>$ord) || ((64>$ord) and ($ord>57)) || ((97>$ord) and ($ord>90)) || ((127>$ord) and ($ord>122)))
 				{
 					if ($ord == 42)
@@ -91,10 +91,10 @@ if (!function_exists("CreatePattern"))
 					elseif ($ord == 63)
 						$res .= ".?";
 					else
-						$res .= substr($pattern, $ii, 1);
+						$res .= mb_substr($pattern, $ii, 1);
 				}
 				else 
-					$res .= substr($pattern, $ii, 1)."+";
+					$res .= mb_substr($pattern, $ii, 1)."+";
 			}
 			$res .= $separator;
 		}
@@ -106,8 +106,8 @@ if (!function_exists("GenPatternAll"))
 {
 	function GenPatternAll($DICTIONARY_ID_W=0, $DICTIONARY_ID_T=0)
 	{
-		$DICTIONARY_ID_W = intVal($DICTIONARY_ID_W);
-		$DICTIONARY_ID_T = intVal($DICTIONARY_ID_T);
+		$DICTIONARY_ID_W = intval($DICTIONARY_ID_W);
+		$DICTIONARY_ID_T = intval($DICTIONARY_ID_T);
 		if (!$DICTIONARY_ID_W)
 			$DICTIONARY_ID_W = (COption::GetOptionString("forum", "FILTER_DICT_W", '', LANG));
 		if (!$DICTIONARY_ID_T)
@@ -116,11 +116,11 @@ if (!function_exists("GenPatternAll"))
 			$strSql = 
 				"SELECT FM.ID, FM.DICTIONARY_ID, FM.WORDS, FM.PATTERN, FM.REPLACEMENT, FM.DESCRIPTION,  FM.USE_IT, FM.PATTERN_CREATE ".
 				"FROM b_forum_filter FM ".
-				"WHERE FM.DICTIONARY_ID=".intVal($DICTIONARY_ID_W);
+				"WHERE FM.DICTIONARY_ID=".intval($DICTIONARY_ID_W);
 			$db_res = $GLOBALS["DB"]->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			while ($res = $db_res->Fetch())
 			{
-				if ((strlen(trim($res["WORDS"]))>0) && ($res["PATTERN_CREATE"] == "TRNSL")):
+				if ((trim($res["WORDS"]) <> '') && ($res["PATTERN_CREATE"] == "TRNSL")):
 					$pattern = CreatePattern(trim($res["WORDS"]), $DICTIONARY_ID_T);
 					if ($pattern)
 					{
@@ -140,7 +140,7 @@ IncludeModuleLangFile(__FILE__);
 
 if (class_exists("forum")) return;
 
-Class forum extends CModule
+class forum extends CModule
 {
 	var $MODULE_ID = "forum";
 	var $MODULE_VERSION;
@@ -154,9 +154,7 @@ Class forum extends CModule
 	{
 		$arModuleVersion = array();
 
-		$path = str_replace("\\", "/", __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen("/index.php"));
-		include($path."/version.php");
+		include(__DIR__.'/version.php');
 
 		if (is_array($arModuleVersion) && array_key_exists("VERSION", $arModuleVersion))
 		{
@@ -181,7 +179,7 @@ Class forum extends CModule
 		
 		if (!$GLOBALS["DB"]->Query("SELECT 'x' FROM b_forum", true))
 		{
-			$this->errors = $GLOBALS["DB"]->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/".$GLOBALS["DBType"]."/install.sql");
+			$this->errors = $GLOBALS["DB"]->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/mysql/install.sql");
 			
 			if($this->errors !== false)
 			{
@@ -223,6 +221,7 @@ Class forum extends CModule
 		RegisterModuleDependences("im", "OnGetNotifySchema", "forum", "CForumNotifySchema", "OnGetNotifySchema");
 
 		RegisterModuleDependences("main", "OnAfterRegisterModule", "main", "forum", "InstallUserFields", 100, "/modules/forum/install/index.php");
+		RegisterModuleDependences("rest", "OnRestServiceBuildDescription", "forum", "CForumRestService", "OnRestServiceBuildDescription");
 
 		RegisterModuleDependences('conversion', 'OnGetCounterTypes' , 'forum', '\Bitrix\Forum\Internals\ConversionHandlers', 'onGetCounterTypes');
 		RegisterModuleDependences('conversion', 'OnGetRateTypes' , 'forum', '\Bitrix\Forum\Internals\ConversionHandlers', 'onGetRateTypes');
@@ -239,7 +238,7 @@ Class forum extends CModule
 			$db_res = $GLOBALS["DB"]->Query("SELECT ID FROM b_forum_pm_folder WHERE USER_ID IS NULL OR USER_ID <= 0");
 			if (!($db_res && $res = $db_res->Fetch()))
 			{
-				$this->errors = $GLOBALS["DB"]->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/".$GLOBALS["DBType"]."/install2.sql");
+				$this->errors = $GLOBALS["DB"]->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/mysql/install2.sql");
 			}
 		}
 		if ($arInstall["INSTALL_FILTER"] == "Y")
@@ -247,8 +246,7 @@ Class forum extends CModule
 			if (($GLOBALS["DB"]->TableExists("b_forum_dictionary") || $GLOBALS["DB"]->TableExists("B_FORUM_DICTIONARY")) && 
 				($GLOBALS["DB"]->TableExists("b_forum_filter") || $GLOBALS["DB"]->TableExists("B_FORUM_FILTER")))
 			{
-				$by = "LID"; $order = "DESC";
-				$sites = CLanguage::GetList($by, $order, Array());
+				$sites = CLanguage::GetList('lid', 'desc');
 				while($site = $sites->Fetch())
 				{
 					if (!in_array($site["LID"], array("ru", "en", "de")))
@@ -263,8 +261,8 @@ Class forum extends CModule
 					GROUP BY FD.ID", True);
 					if (!($tmp_res_q && ($res = $tmp_res_q->Fetch())))
 					{
-						if(file_exists(	$_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/".$GLOBALS["DBType"]."/".$site["LID"]."/".$site["LID"].".sql"))
-							$this->errors = $GLOBALS["DB"]->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/".$GLOBALS["DBType"]."/".$site["LID"]."/".$site["LID"].".sql");
+						if(file_exists(	$_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/mysql/".$site["LID"]."/".$site["LID"].".sql"))
+							$this->errors = $GLOBALS["DB"]->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/mysql/".$site["LID"]."/".$site["LID"].".sql");
 					}
 					if ($site["LID"] == "ru")
 					{
@@ -288,7 +286,8 @@ Class forum extends CModule
 			}
 		}
 		COption::SetOptionString("forum", "FILTER", "N");
-		$this->InstallUserFields();
+		static::InstallUserFields();
+
 		return true;
 	}
 	
@@ -305,27 +304,17 @@ Class forum extends CModule
 
 		if(array_key_exists("savedata", $arParams) && $arParams["savedata"] != "Y")
 		{
-			$this->UnInstallUserFields();
+			static::UnInstallUserFields();
 			$db_res = $DB->Query("SELECT ID FROM b_file WHERE MODULE_ID = 'forum'");
 			while($res = $db_res->Fetch())
 				CFile::Delete($res["ID"]);
 			if ($DB->TableExists("b_forum_smile") || $DB->TableExists("B_FORUM_SMILE"))
 			{
-				if ($DB->type == "ORACLE")
-				{
-					$DB->Query("DROP TABLE B_FORUM_SMILE CASCADE CONSTRAINTS");
-					$DB->Query("DROP SEQUENCE sq_B_FORUM_SMILE");
-					$DB->Query("DROP TABLE B_FORUM_SMILE_LANG CASCADE CONSTRAINTS");
-					$DB->Query("DROP SEQUENCE SQ_B_FORUM_SMILE_LANG");
-				}
-				else
-				{
-					$DB->Query("DELETE FROM b_forum_smile");
-					$DB->Query("DROP TABLE b_forum_smile");
-					$DB->Query("DROP TABLE b_forum_smile_lang");
-				}
+				$DB->Query("DELETE FROM b_forum_smile");
+				$DB->Query("DROP TABLE b_forum_smile");
+				$DB->Query("DROP TABLE b_forum_smile_lang");
 			}
-			$this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/".$GLOBALS["DBType"]."/uninstall.sql");
+			$this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/mysql/uninstall.sql");
 		}
 		if(!empty($this->errors))
 		{
@@ -360,16 +349,15 @@ Class forum extends CModule
 		UnRegisterModuleDependences('forum', 'onAfterMessageAdd', 'forum', '\Bitrix\Forum\Internals\ConversionHandlers', 'onMessageAdd');
 
 		UnRegisterModuleDependences("main", "OnAfterUserUpdate", "forum", "CForumUser", "OnAfterUserUpdate");
+		UnRegisterModuleDependences("rest", "OnRestServiceBuildDescription", "forum", "CForumRestService", "OnRestServiceBuildDescription");
 
 		$eventManager = \Bitrix\Main\EventManager::getInstance();
 		$eventManager->unregisterEventHandler('socialnetwork', 'onLogIndexGetContent', 'forum', '\Bitrix\Forum\Integration\Socialnetwork\Log', 'onIndexGetContent');
 		$eventManager->unregisterEventHandler('socialnetwork', 'onLogCommentIndexGetContent', 'forum', '\Bitrix\Forum\Integration\Socialnetwork\LogComment', 'onIndexGetContent');
 		$eventManager->unregisterEventHandler('socialnetwork', 'onContentViewed', 'forum', '\Bitrix\Forum\Integration\Socialnetwork\ContentViewHandler', 'onContentViewed');
 
-		CAgent::RemoveAgent("CForumTopic::CleanUp();","forum");
-		CAgent::RemoveAgent("CForumStat::CleanUp();","forum");
-		CAgent::RemoveAgent("CForumFiles::CleanUp();","forum");
-		UnRegisterModule("forum");
+		CAgent::RemoveModuleAgents('forum');
+		UnRegisterModule('forum');
 
 		return true;
 	}
@@ -422,7 +410,7 @@ Class forum extends CModule
 		return true;
 	}
 
-	function InstallUserFields($id = "all")
+	public static function InstallUserFields($id = "all")
 	{
 		global $APPLICATION;
 
@@ -499,38 +487,45 @@ Class forum extends CModule
 				}
 			}
 		}
-		$fields = array(
-			array(
+
+		$fields = [
+			[
 				"ENTITY_ID" => "FORUM_MESSAGE",
-				"FIELD_NAME" => "UF_FORUM_MES_URL_PRV"
-			),
-		);
+				"FIELD_NAME" => "UF_FORUM_MES_URL_PRV",
+				"USER_TYPE_ID" => "url_preview",
+			],
+			[
+				"ENTITY_ID" => "FORUM_MESSAGE",
+				"FIELD_NAME" => "UF_TASK_COMMENT_TYPE",
+				"USER_TYPE_ID" => "integer",
+			],
+		];
 
 		$uf = new CUserTypeEntity;
 		foreach($fields as $field)
 		{
-			$fieldData = CUserTypeEntity::GetList(array($by=>$order), $field);
-			if(!$fieldData->Fetch())
+			$fieldData = CUserTypeEntity::GetList([], $field);
+			if (!$fieldData->Fetch())
 			{
-				$uf->add(array(
+				$uf->add([
 					"ENTITY_ID" => $field["ENTITY_ID"],
 					"FIELD_NAME" => $field["FIELD_NAME"],
 					"XML_ID" => $field["FIELD_NAME"],
-					"USER_TYPE_ID" => 'url_preview',
+					"USER_TYPE_ID" => $field["USER_TYPE_ID"],
 					"SORT" => 100,
-					"MULTIPLE" => 'N',
+					"MULTIPLE" => "N",
 					"MANDATORY" => "N",
 					"SHOW_FILTER" => "N",
 					"SHOW_IN_LIST" => "N",
 					"EDIT_IN_LIST" => "Y",
 					"IS_SEARCHABLE" => "N"
-				), false);
+				], false);
 			}
 		}
 		return $errors;
 	}
 
-	function UnInstallUserFields()
+	public static function UnInstallUserFields()
 	{
 		$arFields = array("ENTITY_ID" => "FORUM_MESSAGE");
 		$rsData = CUserTypeEntity::GetList(array("ID" => "ASC"), $arFields);
@@ -541,7 +536,6 @@ Class forum extends CModule
 				$ent->Delete($arRes['ID']);
 			} while ($arRes = $rsData->Fetch());
 		}
-		return;
 	}
 
 	function DoInstall()
@@ -553,7 +547,7 @@ Class forum extends CModule
 		if (!check_bitrix_sessid())
 			return false;
 		$this->errors = false;
-		$step = IntVal($_REQUEST["step"]);
+		$step = intval($_REQUEST["step"]);
 		if($step != 2)
 			$GLOBALS["APPLICATION"]->IncludeAdminFile(GetMessage("FORUM_INSTALL1"), $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/do_install1.php");
 		else
@@ -587,7 +581,7 @@ Class forum extends CModule
 		if (!check_bitrix_sessid())
 			return false;
 		$GLOBALS["errors"] = false;
-		$step = IntVal($_REQUEST["step"]);
+		$step = intval($_REQUEST["step"]);
 		if($step<2)
 			$GLOBALS["APPLICATION"]->IncludeAdminFile(GetMessage("FORUM_DELETE"), $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/forum/install/do_uninstall1.php");
 		else

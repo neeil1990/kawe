@@ -51,12 +51,12 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 		{
 			$id = (int)$row['ID'];
 			$title = $row['TITLE'];
-			if (is_string($title) && strlen($title) > 0)
+			if (is_string($title) && $title <> '')
 			{
 				$titleMsg = GetMessage('SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS');
-				if ($title === $titleMsg && is_string($row['SETTINGS']) && strlen($row['SETTINGS']) > 0)
+				if ($title === $titleMsg && is_string($row['SETTINGS']) && $row['SETTINGS'] <> '')
 				{
-					$settings = unserialize($row['SETTINGS']);
+					$settings = unserialize($row['SETTINGS'], ['allowed_classes' => false]);
 					if (is_array($settings))
 					{
 						$needUpdate = false;
@@ -65,11 +65,11 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 						{
 							if (isset($settings['select'][$aliasNum]['alias'])
 								&& is_string($settings['select'][$aliasNum]['alias'])
-								&& strlen($settings['select'][$aliasNum]['alias']) > 0)
+								&& $settings['select'][$aliasNum]['alias'] <> '')
 							{
 								$alias = $settings['select'][$aliasNum]['alias'];
 								$aliasMsg = GetMessage('SALE_REPORT_DEFAULT_MOST_EXPECTED_GOODS_ALIAS_'.$msgNum);
-								if (is_string($aliasMsg) && strlen($aliasMsg) > 0 && $alias !== $aliasMsg)
+								if (is_string($aliasMsg) && $aliasMsg <> '' && $alias !== $aliasMsg)
 								{
 									$settings['select'][$aliasNum]['alias'] = $aliasMsg;
 									$needUpdate = true;
@@ -232,7 +232,7 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 				self::$catalogs[] = $ibRow;
 				$path = array();
 				$curLevel = $prevLevel = 0;
-				$sections = CIBlockSection::GetTreeList(array('=IBLOCK_ID'=>$ibRow['IBLOCK_ID']));
+				$sections = CIBlockSection::GetTreeList(array('=IBLOCK_ID'=>$ibRow['IBLOCK_ID']), array('ID', 'IBLOCK_ID', 'NAME', 'DEPTH_LEVEL', 'LEFT_MARGIN'));
 				$row = null;
 				while($row = $sections->GetNext())
 				{
@@ -264,15 +264,14 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 
 			// Getting currencies
 			$obj = new CCurrency();
-			$by = ''; $order = '';
-			$result = $obj->GetList($by, $order, LANGUAGE_ID);
+			$result = $obj->GetList('', '', LANGUAGE_ID);
 			while($row = $result->Fetch())
 			{
 				self::$currencies[$row['CURRENCY']] = array(
 					'name' => $row['FULL_NAME']
 				);
 			}
-			unset($row, $result, $obj, $by, $order);
+			unset($row, $result, $obj);
 
 			// Getting types of prices
 			$obj = new CCatalogGroup();
@@ -460,7 +459,7 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 
 	public static function getHelperByOwner($ownerId)
 	{
-		return 'CSaleReport'.substr($ownerId,strlen(SALE_REPORT_OWNER_ID)+1).'Helper';
+		return 'CSaleReport'.mb_substr($ownerId, mb_strlen(SALE_REPORT_OWNER_ID) + 1).'Helper';
 	}
 
 	public static function getDefaultReports()
@@ -671,7 +670,7 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 						's:5:"alias";s:9:"xxxxxxxxx";s:4:"aggr";s:12:"GROUP_CONCAT";s:8:"grouping";'.
 						'b:1;}i:8;a:2:{s:4:"name";s:15:"NAME_WITH_IDENT";s:8:"grouping";b:1;}i:12;'.
 						'a:3:{s:4:"name";s:34:"ARRIVED_PRODUCTS_IN_PERIOD_BY_SHOP";s:5:"alias";s:6:"xxxxxx";'.
-						's:17:"grouping_subtotal";b:1;}i:6;a:3:{s:4:"name";s:32:"SALED_PRODUCTS_IN_PERIOD_BY_SHOP";'.
+						's:17:"grouping_subtotal";b:1;}i:6;a:3:{s:4:"name";s:35:"CONSUMED_PRODUCTS_IN_PERIOD_BY_SHOP";'.
 						's:5:"alias";s:6:"xxxxxx";s:17:"grouping_subtotal";b:1;}i:3;a:3:{s:4:"name";'.
 						's:8:"QUANTITY";s:5:"alias";s:16:"xxxxxxxx xxxxxxx";s:17:"grouping_subtotal";'.
 						'b:1;}i:11;a:1:{s:4:"name";s:22:"PRICE_IN_SITE_CURRENCY";}}s:6:"filter";'.
@@ -937,26 +936,8 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 					$report['settings']['select'][26]['alias'] = GetMessage('SALE_REPORT_DEFAULT_GOODS_INVENTORIES_BY_STORE__12_5_1_ALIAS_26');
 				}
 
-				// remove reports, which not work in MSSQL
-				global $DBType;
-				if (ToUpper($DBType) === 'MSSQL')
-				{
-					if (
-						($version === '12.0.0' && in_array($report['mark_default'], array(4, 5, 6, 7, 11, 12)))
-						||
-						($version === '12.5.0' && in_array($report['mark_default'], array(11, 12)))
-					)
-					{
-						unset($vreports[$num]);
-					}
-				}
-
 				// remove old reports
-				if (
-					(ToUpper($DBType) !== 'MSSQL' && $version === '12.0.0' && in_array($report['mark_default'], array(2, 3)))
-					||
-					(ToUpper($DBType) === 'MSSQL' && $version === '12.0.0' && in_array($report['mark_default'], array(3)))
-				)
+				if ($version === '12.0.0' && in_array($report['mark_default'], array(2, 3)))
 				{
 					unset($vreports[$num]);
 				}
@@ -1081,7 +1062,7 @@ abstract class CBaseSaleReportHelper extends CReportHelper
 		}
 		return $html;
 	}
-	
+
 	public static function calculateInReportCurrency($value)
 	{
 		$res = $value;
@@ -1607,7 +1588,7 @@ class CSaleReportSaleOrderHelper extends CBaseSaleReportHelper
 							),
 							true))
 				{
-					$userDef = substr($elem['name'], 0, -11);
+					$userDef = mb_substr($elem['name'], 0, -11);
 					$href = array('pattern' => '/bitrix/admin/sale_buyers_profile.php?USER_ID=#'.$userDef.'.ID#&lang='.LANG);
 				}
 			}
@@ -1903,7 +1884,7 @@ class CSaleReportUserHelper extends CBaseSaleReportHelper
 		{
 			if ($k === 'LOGIC') continue;
 			if (is_array($v)) return(self::fieldInFilter($v, $fieldPathStr));
-			else if (strpos($k, $fieldPathStr) !== false) return true;
+			else if (mb_strpos($k, $fieldPathStr) !== false) return true;
 		}
 		return false;
 	}
@@ -1914,7 +1895,7 @@ class CSaleReportUserHelper extends CBaseSaleReportHelper
 		$bResult = false;
 		foreach (array_keys($select) as $k)
 		{
-			if (strpos($k, '_SALE_ORDER_USER_') !== false)
+			if (mb_strpos($k, '_SALE_ORDER_USER_') !== false)
 			{
 				$bResult = true;
 				break;
@@ -2524,7 +2505,7 @@ class CSaleReportSaleBasketHelper extends CBaseSaleReportHelper
 							{
 								if (is_string($filterValue) && $filterValue[0] == 'c')
 								{
-									$iblockFilterValue[] = intval(substr($filterValue, 1));
+									$iblockFilterValue[] = intval(mb_substr($filterValue, 1));
 									// The filter on a section is deleted if the filter only according
 									// to the catalog is necessary
 									unset($arFilterValues[$l]);
@@ -2852,7 +2833,7 @@ class CSaleReportSaleBasketHelper extends CBaseSaleReportHelper
 					),
 					true))
 				{
-					$userDef = substr($elem['name'], 0, -11);
+					$userDef = mb_substr($elem['name'], 0, -11);
 					$href = array('pattern' => '/bitrix/admin/sale_buyers_profile.php?USER_ID=#'.$userDef.'.ID#&lang='.LANG);
 				}
 			}
@@ -2919,6 +2900,7 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 	private static $goodsQuantityFields = array(
 		'QUANTITY',
 		'SALED_PRODUCTS_IN_PERIOD_BY_SHOP',
+		'CONSUMED_PRODUCTS_IN_PERIOD_BY_SHOP',
 		'ARRIVED_PRODUCTS_IN_PERIOD_BY_SHOP',
 		'ARRIVED_PRODUCTS_IN_PERIOD_BY_STORE',
 		'EXPENSE_PRODUCTS_IN_PERIOD_BY_STORE',
@@ -2979,6 +2961,7 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 			'ORDERS_IN_PERIOD_BY_SHOP',
 			'CONVERSION',
 			'SALED_PRODUCTS_IN_PERIOD_BY_SHOP',
+			'CONSUMED_PRODUCTS_IN_PERIOD_BY_SHOP',
 			'ARRIVED_PRODUCTS_IN_PERIOD_BY_SHOP',
 			'ARRIVED_PRODUCTS_IN_PERIOD_BY_STORE',
 			'EXPENSE_PRODUCTS_IN_PERIOD_BY_STORE',
@@ -3005,7 +2988,7 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 		$entity->addField(array(
 			'data_type' => 'integer',
 			'expression' => array(
-				'(SELECT  SUM(1) FROM b_catalog_product, b_catalog_viewed_product WHERE %s = b_catalog_viewed_product.ELEMENT_ID
+				'(SELECT  SUM(b_catalog_viewed_product.VIEW_COUNT) FROM b_catalog_product, b_catalog_viewed_product WHERE %s = b_catalog_viewed_product.ELEMENT_ID
 				AND b_catalog_product.ID = b_catalog_viewed_product.ELEMENT_ID
 				AND b_catalog_viewed_product.DATE_VISIT '.$sqlTimeInterval.' AND b_catalog_viewed_product.SITE_ID = \''.$DB->ForSql(self::getDefaultSiteId()).'\')', 'ID'
 			)
@@ -3045,6 +3028,21 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 								AND b_sale_order.PAYED = \'Y\'
 								AND b_sale_order.DEDUCTED = \'Y\'
 								AND b_sale_order.DATE_INSERT '.$sqlTimeInterval.'
+								AND b_sale_basket.LID = \''.$DB->ForSql(self::getDefaultSiteId()).'\')', 0),
+				'ID'
+			)
+		), 'SALED_PRODUCTS_IN_PERIOD_BY_SHOP');
+
+		$entity->addField(array(
+			'data_type' => 'integer',
+			'expression' => array(
+				$DB->isNull('(SELECT  SUM(b_sale_basket.QUANTITY)
+							FROM b_sale_basket
+								INNER JOIN b_sale_order ON b_sale_basket.ORDER_ID = b_sale_order.ID
+							WHERE b_sale_basket.PRODUCT_ID = %s
+								AND b_sale_order.PAYED = \'Y\'
+								AND b_sale_order.DEDUCTED = \'Y\'
+								AND b_sale_order.DATE_INSERT '.$sqlTimeInterval.'
 								AND b_sale_basket.LID = \''.$DB->ForSql(self::getDefaultSiteId()).'\')', 0).'+'.
 				$DB->isNull('(SELECT  SUM(b_catalog_docs_element.AMOUNT)
 							FROM b_catalog_store_docs
@@ -3055,7 +3053,7 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 								AND b_catalog_docs_element.ELEMENT_ID = %s)', 0),
 				'ID', 'ID'
 			)
-		), 'SALED_PRODUCTS_IN_PERIOD_BY_SHOP');
+		), 'CONSUMED_PRODUCTS_IN_PERIOD_BY_SHOP');
 
 		$entity->addField(array(
 			'data_type' => 'float',
@@ -3252,7 +3250,7 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 							{
 								if (is_string($filterValue) && $filterValue[0] == 'c')
 								{
-									$iblockFilterValue[] = intval(substr($filterValue, 1));
+									$iblockFilterValue[] = intval(mb_substr($filterValue, 1));
 									// The filter on a section is deleted if the filter only according
 									// to the catalog is necessary
 									unset($arFilterValues[$l]);
@@ -3303,7 +3301,7 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 
 	public static function beforeViewDataQuery(&$select, &$filter, &$group, &$order, &$limit, &$options, &$runtime = null)
 	{
-		global $DB, $DBType;
+		global $DB;
 
 		if (function_exists('___dbCastIntToChar') !== true)
 		{
@@ -3331,13 +3329,13 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 					$runtime[$fieldName] = array(
 						'data_type' => 'string',
 						'expression' => array('
-				(SELECT '.$DB->Concat(___dbCastIntToChar($DBType,'b_catalog_price.PRICE'), '\' \'', 'b_catalog_price.CURRENCY').'
+				(SELECT '.$DB->Concat(___dbCastIntToChar('mysql','b_catalog_price.PRICE'), '\' \'', 'b_catalog_price.CURRENCY').'
 				FROM b_catalog_price
 					LEFT JOIN b_catalog_group ON b_catalog_group.ID = b_catalog_price.CATALOG_GROUP_ID
 				WHERE   b_catalog_price.PRODUCT_ID = %s
 					AND b_catalog_group.ID = '.$id.'
 					AND ( b_catalog_price.quantity_from <= 1 OR b_catalog_price.quantity_from IS NULL )
-					AND ( b_catalog_price.quantity_to >= 1 OR b_catalog_price.quantity_to IS NULL ))',
+					AND ( b_catalog_price.quantity_to >= 1 OR b_catalog_price.quantity_to IS NULL ) LIMIT 1)',
 							'ID'
 						),
 						'view_column' => array(
@@ -3464,15 +3462,15 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 		// runtime fields which align right
 		if (self::$bUsePriceTypesColumns)
 		{
-			if (strpos($k, 'PRICE_TYPE_') === 0 && is_numeric(substr($k, 11))) $cInfo['align'] = 'right';
+			if (mb_strpos($k, 'PRICE_TYPE_') === 0 && is_numeric(mb_substr($k, 11))) $cInfo['align'] = 'right';
 		}
 
 		// Formatting fields of price types
 		if (preg_match('/[A-Za-z_]*PRICE_TYPE_[0-9]+$/', $k) && !empty($v) && $v !== '&nbsp;')
 		{
 			$v = trim($v);
-			$spacePos = strpos(trim($v), ' ');
-			$v = number_format(doubleval(substr($v, 0, $spacePos)), 2, '.', ' ').substr($v, $spacePos);
+			$spacePos = mb_strpos(trim($v), ' ');
+			$v = number_format(doubleval(mb_substr($v, 0, $spacePos)), 2, '.', ' ').mb_substr($v, $spacePos);
 		}
 	}
 
@@ -3531,8 +3529,8 @@ class CSaleReportSaleProductHelper extends CBaseSaleReportHelper
 				if (preg_match('/[A-Za-z_]*PRICE_TYPE_[0-9]+$/', $k) && !empty($v) && $v !== '&nbsp;')
 				{
 					$v = trim($v);
-					$spacePos = strpos($v, ' ');
-					$v = number_format(doubleval(substr($v, 0, $spacePos)), 2, '.', ' ').substr($v, $spacePos);
+					$spacePos = mb_strpos($v, ' ');
+					$v = number_format(doubleval(mb_substr($v, 0, $spacePos)), 2, '.', ' ').mb_substr($v, $spacePos);
 				}
 			}
 		}

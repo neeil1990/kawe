@@ -2,21 +2,15 @@
 
 namespace Bitrix\Sale\Basket;
 
-use Bitrix\Currency\CurrencyManager;
 use Bitrix\Main;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Sale\BasketBase;
-use Bitrix\Sale\BasketItem;
 use Bitrix\Sale\BasketItemBase;
 use Bitrix\Sale\EventActions;
-use Bitrix\Sale\Fuser;
-use Bitrix\Sale\Internals\PoolQuantity;
-use Bitrix\Sale\Internals\SiteCurrencyTable;
-use Bitrix\Sale\OrderBase;
-use Bitrix\Sale\PriceMaths;
 use Bitrix\Sale\Internals\Catalog\Provider;
-use Bitrix\Sale\ProviderBase;
+use Bitrix\Sale\Internals\PoolQuantity;
+use Bitrix\Sale\PriceMaths;
 use Bitrix\Sale\Registry;
 use Bitrix\Sale\Result;
 use Bitrix\Sale\ResultError;
@@ -76,7 +70,7 @@ abstract class BaseRefreshStrategy
 		{
 			$providerName = $basketItem->getProviderName();
 
-			if (strval(trim($providerName)) == '')
+			if (trim((string)$providerName) === '')
 			{
 				$callbackFunction = $basketItem->getCallbackFunction();
 				if (!empty($callbackFunction))
@@ -164,7 +158,11 @@ abstract class BaseRefreshStrategy
 				$preparedData['PRICE'] = $preparedData['BASE_PRICE'] - $preparedData['DISCOUNT_PRICE'];
 			}
 
-			if (empty($preparedData) || (isset($preparedData['QUANTITY']) && $preparedData['QUANTITY'] == 0))
+			if (
+				empty($preparedData)
+				|| (isset($preparedData['QUANTITY']) && $preparedData['QUANTITY'] <= 0)
+				|| (isset($data['ACTIVE']) && $data['ACTIVE'] === 'N')
+			)
 			{
 				$preparedData['CAN_BUY'] = 'N';
 				unset($preparedData['QUANTITY']);
@@ -268,12 +266,13 @@ abstract class BaseRefreshStrategy
 		{
 			if (isset($settableFields[$key]))
 			{
-				if ($key === 'NAME' && $item->getField('NAME') != '')
-					continue;
-
-				if ($key === 'PRICE' && $item->isCustomPrice())
+				if (
+					$item->isMarkedFieldCustom($key)
+					||
+					$key === 'DISCOUNT_PRICE' && $item->isMarkedFieldCustom('PRICE')
+				)
 				{
-					$value = $item->getPrice();
+					$value = $item->getField($key);
 				}
 
 				if (isset($roundFields[$key]))
@@ -309,11 +308,15 @@ abstract class BaseRefreshStrategy
 			$reserveQuantityList = $pool->getQuantities(PoolQuantity::POOL_RESERVE_TYPE);
 			$quantityList = $pool->getQuantities(PoolQuantity::POOL_QUANTITY_TYPE);
 
-			if ($quantityList[$productId])
+			if (isset($quantityList[$productId]))
+			{
 				$poolQuantity += $quantityList[$productId];
+			}
 
-			if ($reserveQuantityList[$productId])
+			if (isset($reserveQuantityList[$productId]))
+			{
 				$poolQuantity += $reserveQuantityList[$productId];
+			}
 
 			if ($poolQuantity < 0)
 			{
@@ -332,59 +335,7 @@ abstract class BaseRefreshStrategy
 
 	protected function getProviderContext(BasketBase $basket)
 	{
-		global $USER;
-
-		$context = array();
-
-		$order = $basket->getOrder();
-		/** @var OrderBase $order */
-		if ($order)
-		{
-			$context['USER_ID'] = $order->getUserId();
-			$context['SITE_ID'] = $order->getSiteId();
-			$context['CURRENCY'] = $order->getCurrency();
-		}
-		else
-		{
-			/** @var BasketItem $basketItem */
-			$basketItem = $basket->rewind();
-			if (!$basketItem)
-			{
-				return $context;
-			}
-
-			$siteId = $basketItem->getField('LID');
-			$fuserId = $basketItem->getFUserId();
-			$currency = $basketItem->getCurrency();
-
-			$userId = Fuser::getUserIdById($fuserId);
-
-			if (empty($context['SITE_ID']))
-			{
-				$context['SITE_ID'] = $siteId;
-			}
-
-			if (empty($context['USER_ID']) && $userId > 0)
-			{
-				$context['USER_ID'] = $userId;
-			}
-
-			if (empty($context['CURRENCY']))
-			{
-				if (empty($currency))
-				{
-					$currency = SiteCurrencyTable::getSiteCurrency($siteId);
-				}
-
-				if (!empty($currency) && CurrencyManager::checkCurrencyID($currency))
-				{
-					$context['CURRENCY'] = $currency;
-				}
-
-			}
-		}
-
-		return $context;
+		return $basket->getContext();
 	}
 
 	protected function getBasketItemsToRefresh(BasketBase $basket, $quantity = 0)
@@ -423,7 +374,7 @@ abstract class BaseRefreshStrategy
 	{
 		if (!empty($itemsToRefresh))
 		{
-			$context = $basket->getContext();
+			$context = $this->getProviderContext($basket);
 			$result = Provider::getProductData($itemsToRefresh, $context);
 		}
 		else

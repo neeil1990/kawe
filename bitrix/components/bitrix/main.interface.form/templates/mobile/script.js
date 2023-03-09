@@ -5,20 +5,20 @@
 		return;
 	BX.namespace("BX.Mobile.Grid.Form");
 	var repo = {formId : {}, gridId : {}},
-		initSelect = (function () {
-			var d = function(select, eventNode, container) {
+		nodeSelect = (function () {
+			var nodeSelect = function(select, eventNode, container) {
 				this.click = BX.delegate(this.click, this);
 				this.callback = BX.delegate(this.callback, this);
+				this.multiple = false;
+				this.select = null;
+				this.eventNode = null;
+				this.container = null;
+				this.titles = [];
+				this.values = [];
+				this.defaultTitles = [];
 				this.init(select, eventNode, container);
 			};
-			d.prototype = {
-				multiple : false,
-				select : null,
-				eventNode : null,
-				container : null,
-				titles : [],
-				values : [],
-				defaultTitles : [],
+			nodeSelect.prototype = {
 				init : function(select, eventNode, container) {
 					if (BX(select) && BX(eventNode) && BX(container))
 					{
@@ -109,10 +109,10 @@
 					}
 				}
 			};
-			return d;
+			return nodeSelect;
 		})(),
-		initDatetime = (function () {
-		var d = function(node, type, container, formats) {
+		nodeDatetime = (function () {
+		var nodeDatetime = function(node, type, container, formats) {
 				this.type = type;
 				this.node = node;
 				this.container = container;
@@ -120,28 +120,27 @@
 				this.callback = BX.delegate(this.callback, this);
 				BX.bind(this.container, "click", this.click);
 				BX.bind(this.container.parentNode, "click", this.click);
-				this.init(formats);
-			};
-			d.prototype = {
-				type : 'datetime', // 'datetime', 'date', 'time'
-				format : {
+				this.type = 'datetime'; // 'datetime', 'date', 'time'
+				this.format = {
 					inner : {
 						datetime : 'dd.MM.yyyy H:mm',
-						time : 'H:mm',
-						date : 'dd.MM.yyyy'
+							time : 'H:mm',
+							date : 'dd.MM.yyyy'
 					},
 					bitrix : {
 						datetime : null,
-						time : null,
-						date : null
+							time : null,
+							date : null
 					},
 					visible : {
 						datetime : null,
-						time : null,
-						date : null
+							time : null,
+							date : null
 					}
-				},
-				node : null,
+				};
+				this.init(formats);
+			};
+			nodeDatetime.prototype = {
 				click : function(e) {
 					BX.eventCancelBubble(e);
 					this.show();
@@ -183,9 +182,10 @@
 							m;
 						if (dateR.test(str) && (m = dateR.exec(str)) && m)
 						{
-							d.setDate(m[1]);
-							d.setMonth((m[2]-1));
+							d.setDate(1);
 							d.setFullYear(m[3])
+							d.setMonth(m[2] - 1);
+							d.setDate(m[1]);
 						}
 						if (timeR.test(str) && (m = timeR.exec(str)) && m)
 						{
@@ -264,10 +264,10 @@
 					return false;
 				}
 			};
-			return d;
+			return nodeDatetime;
 		})(),
-		initSelectUser = (function () {
-		var d = function(select, eventNode, container) {
+		nodeSelectUser = (function () {
+		var nodeSelectUser = function(select, eventNode, container) {
 			this.click = BX.delegate(this.click, this);
 			this.callback = BX.delegate(this.callback, this);
 			this.drop = BX.delegate(this.drop, this);
@@ -291,13 +291,7 @@
 				FastClick.attach(this.container.parentNode.parentNode);
 			}
 		};
-			d.prototype = {
-				multiple : false,
-				select : null,
-				eventNode : null,
-				container : null,
-				showDrop : true,
-				showMenu : false,
+			nodeSelectUser.prototype = {
 				click : function(e) {
 					this.show();
 					return BX.PreventDefault(e);
@@ -351,11 +345,17 @@
 						}
 					}
 				},
-				buildNodes : function(items) {
+				buildNodes : function(items, type) {
+
+					if (!BX.Type.isStringFilled(type))
+					{
+						type = 'users';
+					}
+
 					var options = '',
 						html = '',
 						ii, c = 0,
-						user, existedUsers = [];
+						item, existedUsers = [];
 					for (ii = 0; ii < this.select.options.length; ii++)
 					{
 						existedUsers.push(this.select.options[ii].value.toString());
@@ -363,16 +363,21 @@
 					}
 					for (ii = 0; ii < Math.min((this.multiple ? items.length : 1), items.length); ii++)
 					{
-						user = items[ii];
-						if (BX.util.in_array(user["ID"], existedUsers))
+						item = items[ii];
+
+						if (BX.util.in_array(item["ID"], existedUsers))
 							continue;
-						options += '<option value="' + user["ID"] + '" selected>' + user["NAME"] + '</option>';
+						options += '<option value="' + item["ID"] + '" selected>' + item["NAME"] + '</option>';
 						html += ([
 							'<div class="mobile-grid-field-select-user-item-outer">',
 								'<div class="mobile-grid-field-select-user-item">',
-									(this.showDrop ? '<del id="' + this.select.id + '_del_' + user["ID"] + '"></del>' : ''),
-									'<div class="avatar"', (user["IMAGE"] ? ' style="background-image:url(\'' + user["IMAGE"] + '\')"' : ''), '></div>',
-									'<span onclick="BXMobileApp.PageManager.loadPageBlank({url: \'' +  this.urls.profile.replace("#ID#", user["ID"]) + '\',bx24ModernStyle : true});">' + user["NAME"] + '</span>',
+									(this.showDrop ? '<del id="' + this.select.id + '_del_' + item["ID"] + '"></del>' : ''),
+									'<div class="avatar"', (item["IMAGE"] ? ' style="background-image:url(\'' + item["IMAGE"] + '\')"' : ''), '></div>',
+									(
+										type === 'group'
+											? '<a class="mobile-grid-field-select-user-item-link" href="' +  this.urls.profile.replace("#ID#", item["ID"]) + '">' + item["NAME"] + '</a>'
+											: '<span onclick="BXMobileApp.PageManager.loadPageBlank({url: \'' +  this.urls.profile.replace("#ID#", item["ID"]) + '\',bx24ModernStyle : true});">' + item["NAME"] + '</span>'
+									),
 								'</div>',
 							'</div>'
 						].join('').replace(' style="background-image:url(\'\')"', ''));
@@ -405,35 +410,35 @@
 				},
 				callback : function(data) {
 					if (data && data.a_users)
-						this.buildNodes(data.a_users);
+						this.buildNodes(data.a_users, 'user');
 				}
 			};
-			return d;
+			return nodeSelectUser;
 		})(),
-		initSelectGroup = (function () {
-			var d = function(select, eventNode, container) {
-				initSelectGroup.superclass.constructor.apply(this, arguments);
+		nodeSelectGroup = (function () {
+			var nodeSelectGroup = function(select, eventNode, container) {
+				nodeSelectGroup.superclass.constructor.apply(this, arguments);
 				this.urls = {
 					list : BX.message('SITE_DIR') + 'mobile/index.php?mobile_action=get_group_list',
 					profile : BX.message("interface_form_group_url")
 				};
 			};
-			BX.extend(d, initSelectUser);
-			d.prototype.callback = function(data) {
+			BX.extend(nodeSelectGroup, nodeSelectUser);
+			nodeSelectGroup.prototype.callback = function(data) {
 				if (data && data.b_groups)
-					this.buildNodes(data.b_groups);
+					this.buildNodes(data.b_groups, 'group');
 			};
-			return d;
+			return nodeSelectGroup;
 		})(),
-		initText = (function () {
-			var d = function(node, container) {
+		nodeText = (function () {
+			var nodeText = function(node, container) {
 				this.node = node;
 				this.container = container;
 				this.click = BX.delegate(this.click, this);
 				this.callback = BX.delegate(this.callback, this);
 				BX.bind(this.container, "click", this.click);
 			};
-			d.prototype = {
+			nodeText.prototype = {
 				click : function(e) {
 					this.show();
 					return BX.PreventDefault(e);
@@ -467,10 +472,10 @@
 					BX.onCustomEvent(this, "onChange", [this, this.node]);
 				}
 			};
-			return d;
+			return nodeText;
 		})(),
-		initBox = (function () {
-			var d = function(node) {
+		nodeBox = (function () {
+			var nodeBox = function(node) {
 				this.node = node;
 				var label = BX.findParent(this.node, {tagName : "LABEL"});
 				if (label && label.parentNode && !label.parentNode.hasAttribute("bx-fastclick-bound"))
@@ -481,15 +486,15 @@
 
 				BX.bind(this.node, "change", BX.delegate(this.change, this));
 			};
-			d.prototype = {
+			nodeBox.prototype = {
 				change : function() {
 					BX.onCustomEvent(this, "onChange", [this, this.node]);
 				}
 			};
-			return d;
+			return nodeBox;
 		})(),
-		initFile = (function () {
-			var d = function (node) {
+		nodeFile = (function () {
+			var nodeFile = function (node) {
 				this.dialogName = "FileDialog";
 				this.node = node;
 
@@ -545,7 +550,7 @@
 				return this;
 			};
 
-			d.prototype = {
+			nodeFile.prototype = {
 				click : function(e) {
 					if (BX.hasClass(this.button, "disabled"))
 						BX.DoNothing();
@@ -759,11 +764,16 @@
 
 				}
 			};
-			return d;
+			return nodeFile;
 		})();
 	window.app.exec("enableCaptureKeyboard", true);
 	BX.Mobile.Grid.Form = function(params) {
-		BXMobileApp.UI.Page.LoadingScreen.hide();
+		var skipLoadingScreenHiding = params && params.skipLoadingScreenHiding;
+		if (!skipLoadingScreenHiding)
+		{
+			BXMobileApp.UI.Page.LoadingScreen.hide();
+		}
+		this.elements = [];
 		if (typeof params === "object")
 		{
 			this.gridId = params["gridId"] || "";
@@ -780,6 +790,11 @@
 					res.push(arguments[i]);
 				}
 				BX.onCustomEvent(this, "onChange", res);
+				window.BXMobileApp.Events.postToComponent(
+					'onMobileGridFormDataChange',
+					this.getParamsForMobilePostEvent(node, o),
+					'tasks.view'
+				);
 			}, this);
 			this.apply = BX.delegate(this.apply, this);
 			this.restrictedMode = params["restrictedMode"];
@@ -794,6 +809,9 @@
 					BX.addCustomEvent(obj, "onChange", ff);
 				}
 			}
+
+			BX.addCustomEvent('BX.Mobile.Field:onChangeUserField', this.apply);
+
 			if (BX(this.formId) && BX('submit_' + this.formId))
 			{
 				BX.bind(BX('submit_' + this.formId), "click", BX.delegate(this.click, this));
@@ -828,7 +846,6 @@
 		}
 	};
 	BX.Mobile.Grid.Form.prototype = {
-		elements : [],
 		bindElement : function(node) {
 			var result = null;
 			if (BX(node))
@@ -838,15 +855,15 @@
 
 				if (tag == 'select' && node.getAttribute("data-bx-type") == 'select-user')
 				{
-					result = new initSelectUser(node, BX(node.id + '_select'), BX(node.id + '_target'));
+					result = new nodeSelectUser(node, BX(node.id + '_select'), BX(node.id + '_target'));
 				}
 				else if (tag == 'select' && node.getAttribute("data-bx-type") == 'select-group')
 				{
-					result = new initSelectGroup(node, BX(node.id + '_select'), BX(node.id + '_target'));
+					result = new nodeSelectGroup(node, BX(node.id + '_select'), BX(node.id + '_target'));
 				}
 				else if (tag == 'select')
 				{
-					result = new initSelect(node, BX(node.id + '_select'), (node.hasAttribute("multiple") ? BX(node.id + '_target') : BX(node.id + '_select')));
+					result = new nodeSelect(node, BX(node.id + '_select'), (node.hasAttribute("multiple") ? BX(node.id + '_target') : BX(node.id + '_select')));
 				}
 				else if (node.getAttribute("type") == "text")
 				{
@@ -877,15 +894,15 @@
 				}
 				else if (node.getAttribute("type") == "checkbox" || node.getAttribute("type") == "radio")
 				{
-					result = new initBox(node);
+					result = new nodeBox(node);
 				}
 				else if (type == 'text' || type == 'textarea')
 				{
-					result = new initText(node, BX(node.id + '_target'));
+					result = new nodeText(node, BX(node.id + '_target'));
 				}
 				else if (type == 'date' || type == 'datetime' || type == 'time')
 				{
-					result = new initDatetime(node, type, BX(node.id + '_container'), this.format);
+					result = new nodeDatetime(node, type, BX(node.id + '_container'), this.format);
 				}
 				else if (type == 'disk_file')
 				{
@@ -897,7 +914,7 @@
 				}
 				else if (type == "file" || type == "image")
 				{
-					result = new initFile(node);
+					result = new nodeFile(node);
 				}
 			}
 			return result;
@@ -984,6 +1001,28 @@
 			}
 			save.value = "Y";
 			BX.ajax.submitAjax(BX(this.formId), options);
+		},
+		getParamsForMobilePostEvent: function(node, fieldObject)
+		{
+			var params = {
+				formId: this.formId,
+				gridId: this.gridId,
+				nodeId: node.id,
+				nodeName: node.name,
+				nodeValue: node.value
+			};
+
+			if (node.name === 'data[DEADLINE]')
+			{
+				params.dateValue = BX.parseDate(node.value, false);
+			}
+			if (node.name === 'data[SE_RESPONSIBLE][0][ID]')
+			{
+				var avatarNode = fieldObject.container.getElementsByClassName('avatar')[0];
+				params.responsibleIcon = avatarNode.style.backgroundImage;
+			}
+
+			return params;
 		}
 	};
 	BX.Mobile.Grid.Form.getByFormId = function(id) { return repo["formId"][id]; };

@@ -1,4 +1,8 @@
-<?
+<?php
+
+use Bitrix\Catalog\Access\AccessController;
+use Bitrix\Catalog\Access\ActionDictionary;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 
@@ -6,10 +10,19 @@ global $APPLICATION;
 global $DB;
 global $USER;
 
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_view')))
-	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-
 CModule::IncludeModule("catalog");
+
+$accessController = AccessController::getCurrent();
+if (
+	!(
+		$accessController->check(ActionDictionary::ACTION_CATALOG_READ)
+		|| $accessController->check(ActionDictionary::ACTION_CATALOG_VIEW)
+	)
+)
+{
+	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
+
 IncludeModuleLangFile(__FILE__);
 
 $boolSubscribe = false;
@@ -336,7 +349,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_REQUEST["BARCODE_AJAX"]) && 
 	$arElement = array();
 	$elementId = 0;
 
-	if(strlen($barcode) > 0)
+	if($barcode <> '')
 	{
 		$rsBarCode = CCatalogStoreBarCode::getList(array(), array("BARCODE" => $barcode), false, false, array('PRODUCT_ID'));
 		$arBarCode = $rsBarCode->Fetch();
@@ -450,6 +463,10 @@ $QUANTITY = intval($QUANTITY);
 if($QUANTITY <= 0)
 	$QUANTITY = 1;
 
+$arProps = [];
+$arPrices = [];
+$arSKUProps = [];
+
 if(!$bBadBlock)
 {
 	$arFilterFields = array(
@@ -490,7 +507,6 @@ if(!$bBadBlock)
 		)
 	);
 
-	$arProps = $arPrices = array();
 	while ($arProp = $dbrFProps->GetNext())
 	{
 		$arProp["PROPERTY_USER_TYPE"] = (!empty($arProp["USER_TYPE"]) ? CIBlockProperty::GetUserType($arProp["USER_TYPE"]) : array());
@@ -498,7 +514,6 @@ if(!$bBadBlock)
 	}
 
 	//filter sku props
-	$arSKUProps = array();
 	$arCatalog = CCatalogSKU::GetInfoByProductIBlock($iblockId);
 
 	if (!empty($arCatalog))
@@ -553,7 +568,7 @@ if(!$bBadBlock)
 					&$filtered,
 				));
 			}
-			elseif(is_array($value) || strlen($value))
+			elseif(is_array($value) || mb_strlen($value))
 			{
 				if($value === "NOT_REF")
 					$value = false;
@@ -582,7 +597,7 @@ if(!$bBadBlock)
 				else
 				{
 					$value = ${"filter_sub_el_property_".$arSKUProps[$i]["ID"]};
-					if(strlen($value) || is_array($value))
+					if(mb_strlen($value) || is_array($value))
 					{
 						if($value === "NOT_REF")
 							$value = false;
@@ -598,7 +613,7 @@ if(!$bBadBlock)
 		$arFilter['ID'] = CIBlockElement::SubQuery('PROPERTY_'.$arCatalog['SKU_PROPERTY_ID'], $arSubQuery);
 	}
 
-	if(intval($_REQUEST['filter_section']) < 0 || strlen($_REQUEST['filter_section']) <= 0)
+	if(intval($_REQUEST['filter_section']) < 0 || $_REQUEST['filter_section'] == '')
 		unset($arFilter["SECTION_ID"]);
 	elseif($_REQUEST['filter_subsections'] == "Y")
 	{
@@ -894,7 +909,7 @@ if(!$bBadBlock)
 					$arSkuProperty = array();
 					foreach($val as $kk => $vv)
 					{
-						if(is_int($kk) && strlen($vv) > 0)
+						if(is_int($kk) && $vv <> '')
 						{
 							if($skuProperty != "")
 								$skuProperty .= " <br> ";
@@ -1644,7 +1659,7 @@ foreach($arCatalog as $submenu)
 					{
 						?>
 						<tr>
-							<td><? echo ('' != $strSKUName ? $strSKUName.' - ' : ''); ?><? echo $arProp["NAME"]?>:</td>
+							<td><? echo $arProp["NAME"]?> (<?=GetMessage("SPS_OFFER")?>):</td>
 							<td>
 								<?if(array_key_exists("GetAdminFilterHTML", $arProp["PROPERTY_USER_TYPE"])):
 									echo "<script type='text/javascript'>var arClearHiddenFields = [];</script>";
@@ -1702,4 +1717,4 @@ foreach($arCatalog as $submenu)
 	</td>
 </tr>
 </table>
-<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_popup_admin.php");?>
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_popup_admin.php");

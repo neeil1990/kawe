@@ -3,9 +3,6 @@ namespace Bitrix\Main;
 
 abstract class Response
 {
-	const SPREAD_SITES = 2;
-	const SPREAD_DOMAIN = 4;
-
 	/** @var string */
 	protected $content;
 
@@ -15,17 +12,10 @@ abstract class Response
 
 	public function clear()
 	{
-
-	}
-
-	public function redirect($url)
-	{
-
 	}
 
 	public function flush($text = '')
 	{
-		$this->writeHeaders();
 		$this->writeBody($text);
 	}
 
@@ -40,11 +30,7 @@ abstract class Response
 	 */
 	public function setContent($content)
 	{
-		if (
-			$content !== null &&
-			!is_string($content) &&
-			!is_numeric($content) &&
-			!is_callable(array($content, '__toString')))
+		if (!$this->checkContent($content))
 		{
 			throw new ArgumentTypeException('content', 'string');
 		}
@@ -52,6 +38,37 @@ abstract class Response
 		$this->content = (string)$content;
 
 		return $this;
+	}
+
+	/**
+	 * Appends content.
+	 * Valid types are strings, numbers, null, and objects that implement a __toString() method.
+	 *
+	 * @param mixed $content Content that can be cast to string.
+	 *
+	 * @return $this
+	 * @throws ArgumentTypeException
+	 */
+	public function appendContent($content)
+	{
+		if (!$this->checkContent($content))
+		{
+			throw new ArgumentTypeException('content', 'string');
+		}
+
+		$this->content .= (string)$content;
+
+		return $this;
+	}
+
+	protected function checkContent($content)
+	{
+		return (
+			$content === null ||
+			is_string($content) ||
+			is_numeric($content) ||
+			is_callable(array($content, '__toString'))
+		);
 	}
 
 	/**
@@ -74,11 +91,8 @@ abstract class Response
 		$this->flush($this->content);
 	}
 
-	protected abstract function writeHeaders();
-
 	protected function writeBody($text)
 	{
 		echo $text;
 	}
-
 }

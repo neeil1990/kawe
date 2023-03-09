@@ -1,8 +1,6 @@
 <?php
 namespace Bitrix\Main\Diag;
 
-use Bitrix\Main;
-
 class ExceptionHandler
 {
 	private $debug = false;
@@ -133,11 +131,11 @@ class ExceptionHandler
 	/**
 	 * Sets logger object to use for log writing.
 	 *
-	 * @param \Bitrix\Main\Diag\ExceptionHandlerLog $handlerLog Logger object.
+	 * @param ExceptionHandlerLog|null $handlerLog Logger object.
 	 *
 	 * @return void
 	 */
-	public function setHandlerLog(\Bitrix\Main\Diag\ExceptionHandlerLog $handlerLog = null)
+	public function setHandlerLog(ExceptionHandlerLog $handlerLog = null)
 	{
 		$this->handlerLog = $handlerLog;
 	}
@@ -145,11 +143,11 @@ class ExceptionHandler
 	/**
 	 * Sets an object used for error message display to user.
 	 *
-	 * @param \Bitrix\Main\Diag\IExceptionHandlerOutput $handlerOutput Object will display errors to user.
+	 * @param IExceptionHandlerOutput $handlerOutput Object will display errors to user.
 	 *
 	 * @return void
 	 */
-	public function setHandlerOutput(\Bitrix\Main\Diag\IExceptionHandlerOutput $handlerOutput)
+	public function setHandlerOutput(IExceptionHandlerOutput $handlerOutput)
 	{
 		$this->handlerOutput = $handlerOutput;
 	}
@@ -241,7 +239,6 @@ class ExceptionHandler
 			assert_options(ASSERT_ACTIVE, 1);
 			assert_options(ASSERT_WARNING, 0);
 			assert_options(ASSERT_BAIL, 0);
-			assert_options(ASSERT_QUIET_EVAL, 0);
 			assert_options(ASSERT_CALLBACK, array($this, "handleAssertion"));
 		}
 		else
@@ -257,13 +254,14 @@ class ExceptionHandler
 	 *
 	 * @param \Exception|\Error $exception Exception object.
 	 *
+	 * @param int $logType
 	 * @return void
 	 * @see \Bitrix\Main\Diag\ExceptionHandler::writeToLog
 	 * @see \Bitrix\Main\Diag\ExceptionHandler::initialize
 	 */
-	public function handleException($exception)
+	public function handleException($exception, $logType = ExceptionHandlerLog::UNCAUGHT_EXCEPTION)
 	{
-		$this->writeToLog($exception, ExceptionHandlerLog::UNCAUGHT_EXCEPTION);
+		$this->writeToLog($exception, $logType);
 		$out = $this->getHandlerOutput();
 		$out->renderExceptionMessage($exception, $this->debug);
 		die();
@@ -325,7 +323,6 @@ class ExceptionHandler
 		else
 		{
 			$this->writeToLog($exception, ExceptionHandlerLog::ASSERTION);
-			return;
 		}
 	}
 
@@ -347,7 +344,7 @@ class ExceptionHandler
 				if(($error['type'] & $this->handledErrorsTypes))
 				{
 					$exception = new \ErrorException($error['message'], 0, $error['type'], $error['file'], $error['line']);
-					$this->writeToLog($exception, ExceptionHandlerLog::FATAL);
+					$this->handleException($exception, ExceptionHandlerLog::FATAL);
 				}
 			}
 		}
@@ -356,7 +353,7 @@ class ExceptionHandler
 	/**
 	 * Writes an exception information to log.
 	 *
-	 * @param \Exception $exception Exception object.
+	 * @param \Throwable $exception Exception object.
 	 * @param integer|null $logType See ExceptionHandlerLog class constants.
 	 *
 	 * @return void

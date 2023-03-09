@@ -1,10 +1,4 @@
 <?php
-/**
- * Bitrix Framework
- * @package bitrix
- * @subpackage sale
- * @copyright 2001-2012 Bitrix
- */
 namespace Bitrix\Sale;
 
 use Bitrix\Main;
@@ -16,13 +10,14 @@ use Bitrix\Sale\PaySystem\Service;
 
 Loc::loadMessages(__FILE__);
 
-class PaymentCollection
-	extends Internals\EntityCollection
+/**
+ * Class PaymentCollection
+ * @package Bitrix\Sale
+ */
+class PaymentCollection extends Internals\EntityCollection
 {
-	/** @var OrderBase */
+	/** @var Order */
 	protected $order;
-
-	private static $eventClassName = null;
 
 	/**
 	 * @return Order
@@ -32,9 +27,16 @@ class PaymentCollection
 		return $this->getOrder();
 	}
 
-	public function createItem(Service $paySystemService = null)
+	/**
+	 * @param Service|null $service
+	 * @return Payment
+	 */
+	public function createItem(Service $service = null)
 	{
-		$payment = Payment::create($this, $paySystemService);
+		/** @var Payment $paymentClassName */
+		$paymentClassName = static::getItemCollectionClassName();
+
+		$payment = $paymentClassName::create($this, $service);
 		$this->addItem($payment);
 
 		return $payment;
@@ -42,7 +44,7 @@ class PaymentCollection
 
 	/**
 	 * @param Internals\CollectableEntity $payment
-	 * @return bool|void
+	 * @return Result
 	 */
 	public function addItem(Internals\CollectableEntity $payment)
 	{
@@ -57,7 +59,7 @@ class PaymentCollection
 	 * @internal
 	 *
 	 * @param $index
-	 * @return bool
+	 * @return Result
 	 */
 	public function deleteItem($index)
 	{
@@ -142,34 +144,20 @@ class PaymentCollection
 			break;
 
 			case "PRICE":
-				if (($order = $this->getOrder()) && $order->getId() > 0 && !$order->isCanceled())
+				$payment = $this->getItemForAutoEdit($oldValue);
+				if ($payment !== null)
 				{
-					$currentPayment = false;
-					$allowQuantityChange = false;
-					if (count($this->collection) == 1)
+					$r = $payment->setField("SUM", $value);
+					if (!$r->isSuccess())
 					{
-						/** @var Payment $currentPayment */
-						if ($currentPayment = $this->rewind())
-						{
-							$allowQuantityChange = (bool)(!$currentPayment->isPaid() && !$currentPayment->isReturn() && ($currentPayment->getSum() == $oldValue));
-							
-							if ($allowQuantityChange)
-							{
-								if ($paySystemService = $currentPayment->getPaysystem())
-								{
-									$allowQuantityChange = $paySystemService->isAllowEditPayment();
-								}
-							}
-						}
+						$result->addErrors($r->getErrors());
 					}
 
-					if ($allowQuantityChange && $currentPayment)
+					$service = $payment->getPaySystem();
+					if ($service)
 					{
-						$r = $currentPayment->setField("SUM", $value);
-						if (!$r->isSuccess())
-						{
-							$result->addErrors($r->getErrors());
-						}
+						$price = $service->getPaymentPrice($payment);
+						$payment->setField('PRICE_COD', $price);
 					}
 				}
 			break;
@@ -178,10 +166,76 @@ class PaymentCollection
 		return $result;
 	}
 
+	public function onBeforeBasketItemDelete(BasketItem $basketItem) : Result
+	{
+		$result = new Result();
+
+		/** @var Payment $payment */
+		foreach ($this->collection as $payment)
+		{
+			$r = $payment->onBeforeBasketItemDelete($basketItem);
+			if (!$r->isSuccess())
+			{
+				$result->addErrors($r->getErrors());
+			}
+		}
+
+		return $result;
+	}
+
+	protected function isAllowAutoEdit()
+	{
+		if (
+			!$this->getOrder()->isCanceled()
+			&&
+			$this->count() === 1
+		)
+		{
+			/** @var Payment $payment */
+			foreach ($this as $payment)
+			{
+				$isAllowEditPayment =
+					!$payment->isPaid()
+					&&
+					!$payment->isReturn()
+				;
+
+				if ($isAllowEditPayment)
+				{
+					if ($service = $payment->getPaySystem())
+					{
+						$isAllowEditPayment = $service->isAllowEditPayment();
+					}
+				}
+
+				return $isAllowEditPayment;
+			}
+		}
+
+		return false;
+	}
+
+	private function getItemForAutoEdit($previousOrderSum) :? Payment
+	{
+		if ($this->isAllowAutoEdit())
+		{
+			/** @var Payment $payment */
+			foreach ($this as $payment)
+			{
+				if ($payment->getSum() === $previousOrderSum)
+				{
+					return $payment;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	/**
-	 * @param OrderBase $order
+	 * @param Order $order
 	 */
-	public function setOrder(OrderBase $order)
+	public function setOrder(Order $order)
 	{
 		$this->order = $order;
 	}
@@ -199,17 +253,27 @@ class PaymentCollection
 	 */
 	protected static function createPaymentCollectionObject()
 	{
-		$registry = Registry::getInstance(Registry::REGISTRY_TYPE_ORDER);
+		$registry = Registry::getInstance(static::getRegistryType());
 		$paymentCollectionClassName = $registry->getPaymentCollectionClassName();
 
 		return new $paymentCollectionClassName();
 	}
 
 	/**
-	 * @param OrderBase $order
-	 * @return PaymentCollection
+	 * @return string
 	 */
-	public static function load(OrderBase $order)
+	public static function getRegistryType()
+	{
+		return Registry::REGISTRY_TYPE_ORDER;
+	}
+
+	/**
+	 * @param Order $order
+	 * @return PaymentCollection
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 */
+	public static function load(Order $order)
 	{
 		/** @var PaymentCollection $paymentCollection */
 		$paymentCollection = static::createPaymentCollectionObject();
@@ -217,7 +281,10 @@ class PaymentCollection
 
 		if ($order->getId() > 0)
 		{
-			$paymentList = Payment::loadForOrder($order->getId());
+			/** @var Payment $paymentClassName */
+			$paymentClassName = static::getItemCollectionClassName();
+
+			$paymentList = $paymentClassName::loadForOrder($order->getId());
 			/** @var Payment $payment */
 			foreach ($paymentList as $payment)
 			{
@@ -274,13 +341,29 @@ class PaymentCollection
 	 */
 	public function hasPaidPayment()
 	{
-		if (!empty($this->collection) && is_array($this->collection))
+		/** @var Payment $payment */
+		foreach ($this->collection as $payment)
 		{
-			/** @var Payment $payment */
-			foreach ($this->collection as $payment)
+			if ($payment->getField('PAID') === "Y")
 			{
-				if ($payment->getField('PAID') == "Y")
-					return true;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function hasUnpaidPayment()
+	{
+		/** @var Payment $payment */
+		foreach ($this->collection as $payment)
+		{
+			if ($payment->getField('PAID') === "N")
+			{
+				return true;
 			}
 		}
 
@@ -289,9 +372,7 @@ class PaymentCollection
 
 	/**
 	 * @return Entity\Result
-	 * @throws Main\ArgumentException
 	 * @throws Main\ObjectNotFoundException
-	 * @throws \Exception
 	 */
 	public function save()
 	{
@@ -306,7 +387,7 @@ class PaymentCollection
 		$itemsFromDb = array();
 		if ($this->getOrder()->getId() > 0)
 		{
-			$itemsFromDbList = Internals\PaymentTable::getList(
+			$itemsFromDbList = static::getList(
 				array(
 					"filter" => array("ORDER_ID" => $this->getOrder()->getId()),
 					"select" => array("ID", "PAY_SYSTEM_NAME", "PAY_SYSTEM_ID")
@@ -314,13 +395,6 @@ class PaymentCollection
 			);
 			while ($itemsFromDbItem = $itemsFromDbList->fetch())
 				$itemsFromDb[$itemsFromDbItem["ID"]] = $itemsFromDbItem;
-		}
-
-		/** @var Payment $payment */
-		foreach ($this->collection as $payment)
-		{
-			if ($payment->isInner() && $payment->getSum() == 0 && $payment->getId() == 0)
-				$payment->delete();
 		}
 
 		$changeMeaningfulFields = array(
@@ -364,9 +438,21 @@ class PaymentCollection
 				{
 					if ($isChanged)
 					{
-						OrderHistory::addLog('PAYMENT', $order->getId(), $isNew ? 'PAYMENT_ADD' : 'PAYMENT_UPDATE', $payment->getId(), $payment, $logFields, OrderHistory::SALE_ORDER_HISTORY_LOG_LEVEL_1);
+						$registry = Registry::getInstance(static::getRegistryType());
+
+						/** @var OrderHistory $orderHistory */
+						$orderHistory = $registry->getOrderHistoryClassName();
+						$orderHistory::addLog(
+							'PAYMENT',
+							$order->getId(),
+							$isNew ? 'PAYMENT_ADD' : 'PAYMENT_UPDATE',
+							$payment->getId(),
+							$payment,
+							$logFields,
+							$orderHistory::SALE_ORDER_HISTORY_LOG_LEVEL_1
+						);
 						
-						OrderHistory::addAction(
+						$orderHistory::addAction(
 							'PAYMENT',
 							$order->getId(),
 							"PAYMENT_SAVED",
@@ -385,51 +471,60 @@ class PaymentCollection
 			}
 
 			if (isset($itemsFromDb[$payment->getId()]))
+			{
 				unset($itemsFromDb[$payment->getId()]);
-		}
-
-		if (self::$eventClassName === null)
-		{
-			$registry = Registry::getInstance(Registry::REGISTRY_TYPE_ORDER);
-			$paymentClassName = $registry->getPaymentClassName();
-			self::$eventClassName = $paymentClassName::getEntityEventName();
+			}
 		}
 
 		foreach ($itemsFromDb as $k => $v)
 		{
+			$v['ENTITY_REGISTRY_TYPE'] = static::getRegistryType();
+
 			/** @var Main\Event $event */
-			$event = new Main\Event('sale', "OnBefore".self::$eventClassName."Deleted", array(
+			$event = new Main\Event('sale', "OnBeforeSalePaymentDeleted", array(
 					'VALUES' => $v,
 			));
 			$event->send();
 
-			Internals\PaymentTable::delete($k);
+			static::deleteInternal($k);
 
 			/** @var Main\Event $event */
-			$event = new Main\Event('sale', "On".self::$eventClassName."Deleted", array(
+			$event = new Main\Event('sale', "OnSalePaymentDeleted", array(
 					'VALUES' => $v,
 			));
 			$event->send();
 
 			if ($order->getId() > 0)
 			{
-				OrderHistory::addAction('PAYMENT', $order->getId(), 'PAYMENT_REMOVE', $k, null, array(
+				$registry = Registry::getInstance(static::getRegistryType());
+
+				/** @var OrderHistory $orderHistory */
+				$orderHistory = $registry->getOrderHistoryClassName();
+				$orderHistory::addAction('PAYMENT', $order->getId(), 'PAYMENT_REMOVE', $k, null, array(
 					"PAY_SYSTEM_NAME" => $v["PAY_SYSTEM_NAME"],
 					"PAY_SYSTEM_ID" => $v["PAY_SYSTEM_ID"],
 				));
 
-				EntityMarker::deleteByFilter(array(
+				$registry = Registry::getInstance(static::getRegistryType());
+
+				/** @var EntityMarker $entityMarker */
+				$entityMarker = $registry->getEntityMarkerClassName();
+				$entityMarker::deleteByFilter(array(
 					 '=ORDER_ID' => $order->getId(),
-					 '=ENTITY_TYPE' => EntityMarker::ENTITY_TYPE_PAYMENT,
+					 '=ENTITY_TYPE' => $entityMarker::ENTITY_TYPE_PAYMENT,
 					 '=ENTITY_ID' => $k,
-				 ));
+				));
 			}
 
 		}
 
 		if ($order->getId() > 0)
 		{
-			OrderHistory::collectEntityFields('PAYMENT', $order->getId());
+			$registry = Registry::getInstance(static::getRegistryType());
+
+			/** @var OrderHistory $orderHistory */
+			$orderHistory = $registry->getOrderHistoryClassName();
+			$orderHistory::collectEntityFields('PAYMENT', $order->getId());
 		}
 
 		return $result;
@@ -455,24 +550,35 @@ class PaymentCollection
 				if ($payment->getPaymentSystemId() == $paySystemId)
 					return $payment;
 			}
-
-			/** @var Service $paySystem */
-			if ($paySystem = Manager::getObjectById($paySystemId))
-			{
-				return $this->createItem($paySystem);
-			}
-
 		}
 
 		return false;
 	}
 
 	/**
-	 * @return int
+	 * @return Payment|bool
+	 * @throws Main\ObjectNotFoundException
 	 */
-	public static function getInnerPaySystemId()
+	public function createInnerPayment()
 	{
-		return PaySystem\Manager::getInnerPaySystemId();
+		$payment = $this->getInnerPayment();
+		if ($payment)
+		{
+			return $payment;
+		}
+
+		$paySystemId = PaySystem\Manager::getInnerPaySystemId();
+		if (!empty($paySystemId))
+		{
+			/** @var Service $paySystem */
+			$paySystem = Manager::getObjectById($paySystemId);
+			if ($paySystem)
+			{
+				return $this->createItem($paySystem);
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -515,7 +621,11 @@ class PaymentCollection
 					throw new Main\ObjectNotFoundException('Entity "Order" not found');
 				}
 
-				EntityMarker::addMarker($order, $payment, $r);
+				$registry = Registry::getInstance(static::getRegistryType());
+
+				/** @var EntityMarker $entityMarker */
+				$entityMarker = $registry->getEntityMarkerClassName();
+				$entityMarker::addMarker($order, $payment, $r);
 				$order->setField('MARKED', 'Y');
 			}
 		}
@@ -534,9 +644,9 @@ class PaymentCollection
 		{
 			return $cloneEntity[$this];
 		}
-		
-		$paymentCollectionClone = clone $this;
-		$paymentCollectionClone->isClone = true;
+
+		/** @var PaymentCollection $paymentCollectionClone */
+		$paymentCollectionClone = parent::createClone($cloneEntity);
 
 		if ($this->order)
 		{
@@ -544,25 +654,6 @@ class PaymentCollection
 			{
 				$paymentCollectionClone->order = $cloneEntity[$this->order];
 			}
-		}
-
-		if (!$cloneEntity->contains($this))
-		{
-			$cloneEntity[$this] = $paymentCollectionClone;
-		}
-
-		/**
-		 * @var int key
-		 * @var Payment $payment
-		 */
-		foreach ($paymentCollectionClone->collection as $key => $payment)
-		{
-			if (!$cloneEntity->contains($payment))
-			{
-				$cloneEntity[$payment] = $payment->createClone($cloneEntity);
-			}
-
-			$paymentCollectionClone->collection[$key] = $cloneEntity[$payment];
 		}
 
 		return $paymentCollectionClone;
@@ -588,4 +679,40 @@ class PaymentCollection
 		return false;
 	}
 
+	/**
+	 * @param $primary
+	 * @return Entity\DeleteResult
+	 */
+	protected function deleteInternal($primary)
+	{
+		return Internals\PaymentTable::delete($primary);
+	}
+
+	/**
+	 * @return string
+	 */
+	private static function getItemCollectionClassName()
+	{
+		$registry = Registry::getInstance(static::getRegistryType());
+		return $registry->getPaymentClassName();
+	}
+
+	/**
+	 * @param array $parameters
+	 * @return Main\DB\Result
+	 */
+	public static function getList(array $parameters = array())
+	{
+		return Internals\PaymentTable::getList($parameters);
+	}
+
+	/**
+	 * @deprecated Use \Bitrix\Sale\PaySystem\Manager::getInnerPaySystemId instead
+	 *
+	 * @return int
+	 */
+	public static function getInnerPaySystemId()
+	{
+		return PaySystem\Manager::getInnerPaySystemId();
+	}
 }

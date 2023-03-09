@@ -1,23 +1,28 @@
-<?
+<?php
+
 #############################################
 # Bitrix Site Manager Forum					#
 # Copyright (c) 2002-2009 Bitrix			#
 # http://www.bitrixsoft.com					#
 # mailto:admin@bitrixsoft.com				#
 #############################################
-IncludeModuleLangFile(__FILE__); 
+
+use Bitrix\Vote;
+
+IncludeModuleLangFile(__FILE__);
 
 class CAllVoteAnswer
 {
-	function err_mess()
+	public static function err_mess()
 	{
 		$module_id = "vote";
 		return "<br>Module: ".$module_id."<br>Class: CAllVoteAnswer<br>File: ".__FILE__;
 	}
 	
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
 		global $APPLICATION;
+		global $USER;
 		$aMsg = array();
 		$ID = intval($ID);
 		$ACTION = ($ID > 0 && $ACTION == "UPDATE" ? "UPDATE" : "ADD");
@@ -31,17 +36,41 @@ class CAllVoteAnswer
 					"text" => GetMessage("VOTE_FORGOT_QUESTION_ID"));
 			endif;
 		endif;
-		
-		if (is_set($arFields, "MESSAGE") || $ACTION == "ADD"):
-			//$arFields["MESSAGE"] = trim($arFields["MESSAGE"]);
-			$arFields["MESSAGE"] = ($arFields["MESSAGE"] != ' ') ? trim($arFields["MESSAGE"]):' ';
-			if (strlen($arFields["MESSAGE"]) <= 0):
+
+		if (isset($arFields["MESSAGE"]) || $ACTION == "ADD")
+		{
+			if (!$USER || $USER->CanDoOperation('edit_php') !== true)
+			{
+				$arFields["MESSAGE"] = Vote\Inner\Sanitizer::cleanText($arFields["MESSAGE"]);
+			}
+			if ($arFields["MESSAGE"] === "")
+			{
+				$aMsg[] = ["id" => "MESSAGE", "text" => GetMessage("VOTE_FORGOT_MESSAGE")];
+			}
+		}
+
+		if (array_key_exists("IMAGE_ID", $arFields))
+		{
+			if (!is_array($arFields["IMAGE_ID"]))
+			{
+				$arFields["IMAGE_ID"] = intval($arFields["IMAGE_ID"]);
+			}
+			else if ($arFields["IMAGE_ID"]["name"] == '' && $arFields["IMAGE_ID"]["del"] == '')
+			{
+				unset($arFields["IMAGE_ID"]);
+			}
+			else if ($str = CFile::CheckImageFile($arFields["IMAGE_ID"]))
+			{
 				$aMsg[] = array(
-					"id" => "MESSAGE", 
-					"text" => GetMessage("VOTE_FORGOT_MESSAGE"));
-			endif;
-		endif;
-		
+					"id" => "IMAGE_ID",
+					"text" => "Answer: ".$str);
+			}
+			else
+			{
+				$arFields["IMAGE_ID"]["MODULE_ID"] = "vote";
+			}
+		}
+
 		if (is_set($arFields, "ACTIVE") || $ACTION == "ADD") $arFields["ACTIVE"] = ($arFields["ACTIVE"] == "N" ? "N" : "Y");
 		unset($arFields["TIMESTAMP_X"]);
 		if (is_set($arFields, "C_SORT") || $ACTION == "ADD") $arFields["C_SORT"] = (intval($arFields["C_SORT"]) > 0 ? intval($arFields["C_SORT"]) : 100);
@@ -49,9 +78,15 @@ class CAllVoteAnswer
 		if (is_set($arFields, "FIELD_TYPE") || $ACTION == "ADD") $arFields["FIELD_TYPE"] = intval($arFields["FIELD_TYPE"]);
 		if (is_set($arFields, "FIELD_WIDTH") || $ACTION == "ADD") $arFields["FIELD_WIDTH"] = intval($arFields["FIELD_WIDTH"]);
 		if (is_set($arFields, "FIELD_HEIGHT") || $ACTION == "ADD") $arFields["FIELD_HEIGHT"] = intval($arFields["FIELD_HEIGHT"]);
-		
-		if (is_set($arFields, "FIELD_PARAM") || $ACTION == "ADD") $arFields["FIELD_PARAM"] = substr(trim($arFields["FIELD_PARAM"]), 0, 255);
-		if (is_set($arFields, "COLOR") || $ACTION == "ADD") $arFields["COLOR"] = substr(trim($arFields["COLOR"]), 0, 7);
+
+		if (isset($arFields["FIELD_PARAM"]))
+		{
+			$arFields["FIELD_PARAM"] = ((!$USER || $USER->CanDoOperation('edit_php') !== true)
+				? '' : trim($arFields["FIELD_PARAM"]))
+			;
+		}
+
+		if (is_set($arFields, "COLOR") || $ACTION == "ADD") $arFields["COLOR"] = mb_substr(trim($arFields["COLOR"]), 0, 7)?: "";
 		
 		if(!empty($aMsg))
 		{
@@ -76,6 +111,15 @@ class CAllVoteAnswer
 		if (empty($arFields))
 			return false;
 
+		if (
+			array_key_exists("IMAGE_ID", $arFields) &&
+			is_array($arFields["IMAGE_ID"])
+		)
+		{
+			$arFields["IMAGE_ID"]["MODULE_ID"] = "vote";
+			CFile::SaveForDB($arFields, "IMAGE_ID", "vote");
+		}
+
 		if ($DB->type == "ORACLE")
 			$arFields["ID"] = $DB->NextID("SQ_B_VOTE_ANSWER");
 
@@ -91,7 +135,7 @@ class CAllVoteAnswer
 		return $ID;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 		$arBinds = array();
@@ -102,11 +146,20 @@ class CAllVoteAnswer
 			return false;
 /***************** Event onBeforeVoteQuestionUpdate ****************/
 		foreach (GetModuleEvents("vote", "onBeforeVoteAnswerUpdate", true) as $arEvent)
-			if (ExecuteModuleEventEx($arEvent, array(&$ID, &$arFields)) === false)
+			if (ExecuteModuleEventEx($arEvent, array($ID, &$arFields)) === false)
 				return false;
 /***************** /Event ******************************************/
 		if (empty($arFields))
 			return false;
+
+		if (
+			array_key_exists("IMAGE_ID", $arFields) &&
+			is_array($arFields["IMAGE_ID"])
+		)
+		{
+			$arFields["IMAGE_ID"]["MODULE_ID"] = "vote";
+			CFile::SaveForDB($arFields, "IMAGE_ID", "vote");
+		}
 
 		$arFields["~TIMESTAMP_X"] = $DB->GetNowFunction();
 		$strUpdate = $DB->PrepareUpdate("b_vote_answer", $arFields);
@@ -245,7 +298,7 @@ class CAllVoteAnswer
 			$key_res = VoteGetFilterOperation($key);
 			$strNegative = $key_res["NEGATIVE"];
 			$strOperation = $key_res["OPERATION"];
-			$key = strtoupper($key_res["FIELD"]);
+			$key = mb_strtoupper($key_res["FIELD"]);
 			
 			switch($key)
 			{
@@ -311,7 +364,8 @@ class CAllVoteAnswer
 		
 		foreach ($arOrder as $by => $order)
 		{
-			$by = strtoupper($by); $order = strtoupper($order);
+			$by = mb_strtoupper($by);
+			$order = mb_strtoupper($order);
 			$by = (in_array($by, array("ACTIVE", "QUESTION_ID", "C_SORT", "COUNTER")) ? $by : "ID");
 			if ($order!="ASC") $order = "DESC";
 			if ($by == "ACTIVE") $arSqlOrder[] = " VA.ACTIVE ".$order." ";
@@ -334,7 +388,7 @@ class CAllVoteAnswer
 		return $DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 	}
 
-	function GetGroupAnswers($ANSWER_ID)
+	public static function GetGroupAnswers($ANSWER_ID)
 	{
 		$err_mess = (self::err_mess())."<br>Function: GetGroupAnswers<br>Line: ";
 		global $DB;

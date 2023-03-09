@@ -159,8 +159,8 @@ class CSecurityUserTest
 	protected static function getUserPassword($id)
 	{
 		$dbUser = CUser::GetList(
-			$by = 'ID',
-			$order = 'ASC',
+			'ID',
+			'ASC',
 			array(
 				'ID' => $id,
 				'ACTIVE' => 'Y'
@@ -177,10 +177,10 @@ class CSecurityUserTest
 			$user = $dbUser->fetch();
 			$password = $user['PASSWORD'];
 			$salt = '';
-			if (strlen($password) > 32)
+			if (mb_strlen($password) > 32)
 			{
-				$salt = substr($password, 0, strlen($password) - 32);
-				$password = substr($password, -32);
+				$salt = mb_substr($password, 0, mb_strlen($password) - 32);
+				$password = mb_substr($password, -32);
 			}
 		}
 
@@ -211,8 +211,8 @@ class CSecurityUserTest
 			return array();
 
 		$dbUser = CUser::GetList(
-			$by = 'ID',
-			$order = 'ASC',
+			'ID',
+			'ASC',
 			array(
 				'ID' => implode('|', $ids),
 				'ACTIVE' => 'Y'
@@ -263,8 +263,8 @@ class CSecurityUserTest
 	protected static function getAdminUserList($limit = 0, $minId = 0)
 	{
 		$dbUser = CUser::GetList(
-			$by = 'ID',
-			$order = 'ASC',
+			'ID',
+			'ASC',
 			array(
 				'GROUPS_ID' => 1,
 				'>ID' => $minId,

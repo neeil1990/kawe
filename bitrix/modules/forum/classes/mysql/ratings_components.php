@@ -1,11 +1,13 @@
-<?
+<?php
+
 require($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/forum/classes/general/ratings_components.php");
+
 IncludeModuleLangFile(__FILE__);
 
 class CRatingsComponentsForum extends CAllRatingsComponentsForum
 {
 	// Calc function
-	function CalcUserVoteForumPost($arConfigs)
+	public static function CalcUserVoteForumPost($arConfigs)
 	{
 		global $DB;
 
@@ -13,12 +15,12 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 
 		CRatings::AddComponentResults($arConfigs);
 
-		$strSql = "DELETE FROM b_rating_component_results WHERE RATING_ID = '".IntVal($arConfigs['RATING_ID'])."' AND COMPLEX_NAME = '".$DB->ForSql($arConfigs['COMPLEX_NAME'])."'";
+		$strSql = "DELETE FROM b_rating_component_results WHERE RATING_ID = '".intval($arConfigs['RATING_ID'])."' AND COMPLEX_NAME = '".$DB->ForSql($arConfigs['COMPLEX_NAME'])."'";
 		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
 
 		$strSql = "INSERT INTO b_rating_component_results (RATING_ID, MODULE_ID, RATING_TYPE, NAME, COMPLEX_NAME, ENTITY_ID, ENTITY_TYPE_ID, CURRENT_VALUE)
 					SELECT
-						'".IntVal($arConfigs['RATING_ID'])."'  RATING_ID,
+						'".intval($arConfigs['RATING_ID'])."'  RATING_ID,
 						'".$DB->ForSql($arConfigs['MODULE_ID'])."'  MODULE_ID,
 						'".$DB->ForSql($arConfigs['RATING_TYPE'])."'  RATING_TYPE,
 						'".$DB->ForSql($arConfigs['NAME'])."'  NAME,
@@ -31,7 +33,7 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 						b_rating_vote RVE
 					WHERE
 						RV.ENTITY_TYPE_ID = 'FORUM_POST' AND FM.AUTHOR_ID > 0
-					AND RVE.RATING_VOTING_ID = RV.ID".(IntVal($arConfigs['CONFIG']['LIMIT']) > 0 ? " AND RVE.CREATED > DATE_SUB(NOW(), INTERVAL ".IntVal($arConfigs['CONFIG']['LIMIT'])." DAY)" : "")."
+					AND RVE.RATING_VOTING_ID = RV.ID".(intval($arConfigs['CONFIG']['LIMIT']) > 0 ? " AND RVE.CREATED > DATE_SUB(NOW(), INTERVAL ".intval($arConfigs['CONFIG']['LIMIT'])." DAY)" : "")."
 					GROUP BY AUTHOR_ID";
 
 		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
@@ -39,7 +41,7 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 		return true;
 	}
 
-	function CalcUserVoteForumTopic($arConfigs)
+	public static function CalcUserVoteForumTopic($arConfigs)
 	{
 		global $DB;
 
@@ -47,12 +49,12 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 
 		CRatings::AddComponentResults($arConfigs);
 
-		$strSql = "DELETE FROM b_rating_component_results WHERE RATING_ID = '".IntVal($arConfigs['RATING_ID'])."' AND COMPLEX_NAME = '".$DB->ForSql($arConfigs['COMPLEX_NAME'])."'";
+		$strSql = "DELETE FROM b_rating_component_results WHERE RATING_ID = '".intval($arConfigs['RATING_ID'])."' AND COMPLEX_NAME = '".$DB->ForSql($arConfigs['COMPLEX_NAME'])."'";
 		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
 
 		$strSql = "INSERT INTO b_rating_component_results (RATING_ID, MODULE_ID, RATING_TYPE, NAME, COMPLEX_NAME, ENTITY_ID, ENTITY_TYPE_ID, CURRENT_VALUE)
 					SELECT
-						'".IntVal($arConfigs['RATING_ID'])."'  RATING_ID,
+						'".intval($arConfigs['RATING_ID'])."'  RATING_ID,
 						'".$DB->ForSql($arConfigs['MODULE_ID'])."'  MODULE_ID,
 						'".$DB->ForSql($arConfigs['RATING_TYPE'])."'  RATING_TYPE,
 						'".$DB->ForSql($arConfigs['NAME'])."'  NAME,
@@ -65,14 +67,14 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 						b_rating_vote RVE
 					WHERE
 						RV.ENTITY_TYPE_ID = 'FORUM_TOPIC' AND FT.USER_START_ID > 0
-					AND RVE.RATING_VOTING_ID = RV.ID".(IntVal($arConfigs['CONFIG']['LIMIT']) > 0 ? " AND RVE.CREATED > DATE_SUB(NOW(), INTERVAL ".IntVal($arConfigs['CONFIG']['LIMIT'])." DAY)" : "")."
+					AND RVE.RATING_VOTING_ID = RV.ID".(intval($arConfigs['CONFIG']['LIMIT']) > 0 ? " AND RVE.CREATED > DATE_SUB(NOW(), INTERVAL ".intval($arConfigs['CONFIG']['LIMIT'])." DAY)" : "")."
 					GROUP BY USER_START_ID";
 		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
 
 		return true;
 	}
 
-	function CalcUserRatingForumActivity($arConfigs)
+	public static function CalcUserRatingForumActivity($arConfigs)
 	{
 		global $DB;
 
@@ -80,7 +82,7 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 
 		CRatings::AddComponentResults($arConfigs);
 
-		$strSql = "DELETE FROM b_rating_component_results WHERE RATING_ID = '".IntVal($arConfigs['RATING_ID'])."' AND COMPLEX_NAME = '".$DB->ForSql($arConfigs['COMPLEX_NAME'])."'";
+		$strSql = "DELETE FROM b_rating_component_results WHERE RATING_ID = '".intval($arConfigs['RATING_ID'])."' AND COMPLEX_NAME = '".$DB->ForSql($arConfigs['COMPLEX_NAME'])."'";
 		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
 
 		$sqlAllTopic = '';
@@ -107,7 +109,7 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 		}
 		$strSql = "INSERT INTO b_rating_component_results (RATING_ID, MODULE_ID, RATING_TYPE, NAME, COMPLEX_NAME, ENTITY_ID, ENTITY_TYPE_ID, CURRENT_VALUE)
 			SELECT
-				'".IntVal($arConfigs['RATING_ID'])."' as RATING_ID,
+				'".intval($arConfigs['RATING_ID'])."' as RATING_ID,
 				'".$DB->ForSql($arConfigs['MODULE_ID'])."' as MODULE_ID,
 				'".$DB->ForSql($arConfigs['RATING_TYPE'])."' as RATING_TYPE,
 				'".$DB->ForSql($arConfigs['NAME'])."' as NAME,
@@ -147,7 +149,7 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 	}
 
 	// Exception function
-	function ExceptionUserRatingForumActivity()
+	public static function ExceptionUserRatingForumActivity()
 	{
 		global $DB;
 		$bIndex1 = $DB->IndexExists("b_forum_topic", array("START_DATE", "USER_START_ID"));
@@ -168,4 +170,3 @@ class CRatingsComponentsForum extends CAllRatingsComponentsForum
 			return false;
 	}
 }
-?>

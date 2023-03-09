@@ -33,10 +33,10 @@ class CBitrixMenuComponent extends CBitrixComponent
 				""
 			;
 
-			if($this->arParams["MENU_CACHE_USE_GROUPS"] === "Y")
+			if(($this->arParams["MENU_CACHE_USE_GROUPS"] ?? '') === "Y")
 				$strCacheID .= ":".$USER->GetGroups();
 
-			if($this->arParams["MENU_CACHE_USE_USERS"] === "Y")
+			if(($this->arParams["MENU_CACHE_USE_USERS"] ?? '') === "Y")
 				$strCacheID .= ":".$USER->GetID();
 
 			if(is_array($this->arParams["MENU_CACHE_GET_VARS"]))
@@ -58,11 +58,11 @@ class CBitrixMenuComponent extends CBitrixComponent
 	public function getGenerationCachePath($id)
 	{
 		$hash = md5($id);
-		$path = $this->getRelativePath()."/".substr($hash,-5,2)."/".substr($hash,-3);
+		$path = $this->getRelativePath()."/".substr($hash, -5, 2)."/".substr($hash, -3)."/".(int)$id;
 		return $path;
 	}
 
-	public function getChildMenuRecursive(&$arMenu, &$arResult, $menuType, $use_ext, $menuTemplate, $currentLevel, $maxLevel, $bMultiSelect, $bCheckSelected)
+	public function getChildMenuRecursive(&$arMenu, &$arResult, $menuType, $use_ext, $menuTemplate, $currentLevel, $maxLevel, $bMultiSelect, $bCheckSelected, $parentItem)
 	{
 		if ($currentLevel > $maxLevel)
 			return;
@@ -70,6 +70,9 @@ class CBitrixMenuComponent extends CBitrixComponent
 		for ($menuIndex = 0, $menuCount = count($arMenu); $menuIndex < $menuCount; $menuIndex++)
 		{
 			//Menu from iblock (bitrix:menu.sections)
+			$arMenu[$menuIndex]["CHAIN"] = (is_array($parentItem) && !empty($parentItem["CHAIN"]) ? $parentItem["CHAIN"] : array());
+			$arMenu[$menuIndex]["CHAIN"][] = $arMenu[$menuIndex]["TEXT"];
+
 			if (is_array($arMenu[$menuIndex]["PARAMS"]) && isset($arMenu[$menuIndex]["PARAMS"]["FROM_IBLOCK"]))
 			{
 				$iblockSectionLevel = intval($arMenu[$menuIndex]["PARAMS"]["DEPTH_LEVEL"]);
@@ -88,12 +91,27 @@ class CBitrixMenuComponent extends CBitrixComponent
 				$bDir = false;
 				if(!preg_match("'^(([a-z]+://)|mailto:|javascript:)'i", $arMenu[$menuIndex]["LINK"]))
 				{
-					if(substr($arMenu[$menuIndex]["LINK"], -1) == "/")
-						$bDir = true;
+					if(mb_substr($arMenu[$menuIndex]["LINK"], -1) == "/")
+					{
+						if ($parentItem && $parentItem['LINK'] === $arMenu[$menuIndex]["LINK"])
+						{
+							$bDir = false;
+						}
+						else
+						{
+							$bDir = true;
+						}
+					}
 				}
 				if($bDir)
 				{
-					$menu = new CMenu($menuType);
+					$type = $menuType; // public method compatibility
+					if (is_array($type))
+					{
+						$type = $menuType[$currentLevel] ?? $menuType[count($menuType) - 1];
+					}
+
+					$menu = new CMenu($type);
 					$menu->disableDebug();
 					$success = $menu->Init($arMenu[$menuIndex]["LINK"], $use_ext, $menuTemplate, $onlyCurrentDir = true);
 					$subMenuExists = ($success && count($menu->arMenu) > 0);
@@ -106,12 +124,12 @@ class CBitrixMenuComponent extends CBitrixComponent
 
 						if($arMenu[$menuIndex]["SELECTED"])
 						{
-							$arResult["menuType"] = $menuType;
+							$arResult["menuType"] = $type;
 							$arResult["menuDir"] = $arMenu[$menuIndex]["LINK"];
 						}
 
 						if(count($menu->arMenu) > 0)
-							$this->GetChildMenuRecursive($menu->arMenu, $arResult, $menuType, $use_ext, $menuTemplate, $currentLevel+1, $maxLevel, $bMultiSelect, $bCheckSelected);
+							$this->GetChildMenuRecursive($menu->arMenu, $arResult, $menuType, $use_ext, $menuTemplate, $currentLevel+1, $maxLevel, $bMultiSelect, $bCheckSelected, $arMenu[$menuIndex]);
 					}
 				}
 			}
@@ -123,14 +141,12 @@ class CBitrixMenuComponent extends CBitrixComponent
 
 	public function getMenuString($type = "left")
 	{
-		/** @var CMenuCustom*/
-		global $BX_MENU_CUSTOM;
 		global $APPLICATION;
 
 		$sReturn = "";
 		if ($APPLICATION->buffer_manual)
 		{
-			$arMenuCustom = $BX_MENU_CUSTOM->GetItems($type);
+			$arMenuCustom = CMenuCustom::getInstance()->GetItems($type);
 			if (is_array($arMenuCustom))
 				$this->arResult = array_merge($this->arResult, $arMenuCustom);
 
@@ -164,7 +180,7 @@ class CBitrixMenuComponent extends CBitrixComponent
 				foreach($ADDITIONAL_LINKS as $link)
 				{
 					$tested_link = trim($link);
-					if(strlen($tested_link)>0)
+					if($tested_link <> '')
 						$all_links[] = $tested_link;
 				}
 			}
@@ -189,7 +205,7 @@ class CBitrixMenuComponent extends CBitrixComponent
 			if($SELECTED && !$bMultiSelect)
 			{
 				/** @noinspection PhpUndefinedVariableInspection */
-				$new_len = strlen($tested_link);
+				$new_len = mb_strlen($tested_link);
 				if($new_len > $cur_selected_len)
 				{
 					if($cur_selected !== -1)

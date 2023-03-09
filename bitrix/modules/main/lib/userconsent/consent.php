@@ -25,15 +25,15 @@ class Consent
 	/**
 	 * Add user consent by context data.
 	 *
-	 * @param integer $id Agreement ID.
+	 * @param integer $agreementId Agreement ID.
 	 * @param integer|null $originatorId Originator ID.
 	 * @param integer|null $originId Origin ID.
-	 * @param array $data Data.
+	 * @param array $params Extra params like IP, URL or USER_ID.
 	 * @return integer|null
 	 */
-	public static function addByContext($id, $originatorId = null, $originId = null, array $data = array())
+	public static function addByContext($agreementId, $originatorId = null, $originId = null, array $params = array())
 	{
-		$agreement = new Agreement($id);
+		$agreement = new Agreement($agreementId);
 		if (!$agreement->isExist() || !$agreement->isActive())
 		{
 			return null;
@@ -41,23 +41,31 @@ class Consent
 
 		$request = Context::getCurrent()->getRequest();
 		$parameters = array(
-			'AGREEMENT_ID' => $id
+			'AGREEMENT_ID' => $agreementId
 		);
 
-		/**@var \CAllUser */
-		if (isset($GLOBALS['USER']) && is_object($GLOBALS['USER']) && $GLOBALS['USER']->GetID())
+		if (isset($params['USER_ID']) && intval($params['USER_ID']) > 0)
+		{
+			$parameters['USER_ID'] = intval($params['USER_ID']);
+		}
+		else if (isset($GLOBALS['USER']) && is_object($GLOBALS['USER']) && $GLOBALS['USER']->GetID())
 		{
 			$parameters['USER_ID'] = $GLOBALS['USER']->GetID();
 		}
 
-		$parameters['IP'] = (isset($data['IP']) && $data['IP']) ? $data['IP'] : $request->getRemoteAddress();
-		if (isset($data['URL']) && $data['URL'])
+		$parameters['IP'] = (isset($params['IP']) && $params['IP']) ? $params['IP'] : $request->getRemoteAddress();
+		if (isset($params['URL']) && $params['URL'])
 		{
-			$parameters['URL'] = $data['URL'];
+			$parameters['URL'] = $params['URL'];
 		}
 		else
 		{
-			$parameters['URL'] = $request->getHttpHost() . $request->getRequestUri();
+			$parameters['URL'] = ($request->isHttps() ? "https" : "http")."://".$request->getHttpHost() . $request->getRequestUri();
+		}
+
+		if (mb_strlen($parameters['URL']) > 4000)
+		{
+			$parameters['URL'] = mb_substr($parameters['URL'], 0, 4000);
 		}
 
 		if ($originatorId && $originId)
@@ -68,12 +76,62 @@ class Consent
 		$addResult = Internals\ConsentTable::add($parameters);
 		if ($addResult->isSuccess())
 		{
-			return $addResult->getId();
+			$userConsentId = $addResult->getId();
+
+			if (isset($params['ITEMS']) && is_array($params['ITEMS']))
+			{
+				Internals\UserConsentItemTable::addItems($userConsentId, $params['ITEMS']);
+			}
+
+			return $userConsentId;
 		}
 		else
 		{
 			return null;
 		}
+	}
+
+	/**
+	 * Get user consent added by context data.
+	 *
+	 * @param integer $agreementId Agreement ID.
+	 * @param integer|null $originatorId Originator ID.
+	 * @param integer|null $originId Origin ID.
+	 * @param array $params Extra params.
+	 * @return array|null
+	 */
+	public static function getByContext($agreementId, $originatorId = null, $originId = null, $params = Array())
+	{
+		$agreement = new Agreement($agreementId);
+		if (!$agreement->isExist() || !$agreement->isActive())
+		{
+			return null;
+		}
+
+		$filter = array(
+			'=AGREEMENT_ID' => $agreementId
+		);
+
+		if (isset($params['USER_ID']) && intval($params['USER_ID']) > 0)
+		{
+			$filter['=USER_ID'] = intval($params['USER_ID']);
+		}
+		else if (isset($GLOBALS['USER']) && is_object($GLOBALS['USER']) && $GLOBALS['USER']->GetID())
+		{
+			$filter['=USER_ID'] = $GLOBALS['USER']->GetID();
+		}
+
+		if ($originatorId && $originId)
+		{
+			$filter['=ORIGINATOR_ID'] = $originatorId;
+			$filter['=ORIGIN_ID'] = $originId;
+		}
+
+		$addResult = Internals\ConsentTable::getList(Array(
+			'filter' => $filter
+		))->fetch();
+
+		return $addResult?: null;
 	}
 
 	/**
@@ -132,6 +190,47 @@ class Consent
 				'NAME' => $name,
 				'URL' => $url
 			);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get items data.
+	 *
+	 * @param string $originatorId Originator ID.
+	 * @param array $items Source Items.
+	 * @return string|null
+	 */
+	public static function getItems($originatorId, $items = [])
+	{
+		$list = self::getList();
+		foreach ($list as $provider)
+		{
+			if ($provider['CODE'] != $originatorId)
+			{
+				continue;
+			}
+
+			$values = [];
+
+			if ($items)
+			{
+				foreach ($items as $item)
+				{
+					if (!isset($item['VALUE']))
+					{
+						return null;
+					}
+					$values[] = $provider['ITEMS']($item['VALUE']);
+				}
+			}
+			else
+			{
+				return null;
+			}
+
+			return implode(', ', $values);
 		}
 
 		return null;

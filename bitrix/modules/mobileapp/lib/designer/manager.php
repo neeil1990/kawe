@@ -90,6 +90,8 @@ class Manager
 		$appData = $result->fetchAll();
 		if (count($appData) > 0)
 		{
+			if(!is_array($appData[0]["FILES"]))
+				$appData[0]["FILES"] = [];
 			$appData[0]["FILES"][] = $fileArray["fileID"];
 			AppTable::update($appCode, array("FILES" => $appData[0]["FILES"]));
 			$arImage = \CFile::ResizeImageGet(
@@ -270,7 +272,7 @@ class Manager
 			if (array_key_exists($key, $imageParamList))
 			{
 				$imagePath = \CFile::GetPath($value);
-				if(strlen($imagePath)>0)
+				if($imagePath <> '')
 					$value = $imagePath;
 				else
 					continue;
@@ -282,7 +284,7 @@ class Manager
 				foreach ($value as $imageCode => $imageId)
 				{
 					$imagePath = \CFile::GetPath($imageId);
-					if(strlen($imagePath)>0)
+					if($imagePath <> '')
 						$tmpValue[$imageCode] = $imagePath;
 					else
 						continue;
@@ -430,27 +432,26 @@ class Manager
 	{
 		$result = AppTable::getById($appCode);
 		$appData = $result->fetchAll();
-		$files = array();
-		if (count($appData) > 0)
+		$files = [];
+		if (count($appData) > 0 && is_array($appData[0]['FILES']))
 		{
 			//TODO fix, use module_id in the filter
-			$result = \CFile::GetList(array("ID" => "desc"), Array("@ID" => implode(",", $appData[0]["FILES"])));
+			$result = \CFile::GetList(['ID' => 'desc'], ['@ID' => implode(',', $appData[0]['FILES'])]);
 			while ($file = $result->Fetch())
 			{
 				$image = \CFile::ResizeImageGet(
-					$file["ID"],
-					array("width" => self::PREVIEW_IMAGE_SIZE, "height" => self::PREVIEW_IMAGE_SIZE),
+					$file['ID'],
+					['width' => self::PREVIEW_IMAGE_SIZE, 'height' => self::PREVIEW_IMAGE_SIZE],
 					BX_RESIZE_IMAGE_EXACT,
 					false,
 					false,
 					true
 				);
-				$files["file_" . $file["ID"]] = array(
-					"id" => $file["ID"],
-					"src" => \CFile::GetFileSRC($file),
-					"preview" => $image["src"]
-				);
-
+				$files['file_' . $file['ID']] = [
+					'id' => $file['ID'],
+					'src' => \CFile::GetFileSRC($file),
+					'preview' => $image['src']
+				];
 			}
 		}
 
@@ -485,7 +486,7 @@ class Manager
 	 *
 	 * @return array
 	 */
-	private function nameSpaceToArray($namespace, $value)
+	private static function nameSpaceToArray($namespace, $value)
 	{
 		$keys = explode("/", $namespace);
 		$result = array();

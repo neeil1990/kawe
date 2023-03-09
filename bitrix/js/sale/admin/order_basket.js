@@ -18,6 +18,7 @@ BX.Sale.Admin.OrderBasket = function (params)
 	this.visibleColumns = params.visibleColumns;
 	this.isShowXmlId = params.isShowXmlId;
 	this.weightUnit = params.weightUnit;
+	this.showProps = (typeof params.showProps !== 'undefined') ? (!!params.showProps) : true;
 
 	this.productsCount = 0;
 	this.customPrices = {};
@@ -33,6 +34,12 @@ BX.Sale.Admin.OrderBasket = function (params)
 	this.qantityUpdaterDelay = 750;
 	this.canSendUpdateQuantityRequest = true;
 	this.lastChangedQuantity = false;
+
+	/**
+	 * \Bitrix\Sale\BasketItem::TYPE_SERVICE
+	 * @type {number}
+	 */
+	this.productTypeService = 2;
 
 	if(params.iblocksSkuParams)
 	{
@@ -327,7 +334,7 @@ BX.Sale.Admin.OrderBasket.prototype.productSet = function(product, isReplaceExis
 	//sets
 	if(product.SET_ITEMS && product.SET_ITEMS.length)
 	{
-		for(var i = product.SET_ITEMS.length-1; i>=0; i--)
+		for(var i = 0, l = product.SET_ITEMS.length - 1; i <= l; i++)
 		{
 			product.SET_ITEMS[i].BASKET_CODE = "set_" + product.BASKET_CODE + "_"+product.SET_ITEMS[i].OFFER_ID;
 			this.productSet(product.SET_ITEMS[i], true);
@@ -507,7 +514,8 @@ BX.Sale.Admin.OrderBasket.prototype.createProductRowBasement = function(basketCo
 
 BX.Sale.Admin.OrderBasket.prototype.createProductBasementSkuCell = function(basketCode, product)
 {
-	var tbl = this.createSkuPropsTable(basketCode, product),
+	var showProps = this.showProps;
+	var tbl = this.createSkuPropsTable(basketCode, product, showProps),
 		result = null;
 
 	if(tbl)
@@ -727,7 +735,8 @@ BX.Sale.Admin.OrderBasket.prototype.createProductCell = function(basketCode, pro
 		fieldValue = product[fieldId],
 		tdClass = "",
 		_this = this,
-		isSetItem = (BX.type.isNotEmptyString(product.IS_SET_ITEM) && product.IS_SET_ITEM === 'Y');
+		isSetItem = (BX.type.isNotEmptyString(product.IS_SET_ITEM) && product.IS_SET_ITEM === 'Y'),
+		isProductEnabled = (BX.type.isNotEmptyString(product.IS_ENABLED) && product.IS_ENABLED === 'Y');
 
 	switch(fieldId)
 	{
@@ -752,7 +761,8 @@ BX.Sale.Admin.OrderBasket.prototype.createProductCell = function(basketCode, pro
 				var bundleShow = BX.create('a',{
 					props:{
 						href:"javascript:void(0);",
-						className: "dashed-link show-set-link"
+						className: "dashed-link show-set-link" + (!isProductEnabled ? ' product-unavailable' : ''),
+						title: (!isProductEnabled ? BX.message('SALE_ORDER_BASKET_PRODUCT_UNAVAILABLE') : '')
 					},
 					html: BX.message("SALE_ORDER_BASKET_EXPAND")
 				});
@@ -777,7 +787,9 @@ BX.Sale.Admin.OrderBasket.prototype.createProductCell = function(basketCode, pro
 				node = BX.create('a',{
 						props:{
 							href:product.EDIT_PAGE_URL,
-							target:"_blank"
+							target:"_blank",
+							className: (!isProductEnabled ? 'product-unavailable' : ''),
+							title: (!isProductEnabled ? BX.message('SALE_ORDER_BASKET_PRODUCT_UNAVAILABLE') : '')
 						},
 						html: BX.util.htmlspecialchars(fieldValue)
 					});
@@ -980,10 +992,10 @@ BX.Sale.Admin.OrderBasket.prototype.onToggleBundleChildren = function(oldParentI
 
 BX.Sale.Admin.OrderBasket.prototype.createFieldSkuProps = function(basketCode, product, fieldId)
 {
-	return this.createSkuPropsTable(basketCode, product);
+	return this.createSkuPropsTable(basketCode, product, true);
 };
 
-BX.Sale.Admin.OrderBasket.prototype.createSkuPropsTable = function(basketCode, product)
+BX.Sale.Admin.OrderBasket.prototype.createSkuPropsTable = function(basketCode, product, showProps)
 {
 	var table = BX.create('table'),
 			html,
@@ -1037,7 +1049,7 @@ BX.Sale.Admin.OrderBasket.prototype.createSkuPropsTable = function(basketCode, p
 		}
 	}
 
-	if(product.PROPS)
+	if(product.PROPS && showProps)
 	{
 		for(var i in product.PROPS)
 		{
@@ -1194,6 +1206,11 @@ BX.Sale.Admin.OrderBasket.prototype.onProductRowMouseOut = function(rowNode)
 	BX.removeClass(rowNode, "tr_hover");
 };
 
+BX.Sale.Admin.OrderBasket.prototype.isServiceProduct = function(product)
+{
+	return product.TYPE && parseInt(product.TYPE) === this.productTypeService;
+};
+
 /*
  *
  *  OrderBasketEdit
@@ -1206,7 +1223,8 @@ BX.Sale.Admin.OrderBasketEdit = function(params)
 	BX.Sale.Admin.OrderBasket.call(this, params);
 
 	this.settingsDialog = new BX.Sale.Admin.OrderBasket.SettingsDialog({
-		basket: this
+		basket: this,
+		showProps: true
 	});
 };
 
@@ -1523,7 +1541,8 @@ BX.Sale.Admin.OrderBasketEdit.prototype.createSkuSelector = function(basketCode,
 			continue;
 
 		var html,
-			itemId = this.iblocksSkuParams[product.OFFERS_IBLOCK_ID][skuId]["VALUES"][item]["ID"];
+			itemId = this.iblocksSkuParams[product.OFFERS_IBLOCK_ID][skuId]["VALUES"][item]["ID"],
+			name = BX.util.htmlspecialchars(this.iblocksSkuParams[product.OFFERS_IBLOCK_ID][skuId]["VALUES"][item]["NAME"]);
 
 		if(this.iblocksSkuParams[product.OFFERS_IBLOCK_ID][skuId]["VALUES"][item]["PICT"])
 		{
@@ -1532,12 +1551,13 @@ BX.Sale.Admin.OrderBasketEdit.prototype.createSkuSelector = function(basketCode,
 		else
 		{
 			styleType = 'size';
-			html = BX.util.htmlspecialchars(this.iblocksSkuParams[product.OFFERS_IBLOCK_ID][skuId]["VALUES"][item]["NAME"]);
+			html = name;
 		}
 
 		var span = BX.create('span',{
 				props: {
-					className: 'cnt'
+					className: 'cnt',
+					title: name
 				},
 				html: html
 			}),
@@ -2977,7 +2997,7 @@ BX.Sale.Admin.OrderBasketProductEditDialog = function(basketObj)
 	{
 		var	basketCode = getBasketCode(),
 			dialogField,
-			product = basket.products[basketCode] ? basket.products[basketCode] : {MODULE: "", OFFER_ID: 1, BASKET_CODE: basketCode},
+			product = basket.products[basketCode] ? basket.products[basketCode] : {MODULE: "", OFFER_ID: Math.random()*(1000000 - 1) + 1, BASKET_CODE: basketCode},
 			customedPrice = false;
 
 		for(var i in usedBasketFields)
@@ -3022,10 +3042,12 @@ BX.Sale.Admin.OrderBasketProductEditDialog = function(basketObj)
 			product.BASKET_CODE = basketCode;
 
 		if(isNewProduct)
+		{
 			product.OFFER_ID = parseInt(product.OFFER_ID) + basketCode;
+			product.PRODUCT_ID = parseInt(product.OFFER_ID) + basketCode;
+		}
 
 		product = setProps(product);
-
 		basket.productSet(product, !isNewProduct);
 
 		BX.Sale.Admin.OrderAjaxer.sendRequest(

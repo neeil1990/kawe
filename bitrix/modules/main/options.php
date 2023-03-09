@@ -13,6 +13,10 @@
  * @global CDatabase $DB
  */
 
+use Bitrix\Main\ModuleManager;
+use Bitrix\Main\Authentication\Policy;
+use Bitrix\Main\Authentication\Device;
+
 IncludeModuleLangFile(__FILE__);
 
 if(!$USER->CanDoOperation('view_other_settings') && !$USER->CanDoOperation('edit_other_settings'))
@@ -22,7 +26,7 @@ $mid = $_REQUEST["mid"];
 
 $arGROUPS = array();
 $groups = array();
-$z = CGroup::GetList(($v1=""), ($v2=""), array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
+$z = CGroup::GetList('', '', array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
 while($zr = $z->Fetch())
 {
 	$ar = array();
@@ -33,7 +37,7 @@ while($zr = $z->Fetch())
 	$groups[$zr["ID"]] = $zr["NAME"]." [".$zr["ID"]."]";
 }
 
-if($_SERVER["REQUEST_METHOD"] == "GET" && $USER->IsAdmin() && $_REQUEST["RestoreDefaults"] <> '' && check_bitrix_sessid())
+if($_SERVER["REQUEST_METHOD"] == "GET" && $USER->IsAdmin() && isset($_REQUEST["RestoreDefaults"]) && $_REQUEST["RestoreDefaults"] <> '' && check_bitrix_sessid())
 {
 	$aSaveVal = array(
 		array("NAME"=>"admin_passwordh", "DEF"=>""),
@@ -41,7 +45,6 @@ if($_SERVER["REQUEST_METHOD"] == "GET" && $USER->IsAdmin() && $_REQUEST["Restore
 		array("NAME"=>"PARAM_MAX_USERS", "DEF"=>"0"),
 		array("NAME"=>"crc_code", "DEF"=>""),
 		array("NAME"=>"vendor", "DEF"=>"1c_bitrix"),
-		array("NAME"=>"distributive6", "DEF"=>"N"),
 	);
 	foreach($aSaveVal as $i=>$aParam)
 		$aSaveVal[$i]["VALUE"] = COption::GetOptionString("main", $aParam["NAME"], $aParam["DEF"]);
@@ -55,7 +58,7 @@ if($_SERVER["REQUEST_METHOD"] == "GET" && $USER->IsAdmin() && $_REQUEST["Restore
 		$APPLICATION->DelGroupRight("main", array($value["ID"]));
 }
 
-if($_SERVER["REQUEST_METHOD"] == "GET" && $USER->CanDoOperation('edit_other_settings') && $_REQUEST["GenKey"] <> '' && check_bitrix_sessid())
+if($_SERVER["REQUEST_METHOD"] == "GET" && $USER->CanDoOperation('edit_other_settings') && isset($_REQUEST["GenKey"]) && $_REQUEST["GenKey"] <> '' && check_bitrix_sessid())
 {
 	$sec = new CRsaSecurity();
 	$arKeys = $sec->Keygen();
@@ -70,37 +73,91 @@ if($_SERVER["REQUEST_METHOD"] == "GET" && $USER->CanDoOperation('edit_other_sett
 	}
 }
 
-$bEmailIndex = (COption::GetOptionString("main", "new_user_email_uniq_check", "N") !== "Y") && !$DB->IndexExists("b_user", array("EMAIL"));
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_passwords']) && $USER->CanDoOperation('edit_php') && check_bitrix_sessid())
+{
+	$customWeakPasswords = (isset($_POST['custom_weak_passwords']) && $_POST['custom_weak_passwords'] === 'Y' ? 'Y' : 'N');
+	COption::SetOptionString('main', 'custom_weak_passwords', $customWeakPasswords);
+
+	if (isset($_FILES['passwords']['tmp_name']) && $_FILES['passwords']['tmp_name'] != '')
+	{
+		$uploadDir = COption::GetOptionString('main', 'upload_dir', 'upload');
+		$path = "{$_SERVER['DOCUMENT_ROOT']}/{$uploadDir}/main/weak_passwords";
+
+		if (Policy\WeakPassword::createIndex($_FILES['passwords']['tmp_name'], $path))
+		{
+			CAdminMessage::ShowNote(GetMessage("main_options_upload_success"));
+		}
+		else
+		{
+			CAdminMessage::ShowMessage(GetMessage("main_options_upload_error"));
+		}
+	}
+}
 
 $arSmileGallery = CSmileGallery::getListForForm();
 foreach ($arSmileGallery as $key => $value)
 	$arSmileGallery[$key] = htmlspecialcharsback($value);
 
+//time zones
+$aZones = CTimeZone::GetZones();
+
+//SMS service providers
+$smsSenders = array();
+$smsServices = array(
+	"" => GetMessage("main_options_sms_list_prompt")
+);
+if(\Bitrix\Main\Loader::includeModule("messageservice"))
+{
+	/** @var \Bitrix\MessageService\Sender\BaseConfigurable $service */
+	foreach(\Bitrix\MessageService\Sender\SmsManager::getSenders() as $service)
+	{
+		if($service->canUse())
+		{
+			$serviceId = $service->getId();
+			$smsServices[$serviceId] = $service->getName();
+			$smsSenders[$serviceId] = array();
+			foreach($service->getFromList() as $sender)
+			{
+				$smsSenders[$serviceId][$sender["id"]] = $sender["name"];
+			}
+		}
+	}
+	$url = "/bitrix/admin/settings.php?lang=".LANGUAGE_ID."&amp;mid=messageservice";
+	$smsNote = GetMessage("main_options_sms_note1", ["#URL#" => $url]);
+}
+else
+{
+	$url = "/bitrix/admin/module_admin.php?lang=".LANGUAGE_ID;
+	$smsNote = GetMessage("main_options_sms_note2", ["#URL#" => $url]);
+}
+$currentSmsSender = \Bitrix\Main\Config\Option::get("main", "sms_default_service");
+$smsCurrentSenders = array();
+if(isset($smsSenders[$currentSmsSender]))
+{
+	$smsCurrentSenders = $smsSenders[$currentSmsSender];
+}
+
+//countries for phone formatting
+$countriesReference = GetCountryArray();
+$countriesArray = array();
+foreach ($countriesReference['reference_id'] as $k => $v)
+{
+	$countriesArray[$v] = $countriesReference['reference'][$k];
+}
+
 $arAllOptions = array(
 	"main" => Array(
 		Array("site_name", GetMessage("MAIN_OPTION_SITENAME"), $SERVER_NAME, Array("text", 30)),
 		Array("server_name", GetMessage("MAIN_OPTION_SERVERNAME"), $SERVER_NAME, Array("text", 30)),
-		Array("cookie_name", GetMessage("MAIN_PREFIX"), "BITRIX_SM", Array("text", 30)),
-		Array("ALLOW_SPREAD_COOKIE", GetMessage("MAIN_OPTION_ALLOW_SPREAD_COOKIE"), "Y", Array("checkbox", "Y")),
-		Array("header_200", GetMessage("HEADER_200"), "N", Array("checkbox", "Y")),
 		Array("error_reporting", GetMessage("MAIN_ERROR_REPORTING"), E_COMPILE_ERROR|E_ERROR|E_CORE_ERROR|E_PARSE, Array("selectbox", Array(E_COMPILE_ERROR|E_ERROR|E_CORE_ERROR|E_PARSE=>GetMessage("MAIN_OPTION_ERROR1"), E_ALL^E_NOTICE=>GetMessage("MAIN_OPTION_ERROR2"), 0=>GetMessage("MAIN_OPTION_ERROR3")))),
 		Array("use_hot_keys", GetMessage("main_options_use_hot_keys"), "Y", Array("checkbox", "Y")),
 		Array("smile_gallery_id", GetMessage("MAIN_OPTIONS_SMILE_GALLERY_ID"), 0, Array("selectbox", $arSmileGallery)),
 
-		GetMessage("main_options_mail"),
-		Array("all_bcc", GetMessage("MAIN_EMAIL"), "", Array("text", 30)),
-		Array("send_mid", GetMessage("MAIN_SEND_MID"), "N", Array("checkbox", "Y")),
-		Array("fill_to_mail", GetMessage("FILL_TO_MAIL_M"), "N", Array("checkbox", "Y")),
-		Array("email_from", GetMessage("MAIN_EMAIL_FROM"), "admin@".$SERVER_NAME, Array("text", 30)),
-		Array("CONVERT_UNIX_NEWLINE_2_WINDOWS", GetMessage("MAIN_CONVERT_UNIX_NEWLINE_2_WINDOWS"), "N", Array("checkbox", "Y")),
-		Array("convert_mail_header", GetMessage("MAIN_OPTION_CONVERT_8BIT"), "Y", Array("checkbox", "Y")),
-		Array("attach_images", GetMessage("MAIN_OPTION_ATTACH_IMAGES"), "N", array("checkbox", "Y")),
-		Array("mail_gen_text_version", GetMessage("MAIN_OPTION_MAIL_GEN_TEXT_VERSION"), "Y", array("checkbox", "Y")),
-		Array("max_file_size", GetMessage("MAIN_OPTION_MAX_FILE_SIZE"), "0", Array("text", 10)),
-		Array("mail_event_period", GetMessage("main_option_mail_period"), "14", Array("text", 10)),
-		Array("mail_event_bulk", GetMessage("main_option_mail_bulk"), "5", Array("text", 10)),
-		Array("mail_additional_parameters", GetMessage("MAIN_OPTION_MAIL_ADDITIONAL_PARAMETERS"), "", Array("text", 30)),
-		Array("mail_link_protocol", GetMessage("MAIN_OPTION_MAIL_LINK_PROTOCOL"), "", Array("text", 10)),
+		GetMessage("MAIN_OPTIONS_COOKIES"),
+		Array("cookie_name", GetMessage("MAIN_PREFIX"), "BITRIX_SM", Array("text", 30)),
+		Array("ALLOW_SPREAD_COOKIE", GetMessage("MAIN_OPTION_ALLOW_SPREAD_COOKIE1"), "Y", Array("checkbox", "Y")),
+		Array("use_secure_password_cookies", GetMessage("MAIN_OPTION_USE_SECURE_PASSWORD_COOKIE1"), "N", Array("checkbox", "Y")),
+		Array("auth_multisite", GetMessage("MAIN_OPTION_AUTH_TO_ALL_DOM1"), "N", Array("checkbox", "Y")),
 
 		GetMessage("main_options_files"),
 		Array("disk_space", GetMessage("MAIN_DISK_SPACE"), "", Array("text", 30)),
@@ -108,6 +165,10 @@ $arAllOptions = array(
 		Array("save_original_file_name", GetMessage("MAIN_OPTION_SAVE_ORIG_NAMES"), "N", Array("checkbox", "Y")),
 		Array("translit_original_file_name", GetMessage("MAIN_OPTION_TRANSLIT"), "N", Array("checkbox", "Y")),
 		Array("convert_original_file_name", GetMessage("MAIN_OPTION_FNAME_CONV_AUTO"), "Y", Array("checkbox", "Y")),
+		Array("control_file_duplicates", GetMessage("main_options_control_diplicates"), "N", Array("checkbox", "Y")),
+		Array("duplicates_max_size", GetMessage("main_options_diplicates_max_size") , "100", Array("text", "10")),
+		ModuleManager::isModuleInstalled('transformer')? Array("max_size_for_document_transformation", GetMessage("MAIN_OPTIONS_MAX_SIZE_FOR_DOCUMENT_TRANSFORMATION"), ModuleManager::isModuleInstalled('bitrix24')? 40 : 10, Array("text", "10")) : null,
+		ModuleManager::isModuleInstalled('transformer')? Array("max_size_for_video_transformation", GetMessage("MAIN_OPTIONS_MAX_SIZE_FOR_VIDEO_TRANSFORMATION"), "300", Array("text", "10")) : null,
 		Array("image_resize_quality", GetMessage("MAIN_OPTIONS_IMG_QUALITY"), "95", Array("text", "10")),
 		Array("bx_fast_download", GetMessage("MAIN_OPT_BX_FAST_DOWNLOAD"), "N", Array("checkbox", "N")),
 		Array("note" => GetMessage("MAIN_OPT_BX_FAST_DOWNLOAD_HINT")),
@@ -126,30 +187,48 @@ $arAllOptions = array(
 
 		GetMessage("MAIN_OPTIMIZE_TRANSLATE_SETTINGS"),
 		Array("translate_key_yandex", GetMessage("MAIN_TRANSLATE_KEY_YANDEX"), "", Array("text", 30)),
-		Array("note" => GetMessage("MAIN_TRANSLATE_KEY_YANDEX_HINT")),
+		Array("note" => GetMessage("MAIN_TRANSLATE_KEY_YANDEX_HINT1")),
 
 		GetMessage("MAIN_OPT_TIME_ZONES"),
 		array("curr_time", GetMessage("MAIN_OPT_TIME_ZONES_LOCAL"), GetMessage("MAIN_OPT_TIME_ZONES_DIFF")." ".date('O')." (".date('Z').")<br>".GetMessage("MAIN_OPT_TIME_ZONES_DIFF_STD")." ".(date('I')? GetMessage("MAIN_OPT_TIME_ZONES_DIFF_STD_S") : GetMessage("MAIN_OPT_TIME_ZONES_DIFF_STD_ST"))."<br>".GetMessage("MAIN_OPT_TIME_ZONES_DIFF_DATE")." ".date('r'), array("statichtml")),
+		array("use_time_zones", GetMessage("MAIN_OPT_USE_TIMEZONES"), "N", array("checkbox", "Y", 'onclick="this.form.default_time_zone.disabled = this.form.auto_time_zone.disabled = !this.checked;"')),
+		array("default_time_zone", GetMessage("MAIN_OPT_TIME_ZONE_DEF"), "", array("selectbox", $aZones)),
+		array("auto_time_zone", GetMessage("MAIN_OPT_TIME_ZONE_AUTO"), "N", array("checkbox", "Y")),
+
+		GetMessage('main_options_geo'),
+		array("collect_geonames", GetMessage('main_options_geo_collect_names'), "N", array("checkbox", "Y")),
 	),
-	"update" => Array(
-		Array("update_devsrv", GetMessage("MAIN_OPTIONS_UPDATE_DEVSRV"), "N", Array("checkbox", "Y")),
-		Array("update_site", GetMessage("MAIN_UPDATE_SERVER"), "www.bitrixsoft.com", Array("text", 30)),
-		Array("update_site_proxy_addr", GetMessage("MAIN_UPDATE_SERVER_PR_AD"), "", Array("text", 30)),
-		Array("update_site_proxy_port", GetMessage("MAIN_UPDATE_SERVER_PR_PR"), "", Array("text", 30)),
-		Array("update_site_proxy_user", GetMessage("MAIN_UPDATE_SERVER_PR_US"), "", Array("text", 30, "noautocomplete"=>true)),
-		Array("update_site_proxy_pass", GetMessage("MAIN_UPDATE_SERVER_PR_PS"), "", Array("password", 30)),
-		Array("strong_update_check", GetMessage("MAIN_STRONGUPDATECHECK"), "Y", Array("checkbox", "Y")),
-		Array("stable_versions_only", GetMessage("MAIN_STABLEVERSIONS"), "Y", Array("checkbox", "Y")),
-		Array("update_autocheck", GetMessage("MAIN_OPTIONS_AUTOCHECK"), "", Array("selectbox", Array(""=>GetMessage("MAIN_OPTIONS_AUTOCHECK_NO"), "1"=>GetMessage("MAIN_OPTIONS_AUTOCHECK_1"), "7"=>GetMessage("MAIN_OPTIONS_AUTOCHECK_7"), "30"=>GetMessage("MAIN_OPTIONS_AUTOCHECK_30")))),
-		Array("update_stop_autocheck", GetMessage("MAIN_OPTIONS_STOP_AUTOCHECK"), "N", Array("checkbox", "Y")),
-		Array("update_is_gzip_installed", GetMessage("MAIN_UPDATE_IS_GZIP_INSTALLED"), "Y", Array("checkbox", "Y")),
-		Array("update_load_timeout", GetMessage("MAIN_UPDATE_LOAD_TIMEOUT"), "30", Array("text", "30")),
+	"mail" => array(
+		GetMessage("main_options_mail"),
+		Array("all_bcc", GetMessage("MAIN_EMAIL"), "", Array("text", 30)),
+		Array("send_mid", GetMessage("MAIN_SEND_MID"), "N", Array("checkbox", "Y")),
+		Array("fill_to_mail", GetMessage("FILL_TO_MAIL_M"), "N", Array("checkbox", "Y")),
+		Array("email_from", GetMessage("MAIN_EMAIL_FROM"), "admin@".$SERVER_NAME, Array("text", 30)),
+		Array("CONVERT_UNIX_NEWLINE_2_WINDOWS", GetMessage("MAIN_CONVERT_UNIX_NEWLINE_2_WINDOWS"), "N", Array("checkbox", "Y")),
+		Array("convert_mail_header", GetMessage("MAIN_OPTION_CONVERT_8BIT"), "Y", Array("checkbox", "Y")),
+		Array("attach_images", GetMessage("MAIN_OPTION_ATTACH_IMAGES"), "N", array("checkbox", "Y")),
+		Array("mail_gen_text_version", GetMessage("MAIN_OPTION_MAIL_GEN_TEXT_VERSION"), "Y", array("checkbox", "Y")),
+		Array("max_file_size", GetMessage("MAIN_OPTION_MAX_FILE_SIZE"), "0", Array("text", 10)),
+		Array("mail_event_period", GetMessage("main_option_mail_period"), "14", Array("text", 10)),
+		Array("mail_event_bulk", GetMessage("main_option_mail_bulk"), "5", Array("text", 10)),
+		Array("mail_additional_parameters", GetMessage("MAIN_OPTION_MAIL_ADDITIONAL_PARAMETERS"), "", Array("text", 30)),
+		Array("mail_link_protocol", GetMessage("MAIN_OPTION_MAIL_LINK_PROTOCOL"), "", Array("text", 10)),
+		array('track_outgoing_emails_read', getMessage('MAIN_OPTION_MAIL_TRACK_READ'), 'Y', array('checkbox', 'Y')),
+		array('track_outgoing_emails_click', getMessage('MAIN_OPTION_MAIL_TRACK_CLICK'), 'Y', array('checkbox', 'Y')),
+
+		GetMessage("main_options_sms_title"),
+		Array("sms_default_service", GetMessage("main_options_sms_service"), "", Array("selectbox", $smsServices)),
+		Array("sms_default_sender", GetMessage("main_options_sms_number"), "", Array("selectbox", $smsCurrentSenders)),
+		Array("note" => $smsNote),
+
+		GetMessage("MAIN_OPTIONS_PHONE_NUMBER_FORMAT"),
+		array("phone_number_default_country", GetMessage("MAIN_OPTIONS_PHONE_NUMBER_DEFAULT_COUNTRY"), "", array("selectbox", $countriesArray)),
 	),
 	"auth" => Array(
+		GetMessage("MAIN_OPTION_CTRL_LOC"),
 		Array("store_password", GetMessage("MAIN_REMEMBER"), "Y", Array("checkbox", "Y")),
-		Array("use_secure_password_cookies", GetMessage("MAIN_OPTION_USE_SECURE_PASSWORD_COOKIE"), "N", Array("checkbox", "Y")),
-		Array("auth_multisite", GetMessage("MAIN_OPTION_AUTH_TO_ALL_DOM"), "N", Array("checkbox", "Y")),
 		Array("allow_socserv_authorization", GetMessage("MAIN_OPTION_SOCSERV_AUTH"), "Y", Array("checkbox", "Y")),
+		Array("allow_qrcode_auth", GetMessage('main_option_qrcode_auth'), "N", Array("checkbox", "Y")),
 		Array("use_digest_auth", GetMessage("MAIN_OPT_HTTP_DIGEST"), "N", Array("checkbox", "Y")),
 		Array("note"=>GetMessage("MAIN_OPT_DIGEST_NOTE")),
 		Array("custom_register_page", GetMessage("MAIN_OPT_REGISTER_PAGE"), "", Array("text", 40)),
@@ -166,6 +245,8 @@ $arAllOptions = array(
 		Array("event_log_logout", GetMessage("MAIN_EVENT_LOG_LOGOUT"), "N", Array("checkbox", "Y")),
 		Array("event_log_login_success", GetMessage("MAIN_EVENT_LOG_LOGIN_SUCCESS"), "N", Array("checkbox", "Y")),
 		Array("event_log_login_fail", GetMessage("MAIN_EVENT_LOG_LOGIN_FAIL"), "N", Array("checkbox", "Y")),
+		Array("event_log_permissions_fail", GetMessage("MAIN_EVENT_LOG_PERM_FAIL"), "N", Array("checkbox", "Y")),
+		Array("event_log_block_user", GetMessage("MAIN_OPT_EVENT_LOG_BLOCK"), "N", Array("checkbox", "Y")),
 		Array("event_log_register", GetMessage("MAIN_EVENT_LOG_REGISTER"), "N", Array("checkbox", "Y")),
 		Array("event_log_register_fail", GetMessage("MAIN_EVENT_LOG_REGISTER_FAIL"), "N", Array("checkbox", "Y")),
 		Array("event_log_password_request", GetMessage("MAIN_EVENT_LOG_PASSWORD_REQUEST"), "N", Array("checkbox", "Y")),
@@ -177,7 +258,33 @@ $arAllOptions = array(
 		Array("event_log_module_access", GetMessage("MAIN_EVENT_LOG_MODULE_ACCESS"), "N", Array("checkbox", "Y")),
 		Array("event_log_file_access", GetMessage("MAIN_EVENT_LOG_FILE_ACCESS"), "N", Array("checkbox", "Y")),
 		Array("event_log_task", GetMessage("MAIN_EVENT_LOG_TASK"), "N", Array("checkbox", "Y")),
-		Array("event_log_marketplace", GetMessage("MAIN_EVENT_LOG_MARKETPLACE"), "Y", Array("checkbox", "Y")),
+		Array("event_log_marketplace", GetMessage("MAIN_EVENT_LOG_MARKETPLACE"), "N", Array("checkbox", "Y")),
+
+		GetMessage("MAIN_OPT_PROFILE"),
+		Array("user_profile_history", GetMessage("MAIN_OPT_PROFILE_HYSTORY"), "N", Array("checkbox", "Y")),
+		Array("profile_history_cleanup_days", GetMessage("MAIN_OPT_HISTORY_DAYS"), "0", Array("text", 5)),
+
+		GetMessage('main_options_device_history_title'),
+		Array('user_device_history', GetMessage('main_options_device_history'), 'N', ['checkbox', 'Y']),
+		Array('device_history_cleanup_days', GetMessage('main_options_device_history_days'), '180', ['text', 5]),
+		Array('user_device_geodata', GetMessage('main_options_device_geoip'), 'N', ['checkbox', 'Y']),
+		Array('user_device_notify', GetMessage('main_options_device_history_notify', ['#EMAIL_TEMPLATES_URL#' => '/bitrix/admin/message_admin.php?lang=' . LANGUAGE_ID . '&amp;set_filter=Y&amp;find_type_id=' . Device::EMAIL_EVENT]), 'N', ['checkbox', 'Y']),
+		Array('note' => GetMessage('main_options_device_history_note')),
+	),
+	"update" => Array(
+		Array("update_devsrv", GetMessage("MAIN_OPTIONS_UPDATE_DEVSRV"), "N", Array("checkbox", "Y")),
+		Array("update_site", GetMessage("MAIN_UPDATE_SERVER"), "www.bitrixsoft.com", Array("text", 30)),
+		Array("update_site_proxy_addr", GetMessage("MAIN_UPDATE_SERVER_PR_AD"), "", Array("text", 30)),
+		Array("update_site_proxy_port", GetMessage("MAIN_UPDATE_SERVER_PR_PR"), "", Array("text", 30)),
+		Array("update_site_proxy_user", GetMessage("MAIN_UPDATE_SERVER_PR_US"), "", Array("text", 30, "noautocomplete"=>true)),
+		Array("update_site_proxy_pass", GetMessage("MAIN_UPDATE_SERVER_PR_PS"), "", Array("password", 30)),
+		Array("strong_update_check", GetMessage("MAIN_STRONGUPDATECHECK"), "Y", Array("checkbox", "Y")),
+		Array("update_safe_mode", GetMessage("MAIN_UPDATE_SAFE_MODE"), "N", Array("checkbox", "Y")),
+		Array("stable_versions_only", GetMessage("MAIN_STABLEVERSIONS"), "Y", Array("checkbox", "Y")),
+		Array("update_autocheck", GetMessage("MAIN_OPTIONS_AUTOCHECK"), "", Array("selectbox", Array(""=>GetMessage("MAIN_OPTIONS_AUTOCHECK_NO"), "1"=>GetMessage("MAIN_OPTIONS_AUTOCHECK_1"), "7"=>GetMessage("MAIN_OPTIONS_AUTOCHECK_7"), "30"=>GetMessage("MAIN_OPTIONS_AUTOCHECK_30")))),
+		Array("update_stop_autocheck", GetMessage("MAIN_OPTIONS_STOP_AUTOCHECK"), "N", Array("checkbox", "Y")),
+		Array("update_is_gzip_installed", GetMessage("MAIN_UPDATE_IS_GZIP_INSTALLED"), "Y", Array("checkbox", "Y")),
+		Array("update_load_timeout", GetMessage("MAIN_UPDATE_LOAD_TIMEOUT"), "30", Array("text", "30")),
 	),
 	"controller_auth" => Array(
 		Array("auth_controller_prefix", GetMessage("MAIN_OPTION_CTRL_PREF"), "controller", Array("text", "30")),
@@ -185,21 +292,7 @@ $arAllOptions = array(
 	),
 );
 
-$aZones = CTimeZone::GetZones();
-$arAllOptions["main"][] = array("use_time_zones", GetMessage("MAIN_OPT_USE_TIMEZONES"), "N", array("checkbox", "Y", 'onclick="this.form.default_time_zone.disabled = this.form.auto_time_zone.disabled = !this.checked;"'));
-$arAllOptions["main"][] = array("default_time_zone", GetMessage("MAIN_OPT_TIME_ZONE_DEF"), "", array("selectbox", $aZones));
-$arAllOptions["main"][] = array("auto_time_zone", GetMessage("MAIN_OPT_TIME_ZONE_AUTO"), "N", array("checkbox", "Y"));
-
-$countriesReference = GetCountryArray();
-$countriesArray = array();
-foreach ($countriesReference['reference_id'] as $k => $v)
-{
-	$countriesArray[$v] = $countriesReference['reference'][$k];
-}
-$arAllOptions["main"][] = GetMessage("MAIN_OPTIONS_PHONE_NUMBER_FORMAT");
-$arAllOptions["main"][] = array("phone_number_default_country", GetMessage("MAIN_OPTIONS_PHONE_NUMBER_DEFAULT_COUNTRY"), "", array("selectbox", $countriesArray));
-
-if (\Bitrix\Main\Analytics\SiteSpeed::isRussianSiteManager())
+if (\Bitrix\Main\Analytics\SiteSpeed::isOn())
 {
 	$arAllOptions["main"][] = GetMessage("MAIN_CATALOG_STAT_SETTINGS");
 	$arAllOptions["main"][] = array("gather_catalog_stat", GetMessage("MAIN_GATHER_CATALOG_STAT"), "Y", Array("checkbox", "Y"));
@@ -213,15 +306,141 @@ $arAllOptions["main"][] = GetMessage("MAIN_OPTIONS_URL_PREVIEW");
 $arAllOptions["main"][] = Array("url_preview_enable", GetMessage("MAIN_OPTION_URL_PREVIEW_ENABLE"), "N", array("checkbox", "Y"));
 $arAllOptions["main"][] = Array("url_preview_save_images", GetMessage("MAIN_OPTION_URL_PREVIEW_SAVE_IMAGES"), "N", array("checkbox", "Y"));
 
+$arAllOptions["main"][] = GetMessage("MAIN_OPTIONS_IMAGE_EDITOR");
+$imageEditorOptions = array();
+$imageEditorOptions["N"] = GetMessage("MAIN_OPTION_IMAGE_EDITOR_PROXY_ENABLED_NO");
+$imageEditorOptions["Y"] = GetMessage("MAIN_OPTION_IMAGE_EDITOR_PROXY_ENABLED_YES_FOR_ALL");
+$imageEditorOptions["YWL"] = GetMessage("MAIN_OPTION_IMAGE_EDITOR_PROXY_ENABLED_YES_FROM_WHITE_LIST");
+$arAllOptions["main"][] = Array("imageeditor_proxy_enabled", GetMessage("MAIN_OPTION_IMAGE_EDITOR_PROXY_ENABLED"), "N", array("selectbox", $imageEditorOptions));
+
+$allowedHostsList = unserialize(COption::GetOptionString("main", "imageeditor_proxy_white_list"), ['allowed_classes' => false]);
+
+if (!is_array($allowedHostsList) || empty($allowedHostsList))
+{
+	$allowedHostsList = [];
+	$allowedHostsList[] = '';
+}
+
+$allowedWhiteListLabel = GetMessage("MAIN_OPTIONS_IMAGE_EDITOR_PROXY_WHITE_LIST");
+$allowedWhiteListPlaceholder = GetMessage("MAIN_OPTIONS_IMAGE_EDITOR_PROXY_WHITE_LIST_PLACEHOLDER");
+
+foreach($allowedHostsList as $key => $item)
+{
+	$arAllOptions["main"][] = Array("imageeditor_proxy_white_list", $key === 0 ? $allowedWhiteListLabel : "", $item, Array("text", 30));
+}
+
+$addAllowedHost = "
+    <script>
+        var whiteListValues = ".CUtil::phpToJsObject($allowedHostsList).";
+        var firstWhiteListInputs = [].slice.call(document.querySelectorAll('input[name=\'imageeditor_proxy_white_list\']'));
+
+        if (firstWhiteListInputs.length)
+        {
+            firstWhiteListInputs.forEach(function(item, index) {
+            	item.setAttribute('placeholder', '".htmlspecialcharsbx($allowedWhiteListPlaceholder)."');
+            	item.name = 'imageeditor_proxy_white_list[]';
+            	item.setAttribute('value', whiteListValues[index]);
+
+            	var allowedHostRemoveButton = '<a href=\"javascript:void(0);\" onclick=\"removeAllowedHost(this)\" class=\"access-delete\"></a>';
+                item.parentElement.innerHTML += allowedHostRemoveButton;
+            });
+        }
+
+        function removeAllowedHost(button)
+        {
+        	var row = button.parentElement.parentElement;
+        	var inputs = [].slice.call(document.querySelectorAll('input[name*=\'imageeditor_proxy_white_list\']'));
+
+        	if (inputs.length > 1)
+            {
+            	if (row.firstElementChild.innerHTML)
+                {
+                    row.nextElementSibling.firstElementChild.innerHTML = row.firstElementChild.innerHTML;
+                }
+                row.parentElement.removeChild(
+        	        button.parentElement.parentElement
+        	    );
+            }
+            else
+            {
+                var input = row.querySelector('input[type=\'text\']');
+                input.removeAttribute('value');
+                input.value = '';
+            }
+
+        }
+
+        function addProxyAllowedHost(button)
+        {
+        	var row = button
+        	    .parentElement
+        	    .parentElement
+        	    .previousElementSibling;
+
+        	if (row)
+            {
+                var clonedRow = row.cloneNode(true);
+                clonedRow.firstElementChild.innerHTML = '';
+                var clonedInput = clonedRow.querySelector('input[type=\'text\']');
+                clonedInput.removeAttribute('value');
+                clonedInput.value = '';
+                row.parentElement.insertBefore(clonedRow, row.nextElementSibling);
+
+                if (!clonedInput.parentElement.querySelector('.access-delete'))
+                {
+                    var allowedHostRemoveButton = '<a href=\"javascript:void(0);\" onclick=\"removeAllowedHost(this)\" class=\"access-delete\"></a>';
+                    clonedInput.parentElement.innerHTML += allowedHostRemoveButton;
+                }
+            }
+        }
+
+        var proxyEnabled = document.querySelector('[name=\'imageeditor_proxy_enabled\']');
+        if (proxyEnabled)
+        {
+            proxyEnabled.addEventListener('change', onProxyEnabledChange);
+
+            requestAnimationFrame(function() {
+               onProxyEnabledChange({currentTarget: proxyEnabled});
+            });
+        }
+
+        function onProxyEnabledChange(event)
+        {
+            var inputs = [].slice.call(document.querySelectorAll('input[name*=\'imageeditor_proxy_white_list\']'));
+
+            inputs.forEach(function(item) {
+                item.disabled = event.currentTarget.value !== 'YWL';
+            });
+
+            var button = document.querySelector('.adm-add-allowed-host');
+
+            if (event.currentTarget.value !== 'YWL')
+            {
+                button.style.pointerEvents = 'none';
+                button.style.opacity = .4;
+            }
+            else
+            {
+            	button.removeAttribute('style');
+            }
+
+        }
+    </script>
+";
+
+$addAllowedHost .= "<a href=\"javascript:void(0)\" onclick=\"addProxyAllowedHost(this)\" hidefocus=\"true\" class=\"adm-btn adm-add-allowed-host\">".GetMessage("MAIN_OPTIONS_IMAGE_EDITOR_PROXY_WHITE_LIST_ADD_HOST")."</a>";
+$arAllOptions["main"][] = Array("", "", $addAllowedHost, Array("statichtml"));
+
+
 CJSCore::Init(array('access'));
 
 //show the public panel for users
-$arCodes = unserialize(COption::GetOptionString("main", "show_panel_for_users"));
+$arCodes = unserialize(COption::GetOptionString("main", "show_panel_for_users"), ['allowed_classes' => false]);
 if(!is_array($arCodes))
 	$arCodes = array();
 
 //hide the public panel for users
-$arHideCodes = unserialize(COption::GetOptionString("main", "hide_panel_for_users"));
+$arHideCodes = unserialize(COption::GetOptionString("main", "hide_panel_for_users"), ['allowed_classes' => false]);
 if(!is_array($arHideCodes))
 	$arHideCodes = array();
 
@@ -241,7 +460,7 @@ function InsertAccess(arRights, divId, hiddenName)
 			var pr = BX.Access.GetProviderPrefix(provider, id);
 			var newDiv = document.createElement('DIV');
 			newDiv.style.marginBottom = '4px';
-			newDiv.innerHTML = '<input type=\"hidden\" name=\"'+hiddenName+'\" value=\"'+id+'\">' + (pr? pr+': ':'') + arRights[provider][id].name + '&nbsp;<a href=\"javascript:void(0);\" onclick=\"DeleteAccess(this, \\''+id+'\\')\" class=\"access-delete\"></a>';
+			newDiv.innerHTML = '<input type=\"hidden\" name=\"'+hiddenName+'\" value=\"'+id+'\">' + (pr? pr+': ':'') + BX.util.htmlspecialchars(arRights[provider][id].name) + '&nbsp;<a href=\"javascript:void(0);\" onclick=\"DeleteAccess(this, \\''+id+'\\')\" class=\"access-delete\"></a>';
 			div.appendChild(newDiv);
 		}
 	}
@@ -334,12 +553,20 @@ $arAllOptions["auth"][] = GetMessage("MAIN_REGISTRATION_OPTIONS");
 $arAllOptions["auth"][] = Array("new_user_registration", GetMessage("MAIN_REGISTER"), "Y", Array("checkbox", "Y"));
 $arAllOptions["auth"][] = Array("captcha_registration", GetMessage("MAIN_OPTION_FNAME_CAPTCHA"), "N", Array("checkbox", "Y"));
 $arAllOptions["auth"][] = Array("new_user_registration_def_group", GetMessage("MAIN_REGISTER_GROUP"), "", Array("multiselectbox", $groups));
-$arAllOptions["auth"][] = Array("new_user_email_required", GetMessage("MAIN_OPTION_EMAIL_REQUIRED"), "Y", Array("checkbox", "Y", 'onclick="BxReqEmail(this)"'));
+$arAllOptions["auth"][] = Array("new_user_phone_auth", GetMessage("main_options_phone_auth"), "N", Array("checkbox", "Y", 'onclick="BxReqPhone()"'));
+$arAllOptions["auth"][] = Array("new_user_phone_required", GetMessage("main_options_phone_required"), "N", Array("checkbox", "Y"));
+$arAllOptions["auth"][] = Array("note" => GetMessage("main_options_sms_conf_note")." ".$smsNote);
+$arAllOptions["auth"][] = Array("new_user_email_auth", GetMessage("main_options_email_register"), "Y", Array("checkbox", "Y", 'onclick="BxReqEmail()"'));
+$arAllOptions["auth"][] = Array("new_user_email_required", GetMessage("MAIN_OPTION_EMAIL_REQUIRED"), "Y", Array("checkbox", "Y", 'onclick="BxReqEmail()"'));
 $arAllOptions["auth"][] = Array("new_user_registration_email_confirmation", GetMessage("MAIN_REGISTER_EMAIL_CONFIRMATION", array("#EMAIL_TEMPLATES_URL#" => "/bitrix/admin/message_admin.php?lang=".LANGUAGE_ID."&set_filter=Y&find_type_id=NEW_USER_CONFIRM")), "N", Array("checkbox", "Y"));
+$arAllOptions["auth"][] = Array("new_user_email_uniq_check", GetMessage("MAIN_REGISTER_EMAIL_UNIQ_CHECK"), "N", Array("checkbox", "Y"));
 $arAllOptions["auth"][] = Array("new_user_registration_cleanup_days", GetMessage("MAIN_REGISTER_CLEANUP_DAYS"), "7", Array("text", 5));
-$arAllOptions["auth"][] = Array("new_user_email_uniq_check", GetMessage("MAIN_REGISTER_EMAIL_UNIQ_CHECK").($bEmailIndex? "<br>".GetMessage("MAIN_REGISTER_EMAIL_INDEX_WARNING"): ""), "N", Array("checkbox", "Y"));
 $arAllOptions["auth"][] = array("note" => $intl->getDataValue('DESCRIPTION'));
-$arAllOptions["auth"][] = array("new_user_agreement", GetMessage("MAIN_REGISTER_AGREEMENT_TITLE", array("#AGGREMENT_CREATE_URL#" => BX_ROOT.'/admin/agreement_edit.php?ID=0&lang='.LANGUAGE_ID)), "", array("selectbox", $listAgreement), "", "", "Y");
+$arAllOptions["auth"][] = array("new_user_agreement", GetMessage("MAIN_REGISTER_AGREEMENT_TITLE_1", array("#AGGREMENT_CREATE_URL#" => BX_ROOT.'/admin/agreement_edit.php?ID=0&lang='.LANGUAGE_ID)), "", array("selectbox", $listAgreement), "", "", "Y");
+
+$arAllOptions["auth"][] = GetMessage("main_options_restrictions");
+$arAllOptions["auth"][] = Array("inactive_users_block_days", GetMessage("main_options_block_inactive"), "0", Array("text", 5));
+$arAllOptions["auth"][] = Array("secure_logout", GetMessage("main_options_secure_logout"), "N", Array("checkbox", "Y"));
 
 $arAllOptions["auth"][] = GetMessage("MAIN_OPTION_SESS");
 $arAllOptions["auth"][] = Array("session_expand", GetMessage("MAIN_OPTION_SESS_EXPAND"), "Y", Array("checkbox", "Y"));
@@ -348,6 +575,7 @@ $arAllOptions["auth"][] = Array("session_show_message", GetMessage("MAIN_OPTION_
 
 $aTabs = array(
 	array("DIV" => "edit1", "TAB" => GetMessage("MAIN_TAB_SET"), "ICON" => "main_settings", "TITLE" => GetMessage("MAIN_TAB_TITLE_SET")),
+	array("DIV" => "tab_mail", "TAB" => GetMessage("main_options_mail_sms"), "ICON" => "main_settings", "TITLE" => GetMessage("main_options_mail_sms_title")),
 	array("DIV" => "edit6", "TAB" => GetMessage("MAIN_TAB_6"), "ICON" => "main_settings", "TITLE" => GetMessage("MAIN_OPTION_REG")),
 	array("DIV" => "edit8", "TAB" => GetMessage("MAIN_TAB_8"), "ICON" => "main_settings", "TITLE" => GetMessage("MAIN_OPTION_EVENT_LOG")),
 	array("DIV" => "edit5", "TAB" => GetMessage("MAIN_TAB_5"), "ICON" => "main_settings", "TITLE" => GetMessage("MAIN_OPTION_UPD")),
@@ -357,7 +585,7 @@ $aTabs = array(
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 
 $SET_LICENSE_KEY = "";
-if($_SERVER["REQUEST_METHOD"]=="POST" && strlen($_POST["Update"])>0 && ($USER->CanDoOperation('edit_other_settings') && $USER->CanDoOperation('edit_groups')) && check_bitrix_sessid())
+if($_SERVER["REQUEST_METHOD"]=="POST" && $_POST["Update"] <> '' && ($USER->CanDoOperation('edit_other_settings') && $USER->CanDoOperation('edit_groups')) && check_bitrix_sessid())
 {
 	if(LICENSE_KEY !== $_POST["SET_LICENSE_KEY"])
 	{
@@ -379,38 +607,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && strlen($_POST["Update"])>0 && ($USER->C
 	COption::SetOptionString("main", "admin_lid", $_POST["admin_lid"]);
 	COption::SetOptionString("main", "show_panel_for_users", serialize($_POST["show_panel_for_users"]));
 	COption::SetOptionString("main", "hide_panel_for_users", serialize($_POST["hide_panel_for_users"]));
-
-	$cleanup_days = COption::GetOptionInt("main", "new_user_registration_cleanup_days", 7);
-	if($cleanup_days > 0 && COption::GetOptionString("main", "new_user_registration_email_confirmation", "N") === "Y")
-	{
-		CAgent::AddAgent("CUser::CleanUpAgent();", "main", "N", 24*60*60);
-	}
-	else
-	{
-		CAgent::RemoveAgent("CUser::CleanUpAgent();", "main");
-	}
-
-	$cleanup_days = COption::GetOptionInt("main", "event_log_cleanup_days", 7);
-	if($cleanup_days > 0)
-	{
-		CAgent::AddAgent("CEventLog::CleanUpAgent();", "main", "N", 24*60*60);
-	}
-	else
-	{
-		CAgent::RemoveAgent("CEventLog::CleanUpAgent();", "main");
-	}
-
-	if((COption::GetOptionString("main", "new_user_email_uniq_check", "N") === "Y") && !$DB->IndexExists("b_user", array("EMAIL")))
-	{
-		if(strtolower($DB->type) === "oracle")
-			$DB->Query("CREATE INDEX ix_b_user_email on b_user(UPPER(EMAIL))", true);
-		else
-			$DB->Query("CREATE INDEX ix_b_user_email on b_user(EMAIL)", true);
-	}
-	$bEmailIndex = (COption::GetOptionString("main", "new_user_email_uniq_check", "N") !== "Y") && !$DB->IndexExists("b_user", array("EMAIL"));
-	foreach($arAllOptions["auth"] as $i => $arOption)
-		if($arOption[0] === "new_user_email_uniq_check")
-			$arAllOptions["auth"][$i][1] = GetMessage("MAIN_REGISTER_EMAIL_UNIQ_CHECK").($bEmailIndex? "<br>".GetMessage("MAIN_REGISTER_EMAIL_INDEX_WARNING"): "");
+	COption::SetOptionString("main", "imageeditor_proxy_white_list", serialize($_POST["imageeditor_proxy_white_list"]));
 
 	$module_id = "main";
 	COption::SetOptionString($module_id, "GROUP_DEFAULT_TASK", $GROUP_DEFAULT_TASK, "Task for groups by default");
@@ -418,6 +615,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && strlen($_POST["Update"])>0 && ($USER->C
 	COption::SetOptionString($module_id, "GROUP_DEFAULT_RIGHT", $letter, "Right for groups by default");
 
 	$nID = COperation::GetIDByName('edit_subordinate_users');
+	$nID2 = COperation::GetIDByName('view_subordinate_users');
 	$arTasksInModule = Array();
 	foreach($arGROUPS as $value)
 	{
@@ -425,13 +623,14 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && strlen($_POST["Update"])>0 && ($USER->C
 		$arTasksInModule[$value["ID"]] = Array('ID' => $tid);
 
 		$subOrdGr = false;
-		if (strlen($tid) > 0 && in_array($nID,CTask::GetOperations($tid)) && isset($_POST['subordinate_groups_'.$value["ID"]]))
+		$operations = CTask::GetOperations($tid);
+		if ($tid <> '' && (in_array($nID, $operations) || in_array($nID2, $operations)) && isset($_POST['subordinate_groups_'.$value["ID"]]))
 			$subOrdGr = $_POST['subordinate_groups_'.$value["ID"]];
 
 		CGroup::SetSubordinateGroups($value["ID"], $subOrdGr);
 
 		$rt = ($tid) ? CTask::GetLetter($tid) : '';
-		if (strlen($rt) > 0 && $rt != "NOT_REF")
+		if ($rt <> '' && $rt != "NOT_REF")
 			$APPLICATION->SetGroupRight($module_id, $value["ID"], $rt);
 		else
 			$APPLICATION->DelGroupRight($module_id, array($value["ID"]));
@@ -481,36 +680,30 @@ $tabControl->BeginNextTab();
 		<td><?echo GetMessage("MAIN_ADMIN_DEFAULT_LANG")?></td>
 		<td><?=CLangAdmin::SelectBox("admin_lid", COption::GetOptionString("main", "admin_lid", "en"));?></td>
 	</tr>
-	<?
-	ShowParamsHTMLByArray($arAllOptions["main"]);
-	?>
 <?
-$tabControl->BeginNextTab();
-?>
-	<tr class="heading">
-		<td colspan="2"><b><?echo GetMessage("MAIN_OPTION_CTRL_LOC")?></b></td>
-	</tr>
+ShowParamsHTMLByArray($arAllOptions["main"]);
 
-<?
+$tabControl->BeginNextTab();
+
+ShowParamsHTMLByArray($arAllOptions["mail"]);
+
+$tabControl->BeginNextTab();
+
 ShowParamsHTMLByArray($arAllOptions["auth"]);
 
-$tabControl->BeginNextTab();
-ShowParamsHTMLByArray($arAllOptions["event_log"]);
-?>
-
-<?if(COption::GetOptionString("main", "controller_member", "N")=="Y"):?>
+if(COption::GetOptionString("main", "controller_member", "N")=="Y")
+{
+	?>
 	<tr class="heading">
 		<td colspan="2"><b><?echo GetMessage("MAIN_OPTION_CTRL_REM")?></b></td>
 	</tr>
-<?
-ShowParamsHTMLByArray($arAllOptions["controller_auth"]);
-?>
+	<?
+	ShowParamsHTMLByArray($arAllOptions["controller_auth"]);
+}
 
-<?endif?>
+$tabControl->BeginNextTab();
+ShowParamsHTMLByArray($arAllOptions["event_log"]);
 
-
-
-<?
 $tabControl->BeginNextTab();
 ?>
 	<tr>
@@ -519,10 +712,9 @@ $tabControl->BeginNextTab();
 		</td>
 	</tr>
 
-	<?
-	ShowParamsHTMLByArray($arAllOptions["update"]);
-	?>
 <?
+ShowParamsHTMLByArray($arAllOptions["update"]);
+
 $tabControl->BeginNextTab();
 
 $module_id="main";
@@ -543,6 +735,7 @@ if ($GROUP_DEFAULT_TASK == '')
 		<?
 		$arTasksInModule = CTask::GetTasksInModules(true,$module_id,'module');
 		$nID = COperation::GetIDByName('edit_subordinate_users');
+		$nID2 = COperation::GetIDByName('view_subordinate_users');
 		$arTasks = $arTasksInModule['main'];
 		echo SelectBoxFromArray("GROUP_DEFAULT_TASK", $arTasks, htmlspecialcharsbx($GROUP_DEFAULT_TASK));
 
@@ -553,7 +746,7 @@ if ($GROUP_DEFAULT_TASK == '')
 		for ($i=0;$i<$l;$i++)
 		{
 			$arOpInTask = CTask::GetOperations($arTaskIds[$i]);
-			if (in_array($nID,$arOpInTask))
+			if (in_array($nID, $arOpInTask) || in_array($nID2, $arOpInTask))
 			{
 				$arSubordTasks[] = $arTaskIds[$i];
 				?><script>
@@ -626,7 +819,7 @@ if(count($arGROUPS) > count($arUsedGroups)):
 		<option value=""><?echo GetMessage("group_rights_select")?></option>
 <?
 foreach($arGROUPS as $group):
-	if($arUsedGroups[$group["ID"]] == true)
+	if(isset($arUsedGroups[$group["ID"]]) && $arUsedGroups[$group["ID"]])
 		continue;
 ?>
 		<option value="<?=$group["ID"]?>"><?=$group["NAME"]." [".$group["ID"]."]"?></option>
@@ -699,11 +892,57 @@ function RestoreDefaults()
 		window.location = "<?echo $APPLICATION->GetCurPage()?>?RestoreDefaults=Y&lang=<?=LANGUAGE_ID?>&mid=<?echo urlencode($mid)?>&<?echo bitrix_sessid_get()?>";
 }
 
-BX.ready(function(){
-	var f = document.forms['main_options'];
-	if(f.use_time_zones)
-		f.default_time_zone.disabled = f.auto_time_zone.disabled = !f.use_time_zones.checked;
-});
+function onChangeSmsService(event)
+{
+	var select = event.target;
+	var sendersSelect = select.form.sms_default_sender;
+	var senders = <?=CUtil::PhpToJSObject($smsSenders)?>;
+	var selected = select.options[select.selectedIndex].value;
+
+	for(var i = sendersSelect.length - 1; i >= 0; i--)
+	{
+		sendersSelect.remove(i);
+	}
+
+	if(senders[selected])
+	{
+		for(var sender in senders[selected])
+		{
+			if(senders[selected].hasOwnProperty(sender))
+			{
+				sendersSelect.options[sendersSelect.length] = new Option(sender, sender, false, false);
+			}
+		}
+	}
+}
+
+function BxReqEmail()
+{
+	BX("new_user_email_required").disabled = !BX("new_user_email_auth").checked;
+	BX("new_user_registration_email_confirmation").disabled = !BX("new_user_email_auth").checked || !BX("new_user_email_required").checked;
+	BX("new_user_email_uniq_check").disabled = !BX("new_user_email_auth").checked;
+}
+
+function BxReqPhone()
+{
+	BX("new_user_phone_required").disabled = !BX("new_user_phone_auth").checked;
+}
+
+BX.ready(
+	function(){
+		var f = document.forms['main_options'];
+
+		if(f.use_time_zones)
+		{
+			f.default_time_zone.disabled = f.auto_time_zone.disabled = !f.use_time_zones.checked;
+		}
+
+		f.sms_default_service.onchange = onChangeSmsService;
+
+		BxReqEmail();
+		BxReqPhone();
+	}
+);
 
 </script>
 <?if($_REQUEST["back_url_settings"] <> ""):?>
@@ -719,13 +958,6 @@ BX.ready(function(){
 <?$tabControl->End();?>
 </form>
 
-<script type="text/javascript">
-function BxReqEmail(input)
-{
-	BX("new_user_registration_email_confirmation").disabled = !input.checked;
-}
-BX.ready(function(){BxReqEmail(BX("new_user_email_required"));});
-</script>
 <?
 $message = null;
 
@@ -811,7 +1043,6 @@ if($message)
 ?>
 <h2><?=GetMessage("MAIN_SUB2")?></h2>
 <?
-$aTabs = Array();
 $aTabs = array(
 	array("DIV" => "fedit2", "TAB" => GetMessage("MAIN_TAB_4"), "ICON" => "main_settings", "TITLE" => GetMessage("MAIN_OPTION_PUBL"))
 );
@@ -824,6 +1055,8 @@ if ($diskSpace > 0)
 {
 	$aTabs[] = array("DIV" => "fedit3", "TAB" => GetMessage("MAIN_TAB_7"), "ICON" => "main_settings", "TITLE" => GetMessage("MAIN_OPTION_DISC_SPACE"));
 }
+
+$aTabs[] = array("DIV" => "fedit5", "TAB" => GetMessage("main_options_weak_pass"), "ICON" => "main_settings", "TITLE" => GetMessage("main_options_weak_pass_title"));
 
 $tabControl = new CAdminTabControl("tabControl2", $aTabs, true, true);
 
@@ -866,7 +1099,7 @@ $tabControl->Begin();
 <?$tabControl->BeginNextTab();?>
 <?
 if(COption::GetOptionString("main", "controller_member", "N")!="Y"):
-	if(strlen($site_url)<=0)
+	if($site_url == '')
 		$site_url = ($APPLICATION->IsHTTPS()?"https://":"http://").$_SERVER['HTTP_HOST'];
 ?>
 	<script>
@@ -975,10 +1208,7 @@ if(COption::GetOptionString("main", "controller_member", "N")!="Y"):
 </form>
 <?endif; //if(IsModuleInstalled("controller"))?>
 
-<?if ($diskSpace <= 0):?>
-<?$tabControl->End();?>
-<?else: ?>
-<?$tabControl->EndTab();?>
+<?if ($diskSpace > 0):?>
 <?$tabControl->BeginNextTab();?>
 <tr>
 <td align="left">
@@ -991,7 +1221,7 @@ if(COption::GetOptionString("main", "controller_member", "N")!="Y"):
 	foreach (array("db", "files") as $name):
 		$res = array();
 		if (COption::GetOptionString("main_size", "~".$name."_params"))
-			$res = unserialize(COption::GetOptionString("main_size", "~".$name."_params"));
+			$res = unserialize(COption::GetOptionString("main_size", "~".$name."_params"), ['allowed_classes' => false]);
 		if ($res)
 		{
 			$res = array_merge(
@@ -1002,7 +1232,8 @@ if(COption::GetOptionString("main", "controller_member", "N")!="Y"):
 		{
 			$res = array("size" => COption::GetOptionString("main_size", "~".$name));
 		}
-		$res["status"] = (($res["status"] == "d") && (intVal(time() - $res["time"]) < 86400)) ? "done" : ($res["status"] == "c" ? "c" : "");
+		$res["size"] = (float)$res["size"];
+		$res["status"] = (($res["status"] == "d") && (intval(time() - $res["time"]) < 86400)) ? "done" : ($res["status"] == "c" ? "c" : "");
 		$res["size_in_per"] = ($diskSpace > 0) ? round(($res["size"]/$diskSpace), 2) : 0;
 		$arParam[$name] = $res;
 		$usedSpace += $res["size"];
@@ -1015,20 +1246,20 @@ if(COption::GetOptionString("main", "controller_member", "N")!="Y"):
 	</label></td></tr>
 	<tr><td><div class="pbar-mark-green"></div></td><td><input type="radio" name="size" id="files" value="files" onclick="CheckButtons(this);" /><input type="hidden" name="result_files" id="result_files" value="<?=$arParam["files"]["status"]?>" /> <label for="files"><?=GetMessage("MAIN_OPTION_SIZE_DISTR")?>: <span id="div_files"><?=round(($arParam["files"]["size"]/1048576), 2)?></span>Mb</label>
 	(<span id="div_time_files"><?=date(CDatabase::DateFormatToPHP(CLang::GetDateFormat("FULL", LANG)), $arParam["files"]["time"])?></span>)</td></tr></table><?
-	$usedSpace = intVal(($usedSpace/$diskSpace)*100);
+	$usedSpace = intval(($usedSpace/$diskSpace)*100);
 ?><div class="pbar-outer">
-		<div id="pb_db" class="pbar-inner-red<?=($arParam["db"]["status"] == "done" ? "" : "-error")?>" style="width:<?=intVal($arParam["db"]["size_in_per"]*350)?>px; padding-left:<?=intVal($arParam["db"]["size_in_per"]*350)?>px;">&nbsp;</div><div id="pb_files" class="pbar-inner-green<?=($arParam["files"]["status"] == "done" ? "" : "-error")?>" style="width:<?=intVal($arParam["files"]["size_in_per"]*350)?>px; padding-left:<?=intVal($arParam["files"]["size_in_per"]*350)?>px;">&nbsp;</div>
+		<div id="pb_db" class="pbar-inner-red<?=($arParam["db"]["status"] == "done" ? "" : "-error")?>" style="width:<?=intval($arParam["db"]["size_in_per"]*350)?>px; padding-left:<?=intval($arParam["db"]["size_in_per"]*350)?>px;">&nbsp;</div><div id="pb_files" class="pbar-inner-green<?=($arParam["files"]["status"] == "done" ? "" : "-error")?>" style="width:<?=intval($arParam["files"]["size_in_per"]*350)?>px; padding-left:<?=intval($arParam["files"]["size_in_per"]*350)?>px;">&nbsp;</div>
 </div>
-<div class="pbar-title-outer"><div class="pbar-title-inner"><?=str_replace(array("#USED_SPACE#", "#DISK_QUOTA#"), array("<span id=\"used_size\">".intVal($usedSpace)."</span>%", COption::GetOptionInt("main", "disk_space")." Mb"), GetMessage("MAIN_OPTION_SIZE_PROGRESS_BAR"))?></div></div><br />
+<div class="pbar-title-outer"><div class="pbar-title-inner"><?=str_replace(array("#USED_SPACE#", "#DISK_QUOTA#"), array("<span id=\"used_size\">".intval($usedSpace)."</span>%", COption::GetOptionInt("main", "disk_space")." Mb"), GetMessage("MAIN_OPTION_SIZE_PROGRESS_BAR"))?></div></div><br />
 	<input type="button" id="butt_start" value="<?=GetMessage("MAIN_OPTION_SIZE_RECOUNT")?>" <?=((!$USER->CanDoOperation('edit_other_settings')) ? "disabled": "onclick=\"StartReCount()\"")?>  class="adm-btn-save"/>
 	<input type="button" id="butt_cont" value="<?=GetMessage("MAIN_OPTION_SIZE_CONTINUE")?>" disabled="disabled" <?=((!$USER->CanDoOperation('edit_other_settings')) ? "disabled":  "onclick=\"StartReCount('from_the_last')\"")?> />
 	<input type="button" id="butt_stop" value="<?=GetMessage("MAIN_OPTION_SIZE_STOP")?>" disabled="disabled" <?=((!$USER->CanDoOperation('edit_other_settings')) ? "disabled": "onclick=\"StopReCount()\"")?> />
 	</td>
 </tr>
-<?$tabControl->End();?>
+
 <?if ($USER->CanDoOperation('edit_other_settings')):?>
 <script language="JavaScript">
-var result = {'stop':false, 'done':true, 'error':false, 'db':{'size': <?=intVal($arParam["db"]["size"])?>}, 'files':{'size':<?=intVal($arParam["files"]["size"])?>}};
+var result = {'stop':false, 'done':true, 'error':false, 'db':{'size': <?=intval($arParam["db"]["size"])?>}, 'files':{'size':<?=intval($arParam["files"]["size"])?>}};
 diskSpace = <?=$diskSpace?>;
 window.onStepDone = function(name){
 	if (name && diskSpace > 0)
@@ -1160,4 +1391,47 @@ function DoNext(name, id, recount)
 CheckButtons();
 </script>
 <?endif;?>
+
+<?$tabControl->EndTab();?>
 <?endif;?>
+
+<form method="POST" action="<?echo $APPLICATION->GetCurPage()?>?mid=<?=htmlspecialcharsbx($mid)?>&amp;lang=<?echo LANG?>" enctype="multipart/form-data">
+<?=bitrix_sessid_post()?>
+<input type="hidden" name="tabControl2_active_tab" value="fedit5">
+
+<?$tabControl->BeginNextTab();?>
+<?
+$customWeakPasswords = COption::GetOptionString('main', 'custom_weak_passwords', 'N');
+?>
+<tr>
+	<td>
+		<label><input type="radio" name="custom_weak_passwords" value="N"<?= ($customWeakPasswords !== 'Y' ? ' checked' : '')?>><?echo GetMessage("main_options_weak_pass_use_default")?></label>
+	</td>
+</tr>
+<tr>
+	<td>
+		<label><input type="radio" name="custom_weak_passwords" value="Y"<?= ($customWeakPasswords === 'Y' ? ' checked' : '')?>><?echo GetMessage("main_options_weak_pass_use_custom")?></label>
+	</td>
+</tr>
+<tr>
+	<td>
+		<br>
+		<input type="file" name="passwords">
+	</td>
+</tr>
+<tr>
+	<td>
+		<?= BeginNote()?>
+		<?echo GetMessage("main_options_weak_pass_note")?>
+		<?= EndNote()?>
+	</td>
+</tr>
+<tr>
+	<td>
+		<input type="submit" <?if (!$USER->CanDoOperation('edit_php')) echo "disabled" ?> name="save_passwords" value="<?echo GetMessage("MAIN_SAVE")?>" class="adm-btn-save">
+	</td>
+</tr>
+<?$tabControl->EndTab();?>
+</form>
+
+<?$tabControl->End();?>

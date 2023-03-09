@@ -70,12 +70,22 @@ class Network
 			}
 		}
 
-		global $USER;
-		if(Loader::includeModule('replica'))
+		if(Loader::includeModule('socialservices'))
 		{
-			if(is_object($USER) && $USER->GetID() > 0 && \Bitrix\Replica\Client\User::getGuid($USER->GetID()) === false)
+			if(\CSocServAuthManager::GetAuthorizedServiceId() !== \CSocServBitrix24Net::ID)
 			{
-				return false;
+				if(Loader::includeModule('replica'))
+				{
+					global $USER;
+					if(is_object($USER) && $USER->GetID() > 0 && \Bitrix\Replica\Client\User::getGuid($USER->GetID()) === false)
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
 			}
 		}
 		else
@@ -135,7 +145,7 @@ class Network
 		}
 
 		$search = trim($search);
-		if (strlen($search) < 3)
+		if (mb_strlen($search) < 3)
 		{
 			$this->errorCollection[] = new Error(Loc::getMessage('B24NET_SEARCH_STRING_TO_SHORT'), self::ERROR_SEARCH_STRING_TO_SHORT);
 			return null;
@@ -163,6 +173,86 @@ class Network
 		}
 
 		return $result;
+	}
+
+	public static function sendMobileApplicationLink($phone, $language_id)
+	{
+		$query = \CBitrix24NetPortalTransport::init();
+		if ($query)
+		{
+			$query->call('profile.send', array(
+				'TYPE' => 'mobile_application_link',
+				'PHONE' => $phone,
+				'LANGUAGE_ID' => $language_id,
+			));
+		}
+	}
+
+	/**
+	 * @return false|array
+	 * @see \Bitrix\B24network\Rest::portalVerifySend()
+	 * @see \Bitrix\B24network\PhoneVerify::sendVerificationCode()
+	 */
+	public static function sendPhoneVerificationCode(string $phone, string $language_id)
+	{
+		if (! self::isPhoneNumberValid($phone))
+		{
+			return ['error' => 'ERROR_CODE_INVALID_NUMBER'];
+		}
+
+		$phone = self::normalizePhoneNumber($phone);
+		$query = \CBitrix24NetPortalTransport::init();
+		if ($query)
+		{
+			global $USER;
+			$userId = $USER instanceof \CUser ? $USER->getId() : 0;
+			return $query->call('portal.verify.send', array(
+				'PHONE' => $phone,
+				'LANGUAGE_ID' => $language_id,
+				'USER_ID' => $userId,
+			));
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check portal verification code via b24network
+	 *
+	 * @see \Bitrix\B24network\PhoneVerify::checkVerificationCode()
+	 * @see \Bitrix\B24network\Rest::portalVerifyCheck()
+	 */
+	public static function checkPhoneVerificationCode(string $phone, int $code)
+	{
+		$phone = self::normalizePhoneNumber($phone);
+		$query = \CBitrix24NetPortalTransport::init();
+		if ($query)
+		{
+			global $USER;
+			$userId = $USER instanceof \CUser ? $USER->getId() : 0;
+			return $query->call('portal.verify.check', array(
+				'PHONE' => $phone,
+				'CODE' => $code,
+				'USER_ID' => $userId,
+			));
+		}
+
+		return false;
+	}
+
+	/**
+	 * @see \Bitrix\B24network\PhoneVerify::isPortalVerified()
+	 * @see \Bitrix\B24network\Rest::portalVerifyStatus()
+	 */
+	public static function getPortalVerificationStatus(): bool
+	{
+		$query = \CBitrix24NetPortalTransport::init();
+		if ($query)
+		{
+			$result = $query->call('portal.verify.status');
+			return (bool)$result['result'];
+		}
+		return false;
 	}
 
 	/**
@@ -390,7 +480,7 @@ class Network
 		$searchArray = Array();
 		foreach ($networkIds as $networkId)
 		{
-			$searchArray[] = substr($networkId, 0, 1).intval(substr($networkId, 1))."|%";
+			$searchArray[] = mb_substr($networkId, 0, 1).intval(mb_substr($networkId, 1))."|%";
 		}
 
 		$result = \Bitrix\Main\UserTable::getList(Array(
@@ -660,5 +750,22 @@ class Network
 	public static function getLastUserStatus()
 	{
 		return static::$lastUserStatus;
+	}
+
+
+	private static function normalizePhoneNumber(string $number, $defaultCountry = '')
+	{
+		$phoneNumber = \Bitrix\Main\PhoneNumber\Parser::getInstance()->parse($number, $defaultCountry);
+		return $phoneNumber->format(\Bitrix\Main\PhoneNumber\Format::E164);
+	}
+
+	/**
+	 * @param string $value
+	 * @return bool
+	 */
+	private static function isPhoneNumberValid(string $number): bool
+	{
+		$phoneNumber = \Bitrix\Main\PhoneNumber\Parser::getInstance()->parse($number);
+		return $phoneNumber->isValid();
 	}
 }

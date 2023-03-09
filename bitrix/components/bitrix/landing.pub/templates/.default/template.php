@@ -1,0 +1,244 @@
+<?php
+if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
+{
+	die();
+}
+
+/** @var \LandingPubComponent $component */
+/** @var array $arResult */
+/** @var array $arParams */
+
+use \Bitrix\Landing\Config;
+use \Bitrix\Landing\Hook;
+use \Bitrix\Landing\Manager;
+use \Bitrix\Landing\Rights;
+use \Bitrix\Main\Localization\Loc;
+use \Bitrix\Landing\Assets;
+use \Bitrix\Main\UI\Extension;
+
+Loc::loadMessages(__FILE__);
+
+$this->setFrameMode(true);
+$landing = $arResult['LANDING'];/** @var \Bitrix\Landing\Landing $landing */
+$b24Installed = \Bitrix\Main\ModuleManager::isModuleInstalled('bitrix24');
+$formEditor = $arResult['SPECIAL_TYPE'] == \Bitrix\Landing\Site\Type::PSEUDO_SCOPE_CODE_FORMS;
+$masterFrame = $component->request('master') == 'Y' && Rights::hasAccessForSite(
+	$landing->getSiteId(), Rights::ACCESS_TYPES['edit']
+);
+
+Manager::setPageTitle(
+	Loc::getMessage('LANDING_TPL_TITLE')
+);
+
+if ($arResult['ERRORS'])
+{
+	include 'error.php';
+	return;
+}
+
+// load extensions
+$extensions = ['ui.fonts.opensans'];
+if (
+	$arParams['SHOW_EDIT_PANEL'] == 'Y' ||
+	!$landing->getDomainId()// wiki mode
+)
+{
+	$extensions[] = 'landing.wiki.public';
+	$extensions[] = 'ui.viewer';
+}
+if ($b24Installed)
+{
+	$extensions[] = 'landing.metrika';
+}
+$extensions[] = 'sidepanel';
+
+Extension::load($extensions);
+
+// check frame parameter outside the frame
+if ($component->request('IFRAME'))
+{
+	?>
+	<script>
+		(function()
+		{
+			if (top.window.location.href === window.location.href)
+			{
+				top.window.location.href = BX.Uri.removeParam(
+					top.window.location.href,
+					'IFRAME'
+				);
+			}
+			else if (window.location.hash.indexOf('#landingId') === 0)
+			{
+				window.location.hash = '';
+			}
+		})();
+	</script>
+	<?php
+}
+
+// shop master frame
+if ($masterFrame)
+{
+	\Bitrix\Landing\Manager::setPageView(
+		'BodyTag',
+		'style="pointer-events: none; user-select: none;"'
+	);
+	echo '<style>.b24-widget-button-wrapper, .catalog-cart-block {display: none;}</style>';
+}
+
+// edit menu
+if ($arParams['SHOW_EDIT_PANEL'] === 'Y')
+{
+	Extension::load([
+		'ui.buttons',
+		'ui.buttons.icons'
+	]);
+	ob_start(function($content)
+	{
+		Manager::setPageView('AfterBodyOpen',$content);
+	});
+	?>
+	<div class="landing-pub-top-panel-wrapper">
+		<div class="landing-pub-top-panel">
+			<div class="landing-pub-top-panel-left">
+				<div class="landing-pub-top-panel-nav-buttons">
+					<button class="landing-pub-top-panel-back ui-btn ui-btn-xs ui-btn-icon-back ui-btn-link ui-btn-light"></button>
+					<button class="landing-pub-top-panel-forward ui-btn ui-btn-xs ui-btn-icon-back ui-btn-link ui-btn-light"></button>
+				</div>
+				<div class="landing-pub-top-panel-separator"></div>
+				<div class="landing-pub-top-panel-chain">
+					<?php $title = $component->getMessageType('LANDING_TPL_SITES');?>
+					<span class="ui-btn ui-btn-xs ui-btn-light ui-btn-round landing-pub-top-panel-chain-link" style="pointer-events: none" title="<?= $title;?>">
+						<?= $title;?>
+					</span>
+					<strong class="landing-pub-top-panel-chain-separator"><span></span></strong>
+					<?php $title = \htmlspecialcharsbx($landing->getTitle());?>
+					<span class="ui-btn ui-btn-xs ui-btn-light ui-btn-round landing-pub-top-panel-chain-link" style="pointer-events: none" title="<?= $title;?>">
+						<?= $title;?>
+					</span>
+				</div>
+			</div>
+			<?php if($arResult['CAN_EDIT'] === 'Y'): ?>
+				<div class="landing-pub-top-panel-right">
+					<div class="landing-pub-top-panel-actions">
+						<a href="<?= $arParams['PAGE_URL_LANDING_VIEW'];?>" data-landingId="<?= $landing->getId();?>" class="ui-btn ui-btn-primary ui-btn-icon-edit landing-pub-top-panel-edit-button">
+							<?= $component->getMessageType('LANDING_TPL_EDIT_PAGE');?>
+						</a>
+					</div>
+				</div>
+			<?php endif; ?>
+		</div>
+		<script>
+			BX.ready(function() {
+				void new BX.Landing.Pub.TopPanel();
+			});
+		</script>
+	</div>
+	<?php
+	ob_end_flush();
+}
+
+if ($arResult['SEARCH_RESULT_QUERY'])
+{
+	if (!$component->isAjax())
+	{
+		?>
+		<script>
+			BX.ready(function() {
+				void new BX.Landing.Pub.SearchResult();
+			});
+		</script>
+		<?php
+	}
+}
+
+if ($component->request('ts'))
+{
+	?>
+	<script>
+		BX.ready(function() {
+			void new BX.Landing.Pub.TimeStamp();
+		});
+	</script>
+	<?php
+}
+
+
+if ($arParams['TYPE'] === 'KNOWLEDGE' || $arParams['TYPE'] === 'GROUP')
+{
+	?>
+	<script>
+		BX.ready(function() {
+			void new BX.Landing.Pub.DiskFile();
+		});
+	</script>
+	<?php
+}
+
+// landing view
+$landing->view([
+	'check_permissions' => false
+]);
+
+// available view
+$check = \Bitrix\Landing\Restriction\Manager::isAllowed(
+	'limit_knowledge_base_number_page_view',
+	['ID' => $landing->getSiteId()]
+);
+if (!$check)
+{
+	?>
+	<script>
+		BX.ready(function()
+		{
+			document.body.style.opacity = 0.1;
+			document.addEventListener('click', function handler(e) {
+				e.stopPropagation();
+				e.preventDefault();
+			}, true);
+			top.BX.UI.InfoHelper.show('limit_knowledge_base_number_page_view');
+		});
+	</script>
+	<?php
+}
+
+// assets
+$assets = Assets\Manager::getInstance();
+$assets->addAsset(
+		'landing_public',
+		Assets\Location::LOCATION_AFTER_TEMPLATE
+);
+$publicModeInit = '
+	BX.namespace("BX.Landing");
+	BX.Landing.getMode = () => "view";
+';
+$assets->addString(
+	"<script>{$publicModeInit}</script>",
+);
+$assets->addAsset(
+	Config::get('js_core_public'),
+	Assets\Location::LOCATION_KERNEL
+);
+$assets->addAsset('landing_critical_grid', Assets\Location::LOCATION_BEFORE_ALL);
+?>
+
+<?php if ($b24Installed):?>
+<script>
+	(function()
+	{
+		new BX.Landing.Metrika();
+	})();
+</script>
+<?php endif;?>
+
+<?php
+$hooksSite = Hook::getForSite($landing->getSiteId());
+if (!$masterFrame && !$formEditor && (isset($hooksSite['COPYRIGHT']) && $hooksSite['COPYRIGHT']->enabled()))
+{
+	$lang = $landing->getMeta()['SITE_LANG'];
+	$hooksSite['COPYRIGHT']->setLang($lang);
+	Manager::setPageView('BeforeBodyClose', $hooksSite['COPYRIGHT']->view());
+}
+?>
+

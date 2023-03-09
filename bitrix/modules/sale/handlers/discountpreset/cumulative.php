@@ -2,10 +2,10 @@
 
 namespace Sale\Handlers\DiscountPreset;
 
-
 use Bitrix\Main;
 use Bitrix\Main\Error;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale;
 use Bitrix\Sale\Discount\Actions;
 use Bitrix\Sale\Discount\CumulativeCalculator;
 use Bitrix\Sale\Discount\Preset\ArrayHelper;
@@ -37,14 +37,30 @@ final class Cumulative extends BasePreset
 		return '';
 	}
 
-	/**
-	 * Tells if preset is available or not. It's possible that preset can't work in some license.
-	 * @return bool
-	 */
-	public function isAvailable()
+	public function getAvailableState(): int
 	{
-		return \CBXFeatures::isFeatureEnabled('CatDiscountSave');
+		if (Sale\Config\Feature::isCumulativeDiscountsEnabled())
+		{
+			return BasePreset::AVAILABLE_STATE_ALLOW;
+		}
+		if ($this->bitrix24Included)
+		{
+			return BasePreset::AVAILABLE_STATE_TARIFF;
+		}
+
+		return BasePreset::AVAILABLE_STATE_DISALLOW;
 	}
+
+	public function getAvailableHelpLink(): ?array
+	{
+		if ($this->getAvailableState() === BasePreset::AVAILABLE_STATE_TARIFF)
+		{
+			return Sale\Config\Feature::getCumulativeDiscountsHelpLink();
+		}
+
+		return null;
+	}
+
 
 	/**
 	 * @return int
@@ -209,7 +225,7 @@ final class Cumulative extends BasePreset
 		foreach ($state->get('discount_ranges', $this->getDefaultRowValues()) as $i => $range)
 		{
 			if (
-				empty($range['sum']) ||
+				($range['sum'] === '' || $range['sum'] === null) ||
 				empty($range['value']) ||
 				empty($range['type'])
 			)

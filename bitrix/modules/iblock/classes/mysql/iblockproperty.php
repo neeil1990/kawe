@@ -12,6 +12,7 @@ class CIBlockProperty extends CAllIBlockProperty
 			$this->LAST_ERROR = $this->FormatNotFoundError($ID);
 			return false;
 		}
+		\Bitrix\Iblock\PropertyIndex\Manager::onPropertyUpdate($arProperty["IBLOCK_ID"], $arProperty, $arFields);
 		if($arProperty["VERSION"]!=2)
 		{
 			return true;
@@ -228,7 +229,7 @@ class CIBlockProperty extends CAllIBlockProperty
 		return true;
 	}
 
-	function DropColumnSQL($strTable, $arColumns)
+	public static function DropColumnSQL($strTable, $arColumns)
 	{
 		global $DB;
 		$tableFields = $DB->GetTableFields($strTable);
@@ -246,7 +247,7 @@ class CIBlockProperty extends CAllIBlockProperty
 	function _Add($ID, $arFields)
 	{
 		global $DB;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if($arFields["MULTIPLE"]=="Y")
 			$strType = "longtext";

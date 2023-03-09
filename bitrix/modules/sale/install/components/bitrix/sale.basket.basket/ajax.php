@@ -1,6 +1,7 @@
 <?
 define('STOP_STATISTICS', true);
 define('NO_AGENT_CHECK', true);
+define('NOT_CHECK_PERMISSIONS', true);
 
 use Bitrix\Main\Loader;
 
@@ -10,6 +11,16 @@ if (isset($_REQUEST['site_id']) && is_string($_REQUEST['site_id']))
 	if ($siteID !== '' && preg_match('/^[a-z0-9_]{2}$/i', $siteID) === 1)
 	{
 		define('SITE_ID', $siteID);
+	}
+}
+
+if (isset($_REQUEST['site_template_id']) && is_string($_REQUEST['site_template_id']))
+{
+	$siteTemplateId = trim($_REQUEST['site_template_id']);
+
+	if ($siteTemplateId !== '' && preg_match('/^[a-z0-9_]+$/i', $siteTemplateId))
+	{
+		define('SITE_TEMPLATE_ID', $siteTemplateId);
 	}
 }
 
@@ -32,11 +43,11 @@ if ($request->get('via_ajax') === 'Y')
 	try
 	{
 		$params = $signer->unsign($request->get('signedParamsString'), 'sale.basket.basket');
-		$params = unserialize(base64_decode($params));
+		$params = unserialize(base64_decode($params), ['allowed_classes' => false]);
 	}
 	catch (\Bitrix\Main\Security\Sign\BadSignatureException $e)
 	{
-		die();
+		die('Bad signature.');
 	}
 
 	try

@@ -508,11 +508,25 @@
 			this.vars["filesCountForUpload"] -= queue.filesCount;
 			BX.removeClass(BX("bxuMain" + this.id), "bxu-thumbnails-loading");
 			BX('bxuUploaded' + this.id).innerHTML = this.vars["uploadedFilesCount"];
-			this.redirectUrl = data.report.uploading[this.uploader.CID]['redirectUrl'];
+			if (stream !== null)
+			{
+				this.redirectUrl = data.report.uploading[this.uploader.CID]['redirectUrl'];
+			}
 		},
-		finish : function() {
-			if(this.uploader.queue.itFailed.length <= 0 && BX.type.isNotEmptyString(this.redirectUrl)) {
-				BX.reload(this.redirectUrl);
+		finish : function(stream) {
+			if (stream !== null && this.uploader.queue.itFailed.length <= 0 && BX.type.isNotEmptyString(this.redirectUrl))
+			{
+				if (
+					BX.SidePanel
+					&& BX.SidePanel.Instance.getTopSlider() === BX.SidePanel.Instance.getSliderByWindow(window)
+				)
+				{
+					window.location.href = this.redirectUrl;
+				}
+				else
+				{
+					BX.reload(this.redirectUrl);
+				}
 			}
 		},
 		terminate : function(pIndex, queue)
@@ -584,7 +598,8 @@
 			BX.addCustomEvent(file, 'onFileHasPreview', this._onFileHasPreview);
 
 			if (BX(id + 'Del'))
-				BX.bind(BX(id + 'Del'), "click", BX.delegate(function(){
+			{
+				BX.bind(BX(id + 'Del'), "click", function() {
 					BX.removeCustomEvent(file, 'onUploadStart', this._onUploadStart);
 					BX.removeCustomEvent(file, 'onUploadProgress', this._onUploadProgress);
 					BX.removeCustomEvent(file, 'onUploadDone', this._onUploadDone);
@@ -595,7 +610,8 @@
 					BX.unbindAll(BX(id + 'Edit'));
 					BX.unbindAll(BX(id + 'Del'));
 					file.deleteFile();
-				}, file));
+				}.bind(this));
+			}
 		}
 	};
 	BX.UploaderSettings = function(params)
@@ -612,20 +628,23 @@
 				this.init(params["show"][ii]);
 		}
 		var node = BX('bxuMain' + _this.id);
-		BX('bxuSettings' + this.id).onclick = function()
+		if (BX('bxuSettings' + this.id))
 		{
-			if (BX.hasClass(node, 'bxu-thumbnails-settings-are'))
+			BX('bxuSettings' + this.id).onclick = function()
 			{
-				BX.removeClass(node, 'bxu-thumbnails-settings-are');
-				_this.SaveUserOption('additional', 'N');
-			}
-			else
-			{
-				BX.addClass(node, 'bxu-thumbnails-settings-are');
-				_this.SaveUserOption('additional', 'Y');
-			}
-		};
-		_this.SaveUserOption('additional', (BX.hasClass(node, 'bxu-thumbnails-settings-are') ? 'Y' : 'N'));
+				if (BX.hasClass(node, 'bxu-thumbnails-settings-are'))
+				{
+					BX.removeClass(node, 'bxu-thumbnails-settings-are');
+					_this.SaveUserOption('additional', 'N');
+				}
+				else
+				{
+					BX.addClass(node, 'bxu-thumbnails-settings-are');
+					_this.SaveUserOption('additional', 'Y');
+				}
+			};
+			_this.SaveUserOption('additional', (BX.hasClass(node, 'bxu-thumbnails-settings-are') ? 'Y' : 'N'));
+		}
 		this.n = {};
 		if (!!window['oBXUploaderHandler_' + this.UPLOADER_ID])
 		{
@@ -699,7 +718,7 @@
 				this.setWMColor(this.params['color']);
 				this.setWMPosition(this.params['position']);
 				this.setWMSize(this.params['size']);
-				this.setWMFile(this.params['file'], this.params['fileWidth'], this.params['fileHeight']);
+				this.setWMFile(this.params['file']);
 				this.setWMOpacity(this.params['opacity']);
 //				this.InitImageTypeControls(this.params['position'], this.params['size'], this.params['opacity']);
 			}

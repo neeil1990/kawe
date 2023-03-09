@@ -81,7 +81,9 @@ BX.namespace('BX.Sale.PersonalOrderComponent');
 							data:
 							{
 								sessid: BX.bitrix_sessid(),
-								orderData: params.paymentList[event.target.id]
+								orderData: params.paymentList[event.target.id],
+								templateName : params.templateName,
+								returnUrl: params.returnUrl,
 							},
 							onsuccess: BX.proxy(function(result)
 							{

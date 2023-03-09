@@ -1,5 +1,5 @@
-<?
-$catalog_default_option = array(
+<?php
+$catalog_default_option = [
 	'export_default_path' => '/bitrix/catalog_export/',
 	'default_catalog_1c' => '',
 	'deactivate_1c_no_price' => 'N',
@@ -35,6 +35,7 @@ $catalog_default_option = array(
 	'1C_TRANSLIT_ON_UPDATE' => 'Y',
 	'1C_TRANSLIT_REPLACE_CHAR' => '_',
 	'1C_DISABLE_CHANGE_PRICE_NAME' => 'Y',
+	'1C_IBLOCK_CACHE_MODE' => 'N',
 	'do_use_discount_product' => 'Y',
 	'do_use_discount_cat_group' => 'Y',
 	'do_use_discount_section' => 'Y',
@@ -47,11 +48,12 @@ $catalog_default_option = array(
 	'activate_file_data' => 'Y',
 	'get_discount_percent_from_base_price' => 'N',
 	'discsave_apply' => 'R',
-	'discount_vat' => 'Y',
 	'default_quantity_trace' => 'N',
 	'default_can_buy_zero' => 'N',
+	'check_rights_on_decrease_store_quantity' => 'N',
 	'allow_negative_amount' => 'N',
 	'default_use_store_control' => 'N',
+	'show_store_shipping_center' => 'N',
 	'enable_reservation' => 'Y',
 	'default_subscribe' => 'Y',
 	'show_catalog_tab_with_offers' => 'N',
@@ -64,9 +66,24 @@ $catalog_default_option = array(
 	'product_form_show_offers_iblock' => 'N',
 	'product_form_simple_search' => 'Y',
 	'product_form_show_offer_name' => 'N',
+	'enable_viewed_products' => 'Y',
 	'viewed_time' => 10,
 	'viewed_count' => 10,
 	'viewed_period' => 5,
 	'default_product_vat_included' => 'N',
 	'subscribe_repeated_notify' => 'Y',
-);
+	'enable_processing_deprecated_events' => 'N',
+	'landing_product_limit' => 0,
+	'product_card_slider_enabled' => IsModuleInstalled('bitrix24') ? 'Y' : 'N',
+	'once_inventory_management' => 'N', // system option, internal, only for 1c rest
+	'show_store_reserve' => 'N', // system option, can't set from options page
+	'catalog_common_product_processing' => 'N', // system option, can't set from options page
+	'use_offer_marking_code_group' => 'N',
+	'store_document_numbers_A' => 0, // used for create store document name (arrival)
+	'store_document_numbers_S' => 0, // used for create store document name (store adjustment)
+	'store_document_numbers_M' => 0, // used for create store document name (moving)
+	'store_document_numbers_R' => 0, // used for create store document name (return)
+	'store_document_numbers_D' => 0, // used for create store document name (deduct)
+	'store_document_numbers_U' => 0, // used for create store document name (undo reserve)
+	'enable_convert_product_to_service' => 'Y',  // system option, can't set from options page
+];

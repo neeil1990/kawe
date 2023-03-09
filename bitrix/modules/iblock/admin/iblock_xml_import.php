@@ -45,14 +45,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["Import"]=="Y")
 	//We have to strongly check all about file names at server side
 	$ABS_FILE_NAME = false;
 	$WORK_DIR_NAME = false;
-	if(isset($NS["URL_DATA_FILE"]) && (strlen($NS["URL_DATA_FILE"])>0))
+	if(isset($NS["URL_DATA_FILE"]) && ($NS["URL_DATA_FILE"] <> ''))
 	{
 		$filename = trim(str_replace("\\", "/", trim($NS["URL_DATA_FILE"])), "/");
 		$FILE_NAME = rel2abs($_SERVER["DOCUMENT_ROOT"], "/".$filename);
-		if((strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename) && ($APPLICATION->GetFileAccessPermission($FILE_NAME) >= "W"))
+		if((mb_strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename) && ($APPLICATION->GetFileAccessPermission($FILE_NAME) >= "W"))
 		{
 			$ABS_FILE_NAME = $_SERVER["DOCUMENT_ROOT"].$FILE_NAME;
-			$WORK_DIR_NAME = substr($ABS_FILE_NAME, 0, strrpos($ABS_FILE_NAME, "/")+1);
+			$WORK_DIR_NAME = mb_substr($ABS_FILE_NAME, 0, mb_strrpos($ABS_FILE_NAME, "/") + 1);
 		}
 	}
 
@@ -73,7 +73,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["Import"]=="Y")
 				"PRICES_MAP" => false,
 			);
 
-			CIBlockXMLFile::DropTemporaryTables();
+			$obXMLFile->DropTemporaryTables();
 			if(CIBlockCMLImport::CheckIfFileIsCML($ABS_FILE_NAME))
 				$NS["STEP"]++;
 			else
@@ -81,7 +81,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["Import"]=="Y")
 		}
 		elseif($NS["STEP"] < 2)
 		{
-			if(CIBlockXMLFile::CreateTemporaryTables())
+			if($obXMLFile->CreateTemporaryTables())
 				$NS["STEP"]++;
 			else
 				$arErrors[] = GetMessage("IBLOCK_CML2_TABLE_CREATE_ERROR");
@@ -101,7 +101,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["Import"]=="Y")
 		}
 		elseif($NS["STEP"] < 4)
 		{
-			if(CIBlockXMLFile::IndexTemporaryTables())
+			if($obXMLFile->IndexTemporaryTables())
 				$NS["STEP"]++;
 			else
 				$arErrors[] = GetMessage("IBLOCK_CML2_INDEX_ERROR");
@@ -167,7 +167,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["Import"]=="Y")
 		{
 			$obCatalog = new CIBlockCMLImport;
 			$obCatalog->Init($NS, $WORK_DIR_NAME, true, $NS["PREVIEW"], false, true);
-			$result = $obCatalog->ImportProductSets();
+			$obCatalog->ImportProductSets();
 			$NS["STEP"]++;
 		}
 	}
@@ -298,7 +298,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["Import"]=="Y")
 				"BUTTONS" => array(
 					array(
 						"VALUE" => GetMessage("IBLOCK_CML2_ELEMENTS_LIST"),
-						"ONCLICK" => "window.location = '".CUtil::JSEscape(CIBlock::GetAdminElementListLink($NS["IBLOCK_ID"] , array('find_el_y'=>'Y')))."';",
+						"ONCLICK" => "window.location = '".CUtil::JSEscape(CIBlock::GetAdminElementListLink(
+							$NS["IBLOCK_ID"] , array('find_el_y'=>'Y', 'clear_filter'=>'Y', 'apply_filter'=>'Y')))."';",
 					),
 				),
 			));

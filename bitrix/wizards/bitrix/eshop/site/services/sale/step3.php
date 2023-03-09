@@ -3,10 +3,10 @@
 $dbSite = CSite::GetByID(WIZARD_SITE_ID);
 if($arSite = $dbSite -> Fetch())
 	$lid = $arSite["LANGUAGE_ID"];
-if(strlen($lid) <= 0)
+if($lid == '')
 	$lid = "ru";
 
-$dbEvent = CEventMessage::GetList($b="ID", $order="ASC", Array("EVENT_NAME" => "SALE_NEW_ORDER", "SITE_ID" => WIZARD_SITE_ID));
+$dbEvent = CEventMessage::GetList('id', 'asc', Array("EVENT_NAME" => "SALE_NEW_ORDER", "SITE_ID" => WIZARD_SITE_ID));
 if(!($dbEvent->Fetch()))
 {
 	IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/install/events.php", $lid);
@@ -230,13 +230,13 @@ if(!($dbEvent->Fetch()))
 			}
 
 			$dbEventMessage = $eventMessage->GetList(
-					($b = ""),
-					($o = ""),
-					array(
-							"EVENT_NAME" => "SALE_STATUS_CHANGED_".$ID,
-							"SITE_ID" => WIZARD_SITE_ID
-						)
-				);
+				'',
+				'',
+				array(
+					"EVENT_NAME" => "SALE_STATUS_CHANGED_".$ID,
+					"SITE_ID" => WIZARD_SITE_ID
+				)
+			);
 			if (!($arEventMessage = $dbEventMessage->Fetch()))
 			{
 				$subject = GetMessage("SKGS_STATUS_MAIL_SUBJ");

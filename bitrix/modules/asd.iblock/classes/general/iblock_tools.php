@@ -8,12 +8,19 @@ class CASDiblockTools {
 		$xml = '';
 		if ($BID>0 && is_array($arWhat) && !empty($arWhat)) {
 			if (in_array('forms', $arWhat)) {
-				$xml .= '<form_element>';
-				$xml .=		'<![CDATA['.array_pop(CUserOptions::GetOption('form', 'form_element_'.$BID, true)).']]>';
-				$xml .= '</form_element>'."\n";
-				$xml .= '<form_section>';
-				$xml .=		'<![CDATA['.array_pop(CUserOptions::GetOption('form', 'form_section_'.$BID, true)).']]>';
-				$xml .= '</form_section>'."\n";
+				$element = CUserOptions::GetOption('form', 'form_element_'.$BID, null);
+				if (!empty($element) && is_array($element)) {
+					$xml .= '<form_element>';
+					$xml .=		'<![CDATA['.array_pop($element).']]>';
+					$xml .= '</form_element>'."\n";
+				}
+				unset($element);
+				$section = CUserOptions::GetOption('form', 'form_section_'.$BID, null);
+				if (!empty($section) && is_array($section)) {
+					$xml .= '<form_section>';
+					$xml .=		'<![CDATA['.array_pop($section).']]>';
+					$xml .= '</form_section>'."\n";
+				}
 			}
 		}
 		return $xml;
@@ -42,10 +49,13 @@ class CASDiblockTools {
 					if (in_array($k, self::$arNotExport)) {
 						continue;
 					}
-					if (in_array($k, $arCData) && strlen(trim($v))) {
+					if (in_array($k, $arCData) && !empty($v)) {
+						if (is_array($v)) {
+							$v = 'json#'.json_encode($v);
+						}
 						$v = '<![CDATA['.$v.']]>';
 					}
-					$xml .= "\t\t\t".'<'.strtolower($k).'>'.$v.'</'.strtolower($k).'>'."\n";
+					$xml .= "\t\t\t".'<'.mb_strtolower($k).'>'.$v.'</'.mb_strtolower($k).'>'."\n";
 				}
 				$xml .= "\t\t".'</prop>'."\n";
 			}
@@ -61,10 +71,10 @@ class CASDiblockTools {
 					if (in_array($k, self::$arNotExport)) {
 						continue;
 					}
-					if (in_array($k, $arCData) && strlen(trim($v))) {
-						$v = '<![CDATA['.$v.']]>';;
+					if (in_array($k, $arCData) && trim($v) !== '') {
+						$v = '<![CDATA['.$v.']]>';
 					}
-					$xml .= "\t\t\t".'<'.strtolower($k).'>'.$v.'</'.strtolower($k).'>'."\n";
+					$xml .= "\t\t\t".'<'.mb_strtolower($k).'>'.$v.'</'.mb_strtolower($k).'>'."\n";
 				}
 				$xml .= "\t\t".'</enum>'."\n";
 			}
@@ -129,10 +139,19 @@ class CASDiblockTools {
 			if ($xml->Load($xmlPath)) {
 				if ($node = $xml->SelectNodes('/asd_iblock_props/props/')) {
 					foreach ($node->children() as $child) {
-						$arProp = array_pop($child->__toArray());
+						$childData = $child->__toArray();
+						$arProp = array_pop($childData);
 						$arFields = array('IBLOCK_ID' => $BID);
 						foreach ($arProp as $code => $v) {
-							$arFields[strtoupper($code)] = isset($v[0]['#']['cdata-section']) && is_array($v[0]['#']['cdata-section']) ? $v[0]['#']['cdata-section'][0]['#'] : $v[0]['#'];
+							if (isset($v[0]['#']['cdata-section']) && is_array($v[0]['#']['cdata-section'])) {
+								$value = $v[0]['#']['cdata-section'][0]['#'];
+								if (str_starts_with($value, 'json#')) {
+									$value = json_decode($value);
+								}
+							} else {
+								$value = $v[0]['#'];
+							}
+							$arFields[mb_strtoupper($code)] = $value;
 						}
 						if (isset($arExistProps[$arFields['CODE']])) {
 							$arOldNewID[$arFields['OLD_ID']] = $arExistProps[$arFields['CODE']]['ID'];
@@ -145,10 +164,11 @@ class CASDiblockTools {
 				}
 				if ($node = $xml->SelectNodes('/asd_iblock_props/enums/')) {
 					foreach ($node->children() as $child) {
-						$arProp = array_pop($child->__toArray());
+						$childData = $child->__toArray();
+						$arProp = array_pop($childData);
 						$arFields = array('IBLOCK_ID' => $BID);
 						foreach ($arProp as $code => $v) {
-							$arFields[strtoupper($code)] = isset($v[0]['#']['cdata-section']) && is_array($v[0]['#']['cdata-section']) ? $v[0]['#']['cdata-section'][0]['#'] : $v[0]['#'];
+							$arFields[mb_strtoupper($code)] = isset($v[0]['#']['cdata-section']) && is_array($v[0]['#']['cdata-section']) ? $v[0]['#']['cdata-section'][0]['#'] : $v[0]['#'];
 						}
 						$arFields['PROPERTY_ID'] = $arExistProps[$arFields['PROPERTY_CODE']]['ID'];
 						if (isset($arExistEnums[$arFields['PROPERTY_ID'].'_'.$arFields['XML_ID']])) {

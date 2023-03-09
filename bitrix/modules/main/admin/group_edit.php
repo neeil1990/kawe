@@ -10,10 +10,11 @@
  * @global CMain $APPLICATION
  * @global CUser $USER
  * @global CDatabase $DB
- * @global array $BX_GROUP_POLICY;
  */
 
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+use Bitrix\Main\Authentication\Policy;
+
+require_once(__DIR__."/../include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "users/group_edit.php");
 
@@ -23,6 +24,9 @@ if (!$USER->CanDoOperation('view_groups'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 IncludeModuleLangFile(__FILE__);
+
+$asset = \Bitrix\Main\Page\Asset::getInstance();
+$asset->addJs('/bitrix/js/main/gp.js');
 
 $strError = "";
 $ID = intval($_REQUEST["ID"]);
@@ -36,7 +40,7 @@ while ($mr = $modules->Fetch())
 	$arModules[] = $mr["ID"];
 
 $arSites = array();
-$rsSites = CSite::GetList($by="sort", $order="asc", array("ACTIVE" => "Y"));
+$rsSites = CSite::GetList("sort", "asc", array("ACTIVE" => "Y"));
 while ($arSite = $rsSites->GetNext())
 {
 	$arSites["reference_id"][] = $arSite["ID"];
@@ -45,80 +49,6 @@ while ($arSite = $rsSites->GetNext())
 
 $USER_COUNT = CUser::GetCount();
 $USER_COUNT_MAX = 25;
-
-$arBXGroupPolicy = array(
-	"parent" => array(
-		"SESSION_TIMEOUT" => "",
-		"SESSION_IP_MASK" => "",
-		"MAX_STORE_NUM" => "",
-		"STORE_IP_MASK" => "",
-		"STORE_TIMEOUT" => "",
-		"CHECKWORD_TIMEOUT" => "",
-		"PASSWORD_LENGTH" => "",
-		"PASSWORD_UPPERCASE" => "N",
-		"PASSWORD_LOWERCASE" => "N",
-		"PASSWORD_DIGITS" => "N",
-		"PASSWORD_PUNCTUATION" => "N",
-		"LOGIN_ATTEMPTS" => "",
-	),
-	"low" => array(
-		"SESSION_TIMEOUT" => 30, //minutes
-		"SESSION_IP_MASK" => "0.0.0.0",
-		"MAX_STORE_NUM" => 20,
-		"STORE_IP_MASK" => "255.0.0.0",
-		"STORE_TIMEOUT" => 60*24*93, //minutes
-		"CHECKWORD_TIMEOUT" => 60*24*185, //minutes
-		"PASSWORD_LENGTH" => 6,
-		"PASSWORD_UPPERCASE" => "N",
-		"PASSWORD_LOWERCASE" => "N",
-		"PASSWORD_DIGITS" => "N",
-		"PASSWORD_PUNCTUATION" => "N",
-		"LOGIN_ATTEMPTS" => 0,
-	),
-	"middle" => array(
-		"SESSION_TIMEOUT" => 20, //minutes
-		"SESSION_IP_MASK" => "255.255.0.0",
-		"MAX_STORE_NUM" => 10,
-		"STORE_IP_MASK" => "255.255.0.0",
-		"STORE_TIMEOUT" => 60*24*30, //minutes
-		"CHECKWORD_TIMEOUT" => 60*24*1, //minutes
-		"PASSWORD_LENGTH" => 8,
-		"PASSWORD_UPPERCASE" => "Y",
-		"PASSWORD_LOWERCASE" => "Y",
-		"PASSWORD_DIGITS" => "Y",
-		"PASSWORD_PUNCTUATION" => "N",
-		"LOGIN_ATTEMPTS" => 0,
-	),
-	"high" => array(
-		"SESSION_TIMEOUT" => 15, //minutes
-		"SESSION_IP_MASK" => "255.255.255.255",
-		"MAX_STORE_NUM" => 1,
-		"STORE_IP_MASK" => "255.255.255.255",
-		"STORE_TIMEOUT" => 60*24*3, //minutes
-		"CHECKWORD_TIMEOUT" => 60, //minutes
-		"PASSWORD_LENGTH" => 10,
-		"PASSWORD_UPPERCASE" => "Y",
-		"PASSWORD_LOWERCASE" => "Y",
-		"PASSWORD_DIGITS" => "Y",
-		"PASSWORD_PUNCTUATION" => "Y",
-		"LOGIN_ATTEMPTS" => 3,
-	),
-);
-
-$BX_GROUP_POLICY_CONTROLS = array(
-	"SESSION_TIMEOUT"	=>	array("text", 5),
-	"SESSION_IP_MASK"	=>	array("text", 20),
-	"MAX_STORE_NUM"		=>	array("text", 5),
-	"STORE_IP_MASK"		=>	array("text", 20),
-	"STORE_TIMEOUT"		=>	array("text", 5),
-	"CHECKWORD_TIMEOUT"	=>	array("text", 5),
-	"PASSWORD_LENGTH"	=>	array("text", 5),
-	"PASSWORD_UPPERCASE"	=>	array("checkbox", "Y"),
-	"PASSWORD_LOWERCASE"	=>	array("checkbox", "Y"),
-	"PASSWORD_DIGITS"	=>	array("checkbox", "Y"),
-	"PASSWORD_PUNCTUATION"	=>	array("checkbox", "Y"),
-	"LOGIN_ATTEMPTS"	=>	array("text", 5),
-);
 
 $aTabs = array(
 	array("DIV" => "edit1", "TAB" => GetMessage("MAIN_TAB"), "ICON" => "group_edit", "TITLE" => GetMessage("MAIN_TAB_TITLE")),
@@ -138,7 +68,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_REQUEST["save"] <> '' || $_REQUEST
 	$group = new CGroup;
 
 	$arGroupPolicy = array();
-	foreach ($BX_GROUP_POLICY as $key => $value)
+	foreach (new Policy\RulesCollection() as $key => $value)
 	{
 		$curVal = ${"gp_".$key};
 		$curValParent = ${"gp_".$key."_parent"};
@@ -194,7 +124,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_REQUEST["save"] <> '' || $_REQUEST
 
 	$strError .= $group->LAST_ERROR;
 
-	if (strlen($strError)<=0)
+	if ($strError == '')
 	{
 		if (intval($ID) != 1 || (COption::GetOptionString("main", "controller_member", "N") == "Y" && COption::GetOptionString("main", "~controller_limited_admin", "N") == "Y"))
 		{
@@ -228,13 +158,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_REQUEST["save"] <> '' || $_REQUEST
 				{
 					foreach ($rt as $i => $right)
 					{
-						if (strlen($right) > 0 && $right != "NOT_REF")
+						if ($right <> '' && $right != "NOT_REF")
 						{
-							$APPLICATION->SetGroupRight($MID, $ID, $right, (array_key_exists($i, $st) && strlen($st[$i]) > 0 && $st[$i] != "NOT_REF" ? $st[$i] : false));
+							$APPLICATION->SetGroupRight($MID, $ID, $right, (array_key_exists($i, $st) && $st[$i] <> '' && $st[$i] != "NOT_REF" ? $st[$i] : false));
 						}
 					}
 				}
-				elseif(!is_array($rt) && strlen($rt) > 0 && $rt != "NOT_REF")
+				elseif(!is_array($rt) && $rt <> '' && $rt != "NOT_REF")
 					$APPLICATION->SetGroupRight($MID, $ID, $rt, false);
 			}
 
@@ -300,7 +230,7 @@ else
 	$str_C_SORT = 100;
 }
 
-if (strlen($strError)>0)
+if ($strError <> '')
 {
 	$DB->InitTableVarsForEdit("b_group", "", "str_");
 
@@ -379,13 +309,13 @@ $context->Show();
 <?=bitrix_sessid_post()?>
 <input type="hidden" name="lang" value="<?echo LANG?>">
 <input type="hidden" name="ID" value="<?echo $ID?>">
-<?if(strlen($COPY_ID)>0):?><input type="hidden" name="COPY_ID" value="<?echo htmlspecialcharsbx($COPY_ID)?>"><?endif?>
+<?if($COPY_ID <> ''):?><input type="hidden" name="COPY_ID" value="<?echo htmlspecialcharsbx($COPY_ID)?>"><?endif?>
 <?
 $tabControl->Begin();
 
 $tabControl->BeginNextTab();
 ?>
-	<?if(strlen($str_TIMESTAMP_X)>0):?>
+	<?if($str_TIMESTAMP_X <> ''):?>
 	<tr>
 		<td><?echo GetMessage('LAST_UPDATE')?></td>
 		<td><?echo $str_TIMESTAMP_X?></td>
@@ -451,7 +381,7 @@ $tabControl->BeginNextTab();
 			</script>
 			<?
 			$ind = -1;
-			$dbUsers = CUser::GetList(($b="id"), ($o="asc"), array("ACTIVE" => "Y"));
+			$dbUsers = CUser::GetList("id", "asc", array("ACTIVE" => "Y"));
 			while ($arUsers = $dbUsers->Fetch())
 			{
 				$ind++;
@@ -475,189 +405,22 @@ $tabControl->BeginNextTab();
 		</table><input type="hidden" name="USER_ID_NUMBER" value="<?= $ind ?>"></td>
 	</tr>
 	<?endif?>
-<?$tabControl->BeginNextTab();?>
-	<script>
-	var arGroupPolicy = <?echo CUtil::PhpToJSObject($arBXGroupPolicy)?>;
+<?
+$tabControl->BeginNextTab();
 
-	function gpLevel()
-	{
-		var i;
-
-		var el = document.form1.gp_level;
-		if (el.selectedIndex > 0)
-		{
-			var sel = el.options[el.selectedIndex].value;
-
-			for(i in arGroupPolicy[sel])
-			{
-				var el1 = eval("document.form1.gp_" + i + "_parent");
-				var el2 = eval("document.form1.gp_" + i + "");
-
-				el1.checked = (sel == "parent");
-
-				gpChangeParent(i);
-
-				if(el2.type.toLowerCase() == 'checkbox')
-					el2.checked = arGroupPolicy[sel][i] == "Y";
-				else
-					el2.value = arGroupPolicy[sel][i];
-			}
-		}
-	}
-
-	function gpChangeParent(key)
-	{
-		var el1 = eval("document.form1.gp_" + key + "_parent");
-		var el2 = eval("document.form1.gp_" + key + "");
-		el2.disabled = el1.checked;
-	}
-
-	function gpSetLevel(level)
-	{
-		var el = document.form1.gp_level;
-		for (var i=0, len = el.options.length; i<len; i++)
-			if(el.options[i].value == level)
-				el.selectedIndex = i;
-		return el.options[el.selectedIndex].value;
-	}
-
-	function ip2long(ip)
-	{
-		var bytes = [];
-		var res = false;
-		if (ip.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/))
-		{
-			bytes = ip.split('.');
-			res =
-				bytes[0] * 16777216 +
-				bytes[1] * 65536 +
-				bytes[2] * 256 +
-				bytes[3] * 1;
-		}
-
-		return res;
-	}
-
-	function gpSync()
-	{
-		var level = {
-			low: 0,
-			middle: 0,
-			high: 0,
-			disabled: 0,
-			total: 0
-		};
-		for(var key in arGroupPolicy['parent'])
-		{
-			var el1 = eval("document.form1.gp_" + key + "_parent");
-			var el2 = eval("document.form1.gp_" + key + "");
-			if(el1.checked)
-			{
-				level.disabled++;
-				level.total++;
-			}
-			else
-			{
-				switch(key)
-				{
-				case "SESSION_TIMEOUT":
-				case "MAX_STORE_NUM":
-				case "STORE_TIMEOUT":
-				case "CHECKWORD_TIMEOUT":
-					level.total++;
-					if(parseInt(el2.value) <= parseInt(arGroupPolicy['high'][key]))
-						level.high++;
-					else if(parseInt(el2.value) <= parseInt(arGroupPolicy['middle'][key]))
-						level.middle++;
-					else
-						level.low++;
-					break;
-				case "PASSWORD_LENGTH":
-					level.total++;
-					if(parseInt(el2.value) >= parseInt(arGroupPolicy['high'][key]))
-						level.high++;
-					else if(parseInt(el2.value) >= parseInt(arGroupPolicy['middle'][key]))
-						level.middle++;
-					else
-						level.low++;
-					break;
-				case "LOGIN_ATTEMPTS":
-					level.total++;
-					if(parseInt(el2.value) > 0)
-					{
-						if(parseInt(el2.value) <= parseInt(arGroupPolicy['high'][key]))
-							level.high++;
-						else if(parseInt(el2.value) <= parseInt(arGroupPolicy['middle'][key]))
-							level.middle++;
-						else
-							level.low++;
-					}
-					else
-					{
-						if(parseInt(arGroupPolicy['high'][key]) <= 0)
-							level.high++;
-						else if(parseInt(arGroupPolicy['middle'][key]) <= 0)
-							level.middle++;
-						else
-							level.low++;
-					}
-					break;
-				case "PASSWORD_UPPERCASE":
-				case "PASSWORD_LOWERCASE":
-				case "PASSWORD_DIGITS":
-				case "PASSWORD_PUNCTUATION":
-					level.total++;
-					if(el2.checked)
-					{
-						if(arGroupPolicy['high'][key] == 'Y')
-							level.high++;
-						else if(arGroupPolicy['middle'][key] == 'Y')
-							level.middle++;
-						else
-							level.low++;
-					}
-					else
-					{
-						if(arGroupPolicy['high'][key] == 'N')
-							level.high++;
-						else if(arGroupPolicy['middle'][key] == 'N')
-							level.middle++;
-						else
-							level.low++;
-					}
-					break;
-				case "SESSION_IP_MASK":
-				case "STORE_IP_MASK":
-					level.total++;
-					var gp_ip = ip2long(el2.value);
-					var high_ip = ip2long(arGroupPolicy['high'][key]);
-					var middle_ip = ip2long(arGroupPolicy['middle'][key]);
-					if((gp_ip & high_ip) == (0xFFFFFFFF & high_ip))
-						level.high++;
-					else if((gp_ip & middle_ip) == (0xFFFFFFFF & middle_ip))
-						level.middle++;
-					else
-						level.low++;
-					break;
-				}
-			}
-		}
-
-		if(level.low > 0)
-			gpSetLevel('low');
-		else if(level.middle > 0)
-			gpSetLevel('middle');
-		else if(level.high > 0 && level.high == level.total)
-			gpSetLevel('high');
-		else if(level.disabled > 0 && level.disabled == level.total)
-			gpSetLevel('parent');
-		else
-			gpSetLevel('');
-	}
-	</script>
+$arBXGroupPolicy = [
+	'parent' => Policy\RulesCollection::createByPreset(),
+	'low' => Policy\RulesCollection::createByPreset(Policy\RulesCollection::PRESET_LOW),
+	'middle' => Policy\RulesCollection::createByPreset(Policy\RulesCollection::PRESET_MIDDLE),
+	'high' => Policy\RulesCollection::createByPreset(Policy\RulesCollection::PRESET_HIGH),
+];
+?>
 	<tr>
 		<td width="40%"><?=GetMessage('MUG_PREDEFINED_FIELD')?>:</td>
 		<td width="60%">
+			<script>
+				var arGroupPolicy = <?= json_encode($arBXGroupPolicy) ?>;
+			</script>
 			<select name="gp_level" OnChange="gpLevel()">
 				<option value=""><?=GetMessage('MUG_SELECT_LEVEL1')?></option>
 				<option value="parent"><?=GetMessage('MUG_PREDEFINED_PARENT')?></option>
@@ -668,49 +431,40 @@ $tabControl->BeginNextTab();
 		</td>
 	</tr>
 	<?
-	$arGroupPolicy = unserialize(htmlspecialcharsback($str_SECURITY_POLICY));
+	$arGroupPolicy = unserialize(htmlspecialcharsback($str_SECURITY_POLICY), ['allowed_classes' => false]);
 	if (!is_array($arGroupPolicy))
 		$arGroupPolicy = array();
 
-	foreach ($BX_GROUP_POLICY as $key => $value)
-	{
+	foreach (new Policy\RulesCollection() as $key => $rule):
+
 		$curVal = $arGroupPolicy[$key];
 		$curValParent = !array_key_exists($key, $arGroupPolicy);
-		if (strlen($strError) > 0)
+		if ($strError <> '')
 		{
 			$curVal = ${"gp_".$key};
-			$curValParent = ((${"gp_".$key."_parent"} == "Y") ? True : False);
+			$curValParent = (${"gp_".$key."_parent"} == "Y");
 		}
 		?>
 		<tr valign="top">
-			<td><label for="gp_<?echo $key?>"><?
-			$gpTitle = GetMessage("GP_".$key);
-			if (strlen($gpTitle) <= 0)
-				$gpTitle = $key;
-
-			echo $gpTitle;
-			?></label>:</td>
+			<td><label for="gp_<?= $key ?>"><?= htmlspecialcharsbx($rule->getTitle()) ?></label>:</td>
 			<td>
-
 				<input type="checkbox" name="gp_<?= $key ?>_parent" OnClick="gpChangeParent('<?= $key ?>'); gpSync();" id="id_gp_<?= $key ?>_parent" value="Y"<?if ($curValParent) echo "checked";?>><label for="id_gp_<?= $key ?>_parent"><?=GetMessage('MUG_GP_PARENT')?></label><br>
-				<?$arControl = $BX_GROUP_POLICY_CONTROLS[$key];
-				switch($arControl[0])
-				{
-				case "checkbox":
-					?>
-					<input type="checkbox" onclick="gpSync();" id="gp_<?= $key ?>" name="gp_<?= $key ?>" value="<?= htmlspecialcharsbx($arControl[1]) ?>" <?if($curVal === $arControl[1]) echo "checked"?> <?if ($curValParent) echo "disabled";?>>
-					<?
-					break;
-				default:
-					?>
-					<input type="text" onchange="gpSync();" name="gp_<?= $key ?>" value="<?= htmlspecialcharsbx($curVal) ?>" size="<?echo ($arControl[1] > 0? $arControl[1]: "30")?>" <?if ($curValParent) echo "disabled";?>>
-					<?
-				}
+				<?
+				$arControl = $rule->getOptions();
+				if ($arControl['type'] == 'checkbox'):
+				?>
+					<input type="checkbox" onclick="gpSync();" id="gp_<?= $key ?>" name="gp_<?= $key ?>" value="Y" <?if($curVal === 'Y') echo "checked"?> <?if ($curValParent) echo "disabled";?>>
+				<?
+				else:
+				?>
+					<input type="text" onchange="gpSync();" name="gp_<?= $key ?>" value="<?= htmlspecialcharsbx($curVal) ?>" size="<?echo ($arControl['size'] ?? 30)?>" <?if ($curValParent) echo "disabled";?>>
+				<?
+				endif;
 				?>
 			</td>
 		</tr>
-		<?
-	}
+	<?
+	endforeach;
 	?>
 
 	<?if (intval($ID)!=1 || $COPY_ID>0 || (COption::GetOptionString("main", "controller_member", "N") == "Y" && COption::GetOptionString("main", "~controller_limited_admin", "N") == "Y")) :?>
@@ -776,7 +530,7 @@ $tabControl->BeginNextTab();
 			<select id="subordinate_groups" name="subordinate_groups[]" multiple size="6">
 			<?
 			$arSubordinateGroups = CGroup::GetSubordinateGroups($ID);
-			$rsData = CGroup::GetList($by, $order, array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
+			$rsData = CGroup::GetList('', '', array("ACTIVE"=>"Y", "ADMIN"=>"N", "ANONYMOUS"=>"N"));
 			while($arRes = $rsData->Fetch())
 			{
 				$arRes['ID'] = intval($arRes['ID']);
@@ -936,7 +690,7 @@ $tabControl->BeginNextTab();
 							$site_selected = $site_id_tmp;
 						}
 
-						if (strlen($v) > 0)
+						if ($v <> '')
 						{
 							?><tr>
 								<td style="padding: 3px;">

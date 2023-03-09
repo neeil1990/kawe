@@ -13,7 +13,7 @@ $MESS["SBB_DELAYED_ITEMS"] = "отложено";
 $MESS["SBB_SIMILAR_ITEM"] = "похожий";
 $MESS["SBB_SIMILAR_ITEM_2"] = "похожих";
 $MESS["SBB_SIMILAR_ITEMS"] = "похожих";
-$MESS["SBB_BASKET_ITEM_NOT_AVAILABLE"] = "В данный момент этот товар не доступен";
+$MESS["SBB_BASKET_ITEM_NOT_AVAILABLE"] = "В данный момент этот товар недоступен";
 $MESS["SBB_BASKET_ITEM_DELAYED"] = "Товар отложен";
 $MESS["SBB_BASKET_ITEM_REMOVE_DELAYED"] = "Добавить к заказу?";
 $MESS["SBB_BASKET_ITEM_SIMILAR_P1"] = "Этот товар";
@@ -36,4 +36,7 @@ $MESS["SBB_GOOD_CAP"] = "Товар";
 $MESS["SBB_GOOD"] = "товар";
 $MESS["SBB_GOOD_2"] = "товара";
 $MESS["SBB_GOODS"] = "товаров";
+$MESS["SBB_EMPTY_BASKET_TITLE"] = "Ваша корзина пуста";
+$MESS["SBB_EMPTY_BASKET_HINT"] = "#A1#Нажмите здесь#A2#, чтобы продолжить покупки";
+$MESS["SBB_GIFTS_BLOCK_TITLE"] = "Выберите один из подарков";
 ?>

@@ -3,20 +3,21 @@
  * @author Isaev Danil
  * @package Isaev\Seotemplate
  */
+
 namespace Isaev\Seotemplate;
 
 /**
- * {=strpos this.Name "Èìÿ"}
- * {=ternary {=strpos this.Name "Èìÿ"} "?" this.Name "!empty" ":" "empty"}
+ * {=strpos this.Name "Ğ˜Ğ¼Ñ"}
+ * {=ternary {=strpos this.Name "Ğ˜Ğ¼Ñ"} "?" this.Name "!empty" ":" "empty"}
  */
 class Strpos extends \Bitrix\Iblock\Template\Functions\FunctionBase
 {
     public function calculate($parameters)
     {
         $this->parametersToArray($parameters);
-        if(strpos($parameters[0], $parameters[1]) !== false){
+        if (strpos($parameters[0], $parameters[1]) !== false) {
             return $parameters[0];
-        }else{
+        } else {
             return;
         }
     }

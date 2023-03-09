@@ -68,9 +68,9 @@ class Directory
 				$pathLogical = Path::combine($this->path, Path::convertPhysicalToLogical($file));
 				$pathPhysical = Path::combine($this->getPhysicalPath(), $file);
 				if (is_dir($pathPhysical))
-					$arResult[] = new Directory($pathLogical);
+					$arResult[] = new Directory($pathLogical, $this->siteId);
 				else
-					$arResult[] = new File($pathLogical);
+					$arResult[] = new File($pathLogical, $this->siteId);
 			}
 			closedir($handle);
 		}
@@ -86,7 +86,20 @@ class Directory
 	{
 		$dir = new Directory(Path::combine($this->path, $name));
 		if (!$dir->isExists())
-			mkdir($dir->getPhysicalPath(), BX_DIR_PERMISSIONS, true);
+		{
+			try
+			{
+				mkdir($dir->getPhysicalPath(), BX_DIR_PERMISSIONS, true);
+			}
+			catch (\ErrorException $exception)
+			{
+				if (!$dir->isExists())
+				{
+					throw $exception;
+				}
+			}
+		}
+
 		return $dir;
 	}
 

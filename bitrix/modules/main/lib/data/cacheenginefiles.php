@@ -2,7 +2,6 @@
 namespace Bitrix\Main\Data;
 
 use Bitrix\Main;
-use Bitrix\Main\IO;
 
 class CacheEngineFiles
 	implements ICacheEngine, ICacheEngineStat
@@ -14,19 +13,24 @@ class CacheEngineFiles
 	private $read = false;
 	private $path = '';
 
-	protected $useLock = true;
+	protected $useLock = false;
 	protected static $lockHandles = array();
 
 	/**
 	 * Engine constructor.
-	 *
+	 * @param array $options Cache options.
 	 */
-	public function __construct()
+	public function __construct($options = [])
 	{
-		$cacheConfig = \Bitrix\Main\Config\Configuration::getValue("cache");
-		if ($cacheConfig && is_array($cacheConfig) && isset($cacheConfig["use_lock"]))
+		$config = Main\Config\Configuration::getValue("cache");
+		if ($config && is_array($config) && isset($config["use_lock"]))
 		{
-			$this->useLock = (bool)$cacheConfig["use_lock"];
+			$this->useLock = (bool)$config["use_lock"];
+		}
+
+		if (!empty($options) && isset($options['actual_data']))
+		{
+			$this->useLock = !((bool) $options['actual_data']);
 		}
 	}
 
@@ -79,28 +83,19 @@ class CacheEngineFiles
 	 */
 	private static function unlink($fileName)
 	{
-		if (self::$lockHandles[$fileName])
+		if (isset(self::$lockHandles[$fileName]) && self::$lockHandles[$fileName])
 		{
 			fclose(self::$lockHandles[$fileName]);
 			unset(self::$lockHandles[$fileName]);
 		}
 
-		//This checks for Zend Server CE in order to suppress warnings
-		if (function_exists('accelerator_reset'))
+		if (file_exists($fileName))
 		{
 			@chmod($fileName, BX_FILE_PERMISSIONS);
 			if (@unlink($fileName))
 				return true;
 		}
-		else
-		{
-			if (file_exists($fileName))
-			{
-				@chmod($fileName, BX_FILE_PERMISSIONS);
-				if (unlink($fileName))
-					return true;
-			}
-		}
+
 		return false;
 	}
 
@@ -274,7 +269,7 @@ class CacheEngineFiles
 	/**
 	 * Reads cache from the file. Returns true if file exists, not expired, and successfully read.
 	 *
-	 * @param mixed &$arAllVars Cached result.
+	 * @param mixed &$allVars Cached result.
 	 * @param string $baseDir Base cache directory (usually /bitrix/cache).
 	 * @param string $initDir Directory within base.
 	 * @param string $filename File name.
@@ -282,7 +277,7 @@ class CacheEngineFiles
 	 *
 	 * @return boolean
 	 */
-	public function read(&$arAllVars, $baseDir, $initDir, $filename, $TTL)
+	public function read(&$allVars, $baseDir, $initDir, $filename, $TTL)
 	{
 		$documentRoot = Main\Loader::getDocumentRoot();
 		$fn = $documentRoot."/".ltrim($baseDir.$initDir, "/").$filename;
@@ -296,7 +291,7 @@ class CacheEngineFiles
 		$zeroDanger = false;
 
 		$handle = null;
-		if (is_array($arAllVars))
+		if (is_array($allVars))
 		{
 			$INCLUDE_FROM_CACHE = 'Y';
 
@@ -343,13 +338,13 @@ class CacheEngineFiles
 
 		if($res == true)
 		{
-			if (is_array($arAllVars))
+			if (is_array($allVars))
 			{
-				$arAllVars = unserialize($ser_content);
+				$allVars = unserialize($ser_content);
 			}
 			else
 			{
-				$arAllVars = fread($handle, $this->read);
+				$allVars = fread($handle, $this->read);
 			}
 		}
 
@@ -364,7 +359,7 @@ class CacheEngineFiles
 	/**
 	 * Writes cache into the file.
 	 *
-	 * @param mixed $arAllVars Cached result.
+	 * @param mixed $allVars Cached result.
 	 * @param string $baseDir Base cache directory (usually /bitrix/cache).
 	 * @param string $initDir Directory within base.
 	 * @param string $filename File name.
@@ -372,7 +367,7 @@ class CacheEngineFiles
 	 *
 	 * @return void
 	 */
-	public function write($arAllVars, $baseDir, $initDir, $filename, $TTL)
+	public function write($allVars, $baseDir, $initDir, $filename, $TTL)
 	{
 		static $search = array("\\", "'", "\0");
 		static $replace = array("\\\\", "\\'", "'.chr(0).'");
@@ -386,25 +381,25 @@ class CacheEngineFiles
 
 		if ($handle = fopen($fnTmp, "wb+"))
 		{
-			if (is_array($arAllVars))
+			if (is_array($allVars))
 			{
 				$contents = "<?";
 				$contents .= "\nif(\$INCLUDE_FROM_CACHE!='Y')return false;";
 				$contents .= "\n\$datecreate = '".str_pad(time(), 12, "0", STR_PAD_LEFT)."';";
 				$contents .= "\n\$dateexpire = '".str_pad(time() + intval($TTL), 12, "0", STR_PAD_LEFT)."';";
-				$contents .= "\n\$ser_content = '".str_replace($search, $replace, serialize($arAllVars))."';";
+				$contents .= "\n\$ser_content = '".str_replace($search, $replace, serialize($allVars))."';";
 				$contents .= "\nreturn true;";
 				$contents .= "\n?>";
 			}
 			else
 			{
 				$contents = "BX".str_pad(time(), 12, "0", STR_PAD_LEFT).str_pad(time() + intval($this->TTL), 12, "0", STR_PAD_LEFT);
-				$contents .= $arAllVars;
+				$contents .= $allVars;
 			}
 
 			$this->written = fwrite($handle, $contents);
 			$this->path = $fn;
-			$len = Main\Text\BinaryString::getLength($contents);
+			$len = strlen($contents);
 
 			fclose($handle);
 
@@ -453,7 +448,7 @@ class CacheEngineFiles
 			|| preg_match("/^(\\d{12})/", $header, $match)
 		)
 		{
-			if (strlen($match[1]) <= 0 || doubleval($match[1]) < time())
+			if ($match[1] == '' || doubleval($match[1]) < time())
 				return true;
 		}
 
@@ -468,7 +463,7 @@ class CacheEngineFiles
 	 *
 	 * @return void
 	 */
-	protected function deleteOneDir($etime = 0, $ar = false)
+	protected static function deleteOneDir($etime = 0, $ar = false)
 	{
 		$deleteFromQueue = false;
 		$dirName = Main\Loader::getDocumentRoot().$ar["RELATIVE_PATH"];
@@ -513,12 +508,7 @@ class CacheEngineFiles
 		if ($deleteFromQueue)
 		{
 			$con = Main\Application::getConnection();
-			$con->queryExecute("
-				DELETE FROM b_cache_tag
-				WHERE SITE_ID = '".$con->getSqlHelper()->forSql($ar["SITE_ID"])."'
-				AND CACHE_SALT = '".$con->getSqlHelper()->forSql($ar["CACHE_SALT"])."'
-				AND RELATIVE_PATH = '".$con->getSqlHelper()->forSql($ar["RELATIVE_PATH"])."'
-			");
+			$con->queryExecute("DELETE FROM b_cache_tag WHERE ID = ".intval($ar["ID"]));
 		}
 	}
 
@@ -536,7 +526,7 @@ class CacheEngineFiles
 		$etime = time() + 2;
 		if ($count > 0)
 		{
-			$rs = $con->query("SELECT SITE_ID, CACHE_SALT, RELATIVE_PATH, TAG from b_cache_tag WHERE TAG='*'", 0, $count);
+			$rs = $con->query("SELECT * from b_cache_tag WHERE TAG='*'", 0, $count);
 			while ($ar = $rs->fetch())
 			{
 				static::deleteOneDir($etime, $ar);

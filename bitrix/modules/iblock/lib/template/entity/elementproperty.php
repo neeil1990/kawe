@@ -82,7 +82,12 @@ class ElementProperty extends Base
 			while ($row = $propertyList->fetch())
 			{
 				if ($row["USER_TYPE_SETTINGS"])
-					$row["USER_TYPE_SETTINGS"] = unserialize($row["USER_TYPE_SETTINGS"]);
+				{
+					$row["USER_TYPE_SETTINGS"] = unserialize(
+						$row["USER_TYPE_SETTINGS"],
+						array('allowed_classes' => false)
+					);
+				}
 
 				$properties[$row["ID"]] = $row;
 				if ($row["CODE"] != "")
@@ -108,7 +113,7 @@ class ElementProperty extends Base
 				if (isset($properties[$propertyCode]))
 				{
 					$property = $properties[$propertyCode];
-					$fieldCode = strtolower($propertyCode);
+					$fieldCode = mb_strtolower($propertyCode);
 
 					if ($property["PROPERTY_TYPE"] === "L")
 					{
@@ -184,9 +189,20 @@ class ElementProperty extends Base
 					}
 					else
 					{
-						if(strlen($property["USER_TYPE"]))
+						if($property["USER_TYPE"] <> '')
 						{
-							$value = new ElementPropertyUserField($propertyValues, $property);
+							if(is_array($propertyValues))
+							{
+								$value = array();
+								foreach($propertyValues as $propertyValue)
+								{
+									$value[] = new ElementPropertyUserField($propertyValue, $property);
+								}
+							}
+							else
+							{
+								$value = new ElementPropertyUserField($propertyValues, $property);
+							}
 						}
 						else
 						{
@@ -197,7 +213,7 @@ class ElementProperty extends Base
 					$this->fieldMap[$fieldCode] = $property["ID"];
 					$this->fieldMap[$property["ID"]] = $property["ID"];
 					if ($property["CODE"] != "")
-						$this->fieldMap[strtolower($property["CODE"])] = $property["ID"];
+						$this->fieldMap[mb_strtolower($property["CODE"])] = $property["ID"];
 
 					$this->fields[$property["ID"]] = $value;
 				}
@@ -234,19 +250,19 @@ class ElementProperty extends Base
 				{
 					$this->elementLinkProperties[$property["ID"]] = $property["VALUE"];
 					if ($property["CODE"] != "")
-						$this->elementLinkProperties[strtolower($property["CODE"])] = $property["VALUE"];
+						$this->elementLinkProperties[mb_strtolower($property["CODE"])] = $property["VALUE"];
 					$value = new ElementPropertyElement($property["VALUE"]);
 				}
 				elseif ($property["PROPERTY_TYPE"] === "G")
 				{
 					$this->sectionLinkProperties[$property["ID"]] = $property["VALUE"];
 					if ($property["CODE"] != "")
-						$this->sectionLinkProperties[strtolower($property["CODE"])] = $property["VALUE"];
+						$this->sectionLinkProperties[mb_strtolower($property["CODE"])] = $property["VALUE"];
 					$value = new ElementPropertySection($property["VALUE"]);
 				}
 				else
 				{
-					if(strlen($property["USER_TYPE"]))
+					if($property["USER_TYPE"] <> '')
 					{
 						$value = new ElementPropertyUserField($property["VALUE"], $property);
 					}
@@ -258,8 +274,8 @@ class ElementProperty extends Base
 
 				$this->fieldMap[$property["ID"]] = $property["ID"];
 				if ($property["CODE"] != "")
-					$this->fieldMap[strtolower($property["CODE"])] = $property["ID"];
-				
+					$this->fieldMap[mb_strtolower($property["CODE"])] = $property["ID"];
+
 				if ($property["MULTIPLE"] == "Y")
 					$this->fields[$property["ID"]][] = $value;
 				else
@@ -318,11 +334,11 @@ class ElementPropertyUserField extends LazyValueLoader
 	 */
 	protected function getFormatFunction()
 	{
-		static $propertyFormatFunction = null;
-		if (!isset($propertyFormatFunction))
+		static $propertyFormatFunction = array();
+		if (!isset($propertyFormatFunction[$this->property["ID"]]))
 		{
-			$propertyFormatFunction = false;
-			if ($this->property && strlen($this->property["USER_TYPE"]))
+			$propertyFormatFunction[$this->property["ID"]] = false;
+			if ($this->property && mb_strlen($this->property["USER_TYPE"]))
 			{
 				$propertyUserType = \CIBlockProperty::getUserType($this->property["USER_TYPE"]);
 				if(
@@ -330,11 +346,11 @@ class ElementPropertyUserField extends LazyValueLoader
 					&& is_callable($propertyUserType["GetPublicViewHTML"])
 				)
 				{
-					$propertyFormatFunction = $propertyUserType["GetPublicViewHTML"];
+					$propertyFormatFunction[$this->property["ID"]] = $propertyUserType["GetPublicViewHTML"];
 				}
 			}
 		}
-		return $propertyFormatFunction;
+		return $propertyFormatFunction[$this->property["ID"]];
 	}
 }
 

@@ -11,21 +11,22 @@ $strWarning = "";
 $site = CFileMan::__CheckSite($site);
 $DOC_ROOT = CSite::GetSiteDocRoot($site);
 $io = CBXVirtualIo::GetInstance();
-
+$path = CBXVirtualIoFileSystem::ConvertCharset($path, CBXVirtualIoFileSystem::directionDecode);
+$path = $io->CombinePath("/", $path);
 $arFile = CFile::MakeFileArray($io->GetPhysicalName($DOC_ROOT.$path));
 $arFile["tmp_name"] = CBXVirtualIoFileSystem::ConvertCharset($arFile["tmp_name"], CBXVirtualIoFileSystem::directionDecode);
-$path = $io->CombinePath("/", $path);
 $arPath = Array($site, $path);
 
 if(!$USER->CanDoFileOperation('fm_download_file', $arPath))
 	$strWarning = GetMessage("ACCESS_DENIED");
 else if(!$io->FileExists($arFile["tmp_name"]))
 	$strWarning = GetMessage("FILEMAN_FILENOT_FOUND")." ";
-elseif(!$USER->CanDoOperation('edit_php') && (HasScriptExtension($path) || substr(CFileman::GetFileName($path), 0, 1) == "."))
+elseif(!$USER->CanDoOperation('edit_php') && (HasScriptExtension($path) || mb_substr(CFileman::GetFileName($path), 0, 1) == "."))
 	$strWarning .= GetMessage("FILEMAN_FILE_DOWNLOAD_PHPERROR")."\n";
 
-if(strlen($strWarning) <= 0)
+if($strWarning == '')
 {
+	$fileName = str_replace(array("\r", "\n"), "", $arFile["name"]);
 	$flTmp = $io->GetFile($arFile["tmp_name"]);
 	$fsize = $flTmp->GetFileSize();
 	$bufSize = 4194304; //4M
@@ -33,10 +34,10 @@ if(strlen($strWarning) <= 0)
 	session_write_close();
 	set_time_limit(0);
 
-	header("Content-Type: application/force-download; name=\"".$arFile["name"]."\"");
+	header("Content-Type: application/force-download; name=\"".$fileName."\"");
 	header("Content-Transfer-Encoding: binary");
 	header("Content-Length: ".$fsize);
-	header("Content-Disposition: attachment; filename=\"".$arFile["name"]."\"");
+	header("Content-Disposition: attachment; filename=\"".$fileName."\"");
 	header("Expires: 0");
 	header("Cache-Control: no-cache, must-revalidate");
 	header("Pragma: no-cache");

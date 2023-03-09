@@ -1,16 +1,16 @@
 <?
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
-__IncludeLang(dirname(__FILE__)."/lang/".LANGUAGE_ID."/twitter.php");
+__IncludeLang(__DIR__."/lang/".LANGUAGE_ID."/twitter.php");
 $name = "twitter";
 $title = GetMessage("BOOKMARK_HANDLER_TWITTER");
 
 if (
 	is_array($arParams)
-	&& array_key_exists("SHORTEN_URL_LOGIN", $arParams) 
-	&& strlen(trim($arParams["SHORTEN_URL_LOGIN"])) > 0
-	&& array_key_exists("SHORTEN_URL_KEY", $arParams) 
-	&& strlen(trim($arParams["SHORTEN_URL_KEY"])) > 0
+	&& array_key_exists("SHORTEN_URL_LOGIN", $arParams)
+	&& trim($arParams["SHORTEN_URL_LOGIN"]) <> ''
+	&& array_key_exists("SHORTEN_URL_KEY", $arParams)
+	&& trim($arParams["SHORTEN_URL_KEY"]) <> ''
 )
 {
 	$icon_url_template = "
@@ -57,7 +57,7 @@ else
 {
 	$icon_url_template = "
 	<a
-		href=\"http://twitter.com/home/?status=#PAGE_URL_ENCODED#+#PAGE_TITLE_UTF_ENCODED#\"
+		href=\"https://twitter.com/intent/tweet?text=#PAGE_TITLE_UTF_ENCODED#&tw_p=tweetbutton&url=#PAGE_URL_ENCODED#\"
 		onclick=\"window.open(this.href,'','toolbar=0,status=0,width=711,height=437');return false;\"
 		target=\"_blank\"
 		style=\"background: #50abf1\"

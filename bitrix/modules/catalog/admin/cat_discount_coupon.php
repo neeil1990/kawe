@@ -4,15 +4,24 @@
  * @global CDatabase $DB
  * @global CUser $USER
  */
+
 use Bitrix\Main;
 use Bitrix\Catalog;
+use Bitrix\Catalog\Access\ActionDictionary;
+use Bitrix\Catalog\Access\AccessController;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_discount')))
-	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+
 Main\Loader::includeModule('catalog');
-$bReadOnly = !$USER->CanDoOperation('catalog_discount');
+
+$accessController = AccessController::getCurrent();
+if (!($accessController->check(ActionDictionary::ACTION_CATALOG_READ) || $accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET)))
+{
+	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
+
+$bReadOnly = !$accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET);
 
 if ($ex = $APPLICATION->GetException())
 {
@@ -112,7 +121,7 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -349,11 +358,9 @@ if ($arSelectFieldsMap['CREATED_BY'] || $arSelectFieldsMap['MODIFIED_BY'])
 {
 	if (!empty($arUserID))
 	{
-		$byUser = 'ID';
-		$byOrder = 'ASC';
 		$rsUsers = CUser::GetList(
-			$byUser,
-			$byOrder,
+			'ID',
+			'ASC',
 			array('ID' => implode(' | ', array_keys($arUserID))),
 			array('FIELDS' => array('ID', 'LOGIN', 'NAME', 'LAST_NAME', 'SECOND_NAME', 'EMAIL'))
 		);

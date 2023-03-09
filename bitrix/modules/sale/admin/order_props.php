@@ -1,13 +1,8 @@
 <?
-##############################################
-# Bitrix: SiteManager                        #
-# Copyright (c) 2002-2006 Bitrix             #
-# http://www.bitrixsoft.com                  #
-# mailto:admin@bitrixsoft.com                #
-##############################################
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+
+\Bitrix\Main\Loader::includeModule('sale');
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions < "W")
@@ -39,24 +34,25 @@ $lAdmin->InitFilter($arFilterFields);
 
 $arFilter = array();
 
-if (IntVal($filter_person_type_id)>0) $arFilter["PERSON_TYPE_ID"] = IntVal($filter_person_type_id);
-if (strlen($filter_type)>0) $arFilter["TYPE"] = Trim($filter_type);
-if (strlen($filter_user)>0) $arFilter["USER_PROPS"] = Trim($filter_user);
-if (IntVal($filter_group)>0) $arFilter["PROPS_GROUP_ID"] = IntVal($filter_group);
-if (strlen($filter_code)>0) $arFilter["CODE"] = Trim($filter_code);
-if (strlen($filter_active)>0) $arFilter["ACTIVE"] = Trim($filter_active);
-if (strlen($filter_util)>0) $arFilter["UTIL"] = Trim($filter_util);
+if (intval($filter_person_type_id)>0) $arFilter["PERSON_TYPE_ID"] = intval($filter_person_type_id);
+if ($filter_type <> '') $arFilter["TYPE"] = Trim($filter_type);
+if ($filter_user <> '') $arFilter["USER_PROPS"] = Trim($filter_user);
+if (intval($filter_group)>0) $arFilter["PROPS_GROUP_ID"] = intval($filter_group);
+if ($filter_code <> '') $arFilter["CODE"] = Trim($filter_code);
+if ($filter_active <> '') $arFilter["ACTIVE"] = Trim($filter_active);
+if ($filter_util <> '') $arFilter["UTIL"] = Trim($filter_util);
 
 if ($lAdmin->EditAction() && $saleModulePermissions >= "W")
 {
 	foreach ($FIELDS as $ID => $arFields)
 	{
 		$DB->StartTransaction();
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (!$lAdmin->IsUpdated($ID))
 			continue;
 
+		$arFields = CSaleOrderPropsAdapter::convertNewToOld($arFields);
 		if (!CSaleOrderProps::Update($ID, $arFields))
 		{
 			if ($ex = $APPLICATION->GetException())
@@ -90,7 +86,7 @@ if (($arID = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -100,7 +96,19 @@ if (($arID = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 
 				$DB->StartTransaction();
 
-				if (!CSaleOrderProps::Delete($ID))
+				if (CSaleOrderProps::Delete($ID))
+				{
+					if (\Bitrix\Main\Loader::includeModule('crm'))
+					{
+						$property = \Bitrix\Crm\Order\Matcher\Internals\OrderPropsMatchTable::getByPropertyId($ID);
+
+						if (!empty($property))
+						{
+							\Bitrix\Crm\Order\Matcher\Internals\OrderPropsMatchTable::delete($property['ID']);
+						}
+					}
+				}
+				else
 				{
 					$DB->Rollback();
 
@@ -117,10 +125,10 @@ if (($arID = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 	}
 }
 
-$dbResultList = CSaleOrderProps::GetList(
-	array($by => $order),
-	$arFilter
-);
+$dbResultList = \Bitrix\Sale\Property::getList([
+	'filter' => $arFilter,
+	'order' => [$by => $order]
+]);
 
 $dbResultList = new CAdminResult($dbResultList, $sTableID);
 $dbResultList->NavStart();
@@ -135,7 +143,7 @@ $lAdmin->AddHeaders(array(
 	array("id"=>"ACTIVE", "content"=>GetMessage("SALE_FIELD_ACTIVE"),  "sort"=>"ACTIVE", "default"=>true),
 	array("id"=>"SORT", "content"=>GetMessage('SALE_FIELD_SORT'),	"sort"=>"SORT", "default"=>true),
 	array("id"=>"TYPE", "content"=>GetMessage("SALE_FIELD_TYPE"),  "sort"=>"TYPE", "default"=>true),
-	array("id"=>"REQUIED", "content"=>GetMessage("SALE_REQUIED"),  "sort"=>"REQUIED", "default"=>true),
+	array("id"=>"REQUIRED", "content"=>GetMessage("SALE_REQUIED"),  "sort"=>"REQUIRED", "default"=>true),
 	array("id"=>"MULTIPLE", "content"=>GetMessage("SALE_MULTIPLE"),  "sort"=>"MULTIPLE", "default"=>true),
 	array("id"=>"PROPS_GROUP_ID", "content"=>GetMessage("SALE_GROUP"),  "sort"=>"PROPS_GROUP_ID", "default"=>true),
 	array("id"=>"USER_PROPS", "content"=>GetMessage("SALE_USER"),  "sort"=>"USER_PROPS", "default"=>true),
@@ -170,7 +178,7 @@ while ($arOrderProp = $dbResultList->NavNext(true, "f_"))
 	$row->AddInputField("CODE");
 	$row->AddField('TYPE', "[$f_TYPE] ".$inputTypes[$f_TYPE]['NAME']);
 	$row->AddCheckField("ACTIVE");
-	$row->AddCheckField("REQUIED");
+	$row->AddCheckField("REQUIRED");
 	$row->AddCheckField("MULTIPLE");
 	$row->AddCheckField("UTIL");
 	$row->AddCheckField("USER_PROPS");
@@ -280,7 +288,7 @@ $oFilter->Begin();
 				<?
 				foreach($arPersonTypeList as $val)
 				{
-					?><option value="<?echo $val["ID"]?>"<?if (IntVal($filter_person_type_id)==IntVal($val["ID"])) echo " selected"?>>[<?echo $val["ID"] ?>] <?echo $val["NAME"]?> (<?echo htmlspecialcharsEx($val["LID"]) ?>)</option><?
+					?><option value="<?echo $val["ID"]?>"<?if (intval($filter_person_type_id)==intval($val["ID"])) echo " selected"?>>[<?echo $val["ID"] ?>] <?echo $val["NAME"]?> (<?echo htmlspecialcharsEx($val["LID"]) ?>)</option><?
 				}
 				?>
 			</select>
@@ -317,7 +325,7 @@ $oFilter->Begin();
 				<?
 				$l = CSaleOrderPropsGroup::GetList(Array("PERSON_TYPE_ID" => "ASC","SORT" => "ASC", "NAME" => "ASC"));
 				while ($arL = $l->Fetch()):
-					?><option value="<?echo $arL["ID"]?>"<?if (IntVal($filter_group)==IntVal($arL["ID"])) echo " selected"?>>[<?echo $arL["ID"] ?>] <?echo htmlspecialcharsbx($arL["NAME"])?> <?if (!empty($arPersonTypeList[$arL["PERSON_TYPE_ID"]])) echo "(".$arPersonTypeList[$arL["PERSON_TYPE_ID"]]["NAME"]." (".htmlspecialcharsEx($arPersonTypeList[$arL["PERSON_TYPE_ID"]]["LID"]).")".")";?></option><?
+					?><option value="<?echo $arL["ID"]?>"<?if (intval($filter_group)==intval($arL["ID"])) echo " selected"?>>[<?echo $arL["ID"] ?>] <?echo htmlspecialcharsbx($arL["NAME"])?> <?if (!empty($arPersonTypeList[$arL["PERSON_TYPE_ID"]])) echo "(".$arPersonTypeList[$arL["PERSON_TYPE_ID"]]["NAME"]." (".htmlspecialcharsEx($arPersonTypeList[$arL["PERSON_TYPE_ID"]]["LID"]).")".")";?></option><?
 				endwhile;
 				?>
 			</select>

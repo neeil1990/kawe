@@ -10,9 +10,27 @@ namespace Bitrix\Sale\Internals;
 use	Bitrix\Main\Entity\DataManager,
 	Bitrix\Main\Entity\Validator,
 	Bitrix\Main\Localization\Loc;
+use Bitrix\Main\ORM\Fields\Validators\EnumValidator;
+use Bitrix\Sale\Registry;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class OrderPropsTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_OrderProps_Query query()
+ * @method static EO_OrderProps_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_OrderProps_Result getById($id)
+ * @method static EO_OrderProps_Result getList(array $parameters = array())
+ * @method static EO_OrderProps_Entity getEntity()
+ * @method static \Bitrix\Sale\Internals\EO_OrderProps createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Internals\EO_OrderProps_Collection createCollection()
+ * @method static \Bitrix\Sale\Internals\EO_OrderProps wakeUpObject($row)
+ * @method static \Bitrix\Sale\Internals\EO_OrderProps_Collection wakeUpCollection($rows)
+ */
 class OrderPropsTable extends DataManager
 {
 	public static function getFilePath()
@@ -123,6 +141,14 @@ class OrderPropsTable extends DataManager
 				'data_type' => 'boolean',
 				'values' => array('N', 'Y'),
 			),
+			'IS_ADDRESS_FROM' => array(
+				'data_type' => 'boolean',
+				'values' => array('N', 'Y'),
+			),
+			'IS_ADDRESS_TO' => array(
+				'data_type' => 'boolean',
+				'values' => array('N', 'Y'),
+			),
 			'ACTIVE' => array(
 				'data_type' => 'boolean',
 				'values' => array('N', 'Y'),
@@ -156,7 +182,35 @@ class OrderPropsTable extends DataManager
 				'reference' => array('=this.PERSON_TYPE_ID' => 'ref.ID'),
 				'join_type' => 'LEFT',
 			),
+			'ENTITY_REGISTRY_TYPE' => array(
+				'data_type' => 'string',
+			),
+			'XML_ID' => array(
+				'data_type' => 'string',
+			),
+			'ENTITY_TYPE' => array(
+				'data_type' => 'enum',
+				'default_value' => Registry::ENTITY_ORDER,
+				'required' => true,
+				'validation' => array(__CLASS__, 'validateEntityType'),
+				'values' => static::getEntityTypes()
+			),
 		);
+	}
+
+	public static function getEntityTypes()
+	{
+		return [
+			Registry::ENTITY_ORDER,
+			Registry::ENTITY_SHIPMENT,
+		];
+	}
+
+	public static function validateEntityType()
+	{
+		return [
+			new EnumValidator(),
+		];
 	}
 
 	// value
@@ -168,7 +222,10 @@ class OrderPropsTable extends DataManager
 	public static function validateValue($value, $primary, array $row, $field)
 	{
 		$maxlength = 500;
-		$length = strlen(self::modifyValueForSave($value, $row));
+
+		$valueForSave = self::modifyValueForSave($value, $row);
+		$length = isset($valueForSave) ? mb_strlen($valueForSave) : 0;
+
 		return $length > $maxlength
 			? Loc::getMessage('SALE_ORDER_PROPS_DEFAULT_ERROR', array('#PROPERTY_NAME#'=> $row['NAME'],'#FIELD_LENGTH#' => $length, '#MAX_LENGTH#' => $maxlength))
 			: true;
@@ -189,20 +246,24 @@ class OrderPropsTable extends DataManager
 	}
 	public static function modifyValueForFetch($value, $query, $property, $alias)
 	{
-		if (strlen($value))
+		if($value <> '')
 		{
-			if (CheckSerializedData($value)
-				&& ($v = @unserialize($value)) !== false)
+			if(CheckSerializedData($value)
+				&& ($v = @unserialize($value, ['allowed_classes' => false])) !== false)
 				//&& is_array($v)) TODO uncomment after a while)
 			{
 				$value = $v;
 			}
-			elseif ($property['MULTIPLE'] == 'Y') // compatibility
+			elseif(isset($property['MULTIPLE']) && $property['MULTIPLE'] == 'Y') // compatibility
 			{
-				switch ($property['TYPE'])
+				switch($property['TYPE'])
 				{
-					case 'ENUM': $value = explode(',', $value); break;
-					case 'FILE': $value = explode(', ', $value); break;
+					case 'ENUM':
+						$value = explode(',', $value);
+						break;
+					case 'FILE':
+						$value = explode(', ', $value);
+						break;
 				}
 			}
 		}
@@ -230,7 +291,7 @@ class OrderPropsTable extends DataManager
 	public static function validateSettings($value)
 	{
 		$maxlength = 500;
-		$length = strlen(self::modifySettingsForSave($value));
+		$length = mb_strlen(self::modifySettingsForSave($value));
 		return $length > $maxlength
 			? Loc::getMessage('SALE_ORDER_PROPS_SETTINGS_ERROR', array('#LENGTH#' => $length, '#MAXLENGTH#' => $maxlength))
 			: true;
@@ -251,7 +312,12 @@ class OrderPropsTable extends DataManager
 	}
 	public static function modifySettingsForFetch($value)
 	{
-		$v = @unserialize($value);
+		if (empty($value))
+		{
+			return [];
+		}
+
+		$v = @unserialize($value, ['allowed_classes' => false]);
 		return is_array($v) ? $v : array();
 	}
 
@@ -291,5 +357,10 @@ class OrderPropsTable extends DataManager
 	public static function getCodeValidators()
 	{
 		return array(new Validator\Length(null, 50));
+	}
+
+	public static function generateXmlId()
+	{
+		return uniqid('bx_');
 	}
 }

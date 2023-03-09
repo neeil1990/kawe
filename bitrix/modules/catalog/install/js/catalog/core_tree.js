@@ -1,36 +1,47 @@
 (function(window) {
 
 if (BX.TreeConditions)
-{
 	return;
-}
 
+/**
+ * @param {{}} parentContainer
+ * @param {{
+ * 		values: {},
+ * 		labels: {}
+ * }} state
+ * @param {{
+ * 		id: string,
+ * 		name: string,
+ * 		text: string,
+ * 		type: string,
+ * 		show_value: string,
+ * 		defaultText: string,
+ * 		defaultValue: string
+ * }} arParams
+ *
+ * @return {boolean}
+ */
 BX.TreeCondCtrlAtom = function(parentContainer, state, arParams)
 {
 	this.boolResult = false;
 	if (!parentContainer || !state || !state.values)
-	{
 		return this.boolResult;
-	}
 
 	this.parentContainer = parentContainer;
 	this.valuesContainer = state.values;
-	if (!arParams)
-	{
+	if (!BX.type.isNotEmptyString(arParams) && !BX.type.isPlainObject(arParams))
 		return this.boolResult;
-	}
 
 	if (BX.type.isNotEmptyString(arParams))
 	{
-		arParams = { text: arParams, type: 'string'	};
+		// noinspection JSValidateTypes
+		arParams = {text: arParams, type: 'string'};
 	}
 
 	if (BX.type.isPlainObject(arParams))
 	{
-		if (!arParams.type)
-		{
+		if (!BX.type.isNotEmptyString(arParams.type))
 			return this.boolResult;
-		}
 
 		this.arStartParams = arParams;
 
@@ -38,7 +49,7 @@ BX.TreeCondCtrlAtom = function(parentContainer, state, arParams)
 		this.name = null;
 		this.type = arParams.type;
 		this.showValue = false;
-		if (!!arParams.show_value)
+		if (BX.type.isNotEmptyString(arParams.show_value))
 		{
 			this.showValue = (arParams.show_value === 'Y');
 		}
@@ -69,6 +80,9 @@ BX.TreeCondCtrlAtom = function(parentContainer, state, arParams)
 	return this.boolResult;
 };
 
+/**
+ * @return {boolean}
+ */
 BX.TreeCondCtrlAtom.prototype.Init = function()
 {
 	if (this.boolResult)
@@ -176,6 +190,9 @@ BX.TreeCondCtrlAtom.prototype.Delete = function()
 	}
 };
 
+/**
+ * @return {boolean}
+ */
 BX.TreeCondCtrlAtom.prototype.CreateLink = function()
 {
 	if (this.boolResult)
@@ -237,6 +254,9 @@ BX.TreeCondCtrlAtom.prototype.prepareData = function(arData, prefix)
 	return data;
 };
 
+/**
+ * @return {string}
+ */
 BX.TreeCondCtrlAtom.prototype.ViewFormat = function(value, label)
 {
 	return (this.showValue ? label + ' [' + value + ']' : label);
@@ -660,6 +680,27 @@ BX.TreeCondCtrlSelect.prototype.CreateLink = function()
 	return this.boolResult;
 };
 
+/**
+ * @param {{}} parentContainer
+ * @param {{
+ * 		values: {},
+ * 		labels: {}
+ * }} state
+ * @param {{
+ * 		id: string,
+ * 		name: string,
+ * 		text: string,
+ * 		type: string,
+ * 		show_value: string,
+ * 		defaultText: string,
+ * 		defaultValue: string,
+ *
+ * 		load_url: string,
+ * 		load_params: {}
+ * }} params
+ *
+ * @return {boolean}
+ */
 BX.TreeCondCtrlLazySelect = function(parentContainer, state, params)
 {
 	var i;
@@ -808,6 +849,28 @@ BX.TreeCondCtrlLazySelect.prototype.onClick = function()
 		this.ajaxLoad('onClick');
 };
 
+/**
+ * @param {{}} parentContainer
+ * @param {{
+ * 		values: {},
+ * 		labels: {}
+ * }} state
+ * @param {{
+ * 		id: string,
+ * 		name: string,
+ * 		text: string,
+ * 		type: string,
+ * 		show_value: string,
+ * 		defaultText: string,
+ * 		defaultValue: string,
+ *
+ * 		popup_url: string,
+ * 		popup_params: {},
+ * 		param_id: string
+ * }} arParams
+ *
+ * @return {boolean}
+ */
 BX.TreeCondCtrlPopup = function(parentContainer, state, arParams)
 {
 	var i;
@@ -935,6 +998,30 @@ BX.TreeCondCtrlPopup.prototype.Delete = function()
 	}
 };
 
+	/**
+	 * @param {{}} parentContainer
+	 * @param {{
+	 * 		values: {},
+	 * 		labels: {}
+	 * }} state
+	 * @param {{
+	 * 		id: string,
+	 * 		name: string,
+	 * 		text: string,
+	 * 		type: string,
+	 * 		show_value: string,
+	 * 		defaultText: string,
+	 * 		defaultValue: string,
+	 *
+	 * 		popup_url: string,
+	 * 		popup_params: {},
+	 * 		param_id: string,
+	 * 		coreUserInfo: string,
+	 * 		user_load_url: string
+	 * }} arParams
+	 *
+	 * @return {boolean}
+	 */
 BX.TreeUserCondCtrlPopup = function(parentContainer, state, arParams)
 {
 	var i;
@@ -945,7 +1032,11 @@ BX.TreeUserCondCtrlPopup = function(parentContainer, state, arParams)
 		{
 			return this.boolResult;
 		}
-		this.user_load_url = arParams.user_load_url;
+
+		//this.coreUserInfo = !(BX.type.isNotEmptyString(arParams.coreUserInfo) && arParams.coreUserInfo === 'N');
+		this.coreUserInfo = (BX.type.isNotEmptyString(arParams.coreUserInfo) && arParams.coreUserInfo === 'Y');
+
+		this.user_load_url = arParams.user_load_url || '';
 
 		this.popup_url = arParams.popup_url;
 
@@ -1140,28 +1231,59 @@ BX.TreeUserCondCtrlPopup.prototype.AppendFakeInputNode = function(id, name)
 };
 BX.TreeUserCondCtrlPopup.prototype.onChangeFake = function(params)
 {
-	var userId = params.target.value;
+	let userId = params.target.value;
 
-	BX.ajax({
-		'method': 'POST',
-		'dataType': 'json',
-		'url': this.user_load_url,
-		'data': {
-			sessid: BX.bitrix_sessid(),
-			AJAX_ACTION: 'getUserName',
-			USER_ID: userId
-		},
-		'onsuccess': BX.delegate(function (data)
-		{
-			var name = data.name;
-			this.AppendInputNode(this.parentContainer.id+'_'+this.id, this.name+'[]', userId);
-			this.AppendItemNode(userId, name);
-
-			this.valuesContainer[this.id].push(userId);
-		}, this)
-	});
-
+	if (this.coreUserInfo)
+	{
+		BX.ajax({
+			'method': 'POST',
+			'dataType': 'json',
+			'url': '/bitrix/tools/get_user.php',
+			'data': {
+				sessid: BX.bitrix_sessid(),
+				ajax: 'Y',
+				format: 'Y',
+				raw: 'Y',
+				ID: userId
+			},
+			'onsuccess': BX.proxy(this.successGetUserData, this)
+		});
+	}
+	else
+	{
+		BX.ajax({
+			'method': 'POST',
+			'dataType': 'json',
+			'url': this.user_load_url,
+			'data': {
+				sessid: BX.bitrix_sessid(),
+				AJAX_ACTION: 'getUserName',
+				USER_ID: userId
+			},
+			'onsuccess': BX.delegate(function (data) {
+				this.setUserData(userId, data.name);
+			}, this)
+		});
+	}
 };
+
+BX.TreeUserCondCtrlPopup.prototype.successGetUserData = function(result)
+{
+	if (!BX.type.isPlainObject(result))
+	{
+		return;
+	}
+	this.setUserData(result.ID, result.NAME);
+};
+
+BX.TreeUserCondCtrlPopup.prototype.setUserData = function(userId, name)
+{
+	this.AppendInputNode(this.parentContainer.id + '_' + this.id, this.name + '[]', userId);
+	this.AppendItemNode(userId, name);
+
+	this.valuesContainer[this.id].push(userId);
+};
+
 BX.TreeUserCondCtrlPopup.prototype.onSave = function(params)
 {
 	if (BX.type.isPlainObject(params))
@@ -1195,7 +1317,7 @@ BX.TreeUserCondCtrlPopup.prototype.DeleteItem = function(e)
 };
 BX.TreeUserCondCtrlPopup.prototype.Delete = function()
 {
-	BX.TreeMultiCondCtrlDialog.superclass.Delete.apply(this, arguments);
+	BX.TreeUserCondCtrlPopup.superclass.Delete.apply(this, arguments);
 	if (this.input)
 	{
 		BX.unbindAll(this.input);
@@ -1329,6 +1451,8 @@ BX.TreeMultiCondCtrlDialog = function(parentContainer, state, arParams)
 			this.popup_url += (this.popup_url.indexOf('?') !== -1 ? "&" : "?") + data;
 		}
 		this.dialog = null;
+
+		BX.addClass(parentContainer, 'condition-multi');
 	}
 
 	return this.boolResult;
@@ -1828,6 +1952,9 @@ BX.TreeConditions.prototype.Delete = function()
 	}
 };
 
+/**
+ * @return {boolean|{}}
+ */
 BX.TreeConditions.prototype.ControlSearch = function(controlId)
 {
 	var curControl = false,
@@ -1857,6 +1984,9 @@ BX.TreeConditions.prototype.ControlSearch = function(controlId)
 	return curControl;
 };
 
+/**
+ * @return {boolean|{}}
+ */
 BX.TreeConditions.prototype.ControlInGrpSearch = function(controls, controlId)
 {
 	var curControl = false,
@@ -2014,7 +2144,7 @@ BX.TreeConditions.prototype.RenderLevel = function(parentContainer, obParent, ob
 		{
 			if (obTreeLevel.showDeleteButton === null || obTreeLevel.showDeleteButton === undefined || obTreeLevel.showDeleteButton === true)
 			{
-				this.RenderDeleteBtn(obTreeLevel, obParent);
+				this.RenderDeleteBtn(obTreeLevel, obParent, CurControl);
 			}
 		}
 
@@ -2258,6 +2388,9 @@ BX.TreeConditions.prototype.SearchForDeleteLevel = function(obTreeLevel, obParen
 	return arRes;
 };
 
+/**
+ * @return {number}
+ */
 BX.TreeConditions.prototype.SearchForCreateLogic = function(obTreeLevel, indexCurrent)
 {
 	var indexPrev = -1,
@@ -2593,7 +2726,7 @@ BX.TreeConditions.prototype.RenderCreateOneActionBtn = function(obTreeLevel, Cur
 	return this.boolResult;
 };
 
-BX.TreeConditions.prototype.RenderDeleteBtn = function(obTreeLevel, obParent)
+BX.TreeConditions.prototype.RenderDeleteBtn = function(obTreeLevel, obParent, currentControl)
 {
 	var delBtn;
 
@@ -2607,7 +2740,10 @@ BX.TreeConditions.prototype.RenderDeleteBtn = function(obTreeLevel, obParent)
 					props: {
 						id: obTreeLevel.id + '_del',
 						className: 'condition-delete',
-						title: this.messTree.DELETE_CONTROL
+						title: (BX.type.isPlainObject(currentControl.mess) && BX.type.isNotEmptyString(currentControl.mess.DELETE_CONTROL)
+							? currentControl.mess.DELETE_CONTROL
+							: this.messTree.DELETE_CONTROL
+						)
 					}
 				}
 			));
@@ -2713,6 +2849,9 @@ BX.TreeConditions.prototype.UpdateLogic = function(obTreeLevel, obParams)
 	return this.boolResult;
 };
 
+/**
+ * @return {number}
+ */
 BX.TreeConditions.prototype.SearchVisual = function(obTreeLevel)
 {
 	var intCurrentIndex = -1,

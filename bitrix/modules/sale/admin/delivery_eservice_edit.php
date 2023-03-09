@@ -3,9 +3,14 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admi
 
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Delivery\ExtraServices;
+use Bitrix\Sale\Delivery\ExtraServices\Base;
 
 Loc::loadMessages(__FILE__);
 Bitrix\Main\Loader::includeModule('sale');
+
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$backUrl = isset($_GET["back_url"]) ? $_GET["back_url"] : $selfFolderUrl."sale_delivery_service_list.php?lang=".LANGUAGE_ID;
+$backUrl = $adminSidePanelHelper->editUrlToPublicPage($backUrl);
 
 /** @var  CMain $APPLICATION */
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
@@ -21,11 +26,13 @@ $fields = array(
 	"RIGHTS" => "YYY"
 );
 $tabControlName = "tabControl";
-$isItSavingProcess = ($_SERVER['REQUEST_METHOD'] == "POST" && (strlen($_POST["save"]) > 0 || strlen($_POST["apply"]) > 0)) ? true : false;
+$isItSavingProcess = ($_SERVER['REQUEST_METHOD'] == "POST" && ($_POST["save"] <> '' || $_POST["apply"] <> '')) ? true : false;
 $isFormReloading = $_SERVER['REQUEST_METHOD'] == "POST" && !$isItSavingProcess;
 
 if($saleModulePermissions == "W" && check_bitrix_sessid())
 {
+	$adminSidePanelHelper->decodeUriComponent();
+
 	if ($isItSavingProcess || $isFormReloading)
 	{
 		if(isset($_POST["ID"]))				$fields["ID"] = intval($_POST["ID"]);
@@ -35,10 +42,22 @@ if($saleModulePermissions == "W" && check_bitrix_sessid())
 		if(isset($_POST["RIGHTS"])) 		$fields["RIGHTS"] = $_POST["RIGHTS"];
 		if(isset($_POST["ACTIVE"]))			$fields["ACTIVE"] = trim($_POST["ACTIVE"]);
 		if(isset($_POST["INIT_VALUE"]))		$fields["INIT_VALUE"] = trim($_POST["INIT_VALUE"]);
-		if(isset($_POST["CLASS_NAME"]))		$fields["CLASS_NAME"] = trim($_POST["CLASS_NAME"]);
 		if(isset($_POST["DESCRIPTION"]))	$fields["DESCRIPTION"] = trim($_POST["DESCRIPTION"]);
 		if(isset($_POST["DELIVERY_ID"]))	$fields["DELIVERY_ID"] = intval($_POST["DELIVERY_ID"]);
 		if(isset($_POST["PARAMS"], $_POST["PARAMS"]["PARAMS"]))	$fields["PARAMS"] = $_POST["PARAMS"]["PARAMS"];
+
+		if(isset($_POST["CLASS_NAME"]))
+		{
+			ExtraServices\Manager::initClassesList();
+			if(!is_subclass_of($_POST["CLASS_NAME"], Base::class))
+			{
+				throw new \Bitrix\Main\SystemException(
+					'Class "' . htmlspecialcharsbx( $_POST["CLASS_NAME"] ) . '" is not a subclass of the \Bitrix\Sale\Delivery\ExtraServices\Base'
+				);
+			}
+
+			$fields["CLASS_NAME"] = trim($_POST["CLASS_NAME"]);
+		}
 
 		if($isItSavingProcess)
 		{
@@ -47,7 +66,7 @@ if($saleModulePermissions == "W" && check_bitrix_sessid())
 				$fields = ExtraServices\Manager::prepareParamsToSave($fields);
 				$codeExist = false;
 
-				if(strlen($fields["CODE"]) > 0)
+				if($fields["CODE"] <> '')
 				{
 					$glres = ExtraServices\Table::getList(array(
 						'filter' => array(
@@ -91,12 +110,24 @@ if($saleModulePermissions == "W" && check_bitrix_sessid())
 				$strError .= Loc::getMessage("SALE_ESDE_ERROR_ID").'.<br>\n';
 			}
 
-			if(strlen($strError) <= 0)
+			if($strError == '')
 			{
-				if (strlen($_POST["apply"]) > 0)
-					LocalRedirect($APPLICATION->GetCurPageParam("ID=".$ID, array('ID')));
-				elseif(strlen($_POST["save"]) > 0)
-					LocalRedirect((isset($_REQUEST["back_url"]) ? $_REQUEST["back_url"] : "sale_delivery_service_edit.php?lang=".LANG."&ID=".$fields["DELIVERY_ID"]));
+				$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $ID));
+				if ($_POST["apply"] <> '')
+				{
+					$applyUrl = $APPLICATION->GetCurPageParam("ID=".$ID, array('ID'));
+					$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+					LocalRedirect($applyUrl);
+				}
+				elseif($_POST["save"] <> '')
+				{
+					$adminSidePanelHelper->localRedirect($backUrl);
+					LocalRedirect($backUrl);
+				}
+			}
+			else
+			{
+				$adminSidePanelHelper->sendJsonErrorResponse($strError);
 			}
 		}
 	}
@@ -142,7 +173,7 @@ if($DELIVERY_ID > 0)
 
 if($deliveryService && $ID <= 0)
 {
-	if(isset($_GET["ES_CODE"]) && strlen($_GET["ES_CODE"]) > 0)
+	if(isset($_GET["ES_CODE"]) && $_GET["ES_CODE"] <> '')
 	{
 		$embeddedList = $deliveryService->getEmbeddedExtraServicesList();
 
@@ -150,16 +181,23 @@ if($deliveryService && $ID <= 0)
 		{
 			$fields = $embeddedList[$_GET["ES_CODE"]];
 			$fields["CODE"] = $_GET["ES_CODE"];
-			$fields["ID"] = strval(mktime());
+			$fields["ID"] = strval(time());
 
 			if(empty($fields["RIGHTS"]))
 				$fields["RIGHTS"] = "NYY";
 		}
 	}
-	elseif(isset($_REQUEST["CLASS_NAME"]) && strlen($_REQUEST["CLASS_NAME"]) > 0)
+	elseif(isset($_REQUEST["CLASS_NAME"]) && $_REQUEST["CLASS_NAME"] <> '')
 	{
+		if(!is_subclass_of($_REQUEST["CLASS_NAME"], Base::class))
+		{
+			throw new \Bitrix\Main\SystemException(
+				'Class "' . htmlspecialcharsbx($_REQUEST["CLASS_NAME"]) . '" is not a subclass of the \Bitrix\Sale\Delivery\ExtraServices\Base'
+			);
+		}
+
 		$fields["CLASS_NAME"] = $_REQUEST["CLASS_NAME"];
-		$fields["ID"] = strval(mktime());
+		$fields["ID"] = strval(time());
 		$fields["RIGHTS"] = "YYY";
 		$fields["ACTIVE"] = "Y";
 	}
@@ -184,7 +222,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 $aMenu = array(
 	array(
 		"TEXT" => GetMessage("SALE_ESDE_TO_LIST"),
-		"LINK" => isset($_GET["back_url"]) ? $_GET["back_url"] : "/bitrix/admin/sale_delivery_service_list.php?lang=".LANGUAGE_ID."&ID=".$DELIVERY_ID,
+		"LINK" => $backUrl."&ID=".$DELIVERY_ID,
 		"ICON" => "btn_list"
 	)
 );
@@ -193,19 +231,19 @@ if ($ID > 0 && $saleModulePermissions >= "W")
 {
 	$aMenu[] = array("SEPARATOR" => "Y");
 
-	$aMenu[] = array(
-		"TEXT" => Loc::getMessage("SALE_ESDE_CREATE_NEW"),
-		"LINK" => "/bitrix/admin/sale_delivery_eservice_edit.php?lang=".LANGUAGE_ID."&DELIVERY_ID=".$DELIVERY_ID.(isset($_REQUEST["back_url"]) ? "&back_url=".urlencode($_REQUEST["back_url"]) : ""),
-		"ICON" => "btn_new"
-	);
-
-	if($fields["RIGHTS"][ExtraServices\Manager::RIGHTS_ADMIN_IDX] == "Y")
+	if ($fields["RIGHTS"][ExtraServices\Manager::RIGHTS_ADMIN_IDX] == "Y")
 	{
+		$deleteUrl = $selfFolderUrl."sale_delivery_service_edit.php?lang=".LANGUAGE_ID."&ID=".$DELIVERY_ID."&action=delete_extra_service".
+			"&ES_ID=".$ID."&".bitrix_sessid_get();
+		$buttonAction = "LINK";
+		if ($adminSidePanelHelper->isPublicFrame())
+		{
+			$deleteUrl = $adminSidePanelHelper->editUrlToPublicPage($deleteUrl);
+			$buttonAction = "ONCLICK";
+		}
 		$aMenu[] = array(
 			"TEXT" => Loc::getMessage("SALE_ESDE_DELETE_ITEM"),
-			"LINK" => "javascript:if(confirm('".Loc::getMessage("SALE_ESDE_CONFIRM_DEL_MESSAGE")."')) window.location='".
-				"sale_delivery_service_edit.php?lang=".LANG."&ID=".$DELIVERY_ID."&action=delete_extra_service".
-				"&ES_ID=".$ID."&".bitrix_sessid_get()."'",
+			$buttonAction => "javascript:if(confirm('".Loc::getMessage("SALE_ESDE_CONFIRM_DEL_MESSAGE")."')) top.window.location.href='".$deleteUrl."'",
 			"ICON" => "btn_delete"
 		);
 	}
@@ -214,14 +252,16 @@ if ($ID > 0 && $saleModulePermissions >= "W")
 $context = new CAdminContextMenu($aMenu);
 $context->Show();
 
-if(strlen($strError) > 0)
+if($strError <> '')
 {
 	$adminMessage = new CAdminMessage(Array("DETAILS"=>$strError, "TYPE"=>"ERROR", "MESSAGE"=>Loc::getMessage("SALE_DSE_ERROR"), "HTML"=>true));
 	echo $adminMessage->Show();
 }
 
+$actionUrl = $APPLICATION->GetCurPageParam();
+$actionUrl = $adminSidePanelHelper->setDefaultQueryParams($actionUrl);
 ?>
-<form method="POST" action="<?=$APPLICATION->GetCurPageParam()?>" name="form1" enctype="multipart/form-data">
+<form method="POST" action="<?=$actionUrl?>" name="form1" enctype="multipart/form-data">
 <input type="hidden" name="lang" value="<?=LANGUAGE_ID;?>">
 <input type="hidden" name="ID" value="<?=$ID?>">
 <input type="hidden" name="DELIVERY_ID" value="<?=$DELIVERY_ID?>">
@@ -275,7 +315,7 @@ $manager = new ExtraServices\Manager(array($fields), $deliveryService->getCurren
 		</td>
 	</tr>
 
-	<?if(isset($fields["CLASS_NAME"]) && strlen($fields["CLASS_NAME"]) > 0):?>
+	<?if(isset($fields["CLASS_NAME"]) && $fields["CLASS_NAME"] <> ''):?>
 		<tr>
 			<td class="adm-detail-valign-top"><?=(is_callable($fields["CLASS_NAME"].'::getAdminParamsName') ? htmlspecialcharsbx($fields["CLASS_NAME"]::getAdminParamsName()) : Loc::getMessage("SALE_ESDE_FIELD_PARAMS"))?>:</td>
 			<td>

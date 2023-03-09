@@ -19,7 +19,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Catalog
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_ProductGroupAccess_Query query()
+ * @method static EO_ProductGroupAccess_Result getByPrimary($primary, array $parameters = [])
+ * @method static EO_ProductGroupAccess_Result getById($id)
+ * @method static EO_ProductGroupAccess_Result getList(array $parameters = [])
+ * @method static EO_ProductGroupAccess_Entity getEntity()
+ * @method static \Bitrix\Catalog\EO_ProductGroupAccess createObject($setDefaultValues = true)
+ * @method static \Bitrix\Catalog\EO_ProductGroupAccess_Collection createCollection()
+ * @method static \Bitrix\Catalog\EO_ProductGroupAccess wakeUpObject($row)
+ * @method static \Bitrix\Catalog\EO_ProductGroupAccess_Collection wakeUpCollection($rows)
+ */
 
 class ProductGroupAccessTable extends Main\Entity\DataManager
 {
@@ -110,5 +123,26 @@ class ProductGroupAccessTable extends Main\Entity\DataManager
 			self::ACCESS_LENGTH_SEMIYEAR,
 			self::ACCESS_LENGTH_YEAR
 		);
+	}
+
+	/**
+	 * Delete all rows for product.
+	 * @internal
+	 *
+	 * @param int $id       Product id.
+	 * @return void
+	 */
+	public static function deleteByProduct($id)
+	{
+		$id = (int)$id;
+		if ($id <= 0)
+			return;
+
+		$conn = Main\Application::getConnection();
+		$helper = $conn->getSqlHelper();
+		$conn->queryExecute(
+			'delete from '.$helper->quote(self::getTableName()).' where '.$helper->quote('PRODUCT_ID').' = '.$id
+		);
+		unset($helper, $conn);
 	}
 }

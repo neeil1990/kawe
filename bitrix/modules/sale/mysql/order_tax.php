@@ -1,9 +1,10 @@
-<?
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/order_tax.php");
+<?php
+
+require_once __DIR__."/../general/order_tax.php";
 
 class CSaleOrderTax extends CAllSaleOrderTax
 {
-	function GetList($arOrder = array("TAX_NAME" => "ASC"), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array("TAX_NAME" => "ASC"), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -29,11 +30,11 @@ class CSaleOrderTax extends CAllSaleOrderTax
 		{
 			$strSql =
 				"SELECT ".$arSqls["SELECT"]." ".
-				"FROM b_sale_order_tax T ".
+				"FROM ".static::getTableName()." T ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!1!=".htmlspecialcharsbx($strSql)."<br>";
@@ -47,31 +48,31 @@ class CSaleOrderTax extends CAllSaleOrderTax
 
 		$strSql = 
 			"SELECT ".$arSqls["SELECT"]." ".
-			"FROM b_sale_order_tax T ".
+			"FROM ".static::getTableName()." T ".
 			"	".$arSqls["FROM"]." ";
-		if (strlen($arSqls["WHERE"]) > 0)
+		if ($arSqls["WHERE"] <> '')
 			$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-		if (strlen($arSqls["GROUPBY"]) > 0)
+		if ($arSqls["GROUPBY"] <> '')
 			$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
 
-		if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])<=0)
+		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
 		{
 			$strSql_tmp =
 				"SELECT COUNT('x') as CNT ".
-				"FROM b_sale_order_tax T ".
+				"FROM ".static::getTableName()." T ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql_tmp .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
 
 			$dbRes = $DB->Query($strSql_tmp, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			$cnt = 0;
-			if (strlen($arSqls["GROUPBY"]) <= 0)
+			if ($arSqls["GROUPBY"] == '')
 			{
 				if ($arRes = $dbRes->Fetch())
 					$cnt = $arRes["CNT"];
@@ -90,8 +91,8 @@ class CSaleOrderTax extends CAllSaleOrderTax
 		}
 		else
 		{
-			if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])>0)
-				$strSql .= "LIMIT ".IntVal($arNavStartParams["nTopCount"]);
+			if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])>0)
+				$strSql .= "LIMIT ".intval($arNavStartParams["nTopCount"]);
 
 			//echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
@@ -101,14 +102,14 @@ class CSaleOrderTax extends CAllSaleOrderTax
 		return $dbRes;
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		global $DB;
 
-		if (!CSaleOrderTax::CheckFields("ADD", $arFields))
+		if (!static::CheckFields("ADD", $arFields))
 			return false;
 
-		$dbResult = CSaleOrderTax::GetList(
+		$dbResult = static::GetList(
 			array(),
 			array(
 				"ORDER_ID" => $arFields['ORDER_ID'],
@@ -124,15 +125,14 @@ class CSaleOrderTax extends CAllSaleOrderTax
 			return false;
 		}
 
-		$arInsert = $DB->PrepareInsert("b_sale_order_tax", $arFields);
+		$arInsert = $DB->PrepareInsert(static::getTableName(), $arFields);
 		$strSql =
-			"INSERT INTO b_sale_order_tax(".$arInsert[0].") ".
+			"INSERT INTO ".static::getTableName()."(".$arInsert[0].") ".
 			"VALUES(".$arInsert[1].")";
 		$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		$ID = IntVal($DB->LastID());
+		$ID = intval($DB->LastID());
 
 		return $ID;
 	}
 }
-?>

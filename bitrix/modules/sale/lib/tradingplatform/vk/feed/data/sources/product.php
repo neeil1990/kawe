@@ -36,7 +36,7 @@ class Product extends DataSource implements \Iterator
 			throw new SystemException("Vk is not active!" . __METHOD__);
 
 //		check and set EXPORT ID
-		if (!isset($exportId) || strlen($exportId) <= 0)
+		if (!isset($exportId) || $exportId == '')
 			throw new ArgumentNullException("EXPORT_ID");
 		$this->exportId = $exportId;
 
@@ -49,9 +49,9 @@ class Product extends DataSource implements \Iterator
 //		get items only from sections, that was checked to export. And get them iblocksIds
 		$sectionsList = new Vk\SectionsList($this->exportId);
 		$sectionsToExport = $sectionsList->getSectionsToProductExport();
-		if($this->vk->getRichLog($this->exportId) && !empty($sectionsToExport))
+		$logger = new Vk\Logger($this->exportId);
+		if(!empty($sectionsToExport))
 		{
-			$logger = new Vk\Logger($this->exportId);
 			$logger->addLog('Sections to export', $sectionsToExport);
 		}
 		$iblockIds = $sectionsList->getMappedIblocks();
@@ -59,7 +59,6 @@ class Product extends DataSource implements \Iterator
 //		if not products to export - ERROR
 		if (empty($sectionsToExport))
 		{
-			$logger = new Vk\Logger($this->exportId);
 			$logger->addError('EMPTY_SECTIONS_LIST');
 		}
 
@@ -90,7 +89,7 @@ class Product extends DataSource implements \Iterator
 
 	protected function setStartPosition($startPosition)
 	{
-		if (strlen($startPosition) > 0)
+		if ($startPosition <> '')
 		{
 //			todo: maybe can use cache from sectionslist
 //			find IblockId for this product ID

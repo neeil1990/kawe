@@ -10,8 +10,25 @@ namespace Bitrix\Main\Mail\Internal;
 use Bitrix\Main\Entity;
 use Bitrix\Main\Mail as Mail;
 use Bitrix\Main\Config as Config;
+use Bitrix\Main\ORM\Fields\ArrayField;
 use Bitrix\Main\Type as Type;
 
+/**
+ * Class EventTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Event_Query query()
+ * @method static EO_Event_Result getByPrimary($primary, array $parameters = [])
+ * @method static EO_Event_Result getById($id)
+ * @method static EO_Event_Result getList(array $parameters = [])
+ * @method static EO_Event_Entity getEntity()
+ * @method static \Bitrix\Main\Mail\Internal\EO_Event createObject($setDefaultValues = true)
+ * @method static \Bitrix\Main\Mail\Internal\EO_Event_Collection createCollection()
+ * @method static \Bitrix\Main\Mail\Internal\EO_Event wakeUpObject($row)
+ * @method static \Bitrix\Main\Mail\Internal\EO_Event_Collection wakeUpCollection($rows)
+ */
 class EventTable extends Entity\DataManager
 {
 	/**
@@ -44,12 +61,18 @@ class EventTable extends Entity\DataManager
 				'data_type' => 'string',
 				'required' => true,
 			),
-			'C_FIELDS' => array(
-				'data_type' => 'string',
-				//'column_name' => 'C_FIELDS',
-				'save_data_modification' => array(__CLASS__, "getSaveModificatorsForFieldsField"),
-				'fetch_data_modification' => array(__CLASS__, "getFetchModificatorsForFieldsField"),
-			),
+
+			(new ArrayField('C_FIELDS'))
+				->configureSerializeCallback(function ($value){
+					return EventTable::serialize($value);
+				})
+				->configureUnserializeCallback(function ($str) {
+					return unserialize(
+						EventTable::getFetchModificationForFieldsField($str),
+						['allowed_classes' => false]
+					);
+				}),
+
 			'DATE_INSERT' => array(
 				'data_type' => 'datetime',
 				'default_value' => function(){return new Type\DateTime();},
@@ -163,7 +186,7 @@ class EventTable extends Entity\DataManager
 
 		$ar = explode("&", $str);
 		$newar = array();
-		while (list (, $val) = each ($ar))
+		foreach($ar as $val)
 		{
 			$val = str_replace("%1", "&", $val);
 			$tar = explode("=", $val);

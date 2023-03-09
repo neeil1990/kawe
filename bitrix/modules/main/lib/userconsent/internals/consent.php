@@ -8,12 +8,29 @@
 namespace Bitrix\Main\UserConsent\Internals;
 
 use Bitrix\Main\Entity;
+use Bitrix\Main\ORM\Fields\Relations\OneToMany;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Crm\WebForm\Helper;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class ConsentTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Consent_Query query()
+ * @method static EO_Consent_Result getByPrimary($primary, array $parameters = [])
+ * @method static EO_Consent_Result getById($id)
+ * @method static EO_Consent_Result getList(array $parameters = [])
+ * @method static EO_Consent_Entity getEntity()
+ * @method static \Bitrix\Main\UserConsent\Internals\EO_Consent createObject($setDefaultValues = true)
+ * @method static \Bitrix\Main\UserConsent\Internals\EO_Consent_Collection createCollection()
+ * @method static \Bitrix\Main\UserConsent\Internals\EO_Consent wakeUpObject($row)
+ * @method static \Bitrix\Main\UserConsent\Internals\EO_Consent_Collection wakeUpCollection($rows)
+ */
 class ConsentTable extends Entity\DataManager
 {
 	/**
@@ -30,6 +47,7 @@ class ConsentTable extends Entity\DataManager
 	 * Get map.
 	 *
 	 * @return array
+	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function getMap()
 	{
@@ -54,6 +72,15 @@ class ConsentTable extends Entity\DataManager
 			'IP' => array(
 				'data_type' => 'string',
 				'required' => true,
+				'validation' => function()
+				{
+					return [
+						function ($value)
+						{
+							return filter_var($value, FILTER_VALIDATE_IP) !== false;
+						}
+					];
+				}
 			),
 			'URL' => array(
 				'data_type' => 'string',
@@ -71,6 +98,7 @@ class ConsentTable extends Entity\DataManager
 				'data_type' => 'Bitrix\Main\UserTable',
 				'reference' => array('=this.USER_ID' => 'ref.ID'),
 			),
+			(new OneToMany('ITEMS', UserConsentItemTable::class, 'USER_CONSENT'))
 		);
 	}
 }

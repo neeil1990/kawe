@@ -38,7 +38,7 @@ window.BlogBFileDialog = function(arParams)
 	if (!!BX.FileUploadAgent) {
 		this.agent = new BX.FileUploadAgent(arParams);
 		BX.addCustomEvent(this, 'ShowUploadedFile', BX.delegate(this.ShowUploadedFile, this));
-		BX.addCustomEvent(this, 'StopUpload', BX.delegate(this.StopUpload, this));
+		BX.addCustomEvent(this, 'StopUpload', this.StopUpload.bind(this));
 		BX.onCustomEvent(BX(this.controller.parentNode), "BFileDLoadFormControllerInit", [this]);
 	} else {
 		BX.debug('/bitrix/components/bitrix/main.file.input/templates/drag_n_drop/script.js: BX.FileUploadAgent is not defined.' +
@@ -61,8 +61,8 @@ window.BlogBFileDialog.prototype.ShowUploadedFile = function(agent) // event
 {
 	this.agent = agent;
 	var uploadResult = agent.uploadResult;
-
 	if (uploadResult && (uploadResult.element_id > 0)) {
+		var node = this.CreateFileRow(uploadResult);
 		if (!!agent.inputName && agent.inputName.length > 0) {
 			var hidden = BX.create('INPUT', {
 				props: {
@@ -72,13 +72,20 @@ window.BlogBFileDialog.prototype.ShowUploadedFile = function(agent) // event
 					'value': uploadResult.element_id
 				}
 			});
-			agent.controller.appendChild(hidden);
+			node.appendChild(hidden);
 		}
-		this.values.push(this.CreateFileRow(uploadResult));
+		this.values.push(node);
 		agent._clearPlace();
 
 		if (this.controller && this.controller.parentNode)
+		{
+			const securityNode = (this.controller.closest('form') || this.controller.parentNode).querySelector('#upload-cid');
+			if (securityNode)
+			{
+				securityNode.value = this.CID;
+			}
 			BX.onCustomEvent(this.controller.parentNode, 'OnFileUploadSuccess', [uploadResult, this]);
+		}
 
 	} else {
 		var text = (uploadResult && uploadResult["error"] ? uploadResult["error"] : this.msg.upload_error);
@@ -99,12 +106,11 @@ window.BlogBFileDialog.prototype.CreateFileRow = function(result)
 		mode = 'image';
 	}
 
-	var tpl = BX("file-" + mode + "-template");
+	var newNode = BX.clone(BX("file-" + mode + "-template"));
 
-	BX.template(tpl, BX.delegate(function(node) {
+	BX.template(newNode, BX.delegate(function(node) {
 		this.tplFileRow(node, res);
 	}, this));
-	var newNode = BX.clone(tpl);
 
 	if (mode == 'image') {
 		var span = null;
@@ -129,6 +135,7 @@ window.BlogBFileDialog.prototype.CreateFileRow = function(result)
 	} else {
 		newNode.setAttribute('id', this.doc_prefix + result.element_id);
 		this.agent.AddRowToPlaceholder(newNode);
+		newNode = this.agent.placeholder.querySelector('#' + this.doc_prefix + result.element_id);
 	}
 	return newNode;
 }
@@ -184,23 +191,34 @@ window.BlogBFileDialog.prototype.LoadDialogs = function(dialogs)
 window.BlogBFileDialog.prototype.StopUpload = function(agent, parent)
 {
 	this.agent = agent;
-	id = false;
-	mID = parent.id.match(new RegExp(this.doc_prefix + '(\\d+)'));
-	if (!!mID) {
-		id = mID[1];
+	var id = 0;
+	var regExp = new RegExp(this.doc_prefix + '(\\d+)');
+	if (regExp.test(parent.id))
+	{
+		var buf = parent.id.match(regExp);
+		id = buf[1];
 	}
-
 	if (this.controller && this.controller.parentNode)
+	{
 		BX.onCustomEvent(this.controller.parentNode, 'OnFileUploadRemove', [id, this]);
+	}
 
 	var data = {
 		fileID : id,
 		sessid : BX.bitrix_sessid(),
 		cid : this.CID,
 		controlID : this.controlID,
-		mfi_mode : "delete"
+		mfi_mode : "delete",
 	};
-	BX.ajax.post(this.uploadFileUrl, data);
+
+	BX.ajax({
+		'method': 'POST',
+		'dataType': 'html',
+		'url': this.uploadFileUrl,
+		'processData': false,
+		'data': BX.ajax.prepareData(data),
+		'onsuccess': function() {}
+	});
 }
 
 window.BlogBFileDialogDispatcher = function(controller)
@@ -359,33 +377,37 @@ window.BlogBFileDialogUploader.prototype.GetUploadFileName = function()
 
 window.BlogBFileDialogUploader.prototype.Callback = function(files, uniqueID)
 {
-	if (files.length > 0) {
-		for(var i = 0; i < files.length; i++) {
-			var result = {};
-			result.success = true;
-			result.storage = 'bfile';
-			result.element_id = files[i].fileID;
-			result.element_name = files[i].fileName;
-			result.element_size = files[i].fileSize;
-			result.element_url = files[i].fileURL;
-			result.element_content_type = (files[i].content_type ? files[i].content_type : files[i].fileContentType);
-
-			result.element_image = ((!!files[i].img_thumb_src) ? files[i].img_thumb_src : files[i].fileSrc);
+	if (BX.type.isArray(files))
+	{
+		files.forEach((function(file) {
+			var result = {
+				success: true,
+				storage: 'bfile',
+				element_id: file.fileID,
+				element_name: file.fileName,
+				element_size: file.fileSize,
+				element_url: file.fileURL,
+				element_content_type: file.content_type || file.fileContentType,
+				element_image: file.img_thumb_src || file.fileSrc,
+				element_thumbnail: file.img_source_src || file.fileSrc,
+			};
 			if (!!result.element_image)
 				result.element_image = result.element_image.replace(/\/([^\/]+)$/, function(str, name) { return "/" + BX.util.urlencode(name); } );
-			result.element_thumbnail = ((!!files[i].img_source_src) ? files[i].img_source_src: files[i].fileSrc);
 			if (!!result.element_thumbnail)
 				result.element_thumbnail = result.element_thumbnail.replace(/\/([^\/]+)$/, function(str, name) { return "/" + BX.util.urlencode(name); } );
-			if (files[i]["error"])
-				result["error"] = files[i]["error"];
+
+			if (file['error'] || file['status'] === 'error')
+			{
+				result['error'] = file['error'] || file['message'];
+			}
 
 			BX.onCustomEvent(this, 'uploadFinish', [result]);
-		}
+		}).bind(this));
 	} else {
-		var result = {};
-		result.success = false;
-		result.messages = this.msg.upload_error;
-		BX.onCustomEvent(this, 'uploadFinish', [result]);
+		BX.onCustomEvent(this, 'uploadFinish', [{
+			success: false,
+			messages: BX.type.isNotEmptyString(files) ? files : this.msg.upload_error
+		}]);
 	}
 	window['FILE_UPLOADER_CALLBACK_' + uniqueID] = BX.DoNothing;
 	BX.cleanNode(BX("iframe-" + uniqueID), true);

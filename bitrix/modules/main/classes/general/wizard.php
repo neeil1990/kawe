@@ -168,11 +168,11 @@ class CWizardBase
 	{
 		$arVars = Array();
 		$prefix = $this->GetVarPrefix();
-		$prefixLength = strlen($prefix);
+		$prefixLength = mb_strlen($prefix);
 		foreach ($_REQUEST as $varName => $varValue)
 		{
 			if (strncmp($prefix, $varName, $prefixLength) == 0)
-				$arVars[substr($varName, $prefixLength)] = $varValue;
+				$arVars[mb_substr($varName, $prefixLength)] = $varValue;
 		}
 
 		if ($useDefault)
@@ -191,13 +191,17 @@ class CWizardBase
 
 		if (array_key_exists($trueName, $_REQUEST))
 			return $_REQUEST[$trueName];
-		elseif (strpos($trueName, '['))
+		elseif(mb_strpos($trueName, '['))
 		{
 			$varValue = $this->__GetComplexVar($trueName, $_REQUEST);
-			if ($varValue !== null)
+			if($varValue !== null)
+			{
 				return $varValue;
-			elseif ($useDefault)
+			}
+			elseif($useDefault)
+			{
 				return $this->GetDefaultVar($varName);
+			}
 		}
 		elseif ($useDefault)
 			return $this->GetDefaultVar($varName);
@@ -209,7 +213,7 @@ class CWizardBase
 	{
 		$trueName = $this->GetRealName($varName);
 
-		if (!strpos($varName, '['))
+		if (!mb_strpos($varName, '['))
 			$_REQUEST[$trueName] = $varValue;
 		else
 			$this->__SetComplexVar($trueName, $varValue, $_REQUEST);
@@ -219,7 +223,7 @@ class CWizardBase
 	{
 		$trueName = $this->GetRealName($varName);
 
-		if (!strpos($varName, '['))
+		if (!mb_strpos($varName, '['))
 			unset($_REQUEST[$trueName]);
 		else
 			$this->__UnSetComplexVar($trueName, $_REQUEST);
@@ -287,7 +291,7 @@ class CWizardBase
 	{
 		$varName = str_replace("[]", "", $varName);
 
-		if (!strpos($varName, '['))
+		if (!mb_strpos($varName, '['))
 			$this->defaultVars[$varName] = $varValue;
 		else
 			$this->__SetComplexVar($varName, $varValue, $this->defaultVars);
@@ -308,8 +312,10 @@ class CWizardBase
 
 		if (array_key_exists($varName, $this->defaultVars))
 			return $this->defaultVars[$varName];
-		elseif (strpos($varName, '['))
+		elseif(mb_strpos($varName, '['))
+		{
 			return $this->__GetComplexVar($varName, $this->defaultVars);
+		}
 
 		return null;
 	}
@@ -533,7 +539,7 @@ class CWizardBase
 		{
 			$formStart .= '<input type="hidden" name="'.$this->nextStepHiddenID.'" value="'.$oStep->nextStepID.'">';
 			$nextButtonHtml = '<input type="submit" class="wizard-next-button" name="'.$this->nextButtonID.'" value="'.$oStep->nextCaption.'">';
-			$buttonsHtml .= (strlen($buttonsHtml)>0 ? "&nbsp;" : "").$nextButtonHtml;
+			$buttonsHtml .= ($buttonsHtml <> '' ? "&nbsp;" : "").$nextButtonHtml;
 		}
 
 		$finishButtonHtml = "";
@@ -541,7 +547,7 @@ class CWizardBase
 		{
 			$formStart .= '<input type="hidden" name="'.$this->finishStepHiddenID.'" value="'.$oStep->finishStepID.'">';
 			$finishButtonHtml = '<input type="submit" class="wizard-finish-button" name="'.$this->finishButtonID.'" value="'.$oStep->finishCaption.'">';
-			$buttonsHtml .= (strlen($buttonsHtml)>0 ? "&nbsp;" : "").$finishButtonHtml;
+			$buttonsHtml .= ($buttonsHtml <> '' ? "&nbsp;" : "").$finishButtonHtml;
 		}
 
 		$cancelButtonHtml = "";
@@ -549,7 +555,7 @@ class CWizardBase
 		{
 			$formStart .= '<input type="hidden" name="'.$this->cancelStepHiddenID.'" value="'.$oStep->cancelStepID.'">';
 			$cancelButtonHtml = '<input type="submit" class="wizard-cancel-button" name="'.$this->cancelButtonID.'" value="'.$oStep->cancelCaption.'">';
-			$buttonsHtml .= (strlen($buttonsHtml)>0 ? "&nbsp;&nbsp;&nbsp;" : "").$cancelButtonHtml;
+			$buttonsHtml .= ($buttonsHtml <> '' ? "&nbsp;&nbsp;&nbsp;" : "").$cancelButtonHtml;
 		}
 
 		$output = str_replace("{#FORM_START#}", $formStart, $stepLayout);
@@ -617,7 +623,7 @@ class CWizardBase
 
 	function __ShowError($errorMessage)
 	{
-		if (strlen($errorMessage) > 0)
+		if ($errorMessage <> '')
 			echo '<span style="color:#FF0000">'.$errorMessage.'</span>';
 	}
 
@@ -718,12 +724,6 @@ class CWizardStep
 		$this->content = "";
 
 		$this->autoSubmit = false;
-	}
-
-	/** @deprecated */
-	public function CWizardStep()
-	{
-		self::__construct();
 	}
 
 	//Step initialization
@@ -1107,10 +1107,10 @@ class CWizardStep
 		$oldFileID = $wizard->GetVar($name);
 		$fileNew = $wizard->GetRealName($name."_new");
 
-		if (!array_key_exists($fileNew, $_FILES) || (strlen($_FILES[$fileNew]["name"]) <= 0 && $deleteFile === null))
+		if (!array_key_exists($fileNew, $_FILES) || ($_FILES[$fileNew]["name"] == '' && $deleteFile === null))
 			return;
 
-		if (strlen($_FILES[$fileNew]["tmp_name"]) <= 0 && $deleteFile === null)
+		if ($_FILES[$fileNew]["tmp_name"] == '' && $deleteFile === null)
 		{
 			$this->SetError(GetMessage("MAIN_WIZARD_FILE_UPLOAD_ERROR"), $name."_new");
 			return;
@@ -1125,11 +1125,11 @@ class CWizardStep
 		$max_file_size = (array_key_exists("max_file_size", $arRestriction) ? intval($arRestriction["max_file_size"]) : 0);
 		$max_width = (array_key_exists("max_width", $arRestriction) ? intval($arRestriction["max_width"]) : 0);
 		$max_height = (array_key_exists("max_height", $arRestriction) ? intval($arRestriction["max_height"]) : 0);
-		$extensions = (array_key_exists("extensions", $arRestriction) && strlen($arRestriction["extensions"]) > 0 ? trim($arRestriction["extensions"]) : false);
+		$extensions = (array_key_exists("extensions", $arRestriction) && $arRestriction["extensions"] <> '' ? trim($arRestriction["extensions"]) : false);
 		$make_preview = (array_key_exists("make_preview", $arRestriction) && $arRestriction["make_preview"] == "Y" ? true : false);
 
 		$error = CFile::CheckFile($arFile, $max_file_size, false, $extensions);
-		if (strlen($error)>0)
+		if ($error <> '')
 		{
 			$this->SetError($error, $name."_new");
 			return;
@@ -1137,19 +1137,21 @@ class CWizardStep
 
 		if ($make_preview && $max_width > 0 && $max_height > 0)
 		{
-			list($sourceWidth, $sourceHeight, $type, $attr) = CFile::GetImageSize($arFile["tmp_name"]);
-
-			if ($sourceWidth > $max_width || $sourceHeight > $max_height)
+			$info = (new \Bitrix\Main\File\Image($arFile["tmp_name"]))->getInfo();
+			if($info)
 			{
-				$success = CWizardUtil::CreateThumbnail($arFile["tmp_name"], $arFile["tmp_name"], $max_width, $max_height);
-				if ($success)
-					$arFile["size"] = @filesize($arFile["tmp_name"]);
+				if ($info->getWidth() > $max_width || $info->getHeight() > $max_height)
+				{
+					$success = CWizardUtil::CreateThumbnail($arFile["tmp_name"], $arFile["tmp_name"], $max_width, $max_height);
+					if ($success)
+						$arFile["size"] = @filesize($arFile["tmp_name"]);
+				}
 			}
 		}
 		elseif ($max_width > 0 || $max_height > 0)
 		{
 			$error = CFile::CheckImageFile($arFile, $max_file_size, $max_width, $max_height);
-			if (strlen($error)>0)
+			if ($error <> '')
 			{
 				$this->SetError($error, $name."_new");
 				return;
@@ -1475,7 +1477,7 @@ class CWizardAdminTemplate extends CWizardTemplate
 					$strJsError .= ($strJsError <> ""? ", ":"")."{'name':'".CUtil::addslashes($wizard->GetRealName($arError[1]))."', 'title':'".CUtil::addslashes(htmlspecialcharsback($arError[0]))."'}";
 			}
 
-			if (strlen($strError) > 0)
+			if ($strError <> '')
 				$strError = '<div id="step_error">'.$strError."</div>";
 
 			$strJsError = '
@@ -1603,20 +1605,6 @@ class CWizardAdminTemplate extends CWizardTemplate
 				outline:none;
 				padding:2px 13px 1px;
 			}
-
-			.bx-ie8 .step-buttons input,
-			.bx-ie9 .step-buttons input {
-				border-radius:4px;
-				background:url("/bitrix/panel/main/images/bx-admin-sprite-small-2.png") repeat-x 0 -3554px;
-				box-shadow:0 0 0 1px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 0 #FFFFFF inset, 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
-				line-height:16px;
-				height:31px!important;
-				padding-top:6px!important;
-				padding-bottom:6px!important;
-				margin-right: 3px !important;
-			}
-
-			.bx-ie8 .step-buttons input {border:1px solid #959c9d !important;}
 
 			#step_error
 			{

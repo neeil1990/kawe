@@ -5,7 +5,7 @@ use Bitrix\Main;
 use Bitrix\Main\ArgumentNullException;
 use Bitrix\Main\Data;
 use Bitrix\Main\Diag;
-use Bitrix\Main\Entity;
+use Bitrix\Main\ORM\Fields\ScalarField;
 
 /**
  * Class Connection
@@ -66,36 +66,18 @@ abstract class Connection extends Data\Connection
 	{
 		parent::__construct($configuration);
 
-		$this->host = $configuration['host'];
-		$this->database = $configuration['database'];
-		$this->login = $configuration['login'];
-		$this->password = $configuration['password'];
-		$this->initCommand = isset($configuration['initCommand']) ? $configuration['initCommand'] : "";
-		$this->options = intval($configuration['options']);
-		$this->utf8mb4 = (isset($configuration['utf8mb4']) && is_array($configuration['utf8mb4'])? $configuration['utf8mb4'] : array());
+		$this->host = $configuration['host'] ?? '';
+		$this->database = $configuration['database'] ?? '';
+		$this->login = $configuration['login'] ?? '';
+		$this->password = $configuration['password'] ?? '';
+		$this->initCommand = $configuration['initCommand'] ?? '';
+		$this->options = intval($configuration['options'] ?? 2);
+		$this->utf8mb4 = (isset($configuration['utf8mb4']) && is_array($configuration['utf8mb4'])? $configuration['utf8mb4'] : []);
 	}
 
 	/**
-	 * @return string
-	 * @deprecated Use getHost()
-	 */
-	public function getDbHost()
-	{
-		return $this->getHost();
-	}
-
-	/**
-	 * @return string
-	 * @deprecated Use getLogin()
-	 */
-	public function getDbLogin()
-	{
-		return $this->getLogin();
-	}
-
-	/**
-	 * @return string
 	 * @deprecated Use getDatabase()
+	 * @return string
 	 */
 	public function getDbName()
 	{
@@ -123,6 +105,16 @@ abstract class Connection extends Data\Connection
 	}
 
 	/**
+	 * Returns database password.
+	 *
+	 * @return string
+	 */
+	public function getPassword()
+	{
+		return $this->password;
+	}
+
+	/**
 	 * Returns database name.
 	 *
 	 * @return string
@@ -130,19 +122,6 @@ abstract class Connection extends Data\Connection
 	public function getDatabase()
 	{
 		return $this->database;
-	}
-
-	/**
-	 * Sets the connection resource directly.
-	 *
-	 * @param resource &$connection Database depended connection resource.
-	 *
-	 * @return void
-	 */
-	public function setConnectionResourceNoDemand(&$connection)
-	{
-		$this->resource = &$connection;
-		$this->isConnected = true;
 	}
 
 	/**
@@ -189,7 +168,7 @@ abstract class Connection extends Data\Connection
 	 * @api
 	 * @see disableQueryExecuting
 	 *
-	 * @return null|\string[]
+	 * @return null|string[]
 	 */
 	public function getDisabledQueryExecutingDump()
 	{
@@ -204,7 +183,7 @@ abstract class Connection extends Data\Connection
 	 **********************************************************/
 
 	/**
-	 * @return \Bitrix\Main\Db\SqlHelper
+	 * @return SqlHelper
 	 */
 	abstract protected function createSqlHelper();
 
@@ -212,7 +191,7 @@ abstract class Connection extends Data\Connection
 	 * Returns database depended SqlHelper object.
 	 * Creates new one on the first call per Connection object instance.
 	 *
-	 * @return \Bitrix\Main\Db\SqlHelper
+	 * @return SqlHelper
 	 */
 	public function getSqlHelper()
 	{
@@ -235,10 +214,10 @@ abstract class Connection extends Data\Connection
 	{
 		$this->isConnected = false;
 
-		if (($this->options & self::DEFERRED) != 0)
-			return;
-
-		parent::connect();
+		if (!$this->isDeferred())
+		{
+			parent::connect();
+		}
 	}
 
 	/**
@@ -248,10 +227,28 @@ abstract class Connection extends Data\Connection
 	 */
 	public function disconnect()
 	{
-		if (($this->options & self::PERSISTENT) != 0)
-			return;
+		if (!$this->isPersistent())
+		{
+			parent::disconnect();
+		}
+	}
 
-		parent::disconnect();
+	/**
+	 * Returns true if the connection is deferred.
+	 * @return bool
+	 */
+	public function isDeferred()
+	{
+		return (($this->options & self::DEFERRED) !== 0);
+	}
+
+	/**
+	 * Returns true if the connection is persistent.
+	 * @return bool
+	 */
+	public function isPersistent()
+	{
+		return (($this->options & self::PERSISTENT) !== 0);
 	}
 
 	/*********************************************************
@@ -265,24 +262,24 @@ abstract class Connection extends Data\Connection
 	 * When object $trackerQuery passed then calls its startQuery and finishQuery
 	 * methods before and after query execution.
 	 *
-	 * @param string                            $sql Sql query.
-	 * @param array                             $binds Array of binds.
-	 * @param \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery Debug collector object.
+	 * @param string $sql Sql query.
+	 * @param array|null $binds Array of binds.
+	 * @param Diag\SqlTrackerQuery|null $trackerQuery Debug collector object.
 	 *
 	 * @return resource
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
-	abstract protected function queryInternal($sql, array $binds = null, \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery = null);
+	abstract protected function queryInternal($sql, array $binds = null, Diag\SqlTrackerQuery $trackerQuery = null);
 
 	/**
 	 * Returns database depended result of the query.
 	 *
 	 * @param resource $result Result of internal query function.
-	 * @param \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery Debug collector object.
+	 * @param Diag\SqlTrackerQuery|null $trackerQuery Debug collector object.
 	 *
 	 * @return Result
 	 */
-	abstract protected function createResult($result, \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery = null);
+	abstract protected function createResult($result, Diag\SqlTrackerQuery $trackerQuery = null);
 
 	/**
 	 * Executes a query to the database.
@@ -300,7 +297,7 @@ abstract class Connection extends Data\Connection
 	 * @param int $limit Limit rows count.
 	 *
 	 * @return Result
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	public function query($sql)
 	{
@@ -348,10 +345,10 @@ abstract class Connection extends Data\Connection
 	 * from the first column of the result.
 	 *
 	 * @param string $sql Sql text.
-	 * @param array $binds Binding array.
+	 * @param array|null $binds Binding array.
 	 *
 	 * @return string|null
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	public function queryScalar($sql, array $binds = null)
 	{
@@ -369,10 +366,10 @@ abstract class Connection extends Data\Connection
 	 * Executes a query without returning result, i.e. INSERT, UPDATE, DELETE
 	 *
 	 * @param string $sql Sql text.
-	 * @param array[string]mixed $binds Binding array.
+	 * @param array|null $binds Binding array.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	public function queryExecute($sql, array $binds = null)
 	{
@@ -441,7 +438,7 @@ abstract class Connection extends Data\Connection
 	 * @param string $identity For Oracle only.
 	 *
 	 * @return integer
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	public function add($tableName, array $data, $identity = "ID")
 	{
@@ -450,6 +447,68 @@ abstract class Connection extends Data\Connection
 		$sql =
 			"INSERT INTO ".$this->getSqlHelper()->quote($tableName)."(".$insert[0].") ".
 			"VALUES (".$insert[1].")";
+
+		$this->queryExecute($sql);
+
+		return $this->getInsertedId();
+	}
+
+	/**
+	 * @param string $tableName
+	 * @param array  $rows
+	 * @param string $identity
+	 *
+	 * @return int
+	 * @throws SqlQueryException
+	 */
+	public function addMulti($tableName, $rows, $identity = "ID")
+	{
+		$uniqueColumns = [];
+		$inserts = [];
+
+		// prepare data
+		foreach ($rows as $data)
+		{
+			$insert = $this->getSqlHelper()->prepareInsert($tableName, $data, true);
+			$inserts[] = $insert;
+
+			// and get unique column names
+			foreach ($insert[0] as $column)
+			{
+				$uniqueColumns[$column] = true;
+			}
+		}
+
+		// prepare sql
+		$sqlValues = [];
+
+		foreach ($inserts as $insert)
+		{
+
+			$columns = array_flip($insert[0]);
+			$values = $insert[1];
+
+			$finalValues = [];
+
+			foreach (array_keys($uniqueColumns) as $column)
+			{
+				if (array_key_exists($column, $columns))
+				{
+					// set real value
+					$finalValues[] = $values[$columns[$column]];
+				}
+				else
+				{
+					// set default
+					$finalValues[] = 'DEFAULT';
+				}
+			}
+
+			$sqlValues[] = '('.join(', ', $finalValues).')';
+		}
+
+		$sql = "INSERT INTO {$this->getSqlHelper()->quote($tableName)} (".join(', ', array_keys($uniqueColumns)).") ".
+				"VALUES ".join(', ', $sqlValues);
 
 		$this->queryExecute($sql);
 
@@ -468,16 +527,43 @@ abstract class Connection extends Data\Connection
 	 *
 	 * @param string $sqlBatch String with queries, separated by database-specific delimiters.
 	 * @param bool $stopOnError Whether return after the first error.
-	 *
 	 * @return array Array of errors or empty array on success.
 	 */
 	public function executeSqlBatch($sqlBatch, $stopOnError = false)
+	{
+		$result = [];
+		foreach ($this->parseSqlBatch($sqlBatch) as $sql)
+		{
+			try
+			{
+				$this->queryExecute($sql);
+			}
+			catch (SqlException $ex)
+			{
+				$result[] = $ex->getMessage();
+				if ($stopOnError)
+				{
+					return $result;
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Parses the text containing sqls into separate queries.
+	 *
+	 * @param string $sqlBatch
+	 * @return array
+	 */
+	public function parseSqlBatch($sqlBatch)
 	{
 		$delimiter = $this->getSqlHelper()->getQueryDelimiter();
 
 		$sqlBatch = trim($sqlBatch);
 
-		$statements = array();
+		$statements = [];
 		$sql = "";
 
 		do
@@ -487,12 +573,12 @@ abstract class Connection extends Data\Connection
 				//Found string start
 				if ($match[2] == "\"" || $match[2] == "'" || $match[2] == "`")
 				{
-					$sqlBatch = substr($sqlBatch, strlen($match[0]));
+					$sqlBatch = mb_substr($sqlBatch, mb_strlen($match[0]));
 					$sql .= $match[0];
 					//find a quote not preceded by \
 					if (preg_match("%^(.*?)(?<!\\\\)".$match[2]."%s", $sqlBatch, $stringMatch))
 					{
-						$sqlBatch = substr($sqlBatch, strlen($stringMatch[0]));
+						$sqlBatch = mb_substr($sqlBatch, mb_strlen($stringMatch[0]));
 						$sql .= $stringMatch[0];
 					}
 					else
@@ -506,28 +592,28 @@ abstract class Connection extends Data\Connection
 				elseif ($match[2] == "#" || $match[2] == "--")
 				{
 					//Take that was before comment as part of sql
-					$sqlBatch = substr($sqlBatch, strlen($match[1]));
+					$sqlBatch = mb_substr($sqlBatch, mb_strlen($match[1]));
 					$sql .= $match[1];
 					//And cut the rest
-					$p = strpos($sqlBatch, "\n");
+					$p = mb_strpos($sqlBatch, "\n");
 					if ($p === false)
 					{
-						$p1 = strpos($sqlBatch, "\r");
+						$p1 = mb_strpos($sqlBatch, "\r");
 						if ($p1 === false)
 							$sqlBatch = "";
 						elseif ($p < $p1)
-							$sqlBatch = substr($sqlBatch, $p);
+							$sqlBatch = mb_substr($sqlBatch, $p);
 						else
-							$sqlBatch = substr($sqlBatch, $p1);
+							$sqlBatch = mb_substr($sqlBatch, $p1);
 					}
 					else
-						$sqlBatch = substr($sqlBatch, $p);
+						$sqlBatch = mb_substr($sqlBatch, $p);
 				}
 				//Delimiter!
 				else
 				{
 					//Take that was before delimiter as part of sql
-					$sqlBatch = substr($sqlBatch, strlen($match[0]));
+					$sqlBatch = mb_substr($sqlBatch, mb_strlen($match[0]));
 					$sql .= $match[1];
 					//Delimiter must be followed by whitespace
 					if (preg_match("%^[\n\r\t ]%", $sqlBatch))
@@ -556,24 +642,11 @@ abstract class Connection extends Data\Connection
 
 		$sql = trim($sql);
 		if (!empty($sql))
-			$statements[] = str_replace("\r\n", "\n", $sql);
-
-		$result = array();
-		foreach ($statements as $sql)
 		{
-			try
-			{
-				$this->queryExecute($sql);
-			}
-			catch (SqlException $ex)
-			{
-				$result[] = $ex->getMessage();
-				if ($stopOnError)
-					return $result;
-			}
+			$statements[] = str_replace("\r\n", "\n", $sql);
 		}
 
-		return $result;
+		return $statements;
 	}
 
 	/**
@@ -605,7 +678,7 @@ abstract class Connection extends Data\Connection
 	 * @param array  $columns An array of columns in the index.
 	 *
 	 * @return boolean
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function isIndexExists($tableName, array $columns);
 
@@ -617,7 +690,6 @@ abstract class Connection extends Data\Connection
 	 * @param bool $strict The flag indicating that the columns in the index must exactly match the columns in the $arColumns parameter.
 	 *
 	 * @return string|null Name of the index or null if the index doesn't exist.
-	 * @throws \Bitrix\Main\Db\SqlQueryException
 	 */
 	abstract public function getIndexName($tableName, array $columns, $strict = false);
 
@@ -627,20 +699,19 @@ abstract class Connection extends Data\Connection
 	 *
 	 * @param string $tableName The table name.
 	 *
-	 * @return Entity\ScalarField[] An array of objects with columns information.
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @return ScalarField[] An array of objects with columns information.
+	 * @throws SqlQueryException
 	 */
 	abstract public function getTableFields($tableName);
 
 	/**
 	 * @param string $tableName Name of the new table.
-	 * @param \Bitrix\Main\Entity\ScalarField[] $fields Array with columns descriptions.
+	 * @param ScalarField[] $fields Array with columns descriptions.
 	 * @param string[] $primary Array with primary key column names.
 	 * @param string[] $autoincrement Which columns will be auto incremented ones.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\ArgumentException
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function createTable($tableName, $fields, $primary = array(), $autoincrement = array());
 
@@ -648,11 +719,11 @@ abstract class Connection extends Data\Connection
 	 * Creates primary index on column(s)
 	 * @api
 	 *
-	 * @param string          $tableName Name of the table.
+	 * @param string $tableName Name of the table.
 	 * @param string|string[] $columnNames Name of the column or array of column names to be included into the index.
 	 *
 	 * @return Result
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	public function createPrimaryIndex($tableName, $columnNames)
 	{
@@ -675,12 +746,12 @@ abstract class Connection extends Data\Connection
 	 * Creates index on column(s)
 	 * @api
 	 *
-	 * @param string          $tableName Name of the table.
-	 * @param string          $indexName Name of the new index.
+	 * @param string $tableName Name of the table.
+	 * @param string $indexName Name of the new index.
 	 * @param string|string[] $columnNames Name of the column or array of column names to be included into the index.
 	 *
 	 * @return Result
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	public function createIndex($tableName, $indexName, $columnNames)
 	{
@@ -708,8 +779,8 @@ abstract class Connection extends Data\Connection
 	 * @param string $tableName Name of the table.
 	 * @param string $columnName Name of the column.
 	 *
-	 * @return Entity\ScalarField | null
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @return ScalarField | null
+	 * @throws SqlQueryException
 	 */
 	public function getTableField($tableName, $columnName)
 	{
@@ -719,7 +790,7 @@ abstract class Connection extends Data\Connection
 	}
 
 	/**
-	 * Truncates all table data
+	 * Truncates all table data.
 	 *
 	 * @param string $tableName Name of the table.
 	 * @return Result
@@ -736,7 +807,7 @@ abstract class Connection extends Data\Connection
 	 * @param string $newName New name of the table.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function renameTable($currentName, $newName);
 
@@ -748,7 +819,7 @@ abstract class Connection extends Data\Connection
 	 * @param string $columnName Name of the column to be dropped.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	public function dropColumn($tableName, $columnName)
 	{
@@ -761,7 +832,7 @@ abstract class Connection extends Data\Connection
 	 * @param string $tableName Name of the table to be dropped.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function dropTable($tableName);
 
@@ -773,7 +844,7 @@ abstract class Connection extends Data\Connection
 	 * Starts new database transaction.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function startTransaction();
 
@@ -781,7 +852,7 @@ abstract class Connection extends Data\Connection
 	 * Commits started database transaction.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function commitTransaction();
 
@@ -789,10 +860,34 @@ abstract class Connection extends Data\Connection
 	 * Rollbacks started database transaction.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function rollbackTransaction();
 
+	/*********************************************************
+	 * Global named lock
+	 *********************************************************/
+
+	/**
+	 * Sets a global named lock. Currently only Mysql is supported.
+	 * @param string $name The lock name.
+	 * @param int $timeout
+	 * @return bool
+	 */
+	public function lock($name, $timeout = 0)
+	{
+		return true;
+	}
+
+	/**
+	 * Releases a global named lock. Currently only Mysql is supported.
+	 * @param string $name The lock name.
+	 * @return bool
+	 */
+	public function unlock($name)
+	{
+		return true;
+	}
 
 	/*********************************************************
 	 * Tracker
@@ -803,7 +898,7 @@ abstract class Connection extends Data\Connection
 	 *
 	 * @param boolean $reset Clears all previously collected information when set to true.
 	 *
-	 * @return \Bitrix\Main\Diag\SqlTracker
+	 * @return Diag\SqlTracker
 	 */
 	public function startTracker($reset = false)
 	{
@@ -830,7 +925,7 @@ abstract class Connection extends Data\Connection
 	 * Returns an object with information about queries executed.
 	 * or null if no tracking was started.
 	 *
-	 * @return null|\Bitrix\Main\Diag\SqlTracker
+	 * @return null|Diag\SqlTracker
 	 */
 	public function getTracker()
 	{
@@ -844,7 +939,7 @@ abstract class Connection extends Data\Connection
 	 *
 	 * @return void
 	 */
-	public function setTracker(\Bitrix\Main\Diag\SqlTracker $sqlTracker = null)
+	public function setTracker(Diag\SqlTracker $sqlTracker = null)
 	{
 		$this->sqlTracker = $sqlTracker;
 	}
@@ -872,7 +967,7 @@ abstract class Connection extends Data\Connection
 	 * - Second (with index 1) is true when light/express version of database is used.
 	 *
 	 * @return array
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws SqlQueryException
 	 */
 	abstract public function getVersion();
 
@@ -947,5 +1042,32 @@ abstract class Connection extends Data\Connection
 		}
 
 		return false;
+	}
+
+	protected static function findIndex(array $indexes, array $columns, $strict)
+	{
+		$columnsList = implode(",", $columns);
+
+		foreach ($indexes as $indexName => $indexColumns)
+		{
+			ksort($indexColumns);
+			$indexColumnList = implode(",", $indexColumns);
+			if ($strict)
+			{
+				if ($indexColumnList === $columnsList)
+				{
+					return $indexName;
+				}
+			}
+			else
+			{
+				if (substr($indexColumnList, 0, strlen($columnsList)) === $columnsList)
+				{
+					return $indexName;
+				}
+			}
+		}
+
+		return null;
 	}
 }

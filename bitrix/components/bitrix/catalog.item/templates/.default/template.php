@@ -71,18 +71,25 @@ if (isset($arResult['ITEM']))
 		$actualItem = $item;
 	}
 
+	$morePhoto = null;
 	if ($arParams['PRODUCT_DISPLAY_MODE'] === 'N' && $haveOffers)
 	{
 		$price = $item['ITEM_START_PRICE'];
 		$minOffer = $item['OFFERS'][$item['ITEM_START_PRICE_SELECTED']];
 		$measureRatio = $minOffer['ITEM_MEASURE_RATIOS'][$minOffer['ITEM_MEASURE_RATIO_SELECTED']]['RATIO'];
-		$morePhoto = $item['MORE_PHOTO'];
+		if (isset($item['MORE_PHOTO']))
+		{
+			$morePhoto = $item['MORE_PHOTO'];
+		}
 	}
 	else
 	{
 		$price = $actualItem['ITEM_PRICES'][$actualItem['ITEM_PRICE_SELECTED']];
 		$measureRatio = $price['MIN_QUANTITY'];
-		$morePhoto = $actualItem['MORE_PHOTO'];
+		if (isset($actualItem['MORE_PHOTO']))
+		{
+			$morePhoto = $actualItem['MORE_PHOTO'];
+		}
 	}
 
 	$showSlider = is_array($morePhoto) && count($morePhoto) > 1;
@@ -99,13 +106,14 @@ if (isset($arResult['ITEM']))
 	$labelPositionClass .= $arParams['LABEL_POSITION_CLASS'];
 
 	$buttonSizeClass = isset($arResult['BIG_BUTTONS']) && $arResult['BIG_BUTTONS'] === 'Y' ? 'btn-md' : 'btn-sm';
+	$itemHasDetailUrl = isset($item['DETAIL_PAGE_URL']) && $item['DETAIL_PAGE_URL'] != '';
 	?>
 
 	<div class="product-item-container<?=(isset($arResult['SCALABLE']) && $arResult['SCALABLE'] === 'Y' ? ' product-item-scalable-card' : '')?>"
 		id="<?=$areaId?>" data-entity="item">
 		<?
 		$documentRoot = Main\Application::getDocumentRoot();
-		$templatePath = strtolower($arResult['TYPE']).'/template.php';
+		$templatePath = mb_strtolower($arResult['TYPE']).'/template.php';
 		$file = new Main\IO\File($documentRoot.$templateFolder.'/'.$templatePath);
 		if ($file->isExists())
 		{
@@ -115,7 +123,7 @@ if (isset($arResult['ITEM']))
 		if (!$haveOffers)
 		{
 			$jsParams = array(
-				'PRODUCT_TYPE' => $item['CATALOG_TYPE'],
+				'PRODUCT_TYPE' => $item['PRODUCT']['TYPE'],
 				'SHOW_QUANTITY' => $arParams['USE_PRODUCT_QUANTITY'],
 				'SHOW_ADD_BASKET_BTN' => false,
 				'SHOW_BUY_BTN' => true,
@@ -180,7 +188,7 @@ if (isset($arResult['ITEM']))
 		else
 		{
 			$jsParams = array(
-				'PRODUCT_TYPE' => $item['CATALOG_TYPE'],
+				'PRODUCT_TYPE' => $item['PRODUCT']['TYPE'],
 				'SHOW_QUANTITY' => false,
 				'SHOW_ADD_BASKET_BTN' => false,
 				'SHOW_BUY_BTN' => true,
@@ -277,6 +285,10 @@ if (isset($arResult['ITEM']))
 			? $item['DISPLAY_PROPERTIES'][$arParams['BRAND_PROPERTY']]['DISPLAY_VALUE']
 			: null;
 
+		$jsParams['IS_FACEBOOK_CONVERSION_CUSTOMIZE_PRODUCT_EVENT_ENABLED'] =
+			$arResult['IS_FACEBOOK_CONVERSION_CUSTOMIZE_PRODUCT_EVENT_ENABLED']
+		;
+
 		$templateData = array(
 			'JS_OBJ' => $obName,
 			'ITEM' => array(
@@ -288,7 +300,7 @@ if (isset($arResult['ITEM']))
 		);
 		?>
 		<script>
-		  var <?=$obName?> = new JCCatalogItem(<?=CUtil::PhpToJSObject($jsParams, false, true)?>);
+			var <?=$obName?> = new JCCatalogItem(<?=CUtil::PhpToJSObject($jsParams, false, true)?>);
 		</script>
 	</div>
 	<?

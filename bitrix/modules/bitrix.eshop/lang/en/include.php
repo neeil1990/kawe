@@ -2,7 +2,7 @@
 $MESS["SCOM_BUTTON_NAME"] = "Site#BR#Wizard";
 $MESS["SCOM_BUTTON_DESCRIPTION"] = "Run the site design and configuration wizard";
 $MESS["STOM_BUTTON_TITLE_W1"] = "Run the web store design and configuration wizard";
-$MESS["STOM_BUTTON_NAME_W1"] = "<b>Web Store Configuration Wizard</b>";
+$MESS["STOM_BUTTON_NAME_W1"] = "Web Store Configuration Wizard";
 $MESS["STOM_BUTTON_TITLE_W5"] = "Run Mobile Web Store Wizard";
 $MESS["STOM_BUTTON_NAME_W5"] = "Mobile Web Store Wizard";
 $MESS["STOM_BUTTON_TITLE_W3"] = "Delete Demo Catalog";

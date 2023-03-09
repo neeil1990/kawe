@@ -1,4 +1,5 @@
 ;(function(window){
+	window.BX = window['BX'] || {};
 	if (window.BX["UploaderFile"])
 		return false;
 	var getOrientation = (function(){
@@ -528,7 +529,7 @@
 	 * @caller {BX.Uploader}
 	 * You should work with params["fields"] in case you want to change visual part
 	 */
-var mobileNames = {};
+	var mobileNames = {};
 	BX.UploaderFile = function (file, params, limits, caller)
 	{
 		this.dialogName = (this.dialogName ? this.dialogName : "BX.UploaderFile");
@@ -642,6 +643,11 @@ var mobileNames = {};
 		return this;
 	};
 	BX.UploaderFile.prototype = {
+		getId: function()
+		{
+			return this.id;
+		},
+
 		log : function(text)
 		{
 			BX.UploaderUtils.log('file ' + this.name, text);
@@ -863,7 +869,7 @@ var mobileNames = {};
 				data["canvases"] = {};
 				while ((copy = this.copies.getNext()) && !!copy)
 				{
-					data["canvases"][copy.id] = { width : copy.width, height : copy.height, name : copy.name };
+					data["canvases"][copy.id] = { width : copy.width, height : copy.height, name : copy.id };
 				}
 			}
 			return data;
@@ -921,6 +927,7 @@ var mobileNames = {};
 				}
 			}
 
+			var removedFile = this.file;
 			this.file = null;
 			delete this.file;
 
@@ -928,7 +935,7 @@ var mobileNames = {};
 			this.canvas = null;
 			delete this.canvas;
 
-			BX.onCustomEvent(this.caller, "onFileIsDeleted", [this.id, this, this.caller]);
+			BX.onCustomEvent(this.caller, "onFileIsDeleted", [this.id, this, this.caller, removedFile]);
 			BX.onCustomEvent(this, "onFileIsDeleted", [this, this.caller]);
 		}
 	};
@@ -961,7 +968,7 @@ var mobileNames = {};
 			BX.addCustomEvent(this, "onFileHasToBePrepared", BX.delegate(function()
 			{
 				this.preparationStatus = statuses.inprogress;
-				if (this.status != statuses["new"])
+				if (this.status !== statuses["new"])
 				{
 					upld.push(this.file, BX.delegate(this.makeCopies, this));
 				}
@@ -1271,6 +1278,7 @@ var mobileNames = {};
 			copy.file = result;
 		}
 		this.preparationStatus = statuses.done;
+		BX.onCustomEvent(this, 'onFileIsPrepared');
 	};
 	BX.UploaderImage.prototype.getThumbs = function(name)
 	{

@@ -2,131 +2,223 @@
 namespace Bitrix\Main;
 
 use Bitrix\Main\Config;
+use Bitrix\Main\Engine;
 use Bitrix\Main\Web;
 
 class HttpResponse extends Response
 {
-	/**
-	 * @var Context|null
-	 * @deprecated
-	 */
-	protected $context;
+	public const STORE_COOKIE_NAME = "STORE_COOKIES";
 
 	/** @var \Bitrix\Main\Web\Cookie[] */
-	protected $cookies = array();
+	protected $cookies = [];
 
-	/** @var array */
-	protected $headers = array();
+	/** @var Web\HttpHeaders */
+	protected $headers;
 
 	/** @var \Bitrix\Main\Type\DateTime */
 	protected $lastModified;
 
-	/**
-	 * Response constructor.
-	 */
 	public function __construct()
 	{
-		if (func_num_args() > 0)
-		{
-			//so it's crutch. In the past we had first parameter Context. And now it's compatibility.
-			$probablyContext = func_get_arg(0);
-			if ($probablyContext instanceof Context)
-			{
-				$this->context = $probablyContext;
-			}
-		}
-
 		parent::__construct();
+
+		$this->setHeaders(new Web\HttpHeaders());
 	}
 
+	/**
+	 * Flushes the content to the output buffer. All following output will be ignored.
+	 * @param string $text
+	 */
+	public function flush($text = '')
+	{
+		//clear all buffers - the response is responsible alone for its content
+		while (@ob_end_clean());
+
+		if (function_exists("fastcgi_finish_request"))
+		{
+			//php-fpm
+			$this->writeHeaders();
+			$this->writeBody($text);
+
+			fastcgi_finish_request();
+		}
+		else
+		{
+			//apache handler
+			ob_start();
+
+			$this->writeBody($text);
+
+			$size = ob_get_length();
+
+			$this->addHeader('Content-Length', $size);
+
+			$this->writeHeaders();
+
+			ob_end_flush();
+			@ob_flush();
+			flush();
+		}
+	}
+
+	/**
+	 *	Adds a HTTP header field to the response.
+	 *
+	 * @param string $name Header field name
+	 * @param string $value Header field value
+	 * @return $this
+	 * @throws ArgumentNullException
+	 */
 	public function addHeader($name, $value = '')
 	{
 		if (empty($name))
 			throw new ArgumentNullException("name");
 
-		if (preg_match("/%0D|%0A|\r|\n/i", $name))
-			throw new ArgumentOutOfRangeException("name");
-		if (preg_match("/%0D|%0A|\r|\n/i", $value))
-			throw new ArgumentOutOfRangeException("value");
-
-		if ($value == "")
-			$this->headers[] = $name;
-		else
-			$this->headers[] = array($name, $value);
+		$this->getHeaders()->add($name, $value);
 
 		return $this;
 	}
 
-	public function addCookie(Web\Cookie $cookie)
+	/**
+	 * Sets a collection of HTTP headers.
+	 * @param Web\HttpHeaders $headers Headers collection.
+	 *
+	 * @return $this
+	 */
+	public function setHeaders(Web\HttpHeaders $headers)
 	{
-		$this->cookies[] = $cookie;
+		$this->headers = $headers;
 
 		return $this;
 	}
 
+	/**
+	 * Adds a cookie to the response.
+	 *
+	 * @param Web\Cookie $cookie The cookie.
+	 * @param bool $replace Replace an existing cookie or not.
+	 * @param bool $checkExpires Check expires value of the cookie or not.
+	 * @return $this
+	 */
+	public function addCookie(Web\Cookie $cookie, $replace = true, $checkExpires = true)
+	{
+		$key = $cookie->getName().".".$cookie->getDomain().".".$cookie->getPath();
+		if($replace || !isset($this->cookies[$key]))
+		{
+			if($checkExpires && $cookie->getExpires() > 0)
+			{
+				//it's a persistent cookie; we should check if we're allowed to store persistent cookies
+				static $askToStore = null;
+				if($askToStore === null)
+				{
+					$askToStore = Config\Option::get("main", "ask_to_store_cookies");
+				}
+				if($askToStore === "Y")
+				{
+					if(Context::getCurrent()->getRequest()->getCookiesMode() !== "Y")
+					{
+						//user declined to store cookies - we're using session cookies only
+						$cookie->setExpires(0);
+					}
+				}
+			}
+
+			$this->cookies[$key] = $cookie;
+		}
+		return $this;
+	}
+
+	/**
+	 * Remembers user's choice about storing persistent cookies.
+	 * @param bool $mode
+	 */
+	public function allowPersistentCookies($mode)
+	{
+		if($mode === true)
+		{
+			//persistent cookie to remember
+			$cookie = new Web\Cookie(self::STORE_COOKIE_NAME, "Y");
+		}
+		else
+		{
+			//session cookie: we're not allowed to store persistent cookies
+			$cookie = new Web\Cookie(self::STORE_COOKIE_NAME, "N", 0);
+		}
+		$this->addCookie($cookie, true, false);
+	}
+
+	/**
+	 * @return Web\Cookie[]
+	 */
 	public function getCookies()
 	{
 		return $this->cookies;
 	}
 
-	public function storeCookies()
+	/**
+	 * @return Web\HttpHeaders
+	 */
+	public function getHeaders()
 	{
-		$storedCookies = array();
-
-		foreach ($this->cookies as $cookie)
-		{
-			/** @var $cookie \Bitrix\Main\Web\Cookie */
-			if ($cookie->getSpread() & Web\Cookie::SPREAD_SITES)
-				$storedCookies[$cookie->getName()] = array("V" => $cookie->getValue(), "T" => $cookie->getExpires(), "F" => $cookie->getPath(), "D" => $cookie->getDomain(), "S" => $cookie->getSecure(), "H" => $cookie->getHttpOnly());
-		}
-
-		$_SESSION['SPREAD_COOKIE'] = $storedCookies;
+		return $this->headers;
 	}
 
-	protected function createStandardHeaders()
+	/**
+	 * Flushes all headers and cookies
+	 */
+	public function writeHeaders()
 	{
-		$server = Context::getCurrent()->getServer();
-		if (($server->get("REDIRECT_STATUS") != null) && ($server->get("REDIRECT_STATUS") == 404))
-		{
-			if (Config\Option::get("main", "header_200", "N") == "Y")
-				$this->setStatus("200 OK");
-		}
-
-		$dispatcher = Application::getInstance()->getDispatcher();
-		$key = $dispatcher->getLicenseKey();
-		$this->addHeader("X-Powered-CMS", "Bitrix Site Manager (".($key == "DEMO" ? "DEMO" : md5("BITRIX".$key."LICENCE")).")");
-
-		if (Config\Option::get("main", "set_p3p_header", "Y") == "Y")
-			$this->addHeader("P3P", "policyref=\"/bitrix/p3p.xml\", CP=\"NON DSP COR CUR ADM DEV PSA PSD OUR UNR BUS UNI COM NAV INT DEM STA\"");
-	}
-
-	protected function writeHeaders()
-	{
-//not yet
-//		$this->createStandardHeaders();
-
 		if($this->lastModified !== null)
 		{
-			$this->setHeader(array("Last-Modified", gmdate("D, d M Y H:i:s", $this->lastModified->getTimestamp())." GMT"));
+			$this->flushHeader(array("Last-Modified", gmdate("D, d M Y H:i:s", $this->lastModified->getTimestamp()) . " GMT"));
 		}
-		if (is_array($this->headers))
+
+		foreach ($this->getHeaders() as $name => $values)
 		{
-			foreach ($this->headers as $header)
-				$this->setHeader($header);
+			if (is_array($values))
+			{
+				foreach ($values as $value)
+				{
+					$this->flushHeader([$name, $value]);
+				}
+			}
+			elseif($values !== '')
+			{
+				$this->flushHeader([$name, $values]);
+			}
+			else
+			{
+				$this->flushHeader($name);
+			}
 		}
-		if (is_array($this->cookies))
+
+		$cookiesCrypter = new Web\CookiesCrypter();
+		foreach ($this->cookies as $cookie)
 		{
-			foreach ($this->cookies as $cookie)
+			if (!$cookiesCrypter->shouldEncrypt($cookie))
+			{
 				$this->setCookie($cookie);
+			}
+			else
+			{
+				foreach ($cookiesCrypter->encrypt($cookie) as $cryptoCookie)
+				{
+					$this->setCookie($cryptoCookie);
+				}
+			}
 		}
 	}
 
-	protected function setHeader($header)
+	protected function flushHeader($header)
 	{
 		if (is_array($header))
+		{
 			header(sprintf("%s: %s", $header[0], $header[1]));
+		}
 		else
+		{
 			header($header);
+		}
 
 		return $this;
 	}
@@ -135,44 +227,101 @@ class HttpResponse extends Response
 	{
 		if ($cookie->getSpread() & Web\Cookie::SPREAD_DOMAIN)
 		{
+			$params = [
+				'expires' => $cookie->getExpires(),
+				'path' => $cookie->getPath(),
+				'domain' => $cookie->getDomain(),
+				'secure' => $cookie->getSecure(),
+				'httponly' => $cookie->getHttpOnly(),
+			];
+
+			if (($sameSite = $cookie->getSameSite()) !== null)
+			{
+				$params['samesite'] = $sameSite;
+			}
+
 			setcookie(
 				$cookie->getName(),
 				$cookie->getValue(),
-				$cookie->getExpires(),
-				$cookie->getPath(),
-				$cookie->getDomain(),
-				$cookie->getSecure(),
-				$cookie->getHttpOnly()
+				$params
 			);
 		}
 
 		return $this;
 	}
 
+	/**
+	 * Sets the HTTP status of the response.
+	 *
+	 * @param string $status
+	 * @return $this
+	 */
 	public function setStatus($status)
 	{
 		$httpStatus = Config\Configuration::getValue("http_status");
 
 		$cgiMode = (stristr(php_sapi_name(), "cgi") !== false);
-		if ($cgiMode && (($httpStatus == null) || ($httpStatus == false)))
+		if ($cgiMode && ($httpStatus == null || $httpStatus == false))
 		{
 			$this->addHeader("Status", $status);
 		}
 		else
 		{
-			$server = Context::getCurrent()->getServer();
-			$this->addHeader($server->get("SERVER_PROTOCOL")." ".$status);
+			$httpHeaders = $this->getHeaders();
+			$httpHeaders->delete($this->getStatus());
+
+			$proto = $this->getServerProtocol();
+
+			$this->addHeader("{$proto} {$status}");
 		}
 
 		return $this;
 	}
 
 	/**
+	 * Returns the HTTP status of the response.
+	 * @return int|string|null
+	 */
+	public function getStatus()
+	{
+		$cgiStatus = $this->getHeaders()->get('Status');
+		if ($cgiStatus)
+		{
+			return $cgiStatus;
+		}
+
+		$prefixStatus = strtolower($this->getServerProtocol().' ');
+		$prefixStatusLength = strlen($prefixStatus);
+		foreach ($this->getHeaders() as $name => $value)
+		{
+			if (substr(strtolower($name), 0, $prefixStatusLength) === $prefixStatus)
+			{
+				return $name;
+			}
+		}
+
+		return null;
+	}
+
+	protected function getServerProtocol()
+	{
+		$context = Context::getCurrent();
+		if ($context !== null)
+		{
+			$server = $context->getServer();
+			if ($server !== null)
+			{
+				return $server->get("SERVER_PROTOCOL");
+			}
+		}
+		return "HTTP/1.0";
+	}
+
+	/**
 	 * Sets the latest time for the Last-Modified header field.
 	 *
 	 * @param Type\DateTime $time
-	 *
-	 * @return HttpResponse
+	 * @return $this
 	 */
 	public function setLastModified(Type\DateTime $time)
 	{
@@ -182,5 +331,59 @@ class HttpResponse extends Response
 		}
 
 		return $this;
+	}
+
+	/**
+	 * @param $url
+	 * @return Engine\Response\Redirect
+	 */
+	final public function redirectTo($url): HttpResponse
+	{
+		$redirectResponse = new Engine\Response\Redirect($url);
+
+		return $this->copyHeadersTo($redirectResponse);
+	}
+
+	public function copyHeadersTo(HttpResponse $response): HttpResponse
+	{
+		$httpHeaders = $response->getHeaders();
+
+		$status = $response->getStatus();
+		$previousStatus = $this->getStatus();
+		foreach ($this->getHeaders() as $headerName => $values)
+		{
+			if ($this->shouldIgnoreHeaderToClone($headerName))
+			{
+				continue;
+			}
+
+			if ($status && $headerName === $previousStatus)
+			{
+				continue;
+			}
+
+			if ($httpHeaders->get($headerName))
+			{
+				continue;
+			}
+
+			$httpHeaders->add($headerName, $values);
+		}
+
+		foreach ($this->getCookies() as $cookie)
+		{
+			$response->addCookie($cookie, false);
+		}
+
+		return $response;
+	}
+
+	private function shouldIgnoreHeaderToClone($headerName)
+	{
+		return in_array(strtolower($headerName), [
+			'content-encoding',
+			'content-length',
+			'content-type',
+		], true);
 	}
 }

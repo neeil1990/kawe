@@ -1,11 +1,16 @@
 <?
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$listUrl = $selfFolderUrl."sale_transact_admin.php?lang=".LANGUAGE_ID;
+$listUrl = $adminSidePanelHelper->editUrlToPublicPage($listUrl);
+
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions == "D")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+\Bitrix\Main\Loader::includeModule('sale');
+
 IncludeModuleLangFile(__FILE__);
 
 $errorMessage = "";
@@ -13,15 +18,15 @@ $bVarsFromForm = false;
 
 ClearVars();
 
-if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions >= "U" && check_bitrix_sessid())
+$ID = (int)($ID ?? 0);
+
+if ($REQUEST_METHOD=="POST" && $Update <> '' && $saleModulePermissions >= "U" && check_bitrix_sessid())
 {
-	$USER_ID = IntVal($USER_ID);
+	$adminSidePanelHelper->decodeUriComponent();
+
+	$USER_ID = intval($USER_ID);
 	if ($USER_ID <= 0)
 		$errorMessage .= GetMessage("STE_EMPTY_USER").".<br>";
-
-	$TRANSACT_DATE = Trim($TRANSACT_DATE);
-	if (strlen($TRANSACT_DATE) <= 0)
-		$errorMessage .= GetMessage("STE_EMPTY_DATE").".<br>";
 
 	$AMOUNT = str_replace(",", ".", $AMOUNT);
 	$AMOUNT = DoubleVal($AMOUNT);
@@ -29,14 +34,14 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions >= "U
 		$errorMessage .= GetMessage("STE_EMPTY_SUM").".<br>";
 
 	$CURRENCY = Trim($CURRENCY);
-	if (strlen($CURRENCY) <= 0)
+	if ($CURRENCY == '')
 		$errorMessage .= GetMessage("STE_EMPTY_CURRENCY").".<br>";
 
 	$DEBIT = (($DEBIT == "Y") ? "Y" : "N");
 
-	if (strlen($errorMessage) <= 0)
+	if ($errorMessage == '')
 	{
-		if (!CSaleUserAccount::UpdateAccount($USER_ID, (($DEBIT == "Y") ? $AMOUNT : -$AMOUNT), $CURRENCY, "MANUAL", IntVal($ORDER_ID), $NOTES))
+		if (!CSaleUserAccount::UpdateAccount($USER_ID, (($DEBIT == "Y") ? $AMOUNT : -$AMOUNT), $CURRENCY, "MANUAL", intval($ORDER_ID), $NOTES))
 		{
 			if ($ex = $APPLICATION->GetException())
 				$errorMessage .= $ex->GetString().".<br>";
@@ -45,50 +50,70 @@ if ($REQUEST_METHOD=="POST" && strlen($Update)>0 && $saleModulePermissions >= "U
 		}
 	}
 
-	if (strlen($errorMessage) <= 0)
-		LocalRedirect("/bitrix/admin/sale_transact_admin.php?lang=".LANG.GetFilterParams("filter_", false));
+	if ($errorMessage == '')
+	{
+		$adminSidePanelHelper->sendSuccessResponse("base");
+		$adminSidePanelHelper->localRedirect($listUrl);
+		LocalRedirect($listUrl);
+	}
 	else
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($errorMessage);
 		$bVarsFromForm = true;
+	}
 }
 
 if ($bVarsFromForm)
+{
 	$DB->InitTableVarsForEdit("b_sale_user_transact", "", "str_");
+}
+else
+{
+	$columns = $DB->GetTableFieldsList("b_sale_user_transact");
+	foreach ($columns as $column)
+	{
+		${"str_{$column}"} ??= null;
+	}
 
+	$str_USER_LOGIN ??= null;
+	$str_USER_NAME ??= null;
+	$str_USER_LAST_NAME ??= null;
+}
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
 $APPLICATION->SetTitle(GetMessage("STE_TITLE"));
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-?>
 
-<?
 $aMenu = array(
-		array(
-				"TEXT" => GetMessage("STEN_2FLIST"),
-				"TITLE" => GetMessage("STEN_2FLIST_TITLE"),
-				"LINK" => "/bitrix/admin/sale_transact_admin.php?lang=".LANG.GetFilterParams("filter_"),
-				"ICON" => "btn_list"
-			)
-	);
+	array(
+		"TEXT" => GetMessage("STEN_2FLIST"),
+		"TITLE" => GetMessage("STEN_2FLIST_TITLE"),
+		"LINK" => $listUrl,
+		"ICON" => "btn_list"
+	)
+);
 $context = new CAdminContextMenu($aMenu);
 $context->Show();
 ?>
 
-<?if(strlen($errorMessage)>0)
+<?if($errorMessage <> '')
 	echo CAdminMessage::ShowMessage(Array("DETAILS"=>$errorMessage, "TYPE"=>"ERROR", "MESSAGE"=>GetMessage("STE_ERROR"), "HTML"=>true));?>
 
-
-<form method="POST" action="<?echo $APPLICATION->GetCurPage()?>?" name="form1">
+<?
+$actionUrl = $APPLICATION->GetCurPage();
+$actionUrl = $adminSidePanelHelper->setDefaultQueryParams($actionUrl);
+?>
+<form method="POST" action="<?=$actionUrl?>" name="form1">
 <?echo GetFilterHiddens("filter_");?>
 <input type="hidden" name="Update" value="Y">
 <input type="hidden" name="lang" value="<?echo LANG ?>">
 <?=bitrix_sessid_post()?>
 
 <?
-$aTabs = array(
-		array("DIV" => "edit1", "TAB" => GetMessage("STEN_TAB_TRANSACT"), "ICON" => "sale", "TITLE" => GetMessage("STEN_TAB_TRANSACT_DESCR"))
-	);
+$aTabs = array(array("DIV" => "edit1", "TAB" => GetMessage("STEN_TAB_TRANSACT"), "ICON" => "sale",
+	"TITLE" => GetMessage("STEN_TAB_TRANSACT_DESCR")));
 
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 $tabControl->Begin();
@@ -102,19 +127,19 @@ $tabControl->BeginNextTab();
 		<td width="60%"><?
 			$user_name = "";
 			if ($ID > 0)
-				$user_name = "[<a title=\"".GetMessage("STE_USER_PROFILE")."\" href=\"/bitrix/admin/user_edit.php?lang=".LANGUAGE_ID."&ID=".$str_USER_ID."\">".$str_USER_ID."</a>] (".$str_USER_LOGIN.") ".$str_USER_NAME." ".$str_USER_LAST_NAME;
+			{
+				$urlToUser = $selfFolderUrl."user_edit.php?ID=".$str_USER_ID."&lang=".LANGUAGE_ID;
+				if (!empty($publicMode))
+				{
+					$urlToUser = $selfFolderUrl."sale_buyers_profile.php?USER_ID=".$str_USER_ID."&lang=".LANGUAGE_ID;
+					$urlToUser = $adminSidePanelHelper->editUrlToPublicPage($urlToUser);
+				}
+				$user_name = "[<a title=\"".GetMessage("STE_USER_PROFILE")."\" href=\"".$urlToUser."\">".$str_USER_ID.
+					"</a>] (".$str_USER_LOGIN.") ".$str_USER_NAME." ".$str_USER_LAST_NAME;
+			}
 
 			echo FindUserID("USER_ID", $str_USER_ID, $user_name);
 			?></td>
-	</tr>
-	<tr class="adm-detail-required-field">
-		<td><?echo GetMessage("STE_DATE")?>:</td>
-		<td><?
-			if (strlen($str_TRANSACT_DATE) <= 0)
-				$str_TRANSACT_DATE = date($DB->DateFormatToPHP(CSite::GetDateFormat("FULL", SITE_ID)));
-			echo CalendarDate("TRANSACT_DATE", $str_TRANSACT_DATE, "form1", "20", "");
-			?>
-		</td>
 	</tr>
 	<tr class="adm-detail-required-field">
 		<td><?echo GetMessage("STE_SUM")?></td>
@@ -152,18 +177,10 @@ $tabControl->BeginNextTab();
 
 <?
 $tabControl->EndTab();
-?>
-
-<?
 $tabControl->Buttons();
-?>
-
-<input type="submit" name="save" value="<?= GetMessage("STE_SAVE") ?>" <?if ($saleModulePermissions < "U") echo "disabled" ?>>&nbsp;<input type="button" value="<?echo GetMessage("STE_CANCEL1")?>" OnClick="window.location='/bitrix/admin/sale_transact_admin.php?lang=<?= LANG ?><?= GetFilterParams("filter_") ?>'">
-
-<?
+$tabControl->Buttons(array("disabled" => ($saleModulePermissions < "U"), "back_url" => $listUrl));
 $tabControl->End();
 ?>
-
 </form>
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

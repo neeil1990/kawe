@@ -7,7 +7,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_befo
 global $USER;
 $rnd = $_REQUEST["rnd"];
 
-__IncludeLang(dirname(__FILE__)."/lang/".LANGUAGE_ID."/getdata.php");
+__IncludeLang(__DIR__."/lang/".LANGUAGE_ID."/getdata.php");
 
 if(!check_bitrix_sessid())
 	return;
@@ -22,7 +22,6 @@ if(
 $arGadgetParams = $_SESSION["GD_PLANNER_PARAMS"][$rnd];
 
 CModule::IncludeModule('socialservices');
-CSocServAuthManager::SetUniqueKey();
 
 $clientId = $arGadgetParams["APP_ID"];
 $clientSecret = $arGadgetParams["APP_SECRET"];
@@ -151,7 +150,7 @@ if($accessToken != '' && $domain != '' && !$needAuthorize)
 					+ '/oauth/authorize/?client_id=<?=$clientId?>'
 					+ '&response_type=code'
 					+ '&redirect_uri=' + encodeURIComponent('<?=$redirectURI?>')
-					+ '&state=' + encodeURIComponent('<?='check_key='.$_SESSION["UNIQUE_KEY"]?>')
+					+ '&state=' + encodeURIComponent('<?='check_key='.\CSocServAuthManager::getUniqueKey()?>')
 					+ '&_=' + Math.random();
 				window.open(url);
 			}

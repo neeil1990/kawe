@@ -6,6 +6,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 use Bitrix\Main\Web\Json;
+use Bitrix\Iblock;
 
 if (!Loader::includeModule('iblock'))
 	return;
@@ -15,9 +16,13 @@ CBitrixComponent::includeComponentClass('bitrix:catalog.section');
 CBitrixComponent::includeComponentClass('bitrix:catalog.top');
 CBitrixComponent::includeComponentClass('bitrix:catalog.element');
 
+$usePropertyFeatures = Iblock\Model\PropertyFeature::isEnabledFeatures();
+
+$iblockExists = (!empty($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] > 0);
+
 $arSKU = false;
 $boolSKU = false;
-if ($boolCatalog && (isset($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID']) > 0)
+if ($boolCatalog && $iblockExists)
 {
 	$arSKU = CCatalogSKU::GetInfoByProductIBlock($arCurrentValues['IBLOCK_ID']);
 	$boolSKU = !empty($arSKU) && is_array($arSKU);
@@ -86,19 +91,21 @@ $arTemplateParameters["FILTER_VIEW_MODE"] = array(
 	"TYPE" => "LIST",
 	"VALUES" => $arFilterViewModeList,
 	"DEFAULT" => "VERTICAL",
-	"HIDDEN" => (!isset($arCurrentValues['USE_FILTER']) || 'N' == $arCurrentValues['USE_FILTER'])
+	"HIDDEN" => (!isset($arCurrentValues['USE_FILTER']) || 'N' == $arCurrentValues['USE_FILTER'] ? 'Y' : 'N')
 );
 $arTemplateParameters["FILTER_HIDE_ON_MOBILE"] = array(
 	"PARENT" => "FILTER_SETTINGS",
 	"NAME" => GetMessage("CPT_BC_FILTER_HIDE_ON_MOBILE"),
 	"TYPE" => "CHECKBOX",
 	"DEFAULT" => "N",
+	"HIDDEN" => (!isset($arCurrentValues['USE_FILTER']) || 'N' == $arCurrentValues['USE_FILTER'] ? 'Y' : 'N')
 );
 $arTemplateParameters["INSTANT_RELOAD"] = array(
 	"PARENT" => "FILTER_SETTINGS",
 	"NAME" => GetMessage("CPT_BC_INSTANT_RELOAD"),
 	"TYPE" => "CHECKBOX",
 	"DEFAULT" => "N",
+	"HIDDEN" => (!isset($arCurrentValues['USE_FILTER']) || 'N' == $arCurrentValues['USE_FILTER'] ? 'Y' : 'N')
 );
 $arTemplateParameters['TEMPLATE_THEME'] = array(
 	'PARENT' => 'VISUAL',
@@ -138,13 +145,19 @@ $arTemplateParameters['SEARCH_CHECK_DATES'] = array(
 	"TYPE" => "CHECKBOX",
 	"DEFAULT" => "Y",
 );
+$arTemplateParameters['SEARCH_USE_SEARCH_RESULT_ORDER'] = array(
+	'PARENT' => 'SEARCH_SETTINGS',
+	'NAME' => GetMessage('CP_BC_TPL_SEARCH_USE_SEARCH_RESULT_ORDER'),
+	"TYPE" => "CHECKBOX",
+	"DEFAULT" => "N"
+);
 
 $arAllPropList = array();
 $arListPropList = array();
 $arHighloadPropList = array();
 $arFilePropList = $defaultValue;
 
-if (isset($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] > 0)
+if ($iblockExists)
 {
 	$rsProps = CIBlockProperty::GetList(
 		array('SORT' => 'ASC', 'ID' => 'ASC'),
@@ -176,11 +189,31 @@ if (isset($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] >
 		}
 	}
 
-	if (!empty($arCurrentValues['LIST_PROPERTY_CODE']))
+	$showedProperties = [];
+	if ($usePropertyFeatures)
+	{
+		if ($iblockExists)
+		{
+			$showedProperties = Iblock\Model\PropertyFeature::getListPageShowPropertyCodes(
+				$arCurrentValues['IBLOCK_ID'],
+				['CODE' => 'Y']
+			);
+			if ($showedProperties === null)
+				$showedProperties = [];
+		}
+	}
+	else
+	{
+		if (!empty($arCurrentValues['LIST_PROPERTY_CODE']) && is_array($arCurrentValues['LIST_PROPERTY_CODE']))
+		{
+			$showedProperties = $arCurrentValues['LIST_PROPERTY_CODE'];
+		}
+	}
+	if (!empty($showedProperties))
 	{
 		$selected = array();
 
-		foreach ($arCurrentValues['LIST_PROPERTY_CODE'] as $code)
+		foreach ($showedProperties as $code)
 		{
 			if (isset($arAllPropList[$code]))
 			{
@@ -196,6 +229,7 @@ if (isset($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] >
 			'VALUES' => $selected
 		);
 	}
+	unset($showedProperties);
 
 	$arTemplateParameters['LIST_PRODUCT_BLOCKS_ORDER'] = array(
 		'PARENT' => 'LIST_SETTINGS',
@@ -414,63 +448,106 @@ if (isset($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] >
 			'DEFAULT' => '-',
 			'VALUES' => $arFileOfferPropList
 		);
-		$arTemplateParameters['OFFER_TREE_PROPS'] = array(
-			'PARENT' => 'VISUAL',
-			'NAME' => GetMessage('CP_BC_TPL_OFFER_TREE_PROPS'),
+		if (!$usePropertyFeatures)
+		{
+			$arTemplateParameters['OFFER_TREE_PROPS'] = array(
+				'PARENT' => 'VISUAL',
+				'NAME' => GetMessage('CP_BC_TPL_OFFER_TREE_PROPS'),
+				'TYPE' => 'LIST',
+				'MULTIPLE' => 'Y',
+				'ADDITIONAL_VALUES' => 'N',
+				'REFRESH' => 'N',
+				'DEFAULT' => '-',
+				'VALUES' => $arTreeOfferPropList
+			);
+		}
+	}
+
+	$showedProperties = [];
+	if ($usePropertyFeatures)
+	{
+		if ($iblockExists)
+		{
+			$showedProperties = Iblock\Model\PropertyFeature::getDetailPageShowProperties(
+				$arCurrentValues['IBLOCK_ID'],
+				['CODE' => 'Y']
+			);
+			if ($showedProperties === null)
+				$showedProperties = [];
+		}
+	}
+	else
+	{
+		if (!empty($arCurrentValues['DETAIL_PROPERTY_CODE']) && is_array($arCurrentValues['DETAIL_PROPERTY_CODE']))
+		{
+			$showedProperties = $arCurrentValues['DETAIL_PROPERTY_CODE'];
+		}
+	}
+	if (!empty($showedProperties))
+	{
+		$selected = array();
+
+		foreach ($showedProperties as $code)
+		{
+			if (isset($arAllPropList[$code]))
+			{
+				$selected[$code] = $arAllPropList[$code];
+			}
+		}
+
+		$arTemplateParameters['DETAIL_MAIN_BLOCK_PROPERTY_CODE'] = array(
+			'PARENT' => 'DETAIL_SETTINGS',
+			'NAME' => GetMessage('CP_BC_TPL_MAIN_BLOCK_PROPERTY_CODE'),
 			'TYPE' => 'LIST',
 			'MULTIPLE' => 'Y',
-			'ADDITIONAL_VALUES' => 'N',
-			'REFRESH' => 'N',
-			'DEFAULT' => '-',
-			'VALUES' => $arTreeOfferPropList
+			'SIZE' => (count($selected) > 5 ? 8 : 3),
+			'VALUES' => $selected
 		);
 	}
+	unset($showedProperties);
 }
 
-$arCurrentValues['DETAIL_PROPERTY_CODE'] = isset($arCurrentValues['DETAIL_PROPERTY_CODE']) ? $arCurrentValues['DETAIL_PROPERTY_CODE'] : array();
-if (!empty($arCurrentValues['DETAIL_PROPERTY_CODE']))
+if ($boolSKU)
 {
-	$selected = array();
-
-	foreach ($arCurrentValues['DETAIL_PROPERTY_CODE'] as $code)
+	$showedProperties = [];
+	if ($usePropertyFeatures)
 	{
-		if (isset($arAllPropList[$code]))
+		$showedProperties = Iblock\Model\PropertyFeature::getDetailPageShowProperties(
+			$arSKU['IBLOCK_ID'],
+			['CODE' => 'Y']
+		);
+		if ($showedProperties === null)
+			$showedProperties = [];
+	}
+	else
+	{
+		if (!empty($arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE']) && is_array($arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE']))
 		{
-			$selected[$code] = $arAllPropList[$code];
+			$showedProperties = $arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE'];
 		}
 	}
-
-	$arTemplateParameters['DETAIL_MAIN_BLOCK_PROPERTY_CODE'] = array(
-		'PARENT' => 'DETAIL_SETTINGS',
-		'NAME' => GetMessage('CP_BC_TPL_MAIN_BLOCK_PROPERTY_CODE'),
-		'TYPE' => 'LIST',
-		'MULTIPLE' => 'Y',
-		'SIZE' => (count($selected) > 5 ? 8 : 3),
-		'VALUES' => $selected
-	);
-}
-
-$arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE'] = isset($arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE']) ? $arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE'] : array();
-if (!empty($arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE']))
-{
-	$selected = array();
-
-	foreach ($arCurrentValues['DETAIL_OFFERS_PROPERTY_CODE'] as $code)
+	if (!empty($showedProperties))
 	{
-		if (isset($arAllOfferPropList[$code]))
-		{
-			$selected[$code] = $arAllOfferPropList[$code];
-		}
-	}
+		$selected = array();
 
-	$arTemplateParameters['DETAIL_MAIN_BLOCK_OFFERS_PROPERTY_CODE'] = array(
-		'PARENT' => 'DETAIL_SETTINGS',
-		'NAME' => GetMessage('CP_BC_TPL_MAIN_BLOCK_OFFERS_PROPERTY_CODE'),
-		'TYPE' => 'LIST',
-		'MULTIPLE' => 'Y',
-		'SIZE' => (count($selected) > 5 ? 8 : 3),
-		'VALUES' => $selected
-	);
+		foreach ($showedProperties as $code)
+		{
+			if (isset($arAllOfferPropList[$code]))
+			{
+				$selected[$code] = $arAllOfferPropList[$code];
+			}
+		}
+
+		$arTemplateParameters['DETAIL_MAIN_BLOCK_OFFERS_PROPERTY_CODE'] = array(
+			'PARENT' => 'DETAIL_SETTINGS',
+			'NAME' => GetMessage('CP_BC_TPL_MAIN_BLOCK_OFFERS_PROPERTY_CODE'),
+			'TYPE' => 'LIST',
+			'MULTIPLE' => 'Y',
+			'SIZE' => (count($selected) > 5 ? 8 : 3),
+			'VALUES' => $selected
+		);
+	}
+	unset($showedProperties);
 }
 
 $arTemplateParameters['DETAIL_USE_VOTE_RATING'] = array(
@@ -532,9 +609,7 @@ if (isset($arCurrentValues['DETAIL_USE_COMMENTS']) && 'Y' == $arCurrentValues['D
 	}
 
 	$boolRus = false;
-	$langBy = "id";
-	$langOrder = "asc";
-	$rsLangs = CLanguage::GetList($langBy, $langOrder, array('ID' => 'ru',"ACTIVE" => "Y"));
+	$rsLangs = CLanguage::GetList('id', 'asc', array('ID' => 'ru',"ACTIVE" => "Y"));
 	if ($arLang = $rsLangs->Fetch())
 	{
 		$boolRus = true;
@@ -920,21 +995,26 @@ $arTemplateParameters['LAZY_LOAD'] = array(
 	'DEFAULT' => 'N'
 );
 
-if (isset($arCurrentValues['LAZY_LOAD']) && $arCurrentValues['LAZY_LOAD'] === 'Y')
-{
-	$arTemplateParameters['MESS_BTN_LAZY_LOAD'] = array(
-		'PARENT' => 'PAGER_SETTINGS',
-		'NAME' => GetMessage('CP_BC_TPL_MESS_BTN_LAZY_LOAD'),
-		'TYPE' => 'TEXT',
-		'DEFAULT' => GetMessage('CP_BC_TPL_MESS_BTN_LAZY_LOAD_DEFAULT')
-	);
-}
+$arTemplateParameters['MESS_BTN_LAZY_LOAD'] = array(
+	'PARENT' => 'PAGER_SETTINGS',
+	'NAME' => GetMessage('CP_BC_TPL_MESS_BTN_LAZY_LOAD'),
+	'TYPE' => 'TEXT',
+	'DEFAULT' => GetMessage('CP_BC_TPL_MESS_BTN_LAZY_LOAD_DEFAULT'),
+	'HIDDEN' => (
+		(isset($arCurrentValues['LAZY_LOAD']) && $arCurrentValues['LAZY_LOAD'] === 'Y')
+		|| (isset($arCurrentValues['DISPLAY_TOP_PAGER']) && $arCurrentValues['DISPLAY_TOP_PAGER'] === 'Y')
+		|| (!isset($arCurrentValues['DISPLAY_BOTTOM_PAGER']) || $arCurrentValues['DISPLAY_BOTTOM_PAGER'] !== 'N')
+		? 'N'
+		: 'Y'
+	)
+);
 
 $arTemplateParameters['LOAD_ON_SCROLL'] = array(
 	'PARENT' => 'PAGER_SETTINGS',
 	'NAME' => GetMessage('CP_BC_TPL_LOAD_ON_SCROLL'),
 	'TYPE' => 'CHECKBOX',
-	'DEFAULT' => 'N'
+	'DEFAULT' => 'N',
+	'HIDDEN' => (isset($arCurrentValues['LAZY_LOAD']) && $arCurrentValues['LAZY_LOAD'] === 'Y' ? 'N' : 'Y')
 );
 
 $arTemplateParameters['MESS_BTN_BUY'] = array(
@@ -967,6 +1047,13 @@ $arTemplateParameters['MESS_NOT_AVAILABLE'] = array(
 	'TYPE' => 'STRING',
 	'DEFAULT' => GetMessage('CP_BC_TPL_MESS_NOT_AVAILABLE_DEFAULT')
 );
+$arTemplateParameters['MESS_NOT_AVAILABLE_SERVICE'] = [
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_BC_TPL_MESS_NOT_AVAILABLE_SERVICE'),
+	'TYPE' => 'STRING',
+	'DEFAULT' => GetMessage('CP_BC_TPL_MESS_NOT_AVAILABLE_SERVICE_DEFAULT'),
+];
+
 $arTemplateParameters['MESS_BTN_SUBSCRIBE'] = array(
 	'PARENT' => 'VISUAL',
 	'NAME' => GetMessage('CP_BC_TPL_MESS_BTN_SUBSCRIBE'),
@@ -1247,4 +1334,3 @@ $arTemplateParameters['DETAIL_SHOW_VIEWED'] = array(
 
 // hack to hide component parameters by templates
 $arTemplateParameters['HIDE_USE_ALSO_BUY'] = array();
-?>

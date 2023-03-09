@@ -13,7 +13,7 @@ use Bitrix\Main\Analytics;
 
 Loc::loadMessages(__FILE__);
 
-if (!$USER->CanDoOperation("view_other_settings") || !Analytics\SiteSpeed::isRussianSiteManager())
+if (!$USER->CanDoOperation("view_other_settings") || !Analytics\SiteSpeed::isOn())
 {
 	$APPLICATION->AuthForm(Loc::getMessage("ACCESS_DENIED"));
 }
@@ -104,16 +104,12 @@ foreach ($mapIframeLangKeys as $key)
 				<?endif?>
 
 				<?
-					$compositeStatus = \Bitrix\Main\Composite\Helper::isCompositeEnabled() ? Loc::getMessage("MAIN_SITE_SPEED_ENABLED") : Loc::getMessage("MAIN_SITE_SPEED_DISABLED");
-				?>
-				<a href="/bitrix/admin/composite.php?lang=<?=LANGUAGE_ID?>" class="site-speed-perf-label"><?=Loc::getMessage("MAIN_SITE_SPEED_COMPOSITE_SITE")?></a>:<span class="site-speed-perf-value"><?=$compositeStatus?></span>
-				<?
-
-				if (\Bitrix\Main\Loader::includeModule("bitrixcloud")):
-					$cdnStatus = CBitrixCloudCDN::IsActive() ? Loc::getMessage("MAIN_SITE_SPEED_ENABLED") : Loc::getMessage("MAIN_SITE_SPEED_DISABLED");
-				?>
-				<a href="/bitrix/admin/bitrixcloud_cdn.php?lang=<?=LANGUAGE_ID?>" class="site-speed-perf-label"><?=Loc::getMessage("MAIN_SITE_SPEED_CDN")?></a>:<span class="site-speed-perf-value"><?=$cdnStatus?></span>
-				<?endif?>
+				$compositeStatus = \Bitrix\Main\Composite\Helper::isCompositeEnabled() ? Loc::getMessage("MAIN_SITE_SPEED_ENABLED") : Loc::getMessage("MAIN_SITE_SPEED_DISABLED");
+				if (\Bitrix\Main\Composite\Engine::isSelfHostedPortal()):?>
+					<span class="site-speed-perf-label"><?=Loc::getMessage("MAIN_SITE_SPEED_COMPOSITE_SITE")?></span>:<span class="site-speed-perf-value"><?=$compositeStatus?></span>
+				<? else: ?>
+					<a href="/bitrix/admin/composite.php?lang=<?=LANGUAGE_ID?>" class="site-speed-perf-label"><?=Loc::getMessage("MAIN_SITE_SPEED_COMPOSITE_SITE")?></a>:<span class="site-speed-perf-value"><?=$compositeStatus?></span>
+				<? endif ?>
 			</div>
 		</div>
 

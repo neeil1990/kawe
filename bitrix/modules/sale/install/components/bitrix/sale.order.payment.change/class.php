@@ -58,7 +58,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 			$this->errorCollection->setError(new Main\Error(Loc::getMessage("SOPC_ERROR_PAYMENT_NOT_EXISTS")));
 		}
 
-		if (strlen($params["PATH_TO_PAYMENT"]) <= 0)
+		if ($params["PATH_TO_PAYMENT"] == '')
 		{
 			$params["PATH_TO_PAYMENT"] = "/personal/order/payment/";
 		}
@@ -71,12 +71,12 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 		{
 			$params['ALLOW_INNER'] = "N";
 		}
-		
+
 		if (empty($params['ONLY_INNER_FULL']))
 		{
 			$params['ONLY_INNER_FULL'] = "Y";
 		}
-		
+
 		if (!CBXFeatures::IsFeatureEnabled('SaleAccounts'))
 		{
 			$params['ALLOW_INNER'] = "N";
@@ -160,7 +160,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 				else
 				{
 					$this->arResult['PAYSYSTEMS_LIST'][] = $paySystemElement;
-				}		
+				}
 			}
 		}
 
@@ -174,7 +174,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 			if ((float)$this->arResult['INNER_PAYMENT_INFO']["CURRENT_BUDGET"] > 0)
 			{
 				$this->arResult['PAYSYSTEMS_LIST'][] = $innerData;
-			}			
+			}
 		}
 	}
 
@@ -272,19 +272,20 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 	 */
 	protected function prepareData()
 	{
-		if (strlen($this->arParams['ACCOUNT_NUMBER']) <= 0)
+		if ($this->arParams['ACCOUNT_NUMBER'] == '')
 		{
 			return;
 		}
-
-		$this->order = Sale\Order::loadByAccountNumber($this->arParams['ACCOUNT_NUMBER']);
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		$orderClassName = $registry->getOrderClassName();
+		$this->order = $orderClassName::loadByAccountNumber($this->arParams['ACCOUNT_NUMBER']);
 
 		if (empty($this->order))
 		{
 			return;
 		}
-
-		$paymentList = Sale\Payment::getList(
+		$paymentClassName = $registry->getPaymentClassName();
+		$paymentList = $paymentClassName::getList(
 			array(
 				"filter" => array("ACCOUNT_NUMBER" => $this->arParams['PAYMENT_NUMBER']),
 				"select" => array('*')
@@ -296,7 +297,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 		$this->arResult['IS_ALLOW_PAY'] = $this->order->isAllowPay() ? 'Y' : 'N';
 
 		$this->arResult['INNER_ID'] = PaySystem\Manager::getInnerPaySystemId();
-		
+
 		if ($this->arParams['ALLOW_INNER'] == 'Y')
 		{
 			$this->loadInnerData();
@@ -327,7 +328,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 			$result->addError(new Main\Error(Loc::getMessage('SOPC_LOW_BALANCE')));
 			return $result;
 		}
-		
+
 		/** @var \Bitrix\Sale\Payment $payment */
 		$paymentCollection = $this->order->getPaymentCollection();
 		$payment = $paymentCollection->getItemById($this->arResult['PAYMENT']['ID']);
@@ -344,15 +345,15 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 			);
 		}
 		else
-		{	
+		{
 			$paymentSum = $paymentSum >= $budget ? $budget : $paymentSum;
-			
+
 			if ($this->arParams['ONLY_INNER_FULL'] === 'Y' && $paymentSum < $sum)
 			{
 				$result->addError(new Main\Error(Loc::getMessage('SOPC_LOW_BALANCE')));
 				return $result;
 			}
-			
+
 			$rest = $sum - $paymentSum;
 			$payment->setField('SUM', $rest);
 
@@ -413,7 +414,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 			$this->arResult['INNER_PAYMENT_INFO'] = $account;
 		}
 	}
-	
+
 	/**
 	 * Ordering payment for calling in ajax callback
 	 * @return void
@@ -441,6 +442,8 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 			return;
 		}
 
+		\Bitrix\Sale\DiscountCouponsManagerBase::freezeCouponStorage();
+
 		/** @var \Bitrix\Sale\Payment $payment */
 		$paymentCollection = $this->order->getPaymentCollection();
 		$payment = $paymentCollection->getItemById($this->arResult['PAYMENT']['ID']);
@@ -452,6 +455,7 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 
 		if (!$paymentResult->isSuccess())
 		{
+			\Bitrix\Sale\DiscountCouponsManagerBase::unFreezeCouponStorage();
 			$this->errorCollection->add($paymentResult->getErrors());
 			return;
 		}
@@ -470,6 +474,8 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 
 		$resultSaving = $this->order->save();
 
+		\Bitrix\Sale\DiscountCouponsManagerBase::unFreezeCouponStorage();
+
 		if ($resultSaving->isSuccess())
 		{
 			if ($this->arResult['IS_ALLOW_PAY'] == 'Y')
@@ -480,19 +486,24 @@ class SaleOrderPaymentChange extends \CBitrixComponent
 					"ORDER_DATE" => $this->order->getDateInsert()->toString(),
 					"PAYMENT_ID" => $payment->getField("ACCOUNT_NUMBER"),
 					"PAY_SYSTEM_NAME" => $payment->getField("PAY_SYSTEM_NAME"),
-					"IS_CASH" => $paySystemObject->isCash(),
+					"IS_CASH" => $paySystemObject->isCash() || $paySystemObject->getField("ACTION_FILE") === 'cash',
 					"NAME_CONFIRM_TEMPLATE" => $this->arParams['NAME_CONFIRM_TEMPLATE']
 				);
 
 				if ($paySystemObject->getField('NEW_WINDOW') === 'Y')
 				{
-					if (substr($this->arParams['PATH_TO_PAYMENT'], -1) !== '/')
+					if (mb_substr($this->arParams['PATH_TO_PAYMENT'], -1) !== '/')
 						$this->arParams['PATH_TO_PAYMENT'] .= '/';
 
 					$this->arResult["PAYMENT_LINK"] = $this->arParams['PATH_TO_PAYMENT'] . "?ORDER_ID=" . $this->order->getField("ACCOUNT_NUMBER") . "&PAYMENT_ID=" . $payment->getField('ACCOUNT_NUMBER');
 				}
 				else
 				{
+					if ($returnUrl = $this->arParams['RETURN_URL'])
+					{
+						$paySystemObject->getContext()->setUrl($returnUrl);
+					}
+
 					$paySystemBufferedOutput = $paySystemObject->initiatePay($payment, null, PaySystem\BaseServiceHandler::STRING);
 					if ($paySystemBufferedOutput->isSuccess())
 					{

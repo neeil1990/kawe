@@ -3,10 +3,13 @@ class CIBlockResult extends CDBResult
 {
 	/** @var bool|array */
 	var $arIBlockMultProps=false;
+	/** @var bool|array */
 	var $arIBlockConvProps=false;
 	/** @var bool|array */
 	var $arIBlockAllProps =false;
+	/** @var bool|array */
 	var $arIBlockNumProps =false;
+	/** @var bool|array */
 	var $arIBlockLongProps = false;
 
 	var $nInitialSize;
@@ -24,16 +27,6 @@ class CIBlockResult extends CDBResult
 	public function __construct($res = null)
 	{
 		parent::__construct($res);
-	}
-
-	/**
-	 * @deprected
-	 *
-	 * @param $res
-	 */
-	function CIBlockResult($res)
-	{
-		self::__construct($res);
 	}
 
 	function SetUrlTemplates($DetailUrl = "", $SectionUrl = "", $ListUrl = "")
@@ -88,10 +81,10 @@ class CIBlockResult extends CDBResult
 		if(!isset($this) || !is_object($this))
 			return $res;
 
-		$arUpdate = array();
 		if($res)
 		{
-			if(is_array($this->arIBlockLongProps))
+			$arUpdate = array();
+			if(!empty($this->arIBlockLongProps) && is_array($this->arIBlockLongProps))
 			{
 				foreach($res as $k=>$v)
 				{
@@ -105,15 +98,15 @@ class CIBlockResult extends CDBResult
 
 			if(
 				isset($res["IBLOCK_ID"])
-				&& defined("BX_COMP_MANAGED_CACHE")
 				&& $res["IBLOCK_ID"] != $this->_LAST_IBLOCK_ID
+				&& defined("BX_COMP_MANAGED_CACHE")
 			)
 			{
 				CIBlock::registerWithTagCache($res["IBLOCK_ID"]);
 				$this->_LAST_IBLOCK_ID = $res["IBLOCK_ID"];
 			}
 
-			if(isset($res["ID"]) && $res["ID"] != "" && is_array($this->arIBlockMultProps))
+			if(isset($res["ID"]) && $res["ID"] != "" && !empty($this->arIBlockMultProps) && is_array($this->arIBlockMultProps))
 			{
 				foreach($this->arIBlockMultProps as $field_name => $db_prop)
 				{
@@ -134,13 +127,13 @@ class CIBlockResult extends CDBResult
 						}
 
 						$update = false;
-						if (strlen($res[$field_name]) <= 0)
+						if ($res[$field_name] == '')
 						{
 							$update = true;
 						}
 						else
 						{
-							$tmp = unserialize($res[$field_name]);
+							$tmp = unserialize($res[$field_name], ['allowed_classes' => false]);
 							if (!isset($tmp['ID']))
 								$update = true;
 						}
@@ -186,23 +179,30 @@ class CIBlockResult extends CDBResult
 						}
 					}
 				}
-				foreach($arUpdate as $strTable=>$arFields)
+
+				if (!empty($arUpdate))
 				{
-					$strUpdate = $DB->PrepareUpdate($strTable, $arFields);
-					if($strUpdate!="")
+					$pool = \Bitrix\Main\Application::getInstance()->getConnectionPool();
+					$pool->useMasterOnly(true);
+					foreach ($arUpdate as $strTable => $arFields)
 					{
-						$strSql = "UPDATE ".$strTable." SET ".$strUpdate." WHERE IBLOCK_ELEMENT_ID = ".intval($res["ID"]);
-						$DB->QueryBind($strSql, $arFields);
+						$strUpdate = $DB->PrepareUpdate($strTable, $arFields);
+						if ($strUpdate != "")
+						{
+							$strSql = "UPDATE ".$strTable." SET ".$strUpdate." WHERE IBLOCK_ELEMENT_ID = ".intval($res["ID"]);
+							$DB->QueryBind($strSql, $arFields);
+						}
 					}
+					$pool->useMasterOnly(false);
+					unset($pool);
 				}
 			}
-			if(is_array($this->arIBlockConvProps))
+			if(!empty($this->arIBlockConvProps) && is_array($this->arIBlockConvProps))
 			{
 				foreach($this->arIBlockConvProps as $strFieldName=>$arCallback)
 				{
 					if(is_array($res[$strFieldName]))
 					{
-
 						foreach($res[$strFieldName] as $key=>$value)
 						{
 							$arValue = call_user_func_array($arCallback["ConvertFromDB"], array($arCallback["PROPERTY"], array("VALUE"=>$value,"DESCRIPTION"=>"")));
@@ -216,11 +216,11 @@ class CIBlockResult extends CDBResult
 					}
 				}
 			}
-			if(is_array($this->arIBlockNumProps))
+			if(!empty($this->arIBlockNumProps) && is_array($this->arIBlockNumProps))
 			{
 				foreach($this->arIBlockNumProps as $field_name => $db_prop)
 				{
-					if(strlen($res[$field_name]) > 0)
+					if($res[$field_name] <> '')
 						$res[$field_name] = htmlspecialcharsex(CIBlock::NumberFormat($res[$field_name]));
 				}
 			}
@@ -241,6 +241,7 @@ class CIBlockResult extends CDBResult
 				unset($res["UC_ID"]);
 				unset($res["UC_LOGIN"]);
 			}
+			unset($arUpdate);
 		}
 		elseif(
 			defined("BX_COMP_MANAGED_CACHE")
@@ -275,7 +276,7 @@ class CIBlockResult extends CDBResult
 			if($TEMPLATE)
 			{
 				$res_tmp = $res;
-				if((intval($res["IBLOCK_ID"]) <= 0) && (intval($res["ID"]) > 0))
+				if((intval(($res["IBLOCK_ID"] ?? 0)) <= 0) && (intval($res["ID"]) > 0))
 				{
 					$res_tmp["IBLOCK_ID"] = $res["ID"];
 					$res_tmp["IBLOCK_CODE"] = $res["CODE"];
@@ -300,22 +301,34 @@ class CIBlockResult extends CDBResult
 			}
 
 			//If this is Element or Section then process it's detail and section URLs
-			if(strlen($res["IBLOCK_ID"]))
+			if(($res["IBLOCK_ID"] ?? '') <> '')
 			{
 
 				if(array_key_exists("GLOBAL_ACTIVE", $res))
+				{
 					$type = "S";
+				}
 				else
+				{
 					$type = "E";
+				}
 
 				if($this->strDetailUrl)
+				{
 					$TEMPLATE = $this->strDetailUrl;
+				}
 				elseif(array_key_exists("~DETAIL_PAGE_URL", $res))
+				{
 					$TEMPLATE = $res["~DETAIL_PAGE_URL"];
+				}
 				elseif(!$use_tilda && array_key_exists("DETAIL_PAGE_URL", $res))
+				{
 					$TEMPLATE = $res["DETAIL_PAGE_URL"];
+				}
 				else
+				{
 					$TEMPLATE = "";
+				}
 
 				if($TEMPLATE)
 				{
@@ -326,20 +339,35 @@ class CIBlockResult extends CDBResult
 						if(
 							$this->arSectionContext["ID"] > 0
 							&& $this->arSectionContext["IBLOCK_ID"] > 0
-							&& strpos($TEMPLATE, "#SECTION_CODE_PATH#") !== false
+							&& mb_strpos($TEMPLATE, "#SECTION_CODE_PATH#") !== false
 						)
 						{
-							if(!array_key_exists($this->arSectionContext["ID"], $arSectionPathCache))
+							if(!isset($arSectionPathCache[$this->arSectionContext["ID"]]))
 							{
-								$rs = CIBlockSection::GetNavChain($this->arSectionContext["IBLOCK_ID"], $this->arSectionContext["ID"], array("ID", "IBLOCK_SECTION_ID", "CODE"));
-								while ($a = $rs->Fetch())
-									$arSectionPathCache[$this->arSectionContext["ID"]] .= rawurlencode($a["CODE"])."/";
-
+								$rs = CIBlockSection::GetNavChain(
+									$this->arSectionContext["IBLOCK_ID"],
+									$this->arSectionContext["ID"],
+									array("ID", "IBLOCK_SECTION_ID", "CODE"),
+									true
+								);
+								if (!empty($rs))
+								{
+									foreach ($rs as $a)
+									{
+										$arSectionPathCache[$this->arSectionContext["ID"]] .= rawurlencode($a["CODE"])."/";
+									}
+									unset($a);
+								}
+								unset($rs);
 							}
 							if(isset($arSectionPathCache[$this->arSectionContext["ID"]]))
+							{
 								$SECTION_CODE_PATH = rtrim($arSectionPathCache[$this->arSectionContext["ID"]], "/");
+							}
 							else
+							{
 								$SECTION_CODE_PATH = "";
+							}
 							$TEMPLATE = str_replace("#SECTION_CODE_PATH#", $SECTION_CODE_PATH, $TEMPLATE);
 						}
 					}
@@ -356,13 +384,21 @@ class CIBlockResult extends CDBResult
 				}
 
 				if($this->strSectionUrl)
+				{
 					$TEMPLATE = $this->strSectionUrl;
+				}
 				elseif(array_key_exists("~SECTION_PAGE_URL", $res))
+				{
 					$TEMPLATE = $res["~SECTION_PAGE_URL"];
+				}
 				elseif(!$use_tilda && array_key_exists("SECTION_PAGE_URL", $res))
+				{
 					$TEMPLATE = $res["SECTION_PAGE_URL"];
+				}
 				else
+				{
 					$TEMPLATE = "";
+				}
 
 				if($TEMPLATE)
 				{
@@ -408,8 +444,8 @@ class CIBlockResult extends CDBResult
 
 		$res = new _CIBElement;
 		$res->fields = $r;
-		if(count($this->arIBlockAllProps)>0)
-			$res->props  = $this->arIBlockAllProps;
+		if(!empty($this->arIBlockAllProps) && is_array($this->arIBlockAllProps))
+			$res->props = $this->arIBlockAllProps;
 		return $res;
 	}
 
@@ -424,8 +460,9 @@ class CIBlockResult extends CDBResult
 		{
 			if ($_REQUEST["mode"] == "excel")
 				return;
-
-			$nSize = CAdminResult::GetNavSize($this->table_id, $nPageSize);
+			$navResult = new CAdminResult(null, '');
+			$nSize = $navResult->GetNavSize($this->table_id, $nPageSize);
+			unset($navResult);
 			if(is_array($nPageSize))
 			{
 				$this->nInitialSize = $nPageSize["nPageSize"];
@@ -447,4 +484,3 @@ class CIBlockResult extends CDBResult
 		return parent::GetNavPrint($title, $show_allways, $StyleText, $template_path, $arDeleteParam);
 	}
 }
-?>

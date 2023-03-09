@@ -76,9 +76,8 @@ if (count($arrFORM_FILTER)>0) :
 <?
 endif;
 
-while (list($key, $arrFILTER) = each($arrFORM_FILTER)) :
-	reset($arrFILTER);
-	while (list($key, $arrF) = each($arrFILTER)) :
+foreach ($arrFORM_FILTER as $key => $arrFILTER):
+	foreach ($arrFILTER as $key => $arrF):
 
 	$fname = $arrF["SID"];
 
@@ -93,7 +92,7 @@ while (list($key, $arrFILTER) = each($arrFORM_FILTER)) :
 		?>
 <tr>
 	<td class="tablebody" valign="top" width="40%"><font class="tablefieldtext"><?
-	if (strlen($arrF["FILTER_TITLE"])<=0)
+	if ($arrF["FILTER_TITLE"] == '')
 	{
 		$title = ($arrF["TITLE_TYPE"]=="html" ? strip_tags($arrF["TITLE"]) : htmlspecialcharsbx($arrF["TITLE"]));
 		echo $title;
@@ -136,9 +135,9 @@ while (list($key, $arrFILTER) = each($arrFORM_FILTER)) :
 	endif;
 	endif;
 
-	endwhile;
+	endforeach;
 
-endwhile;
+endforeach;
 ?></font></td>
 </tr>
 <tr>

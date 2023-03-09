@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Bitrix Framework
  * @package bitrix
@@ -18,7 +19,7 @@ class Comment
 
 	public function __construct()
 	{
-		$this->fields = array();
+		$this->fields = [];
 	}
 
 	public static function getById($commentId = 0)
@@ -26,7 +27,7 @@ class Comment
 		static $cachedFields = array();
 
 		$commentItem = false;
-		$commentId = intval($commentId);
+		$commentId = (int)$commentId;
 
 		if ($commentId > 0)
 		{
@@ -72,48 +73,48 @@ class Comment
 		return $commentItem;
 	}
 
-	public function setFields($fields = array())
+	public function setFields($fields = []): void
 	{
 		$this->fields = $fields;
 	}
 
-	public function getFields()
+	public function getFields(): array
 	{
 		return $this->fields;
 	}
 
-	public static function checkDuplicate(array $params)
+	public static function checkDuplicate(array $params = [], int &$duplicateCommentId = 0): bool
 	{
 		$message = (
-			isset($params["MESSAGE"])
-			&& strlen(trim($params["MESSAGE"])) > 0
-				? trim($params["MESSAGE"])
+			isset($params['MESSAGE'])
+			&& trim((string)$params['MESSAGE']) !== ''
+				? trim((string)$params['MESSAGE'])
 				: ''
 		);
 
 		$blogId = (
-			isset($params["BLOG_ID"])
-			&& intval($params["BLOG_ID"]) > 0
-				? intval($params["BLOG_ID"])
+			isset($params['BLOG_ID'])
+			&& (int)$params['BLOG_ID'] > 0
+				? (int)$params['BLOG_ID']
 				: 0
 		);
 
 		$postId = (
-			isset($params["POST_ID"])
-			&& intval($params["POST_ID"]) > 0
-				? intval($params["POST_ID"])
+			isset($params['POST_ID'])
+			&& (int)$params['POST_ID'] > 0
+				? (int)$params['POST_ID']
 				: 0
 		);
 
 		$authorId = (
-			isset($params["AUTHOR_ID"])
-			&& intval($params["AUTHOR_ID"]) > 0
-				? intval($params["AUTHOR_ID"])
+			isset($params['AUTHOR_ID'])
+			&& (int)$params['AUTHOR_ID'] > 0
+				? (int)$params['AUTHOR_ID']
 				: 0
 		);
 
 		if (
-			strlen($message) <= 0
+			$message === ''
 			|| $blogId <= 0
 			|| $postId <= 0
 		)
@@ -121,31 +122,35 @@ class Comment
 			return false;
 		}
 
+		\CTimeZone::Disable();
 		$res = \CBlogComment::getList(
-			array("ID" => "DESC"),
-			array(
+			[ "ID" => "DESC" ],
+			[
 				"BLOG_ID" => $blogId,
 				"POST_ID" => $postId,
-				"AUTHOR_ID" => $authorId
-			),
+				"AUTHOR_ID" => $authorId,
+				">DATE_CREATE" => ConvertTimeStamp(time() - 60*30, "FULL")
+			],
 			false,
-			array("nTopCount" => 1),
-			array("ID", "POST_ID", "BLOG_ID", "AUTHOR_ID", "POST_TEXT")
+			[ "nTopCount" => 1 ],
+			[ 'ID', 'POST_TEXT' ]
 		);
+		\CTimeZone::Enable();
 
 		if (
 			($duplicateComment = $res->fetch())
-			&& md5($duplicateComment["POST_TEXT"]) == md5($message)
-			&& strlen($message) > 10
+			&& mb_strlen($message) > 10
+			&& md5((string)$duplicateComment['POST_TEXT']) === md5($message)
 		)
 		{
+			$duplicateCommentId = (int)$duplicateComment['ID'];
 			return false;
 		}
 
 		return true;
 	}
 
-	public static function actionsAfter(array $params)
+	public static function actionsAfter(array $params): bool
 	{
 		static $blogPostEventIdList = null;
 
@@ -163,22 +168,22 @@ class Comment
 
 		$blogId = (
 			isset($params["BLOG_ID"])
-			&& intval($params["BLOG_ID"]) > 0
-				? intval($params["BLOG_ID"])
+			&& (int)$params["BLOG_ID"] > 0
+				? (int)$params["BLOG_ID"]
 				: 0
 		);
 
 		$blogOwnerId = (
 			isset($params["BLOG_OWNER_ID"])
-			&& intval($params["BLOG_OWNER_ID"]) > 0
-				? intval($params["BLOG_OWNER_ID"])
+			&& (int)$params["BLOG_OWNER_ID"] > 0
+				? (int)$params["BLOG_OWNER_ID"]
 				: 0
 		);
 
 		$postId = (
 			isset($params["POST_ID"])
-			&& intval($params["POST_ID"]) > 0
-				? intval($params["POST_ID"])
+			&& (int)$params["POST_ID"] > 0
+				? (int)$params["POST_ID"]
 				: 0
 		);
 
@@ -191,27 +196,27 @@ class Comment
 
 		$postAuthorId = (
 			isset($params["POST_AUTHOR_ID"])
-			&& intval($params["POST_AUTHOR_ID"]) > 0
-				? intval($params["POST_AUTHOR_ID"])
+			&& (int)$params["POST_AUTHOR_ID"] > 0
+				? (int)$params["POST_AUTHOR_ID"]
 				: 0
 		);
 
 		$commentId = (
 			isset($params["COMMENT_ID"])
-			&& intval($params["COMMENT_ID"]) > 0
-				? intval($params["COMMENT_ID"])
+			&& (int)$params["COMMENT_ID"] > 0
+				? (int)$params["COMMENT_ID"]
 				: 0
 		);
 
 		$commentAuthorId = (
 			isset($params["AUTHOR_ID"])
-			&& intval($params["AUTHOR_ID"]) > 0
-				? intval($params["AUTHOR_ID"])
+			&& (int)$params["AUTHOR_ID"] > 0
+				? (int)$params["AUTHOR_ID"]
 				: 0
 		);
 
 		if (
-			strlen($message) <= 0
+			$message === ''
 			|| $blogId <= 0
 			|| $blogOwnerId <= 0
 			|| $postAuthorId <= 0
@@ -223,11 +228,11 @@ class Comment
 			return false;
 		}
 
-		\BXClearCache(true, "/blog/comment/".intval($postId / 100)."/".$postId."/");
+		\BXClearCache(true, "/blog/comment/" . (int)($postId / 100) ."/" . $postId . "/");
 		$connection = \Bitrix\Main\Application::getConnection();
 		$helper = $connection->getSqlHelper();
 
-		$connection->query("UPDATE b_blog_image SET COMMENT_ID=".intval($commentId)." WHERE BLOG_ID=".$blogId." AND POST_ID=".$postId." AND IS_COMMENT = 'Y' AND (COMMENT_ID = 0 OR COMMENT_ID is null) AND USER_ID=".$commentAuthorId);
+		$connection->query("UPDATE b_blog_image SET COMMENT_ID=" . $commentId . " WHERE BLOG_ID=".$blogId . " AND POST_ID=" . $postId . " AND IS_COMMENT = 'Y' AND (COMMENT_ID = 0 OR COMMENT_ID is null) AND USER_ID=" . $commentAuthorId);
 
 		if ($blogPostEventIdList === null)
 		{
@@ -254,7 +259,7 @@ class Comment
 				$extranetSiteId = \CExtranet::getExtranetSiteId();
 			}
 
-			$logSiteId = array();
+			$logSiteId = [];
 			$res = \CSocNetLog::getSite($log["ID"]);
 			while ($logSite = $res->fetch())
 			{
@@ -263,8 +268,8 @@ class Comment
 
 			$siteId = (
 				$extranetSiteId
-				&& count($logSiteId) == 1
-				&& $logSiteId[0] == $extranetSiteId
+				&& count($logSiteId) === 1
+				&& $logSiteId[0] === $extranetSiteId
 					? $extranetSiteId
 					: $logSiteId[0]
 			);
@@ -393,5 +398,15 @@ class Comment
 		}
 
 		return true;
+	}
+
+	public static function processCommentShare($params = [])
+	{
+		if (!Loader::includeModule('socialnetwork'))
+		{
+			return false;
+		}
+
+		return \Bitrix\Socialnetwork\Integration\Blog\Mention::processCommentShare($params);
 	}
 }

@@ -27,6 +27,8 @@ class CIBlockPropertyDateTime
 			"GetAdminFilterHTML" => array(__CLASS__, "GetAdminFilterHTML"),
 			"GetPublicFilterHTML" => array(__CLASS__, "GetPublicFilterHTML"),
 			"AddFilterFields" => array(__CLASS__, "AddFilterFields"),
+			"GetUIFilterProperty" => array(__CLASS__, "GetUIFilterProperty"),
+			'GetUIEntityEditorProperty' => array(__CLASS__, 'GetUIEntityEditorProperty'),
 		);
 	}
 
@@ -34,12 +36,15 @@ class CIBlockPropertyDateTime
 	{
 		$filtered = false;
 
-		//TODO: remove this condition after main 17.0.0 will be stable
-		$existFilterOptions = class_exists('\Bitrix\Main\UI\Filter\Options') && method_exists('\Bitrix\Main\UI\Filter\Options', 'getFilter');
-
 		$from = "";
 		$from_name = $strHTMLControlName["VALUE"].'_from';
-		if(isset($_REQUEST[$from_name]))
+		if (isset($strHTMLControlName["FILTER_ID"]))
+		{
+			$filterOption = new \Bitrix\Main\UI\Filter\Options($strHTMLControlName["FILTER_ID"]);
+			$filterData = $filterOption->getFilter();
+			$from = !empty($filterData[$from_name]) ? $filterData[$from_name] : "";
+		}
+		elseif (isset($_REQUEST[$from_name]))
 		{
 			$from = $_REQUEST[$from_name];
 		}
@@ -47,12 +52,6 @@ class CIBlockPropertyDateTime
 			isset($_SESSION["main.interface.grid"][$strHTMLControlName["GRID_ID"]]["filter"][$from_name]))
 		{
 			$from = $_SESSION["main.interface.grid"][$strHTMLControlName["GRID_ID"]]["filter"][$from_name];
-		}
-		elseif($existFilterOptions && isset($strHTMLControlName["FILTER_ID"]))
-		{
-			$filterOption = new \Bitrix\Main\UI\Filter\Options($strHTMLControlName["FILTER_ID"]);
-			$filterData = $filterOption->getFilter();
-			$from = !empty($filterData[$from_name]) ? $filterData[$from_name] : "";
 		}
 
 		if($from)
@@ -72,16 +71,7 @@ class CIBlockPropertyDateTime
 
 		$to = "";
 		$to_name = $strHTMLControlName["VALUE"].'_to';
-		if(isset($_REQUEST[$to_name]))
-		{
-			$to = $_REQUEST[$to_name];
-		}
-		elseif(isset($strHTMLControlName["GRID_ID"]) &&
-			isset($_SESSION["main.interface.grid"][$strHTMLControlName["GRID_ID"]]["filter"][$to_name]))
-		{
-			$to = $_SESSION["main.interface.grid"][$strHTMLControlName["GRID_ID"]]["filter"][$to_name];
-		}
-		elseif($existFilterOptions && isset($strHTMLControlName["FILTER_ID"]))
+		if (isset($strHTMLControlName["FILTER_ID"]))
 		{
 			$filterOption = new \Bitrix\Main\UI\Filter\Options($strHTMLControlName["FILTER_ID"]);
 			$filterData = $filterOption->getFilter();
@@ -90,12 +80,21 @@ class CIBlockPropertyDateTime
 			{
 				$dateFormat = Date::convertFormatToPhp(CSite::getDateFormat());
 				$dateParse = date_parse_from_format($dateFormat, $to);
-				if(!strlen($dateParse["hour"]) && !strlen($dateParse["minute"]) && !strlen($dateParse["second"]))
+				if(!mb_strlen($dateParse["hour"]) && !mb_strlen($dateParse["minute"]) && !mb_strlen($dateParse["second"]))
 				{
 					$timeFormat = Date::convertFormatToPhp(CSite::getTimeFormat());
 					$to .= " ".date($timeFormat, mktime(23, 59, 59, 0, 0, 0));
 				}
 			}
+		}
+		elseif (isset($_REQUEST[$to_name]))
+		{
+			$to = $_REQUEST[$to_name];
+		}
+		elseif(isset($strHTMLControlName["GRID_ID"]) &&
+			isset($_SESSION["main.interface.grid"][$strHTMLControlName["GRID_ID"]]["filter"][$to_name]))
+		{
+			$to = $_SESSION["main.interface.grid"][$strHTMLControlName["GRID_ID"]]["filter"][$to_name];
 		}
 
 		if($to)
@@ -184,7 +183,7 @@ class CIBlockPropertyDateTime
 
 	public static function GetPublicViewHTML($arProperty, $value, $strHTMLControlName)
 	{
-		if (strlen($value["VALUE"]) > 0)
+		if ($value["VALUE"] <> '')
 		{
 			if (!CheckDateTime($value["VALUE"]))
 				$value = static::ConvertFromDB($arProperty, $value, $strHTMLControlName["DATETIME_FORMAT"]);
@@ -230,7 +229,7 @@ class CIBlockPropertyDateTime
 
 	public static function GetAdminListViewHTML($arProperty, $value, $strHTMLControlName)
 	{
-		if(strlen($value["VALUE"])>0)
+		if($value["VALUE"] <> '')
 		{
 			if(!CheckDateTime($value["VALUE"]))
 				$value = static::ConvertFromDB($arProperty, $value);
@@ -263,7 +262,7 @@ class CIBlockPropertyDateTime
 	public static function CheckFields($arProperty, $value)
 	{
 		$arResult = array();
-		if(strlen($value["VALUE"])>0 && !CheckDateTime($value["VALUE"]))
+		if($value["VALUE"] <> '' && !CheckDateTime($value["VALUE"]))
 			$arResult[] = Loc::getMessage("IBLOCK_PROP_DATETIME_ERROR_NEW", array("#FIELD_NAME#" => $arProperty["NAME"]));
 		return $arResult;
 	}
@@ -275,7 +274,7 @@ class CIBlockPropertyDateTime
 	//DB form of the value
 	public static function ConvertToDB($arProperty, $value)
 	{
-		if (strlen($value["VALUE"]) > 0)
+		if ($value["VALUE"] <> '')
 		{
 			try
 			{
@@ -293,7 +292,7 @@ class CIBlockPropertyDateTime
 
 	public static function ConvertFromDB($arProperty, $value, $format = '')
 	{
-		if (strlen($value["VALUE"]) > 0)
+		if ($value["VALUE"] <> '')
 		{
 			try
 			{
@@ -327,5 +326,36 @@ class CIBlockPropertyDateTime
 		);
 
 		return '';
+	}
+
+	/**
+	 * @param array $property
+	 * @param array $strHTMLControlName
+	 * @param array &$fields
+	 * @return void
+	 */
+	public static function GetUIFilterProperty($property, $strHTMLControlName, &$fields)
+	{
+		$fields["type"] = "date";
+		$fields["time"] = true;
+		$fields["filterable"] = "";
+		$fields["operators"] = array(
+			"default" => "=",
+			"exact" => "=",
+			"range" => "><",
+			"more" => ">",
+			"less" => "<"
+		);
+	}
+
+	public static function GetUIEntityEditorProperty($settings, $value)
+	{
+		return [
+			'type' => ($settings['MULTIPLE'] === 'Y') ? 'multidatetime' : 'datetime',
+			'data' => [
+				'enableTime' => true,
+				'dateViewFormat' =>  \Bitrix\Main\Context::getCurrent()->getCulture()->getLongDateFormat().' '.\Bitrix\Main\Context::getCurrent()->getCulture()->getShortTimeFormat(),
+			]
+		];
 	}
 }

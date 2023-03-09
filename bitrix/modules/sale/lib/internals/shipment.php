@@ -48,7 +48,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Sale
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Shipment_Query query()
+ * @method static EO_Shipment_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Shipment_Result getById($id)
+ * @method static EO_Shipment_Result getList(array $parameters = array())
+ * @method static EO_Shipment_Entity getEntity()
+ * @method static \Bitrix\Sale\Internals\EO_Shipment createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Internals\EO_Shipment_Collection createCollection()
+ * @method static \Bitrix\Sale\Internals\EO_Shipment wakeUpObject($row)
+ * @method static \Bitrix\Sale\Internals\EO_Shipment_Collection wakeUpCollection($rows)
+ */
 
 class ShipmentTable extends Main\Entity\DataManager
 {
@@ -60,6 +73,11 @@ class ShipmentTable extends Main\Entity\DataManager
 	public static function getFilePath()
 	{
 		return __FILE__;
+	}
+
+	public static function getUfId()
+	{
+		return 'SHIPMENT';
 	}
 
 	/**
@@ -132,6 +150,9 @@ class ShipmentTable extends Main\Entity\DataManager
 			'DATE_INSERT' => array(
 				'data_type' => 'datetime'
 			),
+			'DATE_UPDATE' => array(
+				'data_type' => 'datetime'
+			),
 
 			new Main\Entity\ExpressionField(
 				'DATE_INSERT_SHORT',
@@ -155,6 +176,13 @@ class ShipmentTable extends Main\Entity\DataManager
 
 			new Main\Entity\FloatField(
 				'PRICE_DELIVERY'
+			),
+
+			new Main\Entity\FloatField(
+				'WEIGHT',
+				[
+					'default_value' => 0
+				]
 			),
 
 			new Main\Entity\BooleanField(

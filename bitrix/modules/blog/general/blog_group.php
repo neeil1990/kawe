@@ -1,13 +1,15 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
+
 $GLOBALS["BLOG_GROUP"] = Array();
 
 class CAllBlogGroup
 {
 	/*************** ADD, UPDATE, DELETE *****************/
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
-		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && strlen($arFields["NAME"]) <= 0)
+		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && $arFields["NAME"] == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("BLG_GG_EMPTY_NAME"), "EMPTY_NAME");
 			return false;
@@ -22,7 +24,7 @@ class CAllBlogGroup
 			}
 		}
 
-		if ((is_set($arFields, "SITE_ID") || $ACTION=="ADD") && strlen($arFields["SITE_ID"]) <= 0)
+		if ((is_set($arFields, "SITE_ID") || $ACTION=="ADD") && $arFields["SITE_ID"] == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("BLG_GG_EMPTY_SITE_ID"), "EMPTY_SITE_ID");
 			return false;
@@ -40,11 +42,11 @@ class CAllBlogGroup
 		return True;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$dbResult = CBlog::GetList(array(), array("GROUP_ID" => $ID), false, false, array("ID"));
 		if ($dbResult->Fetch())
@@ -63,7 +65,7 @@ class CAllBlogGroup
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if($ID <= 0)
 			return false;
 
@@ -89,4 +91,3 @@ class CAllBlogGroup
 	}
 
 }
-?>

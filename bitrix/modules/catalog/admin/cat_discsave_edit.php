@@ -1,16 +1,26 @@
 <?
+use Bitrix\Catalog;
+use Bitrix\Catalog\Access\AccessController;
+use Bitrix\Catalog\Access\ActionDictionary;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 
 global $APPLICATION;
 global $DB;
 
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_discount')))
-	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 CModule::IncludeModule("catalog");
-$bReadOnly = !$USER->CanDoOperation('catalog_discount');
 
-if (!CBXFeatures::IsFeatureEnabled('CatDiscountSave'))
+$accessController = AccessController::getCurrent();
+
+if (!($accessController->check(ActionDictionary::ACTION_CATALOG_READ) || $accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET)))
+{
+	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
+
+$bReadOnly = !$accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET);
+
+if (!Catalog\Config\Feature::isCumulativeDiscountsEnabled())
 {
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 	CCatalogDiscountSave::Disable();
@@ -36,7 +46,7 @@ function __cmpRange($a,$b)
 function __GetRangeInfo($ID,$strPrefix)
 {
 	$arResult = false;
-	if ((true == isset($_POST[$strPrefix.$ID.'_SUMM'])) && (0 < strlen($_POST[$strPrefix.$ID.'_SUMM'])))
+	if ((true == isset($_POST[$strPrefix.$ID.'_SUMM'])) && ($_POST[$strPrefix.$ID.'_SUMM'] <> ''))
 	{
 		$arResult['RANGE_FROM'] = doubleval(str_replace(',','.',$_POST[$strPrefix.$ID.'_SUMM']));
 		$arResult['VALUE'] = 0;
@@ -130,7 +140,7 @@ if(
 
 	if (isset($_POST['ACTION_PERIOD']))
 	{
-		$ACTION_PERIOD = substr(trim($_POST['ACTION_PERIOD']),0,1);
+		$ACTION_PERIOD = mb_substr(trim($_POST['ACTION_PERIOD']), 0, 1);
 		if ('D' == $ACTION_PERIOD)
 		{
 			if (empty($_POST['ACTIVE_FROM']) && empty($_POST['ACTIVE_TO']))
@@ -186,7 +196,7 @@ if(
 
 	if (isset($_POST['COUNT_PERIOD']))
 	{
-		$COUNT_PERIOD = substr(trim($_POST['COUNT_PERIOD']),0,1);
+		$COUNT_PERIOD = mb_substr(trim($_POST['COUNT_PERIOD']), 0, 1);
 		if ('D' == $COUNT_PERIOD)
 		{
 			if (empty($_POST['COUNT_FROM']) && empty($_POST['COUNT_TO']))
@@ -487,18 +497,14 @@ if ($bVarsFromForm)
 
 <?
 $arSiteList = array();
-$by = 'sort';
-$order = 'asc';
-$rsSites = CSite::GetList($by, $order);
+$rsSites = CSite::GetList();
 while ($arSite = $rsSites->Fetch())
 {
 	$arSiteList[$arSite['LID']] = '('.$arSite['LID'].') '.$arSite['NAME'];
 }
 
 $arCurrencyList = array();
-$by2 = 'sort';
-$order2 = 'asc';
-$rsCurrencies = CCurrency::GetList($by2, $order2);
+$rsCurrencies = CCurrency::GetList('sort', 'asc');
 while ($arCurrency = $rsCurrencies->Fetch())
 {
 	$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];
@@ -688,7 +694,7 @@ $tabControl->BeginCustomField('GROUP_IDS',GetMessage('BT_CAT_DISC_SAVE_EDIT_FIEL
 	<tr id="tr_GROUP_IDS" class="adm-detail-required-field">
 		<td valign="top" width="40%"><? echo $tabControl->GetCustomLabelHTML(); ?>:</td>
 		<td width="60%" align="left"><select name="GROUP_IDS[]" multiple size="8"><?
-		$rsUserGroups = CGroup::GetList(($by = 'c_sort'),($order="asc"),array(),"N");
+		$rsUserGroups = CGroup::GetList();
 		while ($arUserGroup = $rsUserGroups->Fetch())
 		{
 			if (2 != $arUserGroup['ID'])

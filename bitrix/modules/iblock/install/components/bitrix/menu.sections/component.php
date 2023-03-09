@@ -14,7 +14,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 if(!isset($arParams["CACHE_TIME"]))
 	$arParams["CACHE_TIME"] = 36000000;
 
-$arParams["ID"] = intval($arParams["ID"]);
+$arParams["ID"] = intval(($arParams["ID"] ?? 0));
 $arParams["IBLOCK_ID"] = intval($arParams["IBLOCK_ID"]);
 
 $arParams["DEPTH_LEVEL"] = intval($arParams["DEPTH_LEVEL"]);
@@ -107,7 +107,7 @@ if(($arParams["ID"] > 0) && (intval($arVariables["SECTION_ID"]) <= 0) && CModule
 		"IBLOCK_ID" => $arParams["IBLOCK_ID"],
 	);
 	$rsElements = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
-	if(($arParams["IS_SEF"] === "Y") && (strlen($arParams["DETAIL_PAGE_URL"]) > 0))
+	if(($arParams["IS_SEF"] === "Y") && ($arParams["DETAIL_PAGE_URL"] <> ''))
 		$rsElements->SetUrlTemplates($arParams["SEF_BASE_URL"].$arParams["DETAIL_PAGE_URL"]);
 	while($arElement = $rsElements->GetNext())
 	{

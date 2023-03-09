@@ -1,8 +1,6 @@
-<?
+<?php
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/basket.php");
-
-
-use \Bitrix\Main\Localization;
 
 class CSaleBasket extends CAllSaleBasket
 {
@@ -12,14 +10,14 @@ class CSaleBasket extends CAllSaleBasket
 	* @param string $LID - site for cleaning
 	* @return true false
 	*/
-	function _ClearProductSubscribe($LID)
+	public static function _ClearProductSubscribe($LID)
 	{
 		global $DB;
 
 		$subProp = COption::GetOptionString("sale", "subscribe_prod", "");
-		$arSubProp = unserialize($subProp);
+		$arSubProp = unserialize($subProp, ['allowed_classes' => false]);
 
-		$dayDelete = IntVal($arSubProp[$LID]["del_after"]);
+		$dayDelete = intval($arSubProp[$LID]["del_after"]);
 
 		$strSql =
 			"DELETE ".
@@ -30,7 +28,7 @@ class CSaleBasket extends CAllSaleBasket
 		return true;
 	}
 
-	function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB, $USER;
 
@@ -40,7 +38,7 @@ class CSaleBasket extends CAllSaleBasket
 		{
 			$arOrder = strval($arOrder);
 			$arFilter = strval($arFilter);
-			if (strlen($arOrder) > 0 && strlen($arFilter) > 0)
+			if ($arOrder <> '' && $arFilter <> '')
 				$arOrder = array($arOrder => $arFilter);
 			else
 				$arOrder = array();
@@ -240,9 +238,9 @@ class CSaleBasket extends CAllSaleBasket
 				"SELECT ".$arSqls["SELECT"]." ".
 				"FROM b_sale_basket B ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!1!=".htmlspecialcharsbx($strSql)."<br>";
@@ -258,30 +256,30 @@ class CSaleBasket extends CAllSaleBasket
 			"SELECT ".$arSqls["SELECT"]." ".
 			"FROM b_sale_basket B ".
 			"	".$arSqls["FROM"]." ";
-		if (strlen($arSqls["WHERE"]) > 0)
+		if ($arSqls["WHERE"] <> '')
 			$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-		if (strlen($arSqls["GROUPBY"]) > 0)
+		if ($arSqls["GROUPBY"] <> '')
 			$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
 		// echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
-		if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])<=0)
+		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
 		{
 			$strSql_tmp =
 				"SELECT COUNT('x') as CNT ".
 				"FROM b_sale_basket B ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql_tmp .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
 
 			$dbRes = $DB->Query($strSql_tmp, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			$cnt = 0;
-			if (strlen($arSqls["GROUPBY"]) <= 0)
+			if ($arSqls["GROUPBY"] == '')
 			{
 				if ($arRes = $dbRes->Fetch())
 					$cnt = $arRes["CNT"];
@@ -299,8 +297,8 @@ class CSaleBasket extends CAllSaleBasket
 		}
 		else
 		{
-			if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])>0)
-				$strSql .= "LIMIT ".IntVal($arNavStartParams["nTopCount"]);
+			if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])>0)
+				$strSql .= "LIMIT ".intval($arNavStartParams["nTopCount"]);
 
 			//echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
@@ -310,7 +308,7 @@ class CSaleBasket extends CAllSaleBasket
 		return $dbRes;
 	}
 
-	function GetPropsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetPropsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -318,7 +316,7 @@ class CSaleBasket extends CAllSaleBasket
 		{
 			$arOrder = strval($arOrder);
 			$arFilter = strval($arFilter);
-			if (strlen($arOrder) > 0 && strlen($arFilter) > 0)
+			if ($arOrder <> '' && $arFilter <> '')
 				$arOrder = array($arOrder => $arFilter);
 			else
 				$arOrder = array();
@@ -350,9 +348,9 @@ class CSaleBasket extends CAllSaleBasket
 				"SELECT ".$arSqls["SELECT"]." ".
 				"FROM b_sale_basket_props BP ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!1!=".htmlspecialcharsbx($strSql)."<br>";
@@ -368,29 +366,29 @@ class CSaleBasket extends CAllSaleBasket
 			"SELECT ".$arSqls["SELECT"]." ".
 			"FROM b_sale_basket_props BP ".
 			"	".$arSqls["FROM"]." ";
-		if (strlen($arSqls["WHERE"]) > 0)
+		if ($arSqls["WHERE"] <> '')
 			$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-		if (strlen($arSqls["GROUPBY"]) > 0)
+		if ($arSqls["GROUPBY"] <> '')
 			$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
 
-		if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])<=0)
+		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
 		{
 			$strSql_tmp =
 				"SELECT COUNT('x') as CNT ".
 				"FROM b_sale_basket_props BP ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql_tmp .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
 
 			$dbRes = $DB->Query($strSql_tmp, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			$cnt = 0;
-			if (strlen($arSqls["GROUPBY"]) <= 0)
+			if ($arSqls["GROUPBY"] == '')
 			{
 				if ($arRes = $dbRes->Fetch())
 					$cnt = $arRes["CNT"];
@@ -408,8 +406,8 @@ class CSaleBasket extends CAllSaleBasket
 		}
 		else
 		{
-			if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])>0)
-				$strSql .= "LIMIT ".IntVal($arNavStartParams["nTopCount"]);
+			if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])>0)
+				$strSql .= "LIMIT ".intval($arNavStartParams["nTopCount"]);
 
 			//echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
@@ -428,18 +426,34 @@ class CSaleBasket extends CAllSaleBasket
 	* @param $arFields
 	* @return mixed - int ID or false
 	*/
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		global $DB, $APPLICATION;
 
 		if (isset($arFields["ID"]))
 			unset($arFields["ID"]);
 
+		if (
+			!isset($arFields['BASE_PRICE'])
+			&&
+			isset($arFields['PRICE'])
+			&&
+			(
+				!isset($arFields['CUSTOM_PRICE'])
+				||
+				(
+					isset($arFields['CUSTOM_PRICE'])
+					&& $arFields['CUSTOM_PRICE'] === 'N'
+				)
+			)
+		)
+		{
+			$arFields['BASE_PRICE'] = $arFields['PRICE'];
+		}
+
 		$isOrderConverted = \Bitrix\Main\Config\Option::get("main", "~sale_converted_15", 'Y');
 
 		CSaleBasket::Init();
-//		if (!CSaleBasket::CheckFields("ADD", $arFields))
-//			return false;
 
 		if ($isOrderConverted == 'N')
 		{
@@ -681,7 +695,7 @@ class CSaleBasket extends CAllSaleBasket
 		return $ID;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB, $APPLICATION;
 
@@ -785,7 +799,7 @@ class CSaleBasket extends CAllSaleBasket
 		return true;
 	}
 
-	function DeleteAll($FUSER_ID = 0, $bIncOrdered = false)
+	public static function DeleteAll($FUSER_ID = 0, $bIncOrdered = false)
 	{
 		global $DB, $APPLICATION;
 
@@ -845,7 +859,7 @@ class CSaleBasket extends CAllSaleBasket
 		return true;
 	}
 
-	function GetLeave($arOrder = Array(), $arFilter = Array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = Array())
+	public static function GetLeave($arOrder = Array(), $arFilter = Array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = Array())
 	{
 		global $DB;
 		if(empty($arSelectFields) || in_array("*", $arSelectFields))
@@ -909,7 +923,7 @@ class CSaleBasket extends CAllSaleBasket
 		{
 			foreach($arFilter as $k => $v)
 			{
-				if(strpos($k, "QUANTITY_ALL") !== false || strpos($k, "PRICE_ALL") !== false || strpos($k, "PR_COUNT") !== false)
+				if(mb_strpos($k, "QUANTITY_ALL") !== false || mb_strpos($k, "PRICE_ALL") !== false || mb_strpos($k, "PR_COUNT") !== false)
 				{
 					$arFilterH[$k] = $v;
 					unset($arFilter[$k]);
@@ -929,22 +943,22 @@ class CSaleBasket extends CAllSaleBasket
 			"	".$arSqls["FROM"]." ";
 		$strSql .= "WHERE ".$arSqls["WHERE"]." ";
 		$strSql .= "GROUP BY B.FUSER_ID, F.USER_ID, B.LID ";
-		if (strlen($arSqlsH["WHERE"]) > 0)
+		if ($arSqlsH["WHERE"] <> '')
 			$strSql .= "HAVING ".$arSqlsH["WHERE"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
 		// echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
-		if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])<=0)
+		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
 		{
 			$strSql_tmp =
 				"SELECT COUNT('x') as CNT ".
 				"FROM b_sale_basket B ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
 			$strSql_tmp .= "GROUP BY B.FUSER_ID, F.USER_ID, B.LID ";
-			if (strlen($arSqlsH["WHERE"]) > 0)
+			if ($arSqlsH["WHERE"] <> '')
 				$strSql_tmp .= "HAVING ".$arSqlsH["WHERE"]." ";
 
 			// echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
@@ -960,8 +974,8 @@ class CSaleBasket extends CAllSaleBasket
 		}
 		else
 		{
-			if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])>0)
-				$strSql .= "LIMIT ".IntVal($arNavStartParams["nTopCount"]);
+			if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])>0)
+				$strSql .= "LIMIT ".intval($arNavStartParams["nTopCount"]);
 
 			// echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
@@ -972,22 +986,21 @@ class CSaleBasket extends CAllSaleBasket
 	}
 }
 
-
 class CSaleUser extends CAllSaleUser
 {
-	function Add()
+	public static function Add()
 	{
 		global $DB, $USER;
 
 		$arFields = array(
 				"=DATE_INSERT" => $DB->GetNowFunction(),
 				"=DATE_UPDATE" => $DB->GetNowFunction(),
-				"USER_ID" => (is_object($USER) && $USER->IsAuthorized() ? IntVal($USER->GetID()) : False),
+				"USER_ID" => (is_object($USER) && $USER->IsAuthorized() ? intval($USER->GetID()) : False),
 				"CODE" => md5(time().randString(10)),
 			);
 
 		$ID = CSaleUser::_Add($arFields);
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$cookie_name = COption::GetOptionString("main", "cookie_name", "BITRIX_SM");
 		$_COOKIE[$cookie_name."_SALE_UID"] = $ID;
@@ -1013,16 +1026,16 @@ class CSaleUser extends CAllSaleUser
 		return $ID;
 	}
 
-	function _Add($arFields)
+	public static function _Add($arFields)
 	{
 		global $DB;
 
 		$arFields1 = array();
 		foreach ($arFields as $key => $value)
 		{
-			if (substr($key, 0, 1)=="=")
+			if (mb_substr($key, 0, 1) == "=")
 			{
-				$arFields1[substr($key, 1)] = $value;
+				$arFields1[mb_substr($key, 1)] = $value;
 				unset($arFields[$key]);
 			}
 		}
@@ -1034,9 +1047,9 @@ class CSaleUser extends CAllSaleUser
 
 		foreach ($arFields1 as $key => $value)
 		{
-			if (strlen($arInsert[0])>0) $arInsert[0] .= ", ";
+			if ($arInsert[0] <> '') $arInsert[0] .= ", ";
 			$arInsert[0] .= $key;
-			if (strlen($arInsert[1])>0) $arInsert[1] .= ", ";
+			if ($arInsert[1] <> '') $arInsert[1] .= ", ";
 			$arInsert[1] .= $value;
 		}
 
@@ -1045,16 +1058,16 @@ class CSaleUser extends CAllSaleUser
 			"VALUES(".$arInsert[1].")";
 		$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		$ID = IntVal($DB->LastID());
+		$ID = intval($DB->LastID());
 
 		return $ID;
 	}
 
-	function DeleteOld($nDays)
+	public static function DeleteOld($nDays)
 	{
 		global $DB;
 
-		$nDays = IntVal($nDays);
+		$nDays = intval($nDays);
 		$strSql =
 			"SELECT f.ID ".
 			"FROM b_sale_fuser f ".
@@ -1075,7 +1088,7 @@ class CSaleUser extends CAllSaleUser
 		return true;
 	}
 
-	function GetBuyersList($arOrder = Array(), $arFilter = Array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = Array())
+	public static function GetBuyersList($arOrder = Array(), $arFilter = Array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = Array())
 	{
 		global $DB;
 		if(empty($arSelectFields) || in_array("*", $arSelectFields))
@@ -1085,7 +1098,7 @@ class CSaleUser extends CAllSaleUser
 		$arFields_md = array("LAST_LOGIN", "DATE_REGISTER", "TIMESTAMP_X", "PERSONAL_BIRTHDAY");
 
 		$CURRENCY = "";
-		if(strlen($arFilter["CURRENCY"]) > 0)
+		if($arFilter["CURRENCY"] <> '')
 		{
 			$CURRENCY = $arFilter["CURRENCY"];
 			unset($arFilter["CURRENCY"]);
@@ -1097,14 +1110,14 @@ class CSaleUser extends CAllSaleUser
 		}
 
 		$LID = "";
-		if(strlen($arFilter["LID"]) > 0)
+		if($arFilter["LID"] <> '')
 		{
 			$LID = $arFilter["LID"];
 			unset($arFilter["LID"]);
 		}
 		else
 		{
-			$rsSites = CSite::GetList($by="id", $order="asc", array("ACTIVE" => "Y"));
+			$rsSites = CSite::GetList("id", "asc", array("ACTIVE" => "Y"));
 			$arSite = $rsSites->Fetch();
 			$LID = $arSite["ID"];
 		}
@@ -1138,7 +1151,7 @@ class CSaleUser extends CAllSaleUser
 		{
 			foreach($arFilter as $k => $v)
 			{
-				if(strpos($k, "ORDER_SUM") !== false || strpos($k, "ORDER_COUNT") !== false || strpos($k, "LAST_ORDER_DATE") !== false)
+				if(mb_strpos($k, "ORDER_SUM") !== false || mb_strpos($k, "ORDER_COUNT") !== false || mb_strpos($k, "LAST_ORDER_DATE") !== false)
 				{
 					$arFilterH[$k] = $v;
 					unset($arFilter[$k]);
@@ -1156,25 +1169,25 @@ class CSaleUser extends CAllSaleUser
 			"SELECT ".$arSqls["SELECT"]." ".
 			"FROM b_sale_fuser F ".
 			"	".$arSqls["FROM"]." ";
-		if(strlen($arSqls["WHERE"]) > 0)
+		if($arSqls["WHERE"] <> '')
 			$strSql .= "WHERE ".$arSqls["WHERE"]." ";
 		$strSql .= "GROUP BY F.USER_ID ";
-		if (strlen($arSqlsH["WHERE"]) > 0)
+		if ($arSqlsH["WHERE"] <> '')
 			$strSql .= "HAVING ".$arSqlsH["WHERE"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
 		// echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
-		if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])<=0)
+		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
 		{
 			$strSql_tmp =
 				"SELECT COUNT('x') as CNT ".
 				"FROM b_sale_fuser F ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
 			$strSql_tmp .= "GROUP BY F.USER_ID ";
-			if (strlen($arSqlsH["WHERE"]) > 0)
+			if ($arSqlsH["WHERE"] <> '')
 				$strSql_tmp .= "HAVING ".$arSqlsH["WHERE"]." ";
 
 			// echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
@@ -1190,8 +1203,8 @@ class CSaleUser extends CAllSaleUser
 		}
 		else
 		{
-			if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])>0)
-				$strSql .= "LIMIT ".IntVal($arNavStartParams["nTopCount"]);
+			if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])>0)
+				$strSql .= "LIMIT ".intval($arNavStartParams["nTopCount"]);
 
 			// echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
@@ -1201,7 +1214,7 @@ class CSaleUser extends CAllSaleUser
 		return $dbRes;
 	}
 
-	function GetUserID ($intFUserID)
+	public static function GetUserID ($intFUserID)
 	{
 		global $DB;
 		$intFUserID = intval($intFUserID);
@@ -1216,6 +1229,3 @@ class CSaleUser extends CAllSaleUser
 		return false;
 	}
 }
-
-
-?>

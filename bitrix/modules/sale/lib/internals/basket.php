@@ -8,7 +8,10 @@
 namespace Bitrix\Sale\Internals;
 
 use Bitrix\Main;
+use Bitrix\Main\DI\ServiceLocator;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\Reservation\BasketReservationService;
+use Bitrix\Sale\Reservation\Internals\BasketReservationTable;
 
 Loc::loadMessages(__FILE__);
 
@@ -50,16 +53,29 @@ class BasketTable extends Main\Entity\DataManager
 	{
 		$id = intval($id);
 		if ($id <= 0)
+		{
 			throw new Main\ArgumentNullException("id");
+		}
 
-		$itemsList = BasketPropertyTable::getList(
-			array(
-				"select" => array("ID"),
-				"filter" => array("BASKET_ID" => $id),
-			)
-		);
-		while ($item = $itemsList->fetch())
+		$dbRes = BasketPropertyTable::getList([
+			"select" => ["ID"],
+			"filter" => ["BASKET_ID" => $id],
+		]);
+		while ($item = $dbRes->fetch())
+		{
 			BasketPropertyTable::delete($item["ID"]);
+		}
+
+		/** @var BasketReservationService */
+		$service = ServiceLocator::getInstance()->get('sale.basketReservation');
+		$dbRes = BasketReservationTable::getList([
+			"select" => ["ID"],
+			"filter" => ["BASKET_ID" => $id],
+		]);
+		while ($item = $dbRes->fetch())
+		{
+			$service->delete($item["ID"]);
+		}
 
 		return BasketTable::delete($id);
 	}
@@ -222,6 +238,10 @@ class BasketTable extends Main\Entity\DataManager
 			'CAN_BUY' => array(
 				'data_type' => 'boolean',
 				'values' => array('N','Y')
+			),
+
+			'MARKING_CODE_GROUP' => array(
+				'data_type' => 'string',
 			),
 
 			'MODULE' => array(
@@ -402,6 +422,10 @@ class BasketTable extends Main\Entity\DataManager
 				array(
 					'default' => '100'
 				)
+			),
+
+			'XML_ID' => array(
+				'data_type' => 'string'
 			),
 		);
 	}

@@ -1,17 +1,21 @@
 <?php
 namespace Bitrix\Main\Composite;
 
+use Bitrix\Main\Application;
 use Bitrix\Main\Composite\Debug;
 use Bitrix\Main\Composite\Debug\Logger;
 use Bitrix\Main\Composite\Internals\Model\PageTable;
 use Bitrix\Main\Composite\Internals\Locker;
 use Bitrix\Main\Composite\Internals\PageManager;
+use Bitrix\Main\Config\Configuration;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Context;
 use Bitrix\Main\EventManager;
+use Bitrix\Main\Engine\Response;
 use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\ModuleManager;
 use Bitrix\Main\Page\Asset;
 use Bitrix\Main\Page\AssetMode;
 use Bitrix\Main\Page\AssetLocation;
@@ -297,7 +301,7 @@ final class Engine
 			$stub = $dynamicArea->getStub();
 			self::replaceSessid($stub);
 
-			$params["dynamicBlocks"][$dynamicArea->getId()] = substr(md5($stub), 0, 12);
+			$params["dynamicBlocks"][$dynamicArea->getId()] = mb_substr(md5($stub), 0, 12);
 			if ($dynamicArea->getBrowserStorage())
 			{
 				$realId = $dynamicArea->getContainerId() !== null ? $dynamicArea->getContainerId() : "bxdynamic_".$id;
@@ -307,6 +311,7 @@ final class Engine
 
 		$params["AUTO_UPDATE"] = self::getAutoUpdate();
 		$params["AUTO_UPDATE_TTL"] = self::getAutoUpdateTTL();
+		$params["version"] = 2;
 
 		Asset::getInstance()->addString(
 			self::getInjectedJs($params),
@@ -331,7 +336,7 @@ final class Engine
 			return null;
 		}
 
-		if (defined("BX_BUFFER_SHUTDOWN"))
+		if (defined("BX_BUFFER_SHUTDOWN") || !defined("B_EPILOG_INCLUDED"))
 		{
 			Logger::log(
 				array(
@@ -365,7 +370,7 @@ final class Engine
 				if (self::$isCompositeInjected !== true && $method[1] === "GetHeadStrings")
 				{
 					self::$isCompositeInjected =
-						\CUtil::BinStrpos($newBuffer[$i * 2 + 1], "w.frameRequestStart") !== false;
+						strpos($newBuffer[$i * 2 + 1], "w.frameRequestStart") !== false;
 				}
 			}
 		}
@@ -395,7 +400,7 @@ final class Engine
 	 */
 	public static function endBuffering(&$originalContent, $compositeContent)
 	{
-		if (!self::isEnabled() || $compositeContent === null || defined("BX_BUFFER_SHUTDOWN"))
+		if (!self::isEnabled() || $compositeContent === null || defined("BX_BUFFER_SHUTDOWN") || !defined("B_EPILOG_INCLUDED"))
 		{
 			//this happens when die() invokes in self::onBeforeLocalRedirect
 			if (self::isAjaxRequest() && self::$isRedirect === false)
@@ -479,7 +484,7 @@ final class Engine
 
 						if ($page->getStorage() instanceof Data\FileStorage)
 						{
-							$freeSpace = BinaryString::getLength($dividedData["static"]) + strlen($dividedData["md5"]);
+							$freeSpace = strlen($dividedData["static"]) + strlen($dividedData["md5"]);
 							self::ensureFileQuota($freeSpace);
 						}
 
@@ -549,14 +554,6 @@ final class Engine
 				"spread" => array_map(array("CUtil", "JSEscape"), $APPLICATION->GetSpreadCookieUrls()),
 			);
 
-			if ($USER->isAuthorized() && self::getUseAppCache())
-			{
-				if (Loader::includeModule("pull") && \CPullOptions::CheckNeedRun())
-				{
-					$content["pull"] = \CPullChannel::GetConfig($USER->GetID());
-				}
-			}
-
 			$content = \CUtil::PhpToJSObject($content);
 		}
 		else
@@ -607,7 +604,7 @@ final class Engine
 
 				$realId = $dynamicArea->getContainerId() !== null ? $dynamicArea->getContainerId() : "bxdynamic_".$area->id;
 				$assets =  Asset::getInstance()->getAssetInfo($dynamicArea->getAssetId(), $dynamicArea->getAssetMode());
-				$areaContent = \CUtil::BinSubstr($content, $area->openTagEnd, $area->closingTagStart - $area->openTagEnd);
+				$areaContent = substr($content, $area->openTagEnd, $area->closingTagStart - $area->openTagEnd);
 				$areaContentMd5 = substr(md5($areaContent), 0, 12);
 
 				$blockId = $dynamicArea->getId();
@@ -620,18 +617,21 @@ final class Engine
 						"CONTENT" => $areaContent,
 						"HASH" => $areaContentMd5,
 						"PROPS" => array(
+							"ID" => $area->id,
 							"CONTAINER_ID" => $dynamicArea->getContainerId(),
 							"USE_BROWSER_STORAGE" => $dynamicArea->getBrowserStorage(),
 							"AUTO_UPDATE" => $dynamicArea->getAutoUpdate(),
 							"USE_ANIMATION" => $dynamicArea->getAnimation(),
 							"CSS" => $assets["CSS"],
 							"JS" => $assets["JS"],
+							"BUNDLE_JS" => $assets["BUNDLE_JS"],
+							"BUNDLE_CSS" => $assets["BUNDLE_CSS"],
 							"STRINGS" => $assets["STRINGS"],
 						),
 					);
 				}
 
-				$data["static"] .= \CUtil::BinSubstr($content, $offset, $area->openTagStart - $offset);
+				$data["static"] .= substr($content, $offset, $area->openTagStart - $offset);
 
 				if ($dynamicArea->getContainerId() === null)
 				{
@@ -648,7 +648,7 @@ final class Engine
 				$offset = $area->closingTagEnd;
 			}
 
-			$data["static"] .= \CUtil::BinSubstr($content, $offset);
+			$data["static"] .= substr($content, $offset);
 		}
 		else
 		{
@@ -676,28 +676,28 @@ final class Engine
 
 		$areas = array();
 		$offset = 0;
-		while (($openTagStart = \CUtil::BinStrpos($content, $openTag, $offset)) !== false)
+		while (($openTagStart = strpos($content, $openTag, $offset)) !== false)
 		{
-			$endingPos = \CUtil::BinStrpos($content, $ending, $openTagStart);
+			$endingPos = strpos($content, $ending, $openTagStart);
 			if ($endingPos === false)
 			{
 				break;
 			}
 
-			$idStart = $openTagStart + strlen($openTag);
+			$idStart = $openTagStart + mb_strlen($openTag);
 			$idLength = $endingPos - $idStart;
-			$areaId = \CUtil::BinSubstr($content, $idStart, $idLength);
-			$openTagEnd = $endingPos + strlen($ending);
+			$areaId = substr($content, $idStart, $idLength);
+			$openTagEnd = $endingPos + mb_strlen($ending);
 
 			$realClosingTag = $closingTag.$areaId.$ending;
-			$closingTagStart = \CUtil::BinStrpos($content, $realClosingTag, $openTagEnd);
+			$closingTagStart = strpos($content, $realClosingTag, $openTagEnd);
 			if ($closingTagStart === false)
 			{
 				$offset = $openTagEnd;
 				continue;
 			}
 
-			$closingTagEnd = $closingTagStart + strlen($realClosingTag);
+			$closingTagEnd = $closingTagStart + mb_strlen($realClosingTag);
 
 			$area = new \stdClass();
 			$area->id = $areaId;
@@ -717,7 +717,7 @@ final class Engine
 	{
 		$blocks = array();
 		$json = Context::getCurrent()->getServer()->get("HTTP_BX_CACHE_BLOCKS");
-		if ($json !== null && strlen($json) > 0)
+		if ($json !== null && $json <> '')
 		{
 			$blocks = json_decode($json, true);
 			if ($blocks === null)
@@ -766,7 +766,6 @@ final class Engine
 
 	public static function onBeforeLocalRedirect(&$url, $skip_security_check, $isExternal)
 	{
-		global $APPLICATION;
 		if (!self::isAjaxRequest() || ($isExternal && $skip_security_check !== true))
 		{
 			return;
@@ -790,19 +789,19 @@ final class Engine
 			)
 		);
 
-		if ($APPLICATION->buffered)
-		{
-			$APPLICATION->RestartBuffer();
-		}
-
 		self::$isRedirect = true;
 		Page::getInstance()->delete();
 
-		header("X-Bitrix-Composite: Ajax (error:redirect)");
-		self::sendRandHeader();
-		echo \CUtil::PhpToJSObject($response);
+		$response = new Response\Json($response);
+		$response->addHeader('X-Bitrix-Composite', 'Ajax (error:redirect)');
 
-		die(); //it provokes register_shutdown_function callback which invokes startBuffering/endBuffering
+		$bxRandom = Helper::getAjaxRandom();
+		if ($bxRandom !== false)
+		{
+			$response->addHeader('BX-RAND', $bxRandom);
+		}
+
+		Application::getInstance()->end(0, $response);
 	}
 
 	private static function ensureFileQuota($requiredFreeSpace = 0)
@@ -969,6 +968,7 @@ final class Engine
 
 			r.open("GET", u, true);
 			r.setRequestHeader("BX-ACTION-TYPE", "get_dynamic");
+			r.setRequestHeader("X-Bitrix-Composite", "get_dynamic");
 			r.setRequestHeader("BX-CACHE-MODE", m);
 			r.setRequestHeader("BX-CACHE-BLOCKS", v.dynamicBlocks ? JSON.stringify(v.dynamicBlocks) : "");
 			if (inv)
@@ -991,7 +991,7 @@ final class Engine
 				if (a != x || !((r.status >= 200 && r.status < 300) || r.status === 304 || r.status === 1223 || r.status === 0))
 				{
 					var f = {error:true, reason:a!=x?"bad_rand":"bad_status", url:u, xhr:r, status:r.status};
-					if (w.BX && w.BX.ready)
+					if (w.BX && w.BX.ready && b)
 					{
 						BX.ready(function() {
 							setTimeout(function(){
@@ -999,10 +999,9 @@ final class Engine
 							}, 0);
 						});
 					}
-					else
-					{
-						w.frameRequestFail = f;
-					}
+
+					w.frameRequestFail = f;
+
 					return;
 				}
 
@@ -1022,6 +1021,23 @@ final class Engine
 			};
 
 			r.send();
+
+			var p = w.performance;
+			if (p && p.addEventListener && p.getEntries && p.setResourceTimingBufferSize)
+			{
+				var e = 'resourcetimingbufferfull';
+				var h = function() {
+					if (w.BX && w.BX.frameCache && w.BX.frameCache.frameDataInserted)
+					{
+						p.removeEventListener(e, h);
+					}
+					else 
+					{
+						p.setResourceTimingBufferSize(p.getEntries().length + 50);
+					}
+				};
+				p.addEventListener(e, h);
+			}
 
 			})(window, document);
 JS;
@@ -1127,6 +1143,11 @@ CSS;
 	 */
 	public static function shouldBeEnabled()
 	{
+		if (self::isSelfHostedPortal())
+		{
+			return;
+		}
+
 		if (defined("USE_HTML_STATIC_CACHE") && USE_HTML_STATIC_CACHE === true)
 		{
 			if (
@@ -1221,6 +1242,22 @@ CSS;
 					"TYPE" => Logger::TYPE_ADMIN_PANEL,
 				)
 			);
+		}
+	}
+
+	/**
+	 * Return true if it's a self-hosted portal.
+	 * @return bool
+	 */
+	public static function isSelfHostedPortal()
+	{
+		if (Configuration::getValue("force_enable_self_hosted_composite") === true)
+		{
+			return false;
+		}
+		else
+		{
+			return ModuleManager::isModuleInstalled("intranet") && !ModuleManager::isModuleInstalled("bitrix24");
 		}
 	}
 

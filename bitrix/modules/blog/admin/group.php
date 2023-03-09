@@ -22,9 +22,9 @@ $arFilterFields = array(
 $lAdmin->InitFilter($arFilterFields);
 
 $arFilter = array();
-if (strlen($filter_site_id) > 0 && $filter_site_id != "NOT_REF")
+if ($filter_site_id <> '' && $filter_site_id != "NOT_REF")
 	$arFilter["SITE_ID"] = $filter_site_id;
-if (strlen($filter_name) > 0)
+if ($filter_name <> '')
 	$arFilter["~NAME"] = "%".$filter_name."%";
 
 if ($lAdmin->EditAction() && $blogModulePermissions >= "W")
@@ -32,7 +32,7 @@ if ($lAdmin->EditAction() && $blogModulePermissions >= "W")
 	foreach ($FIELDS as $ID => $arFields)
 	{
 		$DB->StartTransaction();
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (!$lAdmin->IsUpdated($ID))
 			continue;
@@ -73,7 +73,7 @@ if (($arID = $lAdmin->GroupAction()) && $blogModulePermissions >= "W")
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -125,7 +125,7 @@ $lAdmin->AddHeaders(array(
 $arVisibleColumns = $lAdmin->GetVisibleHeaderColumns();
 
 $arSites = array();
-$dbSitesList = CSite::GetList(($b = "sort"), ($o = "asc"));
+$dbSitesList = CSite::GetList();
 while ($arSite = $dbSitesList->Fetch())
 	$arSites[$arSite["LID"]] = "[".$arSite["LID"]."]&nbsp;".$arSite["NAME"];
 

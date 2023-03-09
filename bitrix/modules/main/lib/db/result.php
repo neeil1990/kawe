@@ -247,7 +247,7 @@ abstract class Result implements \IteratorAggregate
 	/**
 	 * Returns an array of fields according to columns in the result.
 	 *
-	 * @return @return \Bitrix\Main\Entity\ScalarField[]
+	 * @return \Bitrix\Main\ORM\Fields\ScalarField[]
 	 */
 	abstract public function getFields();
 
@@ -321,7 +321,7 @@ abstract class Result implements \IteratorAggregate
 	 * <b>Traversable</b>
 	 * @since 5.0.0
 	 */
-	public function getIterator()
+	public function getIterator(): \Traversable
 	{
 		return new ResultIterator($this);
 	}

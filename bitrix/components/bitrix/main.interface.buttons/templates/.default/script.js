@@ -5,6 +5,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 	/**
 	 * @param {object} params parameters
 	 * @property {string} containerId @required
+	 * @property {string} theme
 	 * @property {object} classes
 	 * @property {string} classes.item Class for list item
 	 * @property {string} classes.itemSublink Class for sublink (ex. Add link)
@@ -16,6 +17,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 	 * @property {string} classes.itemActive Class for active item
 	 * @property {string} classes.itemDisabled Class for disabled elements
 	 * @property {string} classes.itemLocked Class for locked item. Added for list and submenu item
+	 * @property {string} classes.menuShown Class for open menu
 	 * @property {string} classes.onDrag Class added for container on dragstart event and removed on drag end event
 	 * @property {string} classes.dropzone Class for dropzone in submenu
 	 * @property {string} classes.separator Class for submenu separator before disabled items
@@ -52,16 +54,22 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		this.classItemMore = 'main-buttons-item-more';
 		this.classOnDrag = 'main-buttons-drag';
 		this.classDropzone = 'main-buttons-submenu-dropzone';
-		this.classSeporator = 'main-buttons-submenu-separator';
+		this.classSeparator = 'main-buttons-submenu-delimiter';
 		this.classHiddenLabel = 'main-buttons-hidden-label';
 		this.classSubmenuItem = 'main-buttons-submenu-item';
 		this.classItemDisabled = 'main-buttons-disabled';
-		this.classItemOver = 'over';
+		this.classItemOver = '--over';
+		this.classMenuShown = '--menu-shown';
 		this.classItemActive = 'main-buttons-item-active';
 		this.classSubmenu = 'main-buttons-submenu';
 		this.classSecret = 'secret';
-		this.classItemLocked = 'locked';
+		this.classItemLocked = '--locked';
+		this.classExtraItemLink = '';
+		this.classExtraItemText = '';
+		this.classExtraItemIcon = '';
+		this.classExtraItemCounter = '';
 		this.submenuIdPrefix = 'main_buttons_popup_';
+		this.childMenuIdPrefix = 'main_buttons_popup_child_';
 		this.submenuWindowIdPrefix = 'menu-popup-';
 		this.classSettingMenuItem = 'main-buttons-submenu-setting';
 		this.classEditState = 'main-buttons-edit';
@@ -75,45 +83,65 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		this.classContainer = 'main-buttons';
 		this.classSubmenuNoHiddenItem = 'main-buttons-submenu-item-no-hidden';
 		this.classDefaultSubmenuItem = 'menu-popup-item';
+		this.classDefaultSubmenuDelimimeter = 'popup-window-delimiter-section';
 		this.classInner = 'main-buttons-inner-container';
 		this.listContainer = null;
-		this.pinContainer = null;
 		this.dragItem = null;
 		this.overItem = null;
 		this.moreButton = null;
 		this.messages = null;
 		this.licenseParams = null;
-		this.isSubmenuShown = false;
-		this.isSubmenuShownOnDragStart = false;
+		this.ajaxSettings = null;
+		this.enableItemMouseEnter = true;
+		this.menuShowTimeout = null;
+		this.isMoreMenuShown = false;
+		this.onDragStarted = false;
 		this.isSettingsEnabled = true;
 		this.containerId = params.containerId;
+		this.isEditEnabledState = false;
+		this.theme = BX.Type.isStringFilled(params.theme) ? params.theme : 'default';
+		this.maxItemLength =
+			BX.Type.isNumber(params.maxItemLength) && params.maxItemLength > 6 ? params.maxItemLength : 20
+		;
 		this.tmp = {};
+		this.itemData = new WeakMap();
+
+		this.handleMoreMenuItemMouseEnter = this.handleMoreMenuItemMouseEnter.bind(this);
 
 		this.init(container, params);
-
 
 		/**
 		 * Public methods and properties
 		 */
 		return {
-			getItemById: BX.delegate(this.getItemById, this),
-			getAllItems: BX.delegate(this.getAllItems, this),
-			getHiddenItems: BX.delegate(this.getHiddenItems, this),
-			getVisibleItems: BX.delegate(this.getVisibleItems, this),
-			getDisabledItems: BX.delegate(this.getDisabledItems, this),
-			getMoreButton: BX.delegate(this.getMoreButton, this),
-			adjustMoreButtonPosition: BX.delegate(this.adjustMoreButtonPosition, this),
-			showSubmenu: BX.delegate(this.showSubmenu, this),
-			closeSubmenu: BX.delegate(this.closeSubmenu, this),
-			refreshSubmenu: BX.delegate(this.refreshSubmenu, this),
-			getCurrentSettings: BX.delegate(this.getCurrentSettings, this),
-			saveSettings: BX.delegate(this.saveSettings, this),
-			setCounterValueByItemId: BX.delegate(this.setCounterValueByItemId, this),
-			getCounterValueByItemId: BX.delegate(this.getCounterValueByItemId, this),
-			updateCounter: BX.delegate(this.updateCounter, this),
-			getActive: BX.delegate(this.getActive, this),
-			isEditEnabled: BX.delegate(this.isEditEnabled, this),
-			isActiveInMoreMenu: BX.delegate(this.isActiveInMoreMenu, this),
+			getItemById: this.getItemById.bind(this),
+			getAllItems: this.getAllItems.bind(this),
+			getHiddenItems: this.getHiddenItems.bind(this),
+			getVisibleItems: this.getVisibleItems.bind(this),
+			getDisabledItems: this.getDisabledItems.bind(this),
+			getMoreButton: this.getMoreButton.bind(this),
+			adjustMoreButtonPosition: this.adjustMoreButtonPosition.bind(this),
+			getItemData: this.getItemData.bind(this),
+
+			// Compatible methods
+			getSubmenu: this.getMoreMenu.bind(this),
+			showSubmenu: this.showMoreMenu.bind(this),
+			closeSubmenu: this.closeMoreMenu.bind(this),
+			refreshSubmenu: this.refreshMoreMenu.bind(this),
+
+			getMoreMenu: this.getMoreMenu.bind(this),
+			showMoreMenu: this.showMoreMenu.bind(this),
+			closeMoreMenu: this.closeMoreMenu.bind(this),
+			refreshMoreMenu: this.refreshMoreMenu.bind(this),
+
+			getCurrentSettings: this.getCurrentSettings.bind(this),
+			saveSettings: this.saveSettings.bind(this),
+			updateCounter: this.updateCounter.bind(this),
+			getActive: this.getActive.bind(this),
+			isDisabled: this.isDisabled.bind(this),
+			isVisibleItem: this.isVisibleItem.bind(this),
+			isEditEnabled: this.isEditEnabled.bind(this),
+			isActiveInMoreMenu: this.isActiveInMoreMenu.bind(this),
 			isSettingsEnabled: this.isSettingsEnabled,
 			classes:
 			{
@@ -125,6 +153,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				itemOver: this.classItemOver,
 				itemActive: this.classItemActive,
 				itemLocked: this.classItemLocked,
+				menuShown: this.classMenuShown,
 				submenu: this.classSubmenu,
 				submenuItem: this.classSubmenuItem,
 				containerOnDrag: this.classOnDrag,
@@ -135,7 +164,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		};
 	};
 
-
 	//noinspection JSUnusedGlobalSymbols,JSUnusedGlobalSymbols
 	BX.Main.interfaceButtons.prototype =
 	{
@@ -143,32 +171,32 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		{
 			this.listContainer = BX(this.getId());
 
-			if (!BX.type.isPlainObject(params))
+			if (!BX.Type.isPlainObject(params))
 			{
 				throw 'BX.MainButtons: params is not Object';
 			}
 
-			if (!('containerId' in params) || !BX.type.isNotEmptyString(params.containerId))
+			if (!('containerId' in params) || !BX.Type.isStringFilled(params.containerId))
 			{
 				throw 'BX.MainButtons: containerId not set in params';
 			}
 
-			if (!BX.type.isDomNode(this.listContainer))
+			if (!BX.Type.isDomNode(this.listContainer))
 			{
 				throw 'BX.MainButtons: #' + params.containerId + ' is not dom node';
 			}
 
-			if (('classes' in params) && BX.type.isPlainObject(params.classes))
+			if (('classes' in params) && BX.Type.isPlainObject(params.classes))
 			{
 				this.setCustomClasses(params.classes);
 			}
 
-			if (('messages' in params) && BX.type.isPlainObject(params.messages))
+			if (('messages' in params) && BX.Type.isPlainObject(params.messages))
 			{
 				this.setMessages(params.messages);
 			}
 
-			if (('licenseWindow' in params) && BX.type.isPlainObject(params.licenseWindow))
+			if (('licenseWindow' in params) && BX.Type.isPlainObject(params.licenseWindow))
 			{
 				this.setLicenseWindowParams(params.licenseWindow);
 			}
@@ -179,19 +207,19 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				this.visibleControlMoreButton();
 			}
 
+			this.initSaving(params.ajaxSettings);
+
 			this.moreButton = this.getMoreButton();
 
-			if (this.isSettingsEnabled)
-			{
-				this.dragAndDropInit();
-			}
+			this.listChildItems = {};
+
+			this.initItems();
 
 			this.adjustMoreButtonPosition();
-			this.bindOnClickOnMoreButton();
-			this.bindOnScrollWindow();
-			this.setContainerHeight();
+			this.bindEventsOnMoreButton();
+			this.bindOnResizeFrame();
 
-			BX.bind(this.getContainer(), 'click', BX.delegate(this._onDocumentClick, this));
+			BX.Event.bind(this.getContainer(), 'click', BX.delegate(this._onDocumentClick, this));
 			BX.addCustomEvent("onPullEvent-main", BX.delegate(this._onPush, this));
 
 			this.updateMoreButtonCounter();
@@ -201,48 +229,159 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				this.activateItem(this.moreButton);
 			}
 
-			var visibleItems = this.getVisibleItems();
-			var firstVisibleItem = BX.type.isArray(visibleItems) && visibleItems.length > 0 ? visibleItems[0] : null;
-			var firstItemNode = BX.Buttons.Utils.getByTag(firstVisibleItem, 'a');
-
-			if (!BX.type.isDomNode(firstItemNode))
+			const homeItem = this.getHomeItem();
+			if (homeItem)
 			{
-				return;
-			}
-
-			var firstPageLink = firstItemNode.getAttribute("href");
-			if (firstPageLink.charAt(0) === "?")
-			{
-				firstPageLink = firstItemNode.pathname + firstItemNode.search;
-			}
-
-			if (!this.lastHomeLink)
-			{
+				const { url: firstPageLink } = homeItem;
 				this.lastHomeLink = firstPageLink;
 			}
 
-			this.bindOnResizeFrame();
+			const showChildButtons = Array.from(this.container.querySelectorAll('.main-buttons-item-child-button'));
+			showChildButtons.forEach(function(button) {
+				const realChildButton = button.closest('.main-buttons-item-child');
+				if (realChildButton.dataset.isOpened)
+				{
+					this.realChildButton = realChildButton;
+					const clonedChildButton = realChildButton.closest('.main-buttons-item-child-button-cloned')
+					if (clonedChildButton)
+					{
+						this.clonedChildButton = clonedChildButton;
+					}
+				}
+
+				BX.Event.bind(button, 'click', this.onShowChildButtonClick.bind(this));
+
+			}, this);
+		},
+
+		calculateChildListWidth: function()
+		{
+			if (this.realChildButton)
+			{
+				const buttons = this.realChildButton
+					.querySelectorAll('.main-buttons-item-child-list-inner .main-buttons-item');
+
+				const offset = 10;
+				return Array.from(buttons).reduce(function(acc, button) {
+					const width = BX.Text.toNumber(BX.Dom.style(button, 'width'));
+					const marginLeft = BX.Text.toNumber(BX.Dom.style(button, 'margin-left'));
+					const marginRight = BX.Text.toNumber(BX.Dom.style(button, 'margin-right'));
+
+					return acc + width + marginLeft + marginRight;
+				}, offset);
+			}
+			return 0;
+		},
+
+		onShowChildButtonClick: function(event)
+		{
+			event.preventDefault();
+
+			if (!this.realChildButton)
+			{
+				this.realChildButton = event.currentTarget.closest('.main-buttons-item-child');
+			}
+
+			const childListContainer = this.realChildButton.querySelector('.main-buttons-item-child-list');
+
+			this.enableItemMouseEnter = false;
+			setTimeout(() => {
+				this.enableItemMouseEnter = true;
+			}, 200);
+
+			const childIds = BX.Dom.attr(this.realChildButton, 'data-child-items');
+			const isOpened = BX.Dom.attr(this.realChildButton, 'data-is-opened');
+			let expandedParentIds = {};
+			if (isOpened)
+			{
+				BX.Dom.attr(this.realChildButton, 'data-is-opened', null);
+
+				childIds.forEach(function(childId) {
+					const button = this.getContainer().querySelector('[data-id="'+childId+'"]');
+					BX.Dom.style(button, 'display', null);
+					if (childId.hasOwnProperty('PARENT_ITEM_ID'))
+					{
+						expandedParentIds[childId['PARENT_ITEM_ID']] = 'N';
+					}
+				}, this);
+
+				if (this.clonedChildButton)
+				{
+					BX.Dom.remove(this.clonedChildButton);
+				}
+
+				BX.Dom.style(childListContainer, {
+					overflow: null,
+					'max-width': null,
+				});
+
+				expandedParentIds = JSON.stringify(expandedParentIds);
+				this.saveOptions('expanded_lists', expandedParentIds);
+			}
+			else
+			{
+				BX.Dom.attr(this.realChildButton, 'data-is-opened', true);
+				BX.Dom.style(childListContainer, 'max-width', this.calculateChildListWidth() + 'px');
+
+				this.cloneChildButton(this.realChildButton);
+
+				childIds.forEach((childId) => {
+					const button = this.getContainer().querySelector('[data-id="'+childId+'"]');
+					BX.Dom.insertBefore(button, this.realChildButton);
+					BX.Dom.style(button, 'display', 'inline-block');
+					if (childId.hasOwnProperty('PARENT_ITEM_ID'))
+					{
+						expandedParentIds[childId['PARENT_ITEM_ID']] = 'Y';
+					}
+				});
+
+				setTimeout(() => {
+					BX.Dom.style(childListContainer, 'overflow', 'unset');
+				}, 200);
+
+				expandedParentIds = JSON.stringify(expandedParentIds);
+				this.saveOptions('expanded_lists', expandedParentIds);
+			}
+
+			setTimeout(() => {
+				this._onResizeHandler();
+			}, 200);
+		},
+
+		cloneChildButton: function(realChildButton)
+		{
+			this.clonedChildButton = BX.Runtime.clone(realChildButton);
+
+			const childList = this.clonedChildButton.querySelector('.main-buttons-item-child-list');
+			if (childList)
+			{
+				BX.Dom.remove(childList);
+			}
+
+			BX.Dom.addClass(this.clonedChildButton, 'main-buttons-item-child-button-cloned');
+			BX.Dom.style(this.clonedChildButton, 'transition', 'none');
+			BX.Dom.insertBefore(this.clonedChildButton, realChildButton);
+			BX.Event.bind(this.clonedChildButton, 'click', this.onShowChildButtonClick.bind(this));
+
+			setTimeout(() => {
+				BX.Dom.style(this.clonedChildButton, 'transition', null);
+			}, 0);
 		},
 
 		_onDocumentClick: function(event)
 		{
-			var item = this.getItem(event);
-			var dataOnClick, currentItem, currentAlias, id,
-				visibleItems, visibleItemsLength;
-
 			if (this.isDragButton(event.target))
 			{
 				event.preventDefault();
 				event.stopPropagation();
 			}
 
-			if (BX.type.isDomNode(item))
+			let item = this.getItem(event);
+			if (BX.Type.isDomNode(item))
 			{
 				if (this.isSettings(item))
 				{
 					this.enableEdit();
-					BX.hide(this.getSettingsButton());
-					BX.show(this.getSettingsApplyButton());
 					return false;
 				}
 
@@ -252,8 +391,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					event.stopPropagation();
 					this.disableEdit();
 
-					BX.show(this.getSettingsButton());
-					BX.hide(this.getSettingsApplyButton());
 					return false;
 				}
 
@@ -263,69 +400,39 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					return false;
 				}
 
-				if (this.isLocked(item))
-				{
-					event.preventDefault();
-					this.showLicenseWindow();
-					return false;
-				}
-
 				if (this.isEditButton(event.target))
 				{
-					var dataItem, menu;
-					event.preventDefault();
-					event.stopPropagation();
+					this.handleEditButtonClick(event);
 
-					if (this.isSubmenuItem(item))
-					{
-						item = this.getItemAlias(item);
-					}
-
-					try {
-						dataItem = JSON.parse(BX.data(item, 'item'));
-					} catch (err) {}
-
-					menu = this.getItemEditMenu();
-
-					if (menu && menu.popupWindow.isShown() && this.lastEditNode === item)
-					{
-						menu.popupWindow.close();
-					}
-					else
-					{
-						this.showItemEditMenu(dataItem, event.target);
-					}
-
-					this.lastEditNode = item;
 					return false;
 				}
 
 				if (this.isSetHide(item))
 				{
-					visibleItems = this.getVisibleItems();
-					visibleItemsLength = BX.type.isArray(visibleItems) ? visibleItems.length : null;
-					id = this.editItemData.ID.replace(this.listContainer.id + '_', '');
-					currentItem = this.getItemById(id);
-					currentAlias = this.getItemAlias(currentItem);
+					const visibleItems = this.getVisibleItems();
+					const visibleItemsLength = BX.Type.isArray(visibleItems) ? visibleItems.length : null;
+					const id = this.editItemData.ID.replace(this.listContainer.id + '_', '');
+					let currentItem = this.getItemById(id);
+					const currentAlias = this.getItemAlias(currentItem);
 
 					currentItem = this.isVisibleItem(currentItem) ? currentItem : currentAlias;
-
 
 					if (this.isDisabled(currentAlias))
 					{
 						this.enableItem(currentAlias);
 
-					} else if (!this.isDisabled(currentAlias) && visibleItemsLength > 2)
+					}
+					else if (!this.isDisabled(currentAlias) && visibleItemsLength > 2)
 					{
 						this.disableItem(currentAlias);
 					}
 
-					if (visibleItemsLength === 2)
+					if (visibleItemsLength === 1)
 					{
 						BX.onCustomEvent(window, 'BX.Main.InterfaceButtons:onHideLastVisibleItem', [currentItem, this]);
 					}
 
-					this.refreshSubmenu();
+					this.refreshMoreMenu();
 					this.saveSettings();
 
 					this.adjustMoreButtonPosition();
@@ -333,19 +440,18 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					if (this.isEditEnabled())
 					{
 						this.enableEdit();
-						BX.hide(this.getSettingsButton());
-						BX.show(this.getSettingsApplyButton());
 					}
 
 					this.editMenu.popupWindow.close();
+
 					return false;
 				}
 
 				if (this.isSetHome(item))
 				{
-					id = this.editItemData.ID.replace(this.listContainer.id + '_', '');
-					currentItem = this.getItemById(id);
-					currentAlias = this.getItemAlias(currentItem);
+					const id = this.editItemData.ID.replace(this.listContainer.id + '_', '');
+					const currentItem = this.getItemById(id);
+					const currentAlias = this.getItemAlias(currentItem);
 
 					if (this.isDisabled(currentAlias))
 					{
@@ -355,59 +461,56 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					this.listContainer.insertBefore(currentItem, BX.firstChild(this.listContainer));
 
 					this.adjustMoreButtonPosition();
-					this.refreshSubmenu();
+					this.refreshMoreMenu();
 					this.saveSettings();
 
 					if (this.isEditEnabled())
 					{
 						this.enableEdit();
-						BX.hide(this.getSettingsButton());
-						BX.show(this.getSettingsApplyButton());
 					}
 
 					this.editMenu.popupWindow.close();
+
 					return false;
 				}
 
-				if (!this.isSublink(event.target))
+				if (!this.isDragButton(event.target) && !this.isEditButton(event.target))
 				{
-					dataOnClick = this.dataValue(item, 'onclick');
+					const itemData = this.getItemData(item);
+					let dataOnClick = itemData['ON_CLICK']
 
-					if (BX.type.isNotEmptyString(dataOnClick))
+					if (this.isSublink(event.target))
+					{
+						dataOnClick = BX.Type.isPlainObject(itemData['SUB_LINK']) ? itemData['SUB_LINK']['ON_CLICK'] : '';
+					}
+
+					if (BX.Type.isStringFilled(dataOnClick))
 					{
 						event.preventDefault();
-						this.execScript(dataOnClick);
+						this.execScript(dataOnClick, event);
 					}
 				}
 			}
 
-			if (this.isEditEnabled())
+			if (this.isEditEnabled() && this.getMoreMenu())
 			{
-				//noinspection JSCheckFunctionSignatures
-				this.getSubmenu().popupWindow.setAutoHide(false);
+				this.getMoreMenu().getPopupWindow().setAutoHide(false);
 			}
 		},
-
 
 		/**
 		 * @return {boolean}
 		 */
 		isActiveInMoreMenu: function()
 		{
-			var hiddenItems = this.getHiddenItems();
-			var disabledItems = this.getDisabledItems();
-			var items = hiddenItems.concat(disabledItems);
-			return  items.some(function(current) {
-				var data;
-				try {
-					/**
-					 * @property data.IS_ACTIVE
-					 */
-					data = JSON.parse(BX.data(current, 'item'));
-				} catch (err) {}
+			const hiddenItems = this.getHiddenItems();
+			const disabledItems = this.getDisabledItems();
+			const items = hiddenItems.concat(disabledItems);
 
-				return BX.type.isPlainObject(data) &&
-					('IS_ACTIVE' in data && data.IS_ACTIVE === true || data.IS_ACTIVE === 'true' || data.IS_ACTIVE === 'Y');
+			return items.some(function(current) {
+				const itemData = this.getItemData(current);
+
+				return itemData['IS_ACTIVE'] === true;
 			}, this);
 		},
 
@@ -415,8 +518,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		{
 			if (command === "user_counter" && params && BX.message("SITE_ID") in params)
 			{
-				var counters = params[BX.message("SITE_ID")];
-				for (var counterId in counters)
+				const counters = params[BX.message("SITE_ID")];
+				for (const counterId in counters)
 				{
 					if (counters.hasOwnProperty(counterId))
 					{
@@ -426,44 +529,35 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			}
 		},
 
-		bindOnScrollWindow: function()
-		{
-			BX.bind(window, 'scroll', BX.delegate(this._onScroll, this));
-		},
-
-
 		/**
 		 * Gets active element
 		 * @return {?HTMLElement}
 		 */
 		getActive: function()
 		{
-			var items = this.getAllItems();
-			var tmpData, node;
-			var result = null;
+			let items = this.getAllItemsData();
+			let result = null;
+			let rootActiveItem = null;
 
-			if (BX.type.isArray(items))
+			while (BX.Type.isArrayFilled(items))
 			{
-				items.forEach(function(current) {
-					try {
-						tmpData = JSON.parse(BX.data(current, 'item'));
-					} catch(err) {
-						tmpData = null;
+				const item = items.shift();
+				if (item['IS_ACTIVE'] === true)
+				{
+					if (rootActiveItem === null)
+					{
+						rootActiveItem = item;
 					}
 
-					if (BX.type.isPlainObject(tmpData) && 'IS_ACTIVE' in tmpData &&
-						(tmpData.IS_ACTIVE === true || tmpData.IS_ACTIVE === 'true' || tmpData.IS_ACTIVE === 'Y'))
-					{
-						result = tmpData;
-					}
-				}, this);
+					result = item;
+					items = BX.Type.isArrayFilled(item['ITEMS']) ? [...item['ITEMS']] : null;
+				}
 			}
 
-			if (BX.type.isPlainObject(result))
+			if (result !== null && rootActiveItem !== null)
 			{
-				node = BX(result.ID);
-
-				if (BX.type.isDomNode(node))
+				const node = BX(rootActiveItem.ID);
+				if (BX.Type.isDomNode(node))
 				{
 					result.NODE = node;
 				}
@@ -476,16 +570,14 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
 		 * @param {HTMLElement} item
 		 * @return {boolean}
 		 */
 		isSetHome: function(item)
 		{
-			return BX.hasClass(item, this.classSetHome);
+			return BX.Dom.hasClass(item, this.classSetHome);
 		},
-
 
 		/**
 		 * @param {HTMLElement} item
@@ -493,27 +585,24 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isSetHide: function(item)
 		{
-			return BX.hasClass(item, this.classSetHide);
+			return BX.Dom.hasClass(item, this.classSetHide);
 		},
-
 
 		/**
 		 * @return {?HTMLElement}
 		 */
 		getSettingsButton: function()
 		{
-			return BX.Buttons.Utils.getByClass(this.getSubmenuContainer(), this.classSettingMenuItem);
+			return BX.Buttons.Utils.getByClass(this.getMoreMenuContainer(), this.classSettingMenuItem);
 		},
-
 
 		/**
 		 * @return {?HTMLElement}
 		 */
 		getSettingsApplyButton: function()
 		{
-			return BX.Buttons.Utils.getByClass(this.getSubmenuContainer(), this.classSettingsApplyButton);
+			return BX.Buttons.Utils.getByClass(this.getMoreMenuContainer(), this.classSettingsApplyButton);
 		},
-
 
 		/**
 		 * @param {HTMLElement} item
@@ -521,39 +610,41 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isApplySettingsButton: function(item)
 		{
-			return BX.hasClass(item, this.classSettingsApplyButton);
+			return BX.Dom.hasClass(item, this.classSettingsApplyButton);
 		},
 
 		enableEdit: function()
 		{
-			var submenu = this.getSubmenu();
-
-			if (submenu && 'popupWindow' in submenu)
+			const menu = this.getMoreMenu();
+			if (menu)
 			{
-				//noinspection JSCheckFunctionSignatures
-				submenu.popupWindow.setAutoHide(false);
+				const popup = menu.getPopupWindow();
+				popup.setAutoHide(false);
+
+				BX.Dom.addClass(popup.getPopupContainer(), this.classEditState);
 			}
 
-			BX.addClass(this.listContainer, this.classEditState);
-			BX.addClass(this.getSubmenuContainer(), this.classEditState);
+			BX.Dom.addClass(this.listContainer, this.classEditState);
+
 			this.isEditEnabledState = true;
 		},
 
 		disableEdit: function()
 		{
-			var menu = this.getSubmenu();
-
-			if (menu && 'popupWindow' in menu)
+			const menu = this.getMoreMenu();
+			if (menu)
 			{
-				//noinspection JSCheckFunctionSignatures
-				menu.popupWindow.setAutoHide(true);
+				const popup = menu.getPopupWindow();
+				popup.setAutoHide(true);
+				BX.Dom.removeClass(popup.getPopupContainer(), this.classEditState);
 			}
 
-			BX.removeClass(this.listContainer, this.classEditState);
-			BX.removeClass(this.getSubmenuContainer(), this.classEditState);
-			this.isEditEnabledState = false;
-		},
+			BX.Dom.removeClass(this.listContainer, this.classEditState);
 
+			this.isEditEnabledState = false;
+
+			this.destroyItemEditMenu();
+		},
 
 		/**
 		 * @return {boolean}
@@ -563,71 +654,74 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return this.isEditEnabledState;
 		},
 
-
 		/**
-		 * @param {object} dataItem
+		 * @param {object} itemData
 		 * @param {HTMLElement} node
 		 */
-		showItemEditMenu: function(dataItem, node)
+		showItemEditMenu: function(itemData, node)
 		{
-			if (BX.type.isPlainObject(dataItem) && 'ID' in dataItem)
+			if (BX.Type.isPlainObject(itemData) && 'ID' in itemData)
 			{
-				var menuId = [this.listContainer.id, '_edit_item'].join('');
-				var menu = BX.PopupMenu.getMenuById(menuId);
-
+				const menuId = [this.listContainer.id, '_edit_item'].join('');
+				let menu = BX.Main.MenuManager.getMenuById(menuId);
 				if (menu)
 				{
-					BX.PopupMenu.destroy(menuId);
+					BX.Main.MenuManager.destroy(menuId);
 				}
 
-				menu = this.createItemEditMenu(dataItem, menuId, node);
-
+				menu = this.createItemEditMenu(itemData, menuId, node);
 				menu.popupWindow.show();
 			}
 		},
 
+		destroyItemEditMenu: function()
+		{
+			const menuId = [this.listContainer.id, '_edit_item'].join('');
+			const menu = BX.Main.MenuManager.getMenuById(menuId);
+			if (menu)
+			{
+				BX.Main.MenuManager.destroy(menuId);
+			}
+		},
 
 		/**
 		 * @return {?HTMLElement}
 		 */
 		getContainer: function()
 		{
-			if (!BX.type.isDomNode(this.container))
+			if (!BX.Type.isDomNode(this.container))
 			{
-				this.container = BX(this.containerId).parentNode;
+				this.container = BX(this.containerId).parentNode.parentNode;
 			}
 
 			return this.container;
 		},
-
 
 		/**
 		 * @return {?BX.PopupMenu}
 		 */
 		getItemEditMenu: function()
 		{
-			return BX.PopupMenu.getMenuById([this.listContainer.id, '_edit_item'].join(''));
+			return BX.Main.MenuManager.getMenuById([this.listContainer.id, '_edit_item'].join(''));
 		},
 
-
 		/**
-		 * @param {object} dataItem
+		 * @param {object} itemData
 		 * @param {string} menuId
 		 * @param {HTMLElement} node BX.PopupMenu bindElement
 		 * @return {?BX.PopupMenu}
 		 */
-		createItemEditMenu: function(dataItem, menuId, node)
+		createItemEditMenu: function(itemData, menuId, node)
 		{
-			var menu;
-			var menuItems = [
+			const menuItems = [
 				{
 					text: this.message('MIB_SET_HOME'),
 					className: 'main-buttons-set-home menu-popup-no-icon'
 				}
 			];
 
-			var id = dataItem.ID.replace(this.listContainer.id + '_', '');
-			var currentItem = this.getItemById(id);
+			const id = itemData['ID'].replace(this.listContainer.id + '_', '');
+			const currentItem = this.getItemById(id);
 
 			if (this.isDisabled(currentItem))
 			{
@@ -644,24 +738,36 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				});
 			}
 
-			var nodeRect = BX.pos(node);
-			var menuParams = {
+			if (itemData['IS_PINNED'])
+			{
+				const parentItem = this.getParentItem(itemData['ID']);
+				menuItems.push({
+					text: this.message('MIB_UNPIN_ITEM').replace('#NAME#', parentItem ? parentItem['TEXT'] : ''),
+					onclick: (event, menuItem) => {
+						this.handleItemUnpin(itemData, currentItem);
+						menuItem.getMenuWindow().close();
+					}
+				});
+			}
+
+			const nodeRect = BX.pos(node);
+			const menuParams = {
 				menuId: menuId,
 				anchor: node,
 				menuItems: menuItems,
 				settings: {
-					'autoHide': true,
-					'offsetTop': 0,
-					'offsetLeft': (nodeRect.width / 2),
-					'zIndex': 20,
-					'angle': {
-						'position': 'top',
-						'offset': (nodeRect.width / 2)
+					autoHide: true,
+					offsetTop: 0,
+					offsetLeft: (nodeRect.width / 2),
+					zIndex: 20,
+					angle: {
+						position: 'top',
+						offset: (nodeRect.width / 2)
 					}
 				}
 			};
 
-			menu = BX.PopupMenu.create(
+			const menu = BX.Main.MenuManager.create(
 				menuParams.menuId,
 				menuParams.anchor,
 				menuParams.menuItems,
@@ -670,23 +776,23 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 
 			if (this.isVisibleItem(currentItem))
 			{
-				dataItem.NODE = currentItem;
+				itemData.NODE = currentItem;
 			}
 			else
 			{
-				dataItem.NODE = this.getItemAlias(currentItem);
+				itemData.NODE = this.getItemAlias(currentItem);
 			}
 
-			this.editItemData = dataItem;
+			this.editItemData = itemData;
 
-			if ('menuItems' in menu && BX.type.isArray(menu.menuItems))
+			if ('menuItems' in menu && BX.Type.isArray(menu.menuItems))
 			{
 				menu.menuItems.forEach(function(current) {
-					BX.bind(current.layout.item, 'click', BX.delegate(this._onDocumentClick, this));
+					BX.Event.bind(current.layout.item, 'click', BX.delegate(this._onDocumentClick, this));
 				}, this);
 			}
 
-			BX.onCustomEvent(window, 'BX.Main.InterfaceButtons:onBeforeCreateEditMenu', [menu, dataItem, this]);
+			BX.onCustomEvent(window, 'BX.Main.InterfaceButtons:onBeforeCreateEditMenu', [menu, itemData, this]);
 
 			this.editMenu = menu;
 
@@ -695,35 +801,103 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 
 		setHome: function()
 		{
-			var visibleItems = this.getVisibleItems();
-			var firstVisibleItem = BX.type.isArray(visibleItems) && visibleItems.length > 0 ? visibleItems[0] : null;
-			var firstItemNode = BX.Buttons.Utils.getByTag(firstVisibleItem, 'a');
-
-			if (!BX.type.isDomNode(firstItemNode))
+			const homeItem = this.getHomeItem();
+			if (!homeItem)
 			{
 				return;
 			}
 
-			var firstPageLink = firstItemNode.getAttribute('href');
-			if (firstPageLink.charAt(0) === '?')
+			const { itemData, url: firstPageLink, firstVisibleItem } = homeItem;
+			if (!itemData)
 			{
-				firstPageLink = firstItemNode.pathname + firstItemNode.search;
-			}
-
-			if (!this.lastHomeLink)
-			{
-				this.lastHomeLink = firstPageLink;
+				return;
 			}
 
 			if (this.lastHomeLink !== firstPageLink)
 			{
-				BX.userOptions.save('ui', this.listContainer.id, 'firstPageLink', firstPageLink);
+				this.saveOptions('firstPageLink', firstPageLink);
 				BX.onCustomEvent('BX.Main.InterfaceButtons:onFirstItemChange', [firstPageLink, firstVisibleItem]);
 			}
 
 			this.lastHomeLink = firstPageLink;
 		},
 
+		getHomeItem: function()
+		{
+			const visibleItems = this.getVisibleItems();
+			const firstVisibleItem = BX.Type.isArray(visibleItems) && visibleItems.length > 0 ? visibleItems[0] : null;
+			if (!firstVisibleItem)
+			{
+				return null;
+			}
+
+			const itemData = this.getItemData(firstVisibleItem);
+			const url = this.normalizeUrl(itemData['URL']);
+
+			if (this.canBeHomed(url, itemData))
+			{
+				return { itemData, url, firstVisibleItem };
+			}
+
+			if (BX.Type.isArrayFilled(itemData['ITEMS']))
+			{
+				for (let i = 0; i < itemData['ITEMS'].length; i++)
+				{
+					const subItem = itemData['ITEMS'][i];
+					if (subItem['IS_PINNED'] || subItem['IS_DISBANDED'] || subItem['IS_DELIMITER'])
+					{
+						continue;
+					}
+
+					const url = this.normalizeUrl(subItem['URL']);
+					if (this.canBeHomed(url, subItem))
+					{
+						return { itemData: subItem, url, firstVisibleItem };
+					}
+				}
+			}
+
+			return null;
+		},
+
+		normalizeUrl: function(url)
+		{
+			if (!BX.Type.isStringFilled(url))
+			{
+				return '';
+			}
+
+			if (url.charAt(0) === '?')
+			{
+				const a = document.createElement('a');
+				a.href = url;
+				url = a.pathname + a.search;
+			}
+
+			return url;
+		},
+
+		canBeHomed: function(itemLink, itemData)
+		{
+			if (!BX.Type.isStringFilled(itemLink) || BX.Type.isStringFilled(itemData['ON_CLICK']))
+			{
+				return false;
+			}
+
+			if (BX.Reflection.getClass('BX.SidePanel.Instance'))
+			{
+				const rule = BX.SidePanel.Instance.getUrlRule(itemLink);
+				if (rule)
+				{
+					return false;
+				}
+			}
+
+			const event = new BX.Event.BaseEvent({ data: { itemLink, itemData }});
+			BX.Event.EventEmitter.emit('BX.Main.InterfaceButtons:onBeforeFirstItemChange', event);
+
+			return !event.isDefaultPrevented();
+		},
 
 		/**
 		 * @param {HTMLElement} item
@@ -731,9 +905,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isEditButton: function(item)
 		{
-			return BX.hasClass(item, this.classEditItemButton);
+			return BX.Dom.hasClass(item, this.classEditItemButton);
 		},
-
 
 		/**
 		 * @param {HTMLElement} item
@@ -741,9 +914,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isDragButton: function(item)
 		{
-			return BX.hasClass(item, this.classDragItemButton);
+			return BX.Dom.hasClass(item, this.classDragItemButton);
 		},
-
 
 		/**
 		 * @param {HTMLElement} item
@@ -751,9 +923,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isResetSettingsButton: function(item)
 		{
-			return BX.hasClass(item, this.classSettingsResetButton);
+			return BX.Dom.hasClass(item, this.classSettingsResetButton);
 		},
-
 
 		/**
 		 * Calculate container height
@@ -761,8 +932,9 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getContainerHeight: function()
 		{
-			var heights = this.getAllItems().map(function(current) {
-				var currentStyle = getComputedStyle(current);
+			const heights = this.getAllItems().map(function(current) {
+				const currentStyle = getComputedStyle(current);
+
 				return (
 					BX.height(current) +
 					parseInt(currentStyle.marginTop) +
@@ -773,17 +945,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return Math.max.apply(Math, heights);
 		},
 
-
-		/**
-		 * Sets container height
-		 */
-		setContainerHeight: function()
-		{
-			var containerHeight = this.getContainerHeight();
-			BX.height(this.listContainer, containerHeight);
-		},
-
-
 		/**
 		 * Sets license window params in this.licenseParams
 		 * @param {object} params Params object
@@ -792,7 +953,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		{
 			this.licenseParams = params || {};
 		},
-
 
 		/**
 		 * Gets message by id
@@ -803,7 +963,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		message: function(messageId)
 		{
-			var result;
+			let result;
+
 			try
 			{
 				result = this.messages[messageId];
@@ -816,7 +977,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
 		 * Sets custom classes
 		 * @param  {object} classes
@@ -824,7 +984,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		setCustomClasses: function(classes)
 		{
-			if (!BX.type.isPlainObject(classes))
+			if (!BX.Type.isPlainObject(classes))
 			{
 				return;
 			}
@@ -836,17 +996,21 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			this.classItemIcon = (classes.itemIcon || this.classItemIcon);
 			this.classItemMore = (classes.itemMore || this.classItemMore);
 			this.classItemOver = (classes.itemOver || this.classItemOver);
+			this.classMenuShown = (classes.menuShown || this.classMenuShown);
 			this.classItemActive = (classes.itemActive || this.classItemActive);
 			this.classItemDisabled = (classes.itemDisabled || this.classItemDisabled);
 			this.classOnDrag = (classes.onDrag || this.classOnDrag);
 			this.classDropzone = (classes.dropzone || this.classDropzone);
-			this.classSeporator = (classes.separator || this.classSeporator);
+			this.classSeparator = (classes.separator || this.classSeparator);
 			this.classSubmenuItem = (classes.submenuItem || this.classSubmenuItem);
 			this.classSubmenu = (classes.submenu || this.classSubmenu);
 			this.classSecret = (classes.secret || this.classSecret);
 			this.classItemLocked = (classes.itemLocked || this.classItemLocked);
+			this.classExtraItemLink = (classes.extraItemLink || this.classExtraItemLink);
+			this.classExtraItemText = (classes.extraItemText || this.classExtraItemText);
+			this.classExtraItemIcon = (classes.extraItemIcon || this.classExtraItemIcon);
+			this.classExtraItemCounter = (classes.extraItemCounter || this.classExtraItemCounter);
 		},
-
 
 		/**
 		 * Sets messages
@@ -854,14 +1018,13 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		setMessages: function(messages)
 		{
-			if (!BX.type.isPlainObject(messages))
+			if (!BX.Type.isPlainObject(messages))
 			{
 				return;
 			}
 
 			this.messages = messages;
 		},
-
 
 		/**
 		 * Makes full item id
@@ -872,14 +1035,13 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		makeFullItemId: function(itemId)
 		{
-			if (!BX.type.isNotEmptyString(itemId))
+			if (!BX.Type.isStringFilled(itemId))
 			{
 				return;
 			}
 
 			return [this.listContainer.id, itemId.replace('-', '_')].join('_');
 		},
-
 
 		/**
 		 * Gets listContainer child by id
@@ -890,18 +1052,15 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getItemById: function(itemId)
 		{
-			var resultItem = null;
-			var realId;
-
-			if (BX.type.isNotEmptyString(itemId))
+			let resultItem = null;
+			if (BX.Type.isStringFilled(itemId))
 			{
-				realId = this.makeFullItemId(itemId);
-				resultItem = BX.Buttons.Utils.getBySelector(this.listContainer, '#'+realId);
+				const realId = itemId.startsWith(this.listContainer.id) ? itemId : this.makeFullItemId(itemId);
+				resultItem = BX.Buttons.Utils.getBySelector(this.listContainer, '#'+realId.replaceAll(':', '\\:'));
 			}
 
 			return resultItem;
 		},
-
 
 		/**
 		 * Finds counter object
@@ -912,36 +1071,15 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getItemCounterObject: function(item)
 		{
-			var result = null;
+			let result = null;
 
-			if (BX.type.isDomNode(item))
+			if (BX.Type.isDomNode(item))
 			{
 				result = BX.Buttons.Utils.getByClass(item, this.classItemCounter);
 			}
 
 			return result;
 		},
-
-
-		/**
-		 * Sets item counter value
-		 * @private
-		 * @param {HTMLElement} item
-		 * @param {Number|null} value
-		 */
-		setCounterValue: function(item, value)
-		{
-			var counter = this.getItemCounterObject(item);
-
-			if (BX.type.isDomNode(counter))
-			{
-				counter.innerText = value > 99 ? '99+' : (value > 0 ? value : '');
-				item.dataset.counter = value;
-			}
-
-			this.updateMoreButtonCounter();
-		},
-
 
 		/**
 		 * Updates menu item counter
@@ -950,128 +1088,107 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		updateCounter: function(id, value)
 		{
-			if(id.indexOf("crm") === 0 && value < 0)
+			if (id.indexOf('crm') === 0 && value < 0)
 			{
 				//HACK: Skip of CRM counter reset
 				return;
 			}
 
-			var counter, data, alias;
-			var item = null;
-			var items = this.getAllItems();
-
-			if (BX.type.isArray(items))
-			{
-				items.forEach(function(current) {
-					try {
-						/**
-						 * @property data.COUNTER_ID
-						 */
-						data = JSON.parse(BX.data(current, 'item'));
-					} catch (err) {
-						data = {};
-					}
-
-					if (BX.type.isPlainObject(data) && 'COUNTER_ID' in data && data.COUNTER_ID === id)
-					{
-						item = current;
-					}
-				}, this);
-			}
-
-			counter = this.getItemCounterObject(item);
-
-			if (BX.type.isDomNode(counter))
-			{
-				item = this.getItem(counter);
-				counter.innerText = value > 99 ? '99+' : (value > 0 ? value : '');
-				item.dataset.counter = value;
-			}
-
-			alias = this.getItemAlias(item);
-
-			if (BX.type.isDomNode(alias))
-			{
-				counter = this.getItemCounterObject(alias);
-
-				if (BX.type.isDomNode(counter))
-				{
-					counter.innerText = value > 99 ? '99+' : (value > 0 ? value : '');
-					alias.dataset.counter = value;
-				}
-			}
-
+			this.updateItemsByCounterId(this.getAllItemsData(), id, value);
 			this.updateMoreButtonCounter();
 		},
 
-
 		/**
-		 * Sets counter value by item id
-		 * @public
-		 * @method setCounterValueByItemId
-		 * @param {string} itemId
-		 * @param {Number} counterValue
+		 * @private
+		 * @param subItems
+		 * @param counterId
+		 * @param counterValue
+		 * @param rootPath
 		 */
-		setCounterValueByItemId: function(itemId, counterValue)
+		updateItemsByCounterId: function(subItems, counterId, counterValue, rootPath = [])
 		{
-			var currentValue = counterValue !== null ? parseFloat(counterValue) : null;
-			var currentItem, aliasItem;
-
-			if (!BX.type.isNotEmptyString(itemId))
+			for (let i = 0; i < subItems.length; i++)
 			{
-				throw 'Bad first arg. Need string as item id';
+				const subItem = subItems[i];
+				if (subItem['COUNTER_ID'] === counterId)
+				{
+					subItem['COUNTER'] = Number(counterValue);
+					this.setCounterValueById(counterId, subItem['COUNTER']);
+
+					for (let index = rootPath.length - 1; index >= 0; index--)
+					{
+						const rootItem = rootPath[index];
+
+						rootItem['COUNTER'] = rootItem['ITEMS'].reduce((currentValue, subItem) => {
+							const isPinned = subItem['IS_PINNED'] === true;
+							const counter = BX.Type.isNumber(subItem['COUNTER']) && !isPinned ? subItem['COUNTER'] : 0;
+
+							return currentValue + counter;
+						}, 0);
+
+						this.setCounterValueById(rootItem['COUNTER_ID'], rootItem['COUNTER']);
+					}
+				}
+
+				if (subItem['ITEMS'])
+				{
+					this.updateItemsByCounterId(subItem['ITEMS'], counterId, counterValue, [...rootPath, subItem]);
+				}
 			}
-
-			if (currentValue !== null && !BX.type.isNumber(currentValue))
-			{
-				throw 'Bad two arg. Need number counter value - Integer, Float or string with number';
-			}
-
-			currentItem = this.getItemById(itemId);
-
-			if (!BX.type.isDomNode(currentItem))
-			{
-				console.info('Not found node with id #' + itemId);
-				return;
-			}
-
-			aliasItem = this.getItemAlias(currentItem);
-
-			this.setCounterValue(currentItem, currentValue);
-			this.setCounterValue(aliasItem, currentValue);
 		},
 
-
-		/**
-		 * Gets counter value by item id
-		 * @param  {string} itemId
-		 * @return {number}
-		 */
-		getCounterValueByItemId: function(itemId)
+		recalculateItemsCounters: function(items, rootPath = [])
 		{
-			var item, counter;
-			var counterValue = NaN;
+			let counterValue = 0;
 
-			if (!BX.type.isNotEmptyString(itemId))
+			for (let i = 0; i < items.length; i++)
 			{
-				throw 'Bad first arg. Need string item id';
-			}
-			else
-			{
-				item = this.getItemById(itemId);
-				counterValue = this.dataValue(item, 'counter');
-				counterValue = parseFloat(counterValue);
+				const item = items[i];
 
-				if (!BX.type.isNumber(counterValue))
+				if (item['ITEMS'])
 				{
-					counter = this.getItemCounterObject(item);
-					counterValue = parseFloat(counter.innerText);
+					item['COUNTER'] = this.recalculateItemsCounters(item['ITEMS'], [...rootPath, item]);
 				}
+
+				const isPinned = item['IS_PINNED'] === true;
+				counterValue += BX.Type.isNumber(item['COUNTER']) && !isPinned ? item['COUNTER'] : 0;
+			}
+
+			for (let index = rootPath.length - 1; index >= 0; index--)
+			{
+				const rootItem = rootPath[index];
+
+				rootItem['COUNTER'] = rootItem['ITEMS'].reduce((currentValue, subItem) => {
+					const isPinned = subItem['IS_PINNED'] === true;
+					const counter = BX.Type.isNumber(subItem['COUNTER']) && !isPinned ? subItem['COUNTER'] : 0;
+
+					return currentValue + counter;
+				}, 0);
+
+				this.setCounterValueById(rootItem['COUNTER_ID'], rootItem['COUNTER']);
 			}
 
 			return counterValue;
 		},
 
+		/**
+		 * @private
+		 * @param counterId
+		 * @param counterValue
+		 */
+		setCounterValueById: function(counterId, counterValue)
+		{
+			if (!BX.Type.isStringFilled(counterId))
+			{
+				return;
+			}
+
+			const counterText = counterValue > 99 ? '99+' : (counterValue > 0 ? counterValue : '');
+			const elements = document.querySelectorAll(`[data-mib-counter-id="${counterId}"]`);
+			Array.from(elements).forEach(element => {
+				element.textContent = counterText;
+			});
+		},
 
 		/**
 		 * Sets counter of more button
@@ -1079,15 +1196,9 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		setMoreButtonCounter: function(value)
 		{
-			var counter = this.getItemCounterObject(this.moreButton);
-			var counterValue = value > 99 ? '99+' : (value > 0 ? value : '');
-
-			counterValue = parseInt(counterValue);
-			counterValue = BX.type.isNumber(counterValue) ? counterValue : '';
-
-			counter.innerText = counterValue;
+			const counter = this.getItemCounterObject(this.moreButton);
+			counter.textContent = value > 99 ? '99+' : (value > 0 ? value : '');
 		},
-
 
 		/**
 		 * Binds on click on more button
@@ -1095,15 +1206,12 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 * @private
 		 * @return {undefined}
 		 */
-		bindOnClickOnMoreButton: function()
+		bindEventsOnMoreButton: function()
 		{
-			BX.bind(
-				this.moreButton,
-				'click',
-				BX.delegate(this._onClickMoreButton, this)
-			);
+			BX.Event.bind(this.moreButton, 'click', this.handleMoreButtonClick.bind(this));
+			BX.Event.bind(this.moreButton, 'mouseenter', this.handleMoreButtonMouseEnter.bind(this));
+			BX.Event.bind(this.moreButton, 'mouseleave', this.handleMoreButtonMouseLeave.bind(this));
 		},
-
 
 		/**
 		 * Binds on tmp frame resize
@@ -1115,7 +1223,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			window.frames["maininterfacebuttonstmpframe-"+this.getId()].onresize = BX.throttle(this._onResizeHandler, 20, this);
 		},
 
-
 		/**
 		 * Gets buttons list container id
 		 * @return {string}
@@ -1124,7 +1231,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		{
 			return BX.Buttons.Utils.getByClass(this.getContainer(), this.classInner).id;
 		},
-
 
 		/**
 		 * Gets all items
@@ -1136,6 +1242,10 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return BX.Buttons.Utils.getByClass(this.listContainer, this.classItem, true);
 		},
 
+		getAllItemsData: function()
+		{
+			return this.getAllItems().map(item => this.getItemData(item));
+		},
 
 		/**
 		 * Gets only visible items
@@ -1144,20 +1254,18 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getVisibleItems: function()
 		{
-			var allItems = this.getAllItems();
-			var self = this;
-			var visibleItems = [];
+			const allItems = this.getAllItems();
+			let visibleItems = [];
 
 			if (allItems && allItems.length)
 			{
-				visibleItems = allItems.filter(function(current) {
-					return self.isVisibleItem(current) && !self.isDisabled(current);
+				visibleItems = allItems.filter((current) => {
+					return this.isVisibleItem(current) && !this.isDisabled(current);
 				});
 			}
 
 			return visibleItems;
 		},
-
 
 		/**
 		 * Gets only hidden items
@@ -1167,20 +1275,18 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getHiddenItems: function()
 		{
-			var allItems = this.getAllItems();
-			var hiddenItems = [];
-			var self = this;
+			const allItems = this.getAllItems();
+			let hiddenItems = [];
 
 			if (allItems && allItems.length)
 			{
-				hiddenItems = allItems.filter(function(current) {
-					return !self.isVisibleItem(current) && !self.isDisabled(current);
+				hiddenItems = allItems.filter((current) => {
+					return !this.isVisibleItem(current) && !this.isDisabled(current);
 				});
 			}
 
 			return hiddenItems;
 		},
-
 
 		/**
 		 * Gets only disabled items,
@@ -1191,11 +1297,10 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getDisabledItems: function()
 		{
-			return this.getAllItems().filter(function(current) {
+			return this.getAllItems().filter((current) => {
 				return this.isDisabled(current);
-			}, this);
+			});
 		},
-
 
 		/**
 		 * Gets more button
@@ -1204,15 +1309,10 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getMoreButton: function()
 		{
-			var moreButton = null;
+			const elements = this.getContainer().getElementsByClassName(this.classItemMore);
 
-			this.getAllItems().forEach(function(current) {
-				!moreButton && BX.hasClass(current, this.classItemMore) && (moreButton = current);
-			}, this);
-
-			return moreButton;
+			return elements[0] || null;
 		},
-
 
 		/**
 		 * Gets last visible item
@@ -1222,15 +1322,15 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getLastVisibleItem: function()
 		{
-			var visibleItems = this.getVisibleItems();
-			var lastVisibleItem = null;
+			const visibleItems = this.getVisibleItems();
+			let lastVisibleItem = null;
 
-			if (BX.type.isArray(visibleItems) && visibleItems.length)
+			if (BX.Type.isArray(visibleItems) && visibleItems.length)
 			{
 				lastVisibleItem = visibleItems[visibleItems.length - 1];
 			}
 
-			if (!BX.type.isDomNode(lastVisibleItem))
+			if (!BX.Type.isDomNode(lastVisibleItem))
 			{
 				lastVisibleItem = null;
 			}
@@ -1238,6 +1338,29 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return lastVisibleItem;
 		},
 
+		/**
+		 * Gets last disabled item
+		 * @private
+		 * @method getLastVisibleItem
+		 * @return {object} last visible item object
+		 */
+		getLastDisabledItem: function()
+		{
+			const visibleItems = this.getDisabledItems();
+			let lastDisabledItem = null;
+
+			if (BX.Type.isArray(visibleItems) && visibleItems.length)
+			{
+				lastDisabledItem = visibleItems[visibleItems.length - 1];
+			}
+
+			if (!BX.Type.isDomNode(lastDisabledItem))
+			{
+				lastDisabledItem = null;
+			}
+
+			return lastDisabledItem;
+		},
 
 		/**
 		 * Moves "more button" in the end of the list
@@ -1247,17 +1370,13 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		adjustMoreButtonPosition: function()
 		{
-			var lastItem = this.getLastVisibleItem();
-			var lastItemIsMoreButton = this.isMoreButton(lastItem);
-
-			if (!lastItemIsMoreButton)
-			{
-				this.listContainer.insertBefore(this.moreButton, lastItem);
-			}
-
 			this.updateMoreButtonCounter();
-		},
 
+			if (this.getMoreMenu())
+			{
+				this.getMoreMenu().getPopupWindow().adjustPosition();
+			}
+		},
 
 		/**
 		 * Gets submenu id
@@ -1266,12 +1385,11 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 * @param  {boolean} [isFull] Set true if your need to get id for popup window
 		 * @return {string} id
 		 */
-		getSubmenuId: function(isFull)
+		getMoreMenuId: function(isFull)
 		{
-			var id = '';
+			let id = '';
 
-			if (BX.type.isDomNode(this.listContainer) &&
-				BX.type.isNotEmptyString(this.listContainer.id))
+			if (BX.Type.isDomNode(this.listContainer) && BX.Type.isStringFilled(this.listContainer.id))
 			{
 				id = this.submenuIdPrefix + this.listContainer.id;
 			}
@@ -1284,41 +1402,209 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return id;
 		},
 
+		getChildMenuId: function()
+		{
+			let id = '';
+
+			if (BX.Type.isDomNode(this.listContainer) && BX.Type.isStringFilled(this.listContainer.id))
+			{
+				id = this.childMenuIdPrefix + this.listContainer.id;
+			}
+
+			return id;
+		},
 
 		/**
 		 * Gets submenu item content
 		 * @private
-		 * @method getSubmenuItemText
+		 * @method getMoreMenuItemText
 		 * @param  {HTMLElement} item
+		 * @param pinRootItem
 		 * @return {?string}
 		 */
-		getSubmenuItemText: function(item)
+		getMenuItemText: function(item, pinRootItem = null)
 		{
-			var text, counter, result;
-			if (!BX.type.isDomNode(item))
+			const itemData = BX.Type.isElementNode(item) ? this.getItemData(item) : item;
+
+			return BX.Tag.render`
+				<span class="main-buttons-menu-popup-item">${[
+					BX.Tag.render`<span class="${this.classItemIcon}"></span>`,
+					this.createItemText(itemData),
+					this.createItemCounter(itemData),
+					pinRootItem && this.isEditEnabled() ? this.createItemPin(itemData, pinRootItem) : ''
+				]}</span>
+			`;
+		},
+
+		createRootItem: function(options)
+		{
+			let itemClass = this.classItem;
+
+			itemClass += BX.Type.isStringFilled(options["CLASS"]) ? ' ' + options["CLASS"] : '';
+			if (options['IS_PASSIVE'])
 			{
-				return null;
+				itemClass += ' --passive';
+			}
+			else if (options['IS_ACTIVE'])
+			{
+				if (BX.Type.isStringFilled(this.classItemActive))
+				{
+					itemClass += ' ' + this.classItemActive;
+				}
+				else
+				{
+					itemClass += ' main-buttons-item-active';
+				}
 			}
 
-			text = this.findChildrenByClassName(item, this.classItemText);
-			counter = this.findChildrenByClassName(item, this.classItemCounter);
-
-			if (BX.type.isDomNode(counter) && BX.type.isDomNode(text))
+			if (options['HAS_MENU'])
 			{
-				counter.dataset.counter = this.dataValue(item, 'counter');
-				result = text.outerHTML + counter.outerHTML;
+				itemClass += ' --has-menu';
+			}
+
+			if (options['IS_LOCKED'])
+			{
+				itemClass += ' --locked';
+			}
+
+			const div = BX.Tag.render`
+				<div
+					id="${options['ID']}"
+					class="${itemClass}"
+					data-disabled="${options['IS_DISABLED']}"
+					data-class="${options['CLASS_SUBMENU_ITEM']}"
+					data-id="${options['DATA_ID']}"
+					data-top-menu-id="${this.getId()}"
+					title=""
+				>${[
+					this.createItemLink(options, true),
+					BX.Type.isPlainObject(options['SUB_LINK']) ? this.createItemSubLink(options['SUB_LINK']) : ''
+				]}</div>
+			`;
+
+			this.setItemData(div, options);
+
+			return div;
+		},
+
+		createItemLink: function(options, rootItemContext = false)
+		{
+			options = BX.Type.isPlainObject(options) ? options : {};
+
+			let container;
+			const classes = ['main-buttons-item-link', this.classExtraItemLink].join(' ').trim();
+			if (BX.Type.isStringFilled(options['URL']))
+			{
+				container = BX.Tag.render`<a class="${classes}" href="${BX.Text.encode(options['URL'])}"></a>`;
 			}
 			else
 			{
-				text = this.dataValue(item, 'text');
-				counter = this.dataValue(item, 'counter');
-
-				result = text;
+				container = BX.Tag.render`<span class="${classes}"></span>`;
 			}
 
-			return result;
+			BX.Dom.append(this.createItemIcon(options), container);
+			BX.Dom.append(this.createItemText(options, rootItemContext), container);
+			BX.Dom.append(this.createItemCounter(options), container);
+
+			return container;
 		},
 
+		createItemSubLink: function(options)
+		{
+			options = BX.Type.isPlainObject(options) ? options : {};
+
+			const className = BX.Type.isStringFilled(options['CLASS']) ? ' ' + options['CLASS'] : '';
+			const url = BX.Type.isStringFilled(options['URL']) ? BX.Text.encode(options['URL']) : '';
+
+			return BX.Tag.render`
+				<a class="${this.classItemSublink}${className}" href="${url}"></a>
+			`;
+		},
+
+		createItemIcon: function(options)
+		{
+			const classes = [this.classItemIcon, this.classExtraItemIcon].join(' ').trim();
+
+			return BX.Tag.render`<span class="${classes}"></span>`;
+		},
+
+		createItemText: function(options, rootItemContext = false)
+		{
+			options = BX.Type.isPlainObject(options) ? options : {};
+
+			const classes = [this.classItemText, this.classExtraItemText].join(' ').trim();
+			let itemText = BX.Type.isStringFilled(options['TEXT']) ? options['TEXT'] : '';
+			if (rootItemContext && itemText.length > this.maxItemLength)
+			{
+				itemText = itemText.substring(0, this.maxItemLength - 3) + '...';
+			}
+
+			let superTitle = '';
+			if (BX.Type.isPlainObject(options['SUPER_TITLE']))
+			{
+				let { 'TEXT': text, 'CLASS': className, 'COLOR': color } = options['SUPER_TITLE'];
+				className = BX.Type.isStringFilled(className) ? ` ${className}` : '';
+				const style = BX.Type.isStringFilled(color) ? ` style="color:${color}"` : '';
+
+				superTitle = BX.Tag.render`
+					<span class="main-buttons-item-super-title${className}"${style}>${text}</span>
+				`;
+			}
+
+			return BX.Tag.render`
+				<span class="${classes}">${[
+					BX.Tag.render`<span 
+						class="main-buttons-item-drag-button"
+						onclick="${this.handleDragButtonClick.bind(this)}" 
+						data-slider-ignore-autobinding="true"
+					></span>`,
+					superTitle,
+					BX.Tag.render`
+						<span class="main-buttons-item-text-title">
+							<span class="main-buttons-item-text-box">${
+								BX.Text.encode(itemText)
+							}<span class="main-buttons-item-menu-arrow"></span></span>
+						</span>
+					`,
+					BX.Tag.render`<span 
+						class="main-buttons-item-edit-button"
+						onclick="${this.handleEditButtonClick.bind(this)}" 
+						data-slider-ignore-autobinding="true"
+					></span>`,
+					BX.Tag.render`<span class="main-buttons-item-text-marker"></span>`,
+				]}</span>
+			`;
+		},
+
+		createItemCounter: function(options)
+		{
+			options = BX.Type.isPlainObject(options) ? options : {};
+
+			const classes = [this.classItemCounter, this.classExtraItemCounter].join(' ').trim();
+
+			let counter = '';
+			const maxCounterSize = BX.Type.isNumber(options['MAX_COUNTER_SIZE']) ? options['MAX_COUNTER_SIZE'] : 99;
+			if (BX.Type.isNumber(options['COUNTER']) && options['COUNTER'] > 0)
+			{
+				counter = options['COUNTER'] > maxCounterSize ? `${maxCounterSize}+` : options['COUNTER'];
+			}
+
+			const counterId = BX.Type.isStringFilled(options['COUNTER_ID']) ? options['COUNTER_ID'] : '';
+
+			return BX.Tag.render`<span data-mib-counter-id="${counterId}" class="${classes}">${counter}</span>`;
+		},
+
+		createItemPin: function(itemData, rootNode)
+		{
+			return BX.Tag.render`
+				<span class="main-buttons-item-pin" 
+					data-slider-ignore-autobinding="true"
+					onclick="${this.handleItemPin.bind(this, itemData, rootNode)}"
+					onmouseenter="${this.handleItemPinEnter.bind(this)}"
+					onmouseleave="${this.handleItemPinLeave.bind(this)}"
+				></span>
+			`;
+		},
 
 		/**
 		 * @param {HTMLElement} item
@@ -1326,8 +1612,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getLockedClass: function(item)
 		{
-			var result = '';
-			if (BX.type.isDomNode(item) && this.isLocked(item))
+			let result = '';
+			if (BX.Type.isDomNode(item) && this.isLocked(item))
 			{
 				result = this.classItemLocked;
 			}
@@ -1335,31 +1621,30 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
-		 * Gets submenu items
+		 * Gets More Menu items
 		 * @private
-		 * @method getSubmenuItems
+		 * @method getMoreMenuItems
 		 * @return {HTMLElement[]}
 		 */
-		getSubmenuItems: function()
+		getMoreMenuItems: function()
 		{
-			var allItems = this.getAllItems();
-			var hiddenItems = this.getHiddenItems();
-			var disabledItems = this.getDisabledItems();
-			var result = [];
-			var data, className;
+			const allItems = this.getAllItems();
+			const hiddenItems = this.getHiddenItems();
+			const disabledItems = this.getDisabledItems();
+			const result = [];
 
 			if (allItems.length)
 			{
-				allItems.forEach(function(current) {
-					if (hiddenItems.indexOf(current) === -1 &&
-						disabledItems.indexOf(current) === -1)
+				allItems.forEach(current => {
+					if (hiddenItems.indexOf(current) === -1 && disabledItems.indexOf(current) === -1)
 					{
+						const itemData = this.getItemData(current);
 						result.push({
-							text: this.getSubmenuItemText(current),
-							href: this.dataValue(current, 'url'),
-							onclick: this.dataValue(current, 'onclick'),
+							id: itemData['DATA_ID'],
+							html: this.getMenuItemText(current),
+							href: itemData['URL'],
+							onclick: itemData['ON_CLICK'],
 							title: current.getAttribute('title'),
 							className: [
 								this.classSubmenuItem,
@@ -1367,50 +1652,97 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 								this.classSecret,
 								this.getAliasLink(current),
 								this.getLockedClass(current)
-							].join(' ')
+							].join(' '),
+							items: this.getMoreMenuSubItems(current),
+							events: {
+								onMouseEnter: this.handleMoreMenuItemMouseEnter
+							}
 						});
 					}
-				}, this);
+				});
 			}
 
 			if (hiddenItems.length)
 			{
-				hiddenItems.forEach(function(current) {
-					try {
-						data = JSON.parse(this.dataValue(current, 'item'));
-					} catch (err) {
-						data = null;
-					}
-
-					className = [
+				hiddenItems.forEach(current => {
+					const itemData = this.getItemData(current);
+					const className = [
 						this.classSubmenuItem,
 						this.getIconClass(current),
 						this.getAliasLink(current),
 						this.getLockedClass(current)
 					];
 
-					if (BX.type.isPlainObject(data) &&
-						('IS_ACTIVE' in data && data.IS_ACTIVE === true || data.IS_ACTIVE === 'true' || data.IS_ACTIVE === 'Y'))
+					if (itemData['IS_ACTIVE'] === true)
 					{
 						className.push(this.classItemActive);
 					}
 
 					result.push({
-						text: this.getSubmenuItemText(current),
-						href: this.dataValue(current, 'url'),
-						onclick: this.dataValue(current, 'onclick'),
+						id: itemData['DATA_ID'],
+						html: this.getMenuItemText(current),
+						href: itemData['URL'],
+						onclick: itemData['ON_CLICK'],
 						title: current.getAttribute('title'),
-						className: className.join(' ')
+						className: className.join(' '),
+						items: this.getMoreMenuSubItems(current),
+						events: {
+							onMouseEnter: this.handleMoreMenuItemMouseEnter
+						}
 					});
-				}, this);
+				});
 			}
 
 			if (this.isSettingsEnabled)
 			{
 				result.push({
-					text: '<span>'+this.message('MIB_HIDDEN')+'</span>',
+					delimiter: true,
+					html: '<span>' + this.message('MIB_MANAGE') + '</span>',
 					className: [
-						this.classSeporator,
+						this.classSeparator,
+						this.classSubmenuItem,
+						this.classManage
+					].join(' ')
+				});
+
+				result.push({
+					html: this.message('MIB_SETTING_MENU_ITEM'),
+					className: [
+						this.classSettingMenuItem,
+						this.classSubmenuItem
+					].join(' ')
+				});
+
+				const btnClasses = [
+					'ui-btn',
+					this.theme === 'default' ? 'ui-btn-sm' : 'ui-btn-xs',
+					'ui-btn-success-light',
+					'ui-btn-no-caps',
+					'ui-btn-round',
+					'ui-btn-icon-main-buttons-apply',
+				];
+
+				result.push({
+					html: `
+					<span class="${btnClasses.join(' ')}">
+						<span class="ui-btn-text">${this.message('MIB_APPLY_SETTING_MENU_ITEM')}</span>
+					</span>`,
+					className: [
+						this.classSettingsApplyButton,
+						this.classSubmenuItem
+					].join(' ')
+				});
+
+				result.push({
+					html: this.message('MIB_RESET_SETTINGS'),
+					className: [this.classSettingsResetButton, this.classSubmenuItem].join(' ')
+				});
+
+				result.push({
+					delimiter: true,
+					html: '<span>' + this.message('MIB_HIDDEN') + '</span>',
+					className: [
+						this.classSeparator,
 						this.classSubmenuItem,
 						this.classHiddenLabel
 					].join(' ')
@@ -1419,7 +1751,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				if (!disabledItems.length)
 				{
 					result.push({
-						text: '<span>'+this.message('MIB_NO_HIDDEN')+'</span>',
+						html: '<span>'+this.message('MIB_NO_HIDDEN')+'</span>',
 						className: [
 							this.classSubmenuItem,
 							this.classSubmenuNoHiddenItem
@@ -1429,14 +1761,9 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 
 				if (disabledItems.length)
 				{
-					disabledItems.forEach(function(current) {
-						try {
-							data = JSON.parse(this.dataValue(current, 'item'));
-						} catch (err) {
-							data = null;
-						}
-
-						className = [
+					disabledItems.forEach(current => {
+						const itemData = this.getItemData(current);
+						const className = [
 							this.classSubmenuItem,
 							this.classItemDisabled,
 							this.getIconClass(current),
@@ -1444,97 +1771,416 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 							this.getLockedClass(current)
 						];
 
-						if (BX.type.isPlainObject(data) &&
-							('IS_ACTIVE' in data && data.IS_ACTIVE === true || data.IS_ACTIVE === 'true' || data.IS_ACTIVE === 'Y'))
+						if (itemData['IS_ACTIVE'] === true)
 						{
 							className.push(this.classItemActive);
 						}
 
 						result.push({
-							text: this.getSubmenuItemText(current),
-							href: this.dataValue(current, 'url'),
-							onclick: this.dataValue(current, 'onclick'),
+							id: itemData['DATA_ID'],
+							html: this.getMenuItemText(current),
+							href: itemData['URL'],
+							onclick: itemData['ON_CLICK'],
 							title: current.getAttribute('title'),
-							className: className.join(' ')
+							className: className.join(' '),
+							items: this.getMoreMenuSubItems(current),
+							events: {
+								onMouseEnter: this.handleMoreMenuItemMouseEnter
+							}
 						});
-					}, this);
+					});
 				}
-
-				result.push({
-					text: '<span>'+this.message('MIB_MANAGE')+'</span>',
-					className: [
-						this.classSeporator,
-						this.classSubmenuItem,
-						this.classHiddenLabel,
-						this.classManage
-					].join(' ')
-				});
-
-				result.push({
-					text: this.message('MIB_SETTING_MENU_ITEM'),
-					className: [
-						this.classSettingMenuItem,
-						this.classSubmenuItem
-					].join(' ')
-				});
-
-				result.push({
-					text: this.message('MIB_APPLY_SETTING_MENU_ITEM'),
-					className: [
-						this.classSettingsApplyButton,
-						this.classSubmenuItem
-					].join(' ')
-				});
-
-				result.push({
-					text: this.message('MIB_RESET_SETTINGS'),
-					className: [this.classSettingsResetButton, this.classSubmenuItem].join(' ')
-				});
 			}
 
 			return result;
 		},
 
+		getMenuItems: function(item)
+		{
+			return this.createMenuItems(this.getItemData(item), item);
+		},
+
+		getMoreMenuSubItems: function(item)
+		{
+			return this.createMenuItems(this.getItemData(item), null);
+		},
+
+		createMenuItems: function(itemData, pinRootItem = null)
+		{
+			if (!BX.Type.isArrayFilled(itemData['ITEMS']))
+			{
+				return [];
+			}
+
+			const items = itemData['ITEMS'];
+			const result = [];
+			for (let i = 0; i < items.length; i++)
+			{
+				const item = items[i];
+				if (item['IS_PINNED'] || item['IS_DISBANDED'])
+				{
+					continue;
+				}
+
+				const delimiter = item['IS_DELIMITER'] === true;
+				if (delimiter)
+				{
+					const firstItem = result.length === 0;
+					const prevItem = result[result.length - 1];
+					if (firstItem || (prevItem && prevItem['delimiter'] === true))
+					{
+						continue;
+					}
+				}
+
+				const className = ['menu-popup-no-icon', 'main-buttons-menu-item'];
+				if (item['IS_ACTIVE'] === true)
+				{
+					className.push('main-buttons-menu-item-active');
+				}
+
+				const locked = BX.Text.toBoolean(item['IS_LOCKED']);
+				if (locked)
+				{
+					className.push(this.classItemLocked);
+				}
+
+				if (this.isEditEnabled())
+				{
+					className.push(this.classEditState);
+				}
+
+				let menuItem;
+				if (delimiter)
+				{
+					menuItem = {
+						delimiter: true,
+						className: className.join(' '),
+						text: item['TEXT'],
+					};
+				}
+				else
+				{
+					menuItem = {
+						html: this.getMenuItemText(item, pinRootItem),
+						href: item['URL'],
+						onclick: item['ON_CLICK'],
+						title: item['TITLE'],
+						className: className.join(' '),
+					};
+				}
+
+				const ajaxMode = item.hasOwnProperty("AJAX_OPTIONS");
+				if (ajaxMode)
+				{
+					menuItem.cacheable = true;
+					menuItem.events = this._getEvents(item['AJAX_OPTIONS']);
+					menuItem.items = [
+						{
+							id: 'loading',
+							text: this.message('MIB_MAIN_BUTTONS_LOADING')
+						}
+					];
+				}
+				else if (BX.Type.isArrayFilled(item['ITEMS']) && !this.isEditEnabled())
+				{
+					const subItems = this.createMenuItems(item, pinRootItem);
+					if (subItems.length)
+					{
+						menuItem.items = subItems;
+					}
+				}
+
+				result.push(menuItem);
+			}
+
+			if (result.length && result[result.length - 1]['delimiter'] === true)
+			{
+				result.pop();
+			}
+
+			return result;
+		},
+
+		_setAjaxMode: function(items)
+		{
+			for (let itemId in items)
+			{
+				if (!items.hasOwnProperty(itemId))
+				{
+					continue;
+				}
+
+				if (items[itemId].hasOwnProperty("ajaxOptions"))
+				{
+					items[itemId].cacheable = true;
+					items[itemId].events = this._getEvents(items[itemId]["ajaxOptions"]);
+					items[itemId].items = [
+						{
+							id: "loading",
+							text: this.message("MIB_MAIN_BUTTONS_LOADING")
+						}
+					];
+				}
+			}
+		},
+
+		_getEvents: function(ajaxOptions)
+		{
+			return {
+				onSubMenuShow: () => {
+					if (this.subMenuLoaded)
+					{
+						return;
+					}
+
+					const submenu = this.getSubMenu();
+					submenu.removeMenuItem("loading");
+					const loadingItem = submenu.getMenuItem('loading');
+
+					this.getSubItems(ajaxOptions)
+						.then(items => {
+							this._setAjaxMode(items);
+							this.subMenuLoaded = true;
+							this.addSubMenu(items);
+							this.showSubMenu();
+						})
+						.catch(text => {
+							if (loadingItem)
+							{
+								loadingItem.getLayout().text.innerText = text;
+							}
+						})
+					;
+				}
+			};
+		},
+
+		getSubItems: function(ajaxOptions)
+		{
+			return new Promise(function(resolve, reject) {
+				if (this.progress)
+				{
+					reject(this.message("MIB_MAIN_BUTTONS_LOADING"));
+					return;
+				}
+
+				if (ajaxOptions.mode === "component")
+				{
+					this.progress = true;
+					BX.ajax.runComponentAction(ajaxOptions.component, ajaxOptions.action, {
+						mode: ajaxOptions.componentMode,
+						signedParameters: (ajaxOptions.signedParameters ? ajaxOptions.signedParameters : {}),
+						data: ajaxOptions.data,
+					})
+					.then(response => {
+						this.progress = false;
+						resolve(response.data);
+					});
+				}
+				else
+				{
+					this.progress = true;
+					BX.ajax.runAction(ajaxOptions.action, {
+						data: ajaxOptions.data,
+					})
+					.then(response => {
+						this.progress = false;
+						resolve(response.data);
+					});
+				}
+			});
+		},
 
 		/**
 		 * Gets BX.PopupMenu.show arguments
 		 * @private
-		 * @method getSubmenuArgs
+		 * @method getMoreMenuArgs
 		 * @return {*[]} Arguments
 		 */
-		getSubmenuArgs: function()
+		getMoreMenuArgs: function()
 		{
-			var menuId = this.getSubmenuId();
-			var anchor = this.moreButton;
-			var anchorPosition = BX.pos(anchor);
-			var menuItems = this.getSubmenuItems();
-			var params = {
-				'autoHide': true,
-				'offsetLeft': (anchorPosition.width / 2) - 80,
-				'angle':
-				{
-					'position': 'top',
-					'offset': 100
-				},
-				zIndex: 20,
-				'events':
-				{
-					'onPopupClose': BX.delegate(this._onSubmenuClose, this)
-				}
-			};
+			const menuId = this.getMoreMenuId();
+			const moreButton = this.moreButton;
+			const menuItems = this.getMoreMenuItems();
 
-			return [menuId, anchor, menuItems, params];
+			let params;
+			const maxHeight = 800;
+			if (this.theme === 'default')
+			{
+				const maxWidth = 350;
+				const activeItemMargin = 25;
+				params = {
+					autoHide: false,
+					compatibleMode: false,
+					offsetLeft: -activeItemMargin,
+					offsetTop: 4,
+					cacheable: false,
+					className: 'main-buttons-menu-popup main-buttons-more-menu-popup',
+					minWidth: 240,
+					maxWidth: maxWidth,
+					maxHeight: maxHeight,
+					subMenuOptions: {
+						className: 'main-buttons-menu-popup main-buttons-more-menu-popup --sub-menu',
+						minWidth: 150,
+						maxWidth: maxWidth,
+						events: {
+							onFirstShow: this.handleMoreMenuFirstShow.bind(this),
+						}
+					},
+					bindOptions: {
+						position: 'bottom',
+						forceTop: true
+					},
+					events: {
+						onClose: this.handleMoreMenuClose.bind(this),
+						onDestroy: this.handleMoreMenuClose.bind(this),
+						onFirstShow: this.handleMoreMenuFirstShow.bind(this),
+						onShow: this.handleMoreMenuShow.bind(this),
+						onBeforeAdjustPosition: this.handleAdjustPosition.bind(this, moreButton)
+					}
+				};
+			}
+			else
+			{
+				const moreButtonTitle = this.moreButton.querySelector('.main-buttons-item-text-title');
+				const targetNodeWidth = moreButtonTitle.offsetWidth;
+				const popupWidth = 250;
+				const offsetLeft = (targetNodeWidth / 2) - (popupWidth / 2) + BX.Main.Popup.getOption('angleLeftOffset');
+				const angleShift = BX.Main.Popup.getOption('angleLeftOffset') - BX.Main.Popup.getOption('angleMinTop');
+				const angleOffset = popupWidth / 2 - angleShift;
+
+				params = {
+					autoHide: false,
+					compatibleMode: false,
+					offsetTop: 4,
+					offsetLeft: offsetLeft,
+					minWidth: popupWidth,
+					maxWidth: popupWidth,
+					maxHeight: maxHeight,
+					angle: {
+						position: 'top',
+						offset: angleOffset
+					},
+					className: 'main-buttons-default-menu-popup main-buttons-more-menu-popup',
+					subMenuOptions: {
+						className: 'main-buttons-default-menu-popup main-buttons-more-menu-popup --sub-menu',
+						minWidth: null,
+						events: {
+							onFirstShow: this.handleMoreMenuFirstShow.bind(this),
+						}
+					},
+					cacheable: false,
+					bindOptions: {
+						position: 'bottom',
+						forceTop: true
+					},
+					events: {
+						onClose: this.handleMoreMenuClose.bind(this),
+						onDestroy: this.handleMoreMenuClose.bind(this),
+						onFirstShow: this.handleMoreMenuFirstShow.bind(this),
+						onShow: this.handleMoreMenuShow.bind(this)
+					}
+				};
+			}
+
+			if (this.isEditEnabled())
+			{
+				params.className += ' ' + this.classEditState;
+			}
+
+			return [menuId, moreButton, menuItems, params];
 		},
 
+		getChildMenuArgs: function(item)
+		{
+			const maxHeight = 800;
+			if (this.theme === 'default')
+			{
+				const activeItemMargin = 25;
+				const maxWidth = 350;
+
+				return {
+					autoHide: false,
+					compatibleMode: false,
+					offsetLeft: -activeItemMargin,
+					offsetTop: 4,
+					cacheable: false,
+					className: 'main-buttons-menu-popup',
+					maxWidth: maxWidth,
+					minWidth: item.offsetWidth + activeItemMargin * 2 + 30,
+					maxHeight: maxHeight,
+					subMenuOptions: {
+						className: 'main-buttons-menu-popup --sub-menu',
+						minWidth: null,
+						events: {
+							onFirstShow: this._onChildMenuFirstShow.bind(this)
+						}
+					},
+					bindOptions: {
+						position: 'bottom',
+						forceTop: true
+					},
+					events: {
+						onFirstShow: this._onChildMenuFirstShow.bind(this),
+						onShow: this._onChildMenuShow.bind(this, item),
+						onClose: this._onChildMenuClose.bind(this, item),
+						onDestroy: this._onChildMenuClose.bind(this, item),
+						onBeforeAdjustPosition: this.handleAdjustPosition.bind(this, item)
+					}
+				};
+			}
+			else
+			{
+				const maxWidth = 250;
+				return {
+					autoHide: false,
+					compatibleMode: false,
+					offsetTop: 4,
+					cacheable: false,
+					className: 'main-buttons-default-menu-popup',
+					minWidth: Math.min(item.offsetWidth + 25 * 2 + 30, maxWidth),
+					maxWidth: maxWidth,
+					maxHeight: maxHeight,
+					bindOptions: {
+						position: 'bottom',
+						forceTop: true
+					},
+					subMenuOptions: {
+						className: 'main-buttons-default-menu-popup --sub-menu',
+						minWidth: null,
+						events: {
+							onFirstShow: this._onChildMenuFirstShow.bind(this)
+						}
+					},
+					events: {
+						onFirstShow: this._onChildMenuFirstShow.bind(this),
+						onShow: this._onChildMenuShow.bind(this, item),
+						onClose: this._onChildMenuClose.bind(this, item),
+						onDestroy: this._onChildMenuClose.bind(this, item)
+					}
+				};
+			}
+		},
+
+		centerPopupArrow(popup, item)
+		{
+			const targetNodeWidth = item.offsetWidth;
+			const popupWidth = popup.getPopupContainer().offsetWidth;
+			const offsetLeft = (targetNodeWidth / 2) - (popupWidth / 2);
+			const angleShift = BX.Main.Popup.getOption('angleLeftOffset') - BX.Main.Popup.getOption('angleMinTop');
+
+			popup.setAngle({ offset: popupWidth / 2 - angleShift });
+			popup.setOffset({ offsetLeft: offsetLeft + BX.Main.Popup.getOption('angleLeftOffset') });
+		},
 
 		/**
 		 * Controls the visibility of more button
 		 */
 		visibleControlMoreButton: function()
 		{
-			var hiddenItems = this.getHiddenItems();
-
-			if (!hiddenItems.length || (hiddenItems.length === 1 && this.isMoreButton(hiddenItems[0])))
+			const hiddenItems = this.getHiddenItems();
+			if (!hiddenItems.length)
 			{
 				this.getMoreButton().style.display = 'none';
 			}
@@ -1544,150 +2190,250 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			}
 		},
 
-
 		/**
 		 * Creates submenu
 		 * @return {BX.PopupMenu}
 		 */
-		createSubmenu: function()
+		createMoreMenu: function()
 		{
-			var menu = BX.PopupMenu.create.apply(BX.PopupMenu, this.getSubmenuArgs());
-
+			const menu = BX.Main.MenuManager.create(...this.getMoreMenuArgs());
 			if (this.isSettingsEnabled)
 			{
 				this.dragAndDropInitInSubmenu();
 			}
 
-			menu.menuItems.forEach(function(current) {
-				BX.bind(current.layout.item, 'click', BX.delegate(this._onDocumentClick, this));
+			menu.getMenuItems().forEach(function(menuItem) {
+				const container = menuItem.getLayout().item;
+				BX.Event.bind(container, 'click', BX.delegate(this._onDocumentClick, this));
 			}, this);
 
 			return menu;
 		},
 
+		createChildMenu: function(item)
+		{
+			const menuItems = this.getMenuItems(item);
+			if (menuItems.length)
+			{
+				const menu = BX.Main.MenuManager.create(
+					this.getChildMenuId(),
+					item,
+					menuItems,
+					this.getChildMenuArgs(item),
+				);
+
+				if (!this.isEditEnabled() && this.isSettingsEnabled)
+				{
+					const handleDragStart = () => {
+						this.showMoreMenu();
+						this.enableEdit();
+
+						this.destroyChildMenu();
+						this.showChildMenu(item);
+					};
+
+					menu.getMenuItems().forEach((menuItem) => {
+						const container = menuItem.getLayout().item;
+						container.draggable = true;
+
+						BX.Event.bind(container, 'dragstart', handleDragStart);
+					});
+				}
+
+				return menu;
+			}
+
+			return null;
+		},
 
 		/**
-		 * Shows submenu
+		 * Shows More Menu
 		 * @public
-		 * @method showSubmenu
+		 * @method showMoreMenu
 		 * @return {undefined}
 		 */
-		showSubmenu: function()
+		showMoreMenu: function()
 		{
-			var submenu = this.getSubmenu();
+			clearTimeout(this.submenuLeaveTimeout);
 
+			if (!this.isEditEnabled())
+			{
+				this.closeChildMenu();
+			}
+
+			let submenu = this.getMoreMenu();
 			if (submenu !== null)
 			{
-				submenu.popupWindow.show();
+				submenu.getPopupWindow().show();
 			}
 			else
 			{
-				this.destroySubmenu();
-				submenu = this.createSubmenu();
-				submenu.popupWindow.show();
+				this.destroyMoreMenu();
+				submenu = this.createMoreMenu();
+				submenu.getPopupWindow().show();
 			}
 
-			this.setSubmenuShown(true);
+			this.setMoreMenuShown(true);
 			this.activateItem(this.moreButton);
 
 			if (this.isEditEnabled())
 			{
-				//noinspection JSCheckFunctionSignatures
-				submenu.popupWindow.setAutoHide(false);
+				submenu.getPopupWindow().setAutoHide(false);
 			}
 		},
 
+		showChildMenu: function(item)
+		{
+			clearTimeout(this.childMenuLeaveTimeout);
+
+			if (!this.isEditEnabled())
+			{
+				this.closeMoreMenu();
+			}
+
+			if (!this.isVisibleItem(item))
+			{
+				return;
+			}
+
+			const currentMenu = BX.Main.MenuManager.getMenuById(this.getChildMenuId());
+			if (currentMenu && currentMenu.bindElement === item)
+			{
+				currentMenu.getPopupWindow().show();
+				this.destroyItemEditMenu();
+			}
+			else
+			{
+				this.destroyChildMenu(item);
+				const childMenu = this.createChildMenu(item);
+				if (childMenu)
+				{
+					childMenu.getPopupWindow().show();
+					this.destroyItemEditMenu();
+				}
+			}
+		},
 
 		/**
 		 * Closes submenu
 		 * @public
-		 * @method closeSubmenu
+		 * @method closeMoreMenu
 		 * @return {undefined}
 		 */
-		closeSubmenu: function()
+		closeMoreMenu: function()
 		{
-			var submenu = this.getSubmenu();
-
+			const submenu = this.getMoreMenu();
 			if (submenu === null)
 			{
 				return;
 			}
 
-			submenu.popupWindow.close();
+			submenu.getPopupWindow().close();
 			if (!this.isActiveInMoreMenu())
 			{
 				this.deactivateItem(this.moreButton);
 			}
-			this.setSubmenuShown(false);
+
+			this.setMoreMenuShown(false);
 		},
 
-
-		/**
-		 * Gets current submenu
-		 * @public
-		 * @method getSubmenu
-		 * @return {BX.PopupMenu}
-		 */
-		getSubmenu: function()
+		closeChildMenu: function()
 		{
-			return BX.PopupMenu.getMenuById(this.getSubmenuId());
+			const childMenu = this.getChildMenu();
+
+			if (childMenu === null)
+			{
+				return;
+			}
+
+			this.closePinHint();
+			childMenu.close();
 		},
 
+		/**
+		 * Gets current More Menu
+		 * @public
+		 * @method getMoreMenu
+		 * @return {BX.Main.Menu}
+		 */
+		getMoreMenu: function()
+		{
+			return BX.Main.MenuManager.getMenuById(this.getMoreMenuId());
+		},
 
 		/**
-		 * Destroys submenu
+		 * Gets current Sub Menu
+		 * @public
+		 * @method getMoreMenu
+		 * @return {BX.Main.Menu}
+		 */
+		getChildMenu: function()
+		{
+			return BX.Main.MenuManager.getMenuById(this.getChildMenuId());
+		},
+
+		/**
+		 * Destroys More Menu
 		 * @private
 		 * @method destroySubmenu
 		 * @return {undefined}
 		 */
-		destroySubmenu: function()
+		destroyMoreMenu: function()
 		{
-			BX.PopupMenu.destroy(this.getSubmenuId());
+			BX.Main.MenuManager.destroy(this.getMoreMenuId());
 		},
 
+		destroyChildMenu: function()
+		{
+			BX.Main.MenuManager.destroy(this.getChildMenuId());
+		},
 
 		/**
 		 * Refreshes submenu
 		 * @public
-		 * @method refreshSubmenu
+		 * @method refreshMoreMenu
 		 * @return {undefined}
 		 */
-		refreshSubmenu: function()
+		refreshMoreMenu: function()
 		{
-			var submenu = this.getSubmenu();
-			var args;
-
+			const submenu = this.getMoreMenu();
 			if (submenu === null)
 			{
 				return;
 			}
 
-			args = this.getSubmenuArgs();
-
-			if (BX.type.isArray(args))
+			const args = this.getMoreMenuArgs();
+			if (BX.Type.isArray(args))
 			{
-				this.destroySubmenu();
-				this.createSubmenu();
-				this.showSubmenu();
+				this.destroyMoreMenu();
+				this.createMoreMenu();
+				this.showMoreMenu();
 			}
 		},
-
 
 		/**
 		 * Sets value this.isSubmenuShown
 		 * @private
-		 * @method setSubmenuShown
+		 * @method setMoreMenuShown
 		 * @param {boolean} value
 		 */
-		setSubmenuShown: function(value)
+		setMoreMenuShown: function(value)
 		{
 			this.isSubmenuShown = false;
 			if (BX.type.isBoolean(value))
 			{
 				this.isSubmenuShown = value;
 			}
-		},
 
+			if (this.isSubmenuShown)
+			{
+				BX.Dom.addClass(this.moreButton, this.classMenuShown);
+			}
+			else
+			{
+				BX.Dom.removeClass(this.moreButton, this.classMenuShown);
+			}
+		},
 
 		/**
 		 * Adds class active for item
@@ -1698,17 +2444,16 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		activateItem: function(item)
 		{
-			if (!BX.type.isDomNode(item))
+			if (!BX.Type.isDomNode(item))
 			{
 				return;
 			}
 
-			if (!BX.hasClass(item, this.classItemActive))
+			if (!BX.Dom.hasClass(item, this.classItemActive))
 			{
-				BX.addClass(item, this.classItemActive);
+				BX.Dom.addClass(item, this.classItemActive);
 			}
 		},
-
 
 		/**
 		 * Removes class active for item
@@ -1719,17 +2464,16 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		deactivateItem: function(item)
 		{
-			if (!BX.type.isDomNode(item))
+			if (!BX.Type.isDomNode(item))
 			{
 				return;
 			}
 
-			if (BX.hasClass(item, this.classItemActive))
+			if (BX.Dom.hasClass(item, this.classItemActive))
 			{
-				BX.removeClass(item, this.classItemActive);
+				BX.Dom.removeClass(item, this.classItemActive);
 			}
 		},
-
 
 		/**
 		 * Gets current component settings
@@ -1739,15 +2483,92 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getCurrentSettings: function()
 		{
-			var settings = {};
+			const settings = {};
 
-			this.getAllItems().forEach(function(current, index) {
-				settings[current.id] = {sort: index, isDisabled: this.isDisabled(current)};
-			}, this);
+			this.getAllItems().forEach((current, index) => {
+				settings[current.id] = {
+					sort: index,
+					isDisabled: this.isDisabled(current),
+					isPinned: this.isPinned(current),
+				};
+			});
 
 			return settings;
 		},
 
+		initSaving: function(ajaxSettings)
+		{
+			this.sendOptions = this.sendOptions.bind(this);
+			this.optionsToSave = [];
+			this.debouncedSendOptions = BX.debounce(this.sendOptions, 5000);
+			if (BX.Type.isPlainObject(ajaxSettings))
+			{
+				this.ajaxSettings = {
+					componentName: ajaxSettings.componentName,
+					signedParams: ajaxSettings.signedParams,
+				};
+			}
+		},
+
+		/**
+		 * Sends settings to the server
+		 * @private
+		 * @method sendSettings
+		 * @return {undefined}
+		 */
+		sendOptions: function()
+		{
+			if (this.optionsToSave.length <= 0)
+			{
+				return;
+			}
+
+			const dataToSend = {};
+			this.optionsToSave.forEach(function(item){
+				dataToSend[item.name] = item.value;
+			});
+			this.optionsToSave = [];
+			window.removeEventListener("beforeunload", this.sendOptions);
+			BX.removeCustomEvent("SidePanel.Slider:onClose", this.sendOptions);
+
+			return BX.ajax.runComponentAction(
+				this.ajaxSettings.componentName,
+				'save',
+				{
+					mode: 'class',
+					signedParameters: this.ajaxSettings.signedParams,
+					data: {
+						options: dataToSend
+					}
+				}
+			);
+		},
+
+		/**
+		 * Collects settings into storage and then sends
+		 * @private
+		 * @method saveOptions
+		 * @return {undefined}
+		 * @param name
+		 * @param value
+		 */
+		saveOptions: function(name, value)
+		{
+			if (this.ajaxSettings)
+			{
+				if (this.optionsToSave.length <= 0)
+				{
+					window.addEventListener("beforeunload", this.sendOptions);
+					BX.addCustomEvent("SidePanel.Slider:onClose", this.sendOptions);
+				}
+				this.optionsToSave.push({'name': name, 'value': value});
+				this.debouncedSendOptions();
+			}
+			else if (this.listContainer.id)
+			{
+				BX.userOptions.save('ui', this.listContainer.id, name, value);
+			}
+		},
 
 		/**
 		 * Saves current component settings
@@ -1757,23 +2578,19 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		saveSettings: function()
 		{
-			var settings = this.getCurrentSettings();
-			var paramName = 'settings';
-			var containerId;
+			const settings = this.getCurrentSettings();
+			const paramName = 'settings';
 
-			if (!BX.type.isPlainObject(settings))
+			if (!BX.Type.isPlainObject(settings))
 			{
 				return;
 			}
 
-			if (BX.type.isDomNode(this.listContainer))
+			if (BX.Type.isDomNode(this.listContainer))
 			{
 				if ('id' in this.listContainer)
 				{
-					containerId = this.listContainer.id;
-
-					settings = JSON.stringify(settings);
-					BX.userOptions.save('ui', containerId, paramName, settings);
+					this.saveOptions(paramName, JSON.stringify(settings));
 					this.setHome();
 				}
 			}
@@ -1781,8 +2598,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 
 		resetSettings: function()
 		{
-			var button = null;
-			var confirmPopup = BX.PopupWindowManager.create(
+			let button = null;
+			const confirmPopup = BX.PopupWindowManager.create(
 				this.listContainer.id + "_reset_popup",
 				null,
 				{
@@ -1798,29 +2615,35 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 							text: this.message("MIB_RESET_BUTTON"),
 							className: 'popup-window-button-create',
 							events: {
-								click: function() {
-									if (BX.hasClass(button.buttonNode, "popup-window-button-wait"))
+								click: () => {
+									if (BX.Dom.hasClass(button.buttonNode, "popup-window-button-wait"))
 									{
 										return;
 									}
 
-									BX.addClass(button.buttonNode, "popup-window-button-wait");
+									BX.Dom.addClass(button.buttonNode, "popup-window-button-wait");
 
-									this.handleResetSettings(function(error) {
+									this.handleResetSettings(error => {
 										if (error)
 										{
-											BX.removeClass(button.buttonNode, "popup-window-button-wait");
+											BX.Dom.removeClass(button.buttonNode, "popup-window-button-wait");
 											confirmPopup.setContent(error);
 										}
 										else
 										{
-											var paramName = 'settings';
-											BX.userOptions.save('ui', this.listContainer.id, paramName, JSON.stringify({}));
-											BX.userOptions.save('ui', this.listContainer.id, 'firstPageLink', '');
-											window.location.reload();
+											this.saveOptions('settings', JSON.stringify({}));
+											this.saveOptions('firstPageLink', '');
+											this.sendOptions()
+												.then(function() {
+													window.location.reload();
+												})
+												.catch(function() {
+													window.location.reload();
+												})
+											;
 										}
-									}.bind(this));
-								}.bind(this)
+									});
+								}
 							}
 						})),
 						new BX.PopupWindowButtonLink({
@@ -1839,19 +2662,18 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			confirmPopup.show();
 		},
 
-
 		/**
 		 * @callback cb
 		 */
 		handleResetSettings: function(cb)
 		{
-			var promises = [];
+			const promises = [];
 			BX.onCustomEvent("BX.Main.InterfaceButtons:onBeforeResetMenu", [promises, this]);
 
-			var promise = new BX.Promise();
-			var firstPromise = promise;
+			let promise = new BX.Promise();
+			const firstPromise = promise;
 
-			for (var i = 0; i < promises.length; i++)
+			for (let i = 0; i < promises.length; i++)
 			{
 				promise = promise.then(promises[i]);
 			}
@@ -1873,46 +2695,55 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 * @private
 		 * @method moveButtonAlias
 		 * @param  {HTMLElement} item
+		 * @param insertAfter
 		 * @return {undefined}
 		 */
-		moveButtonAlias: function(item)
+		moveButtonAlias: function(item, insertAfter)
 		{
-			var aliasDragItem, aliasItem;
-
 			if (!item || !this.dragItem)
 			{
 				return;
 			}
 
-			aliasDragItem = this.getItemAlias(this.dragItem);
-			aliasItem = this.getItemAlias(item);
+			const aliasDragItem = this.getItemAlias(this.dragItem);
+			const aliasItem = this.getItemAlias(item);
 
 			if (this.isListItem(aliasDragItem))
 			{
-				if (!aliasItem)
+				if (aliasItem)
 				{
-					this.listContainer.appendChild(aliasDragItem);
+					if (insertAfter)
+					{
+						BX.Dom.insertAfter(aliasDragItem, aliasItem);
+					}
+					else
+					{
+						this.listContainer.insertBefore(aliasDragItem, aliasItem);
+					}
 				}
 				else
 				{
-					this.listContainer.insertBefore(aliasDragItem, aliasItem);
+					this.listContainer.appendChild(aliasDragItem);
 				}
 			}
-		},
 
+			if (this.getMoreMenu())
+			{
+				this.getMoreMenu().getPopupWindow().adjustPosition();
+			}
+		},
 
 		/**
 		 * Moves drag item before item, or appendChild to container
 		 * @private
 		 * @method moveButton
 		 * @param  {HTMLElement} item
+		 * @param insertAfter
 		 * @return {*}
 		 */
-		moveButton: function(item)
+		moveButton: function(item, insertAfter)
 		{
-			var submenuContainer;
-
-			if (!BX.type.isDomNode(item) || !BX.type.isDomNode(this.dragItem))
+			if (!BX.Type.isDomNode(item) || !BX.Type.isDomNode(this.dragItem))
 			{
 				return;
 			}
@@ -1924,9 +2755,16 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					this.dragItem.dataset.disabled = 'false';
 				}
 
-				if (BX.type.isDomNode(item))
+				if (BX.Type.isDomNode(item))
 				{
-					this.listContainer.insertBefore(this.dragItem, item);
+					if (insertAfter)
+					{
+						BX.Dom.insertAfter(this.dragItem, item);
+					}
+					else
+					{
+						this.listContainer.insertBefore(this.dragItem, item);
+					}
 				}
 				else
 				{
@@ -1936,15 +2774,16 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 
 			if (this.isSubmenuItem(item))
 			{
-				if (this.isDisabled(this.dragItem) && !this.isDisabled(item))
+				if (insertAfter)
 				{
-					this.enableItem(this.dragItem);
+					BX.Dom.insertAfter(this.dragItem, item);
 				}
-				submenuContainer = this.getSubmenuContainer();
-				submenuContainer.insertBefore(this.dragItem, item);
+				else
+				{
+					this.getMoreMenuContainer().insertBefore(this.dragItem, item);
+				}
 			}
 		},
-
 
 		/**
 		 * Gets submenu container
@@ -1952,10 +2791,10 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 * @method getSubmenuContainer
 		 * @return {object}
 		 */
-		getSubmenuContainer: function()
+		getMoreMenuContainer: function()
 		{
-			var submenu = this.getSubmenu();
-			var result = null;
+			const submenu = this.getMoreMenu();
+			let result = null;
 
 			if (submenu !== null)
 			{
@@ -1964,7 +2803,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 
 			return result;
 		},
-
 
 		/**
 		 * Gets next element with className
@@ -1975,13 +2813,12 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		findNextSiblingByClass: function(item, className)
 		{
 			//noinspection UnnecessaryLocalVariableJS
-			var sourceItem = item;
+			const sourceItem = item;
 			for (; !!item; item = item.nextElementSibling)
 			{
 				if (className)
 				{
-					if (BX.hasClass(item, className) &&
-						item !== sourceItem)
+					if (BX.Dom.hasClass(item, className) && item !== sourceItem)
 					{
 						return item;
 					}
@@ -1992,35 +2829,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				}
 			}
 
+			return null;
 		},
-
-
-		/**
-		 * Finds parent node for item by className
-		 * @private
-		 * @method findParentByClassName
-		 * @param  {object} item
-		 * @param  {string} className
-		 * @return {object}
-		 */
-		findParentByClassName: function(item, className)
-		{
-			for (; item && item !== document; item = item.parentNode)
-			{
-				if (className)
-				{
-					if (BX.hasClass(item, className))
-					{
-						return item;
-					}
-				}
-				else
-				{
-					return null;
-				}
-			}
-		},
-
 
 		/**
 		 * Finds children item by className
@@ -2032,8 +2842,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		findChildrenByClassName: function(item, className)
 		{
-			var result = null;
-			if (BX.type.isDomNode(item) && BX.type.isNotEmptyString(className))
+			let result = null;
+			if (BX.Type.isDomNode(item) && BX.Type.isStringFilled(className))
 			{
 				result = BX.Buttons.Utils.getByClass(item, className);
 			}
@@ -2041,38 +2851,40 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
 		 * Initialise Drag And Drop
 		 * @private
 		 * @method dragAndDropInit
 		 * @return {undefined}
 		 */
-		dragAndDropInit: function()
+		initItems: function()
 		{
-			this.getAllItems().forEach(function(current, index) {
-				if (!this.isSeparator(current) &&
-					!this.isSettings(current) &&
-					!this.isApplySettingsButton(current) &&
-					!this.isResetSettingsButton(current))
-				{
-					current.setAttribute('draggable', 'true');
-					current.setAttribute('tabindex', '-1');
-
-					current.dataset.link = 'item' + index;
-					BX.bind(current, 'dragstart', BX.delegate(this._onDragStart, this));
-					BX.bind(current, 'dragend', BX.delegate(this._onDragEnd, this));
-					BX.bind(current, 'dragenter', BX.delegate(this._onDragEnter, this));
-					BX.bind(current, 'dragover', BX.delegate(this._onDragOver, this));
-					BX.bind(current, 'dragleave', BX.delegate(this._onDragLeave, this));
-					BX.bind(current, 'drop', BX.delegate(this._onDrop, this));
-				}
-
-				BX.bind(current, 'mouseover', BX.delegate(this._onMouse, this));
-				BX.bind(current, 'mouseout', BX.delegate(this._onMouse, this));
-			}, this);
+			this.getAllItems().forEach((current) => {
+				this.initItem(current);
+			});
 		},
 
+		initItem: function(item)
+		{
+			if (this.isSettingsEnabled)
+			{
+				item.setAttribute('draggable', 'true');
+				item.setAttribute('tabindex', '-1');
+
+				BX.Event.bind(item, 'dragstart', BX.delegate(this._onDragStart, this));
+				BX.Event.bind(item, 'dragend', BX.delegate(this._onDragEnd, this));
+				BX.Event.bind(item, 'dragenter', BX.delegate(this._onDragEnter, this));
+				BX.Event.bind(item, 'dragover', BX.delegate(this._onDragOver, this));
+				BX.Event.bind(item, 'dragleave', BX.delegate(this._onDragLeave, this));
+				BX.Event.bind(item, 'drop', BX.delegate(this._onDrop, this));
+
+				item.dataset.link = 'item-' + BX.Text.getRandom().toLowerCase();
+			}
+
+			BX.Event.bind(item, 'click', this._handleItemClick.bind(this));
+			BX.Event.bind(item, 'mouseenter', this.handleItemMouseEnter.bind(this));
+			BX.Event.bind(item, 'mouseleave', this.handleItemMouseLeave.bind(this));
+		},
 
 		/**
 		 * Initialise Drag And Drop for submenu items
@@ -2082,32 +2894,46 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		dragAndDropInitInSubmenu: function()
 		{
-			var submenu = this.getSubmenu();
-			var submenuItems = submenu.menuItems;
+			const submenu = this.getMoreMenu();
+			if (!submenu)
+			{
+				return;
+			}
 
-			submenuItems.forEach(function(current) {
-				if ((!this.isSeparator(current.layout.item) &&
-					!this.isSettings(current.layout.item) &&
-					!this.isApplySettingsButton(current.layout.item) &&
-					!this.isResetSettingsButton(current.layout.item)))
+			const submenuItems = submenu.menuItems;
+
+			submenuItems.forEach((current) => {
+				if (
+					this.isSeparator(current.layout.item)
+					|| this.isSettings(current.layout.item)
+					|| this.isApplySettingsButton(current.layout.item)
+					|| this.isResetSettingsButton(current.layout.item)
+				)
+				{
+					current.layout.item.draggable = false;
+				}
+				else
 				{
 					current.layout.item.draggable = true;
 					current.layout.item.dataset.sortable = true;
-					BX.bind(current.layout.item, 'dragstart', BX.delegate(this._onDragStart, this));
-					BX.bind(current.layout.item, 'dragenter', BX.delegate(this._onDragEnter, this));
-					BX.bind(current.layout.item, 'dragover', BX.delegate(this._onDragOver, this));
-					BX.bind(current.layout.item, 'dragleave', BX.delegate(this._onDragLeave, this));
-					BX.bind(current.layout.item, 'dragend', BX.delegate(this._onDragEnd, this));
-					BX.bind(current.layout.item, 'drop', BX.delegate(this._onDrop, this));
+
+					BX.Event.bind(current.layout.item, 'dragstart', BX.delegate(this._onDragStart, this));
+					BX.Event.bind(current.layout.item, 'dragenter', BX.delegate(this._onDragEnter, this));
+					BX.Event.bind(current.layout.item, 'dragover', BX.delegate(this._onDragOver, this));
+					BX.Event.bind(current.layout.item, 'dragleave', BX.delegate(this._onDragLeave, this));
+					BX.Event.bind(current.layout.item, 'dragend', BX.delegate(this._onDragEnd, this));
+					BX.Event.bind(current.layout.item, 'drop', BX.delegate(this._onDrop, this));
 				}
 
-				if (BX.hasClass(current.layout.item, this.classHiddenLabel) && !BX.hasClass(current.layout.item, this.classManage))
+				if (
+					BX.Dom.hasClass(current.layout.item, this.classHiddenLabel)
+					|| BX.Dom.hasClass(current.layout.item, this.classManage)
+				)
 				{
-					BX.bind(current.layout.item, 'dragover', BX.delegate(this._onDragOver, this));
+					BX.Event.bind(current.layout.item, 'dragover', BX.delegate(this._onDragOver, this));
 				}
-			}, this);
+			});
 		},
-
 
 		/**
 		 * Gets drag and drop event target element
@@ -2118,9 +2944,9 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getItem: function(eventOrItem)
 		{
-			if (!BX.type.isDomNode(eventOrItem))
+			if (!BX.Type.isDomNode(eventOrItem))
 			{
-				if ((!eventOrItem || !BX.type.isDomNode(eventOrItem.target)))
+				if ((!eventOrItem || !BX.Type.isDomNode(eventOrItem.target)))
 				{
 					return null;
 				}
@@ -2130,16 +2956,54 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				eventOrItem = {target: eventOrItem};
 			}
 
-			var item = this.findParentByClassName(eventOrItem.target, this.classItem);
-
-			if (!BX.type.isDomNode(item))
+			let item = eventOrItem.target.closest('.' + this.classItem);
+			if (!BX.Type.isDomNode(item))
 			{
-				item = this.findParentByClassName(eventOrItem.target, this.classDefaultSubmenuItem);
+				item = eventOrItem.target.closest(
+					'.' + this.classDefaultSubmenuItem + ', .' + this.classDefaultSubmenuDelimimeter
+				);
 			}
 
 			return item;
 		},
 
+		getItemData: function(item)
+		{
+			if (!BX.Type.isDomNode(item))
+			{
+				return {};
+			}
+
+			const result = this.itemData.get(item);
+			if (result)
+			{
+				return result;
+			}
+
+			let data;
+			try
+			{
+				data = JSON.parse(item.dataset.item);
+			}
+			catch(err)
+			{
+				data = {};
+			}
+
+			this.setItemData(item, data);
+
+			return data;
+		},
+
+		setItemData(item, data)
+		{
+			if (BX.Type.isElementNode(item) && BX.Type.isPlainObject(data))
+			{
+				data.NODE = item;
+
+				this.itemData.set(item, data);
+			}
+		},
 
 		/**
 		 * Sets default opacity style
@@ -2149,14 +3013,13 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		setOpacity: function(item)
 		{
-			if (!BX.type.isDomNode(item))
+			if (!BX.Type.isDomNode(item))
 			{
 				return;
 			}
 
-			BX.style(item, 'opacity', '.1');
+			BX.style(item, 'opacity', 0.5);
 		},
-
 
 		/**
 		 * Unset opacity style
@@ -2167,14 +3030,13 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		unsetOpacity: function(item)
 		{
-			if (!BX.type.isDomNode(item))
+			if (!BX.Type.isDomNode(item))
 			{
 				return;
 			}
 
 			BX.style(item, 'opacity', '1');
 		},
-
 
 		/**
 		 * Sets drag styles
@@ -2183,12 +3045,11 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		setDragStyles: function()
 		{
-			BX.addClass(this.listContainer, this.classOnDrag);
-			BX.addClass(BX(this.getSubmenuId(true)), this.classOnDrag);
+			BX.Dom.addClass(this.listContainer, this.classOnDrag);
+			BX.Dom.addClass(BX(this.getMoreMenuId(true)), this.classOnDrag);
 
 			this.setOpacity(this.dragItem);
 		},
-
 
 		/**
 		 * Unset drag styles
@@ -2198,28 +3059,23 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		unsetDragStyles: function()
 		{
-			var submenu = this.getSubmenu();
-
-			this.getAllItems().forEach(function(current) {
+			const submenu = this.getMoreMenu();
+			this.getAllItems().forEach((current) => {
 				this.unsetOpacity(current);
-				BX.removeClass(current, 'over');
-			}, this);
+				BX.Dom.removeClass(current, this.classItemOver);
+			});
 
-			if (submenu && ('menuItems' in submenu) &&
-				BX.type.isArray(submenu.menuItems) &&
-				submenu.menuItems.length)
+			if (submenu && BX.Type.isArray(submenu.menuItems) && submenu.menuItems.length)
 			{
-
-				submenu.menuItems.forEach(function(current) {
+				submenu.menuItems.forEach((current) => {
 					this.unsetOpacity(current);
-					BX.removeClass(current.layout.item, 'over');
-				}, this);
+					BX.Dom.removeClass(current.layout.item, this.classItemOver);
+				});
 			}
 
-			BX.removeClass(this.listContainer, this.classOnDrag);
-			BX.removeClass(BX(this.getSubmenuId(true)), this.classOnDrag);
+			BX.Dom.removeClass(this.listContainer, this.classOnDrag);
+			BX.Dom.removeClass(BX(this.getMoreMenuId(true)), this.classOnDrag);
 		},
-
 
 		/**
 		 * Gets icon class
@@ -2230,18 +3086,17 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getIconClass: function(item)
 		{
-			var result = '';
-			if (BX.type.isDomNode(item) &&
+			let result = '';
+			if (BX.Type.isDomNode(item) &&
 				('dataset' in item) &&
 				('class' in item.dataset) &&
-				(BX.type.isNotEmptyString(item.dataset.class)))
+				(BX.Type.isStringFilled(item.dataset.class)))
 			{
 				result = item.dataset.class;
 			}
 
 			return result;
 		},
-
 
 		/**
 		 * Disables the element
@@ -2252,7 +3107,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		disableItem: function(item)
 		{
-			var alias = this.getItemAlias(item);
+			const alias = this.getItemAlias(item);
 			if (item && ('dataset' in item))
 			{
 				item.dataset.disabled = 'true';
@@ -2263,7 +3118,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			}
 		},
 
-
 		/**
 		 * Disables the element
 		 * @private
@@ -2273,26 +3127,24 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		enableItem: function(item)
 		{
-			var alias;
+			let alias;
 
-			if (!BX.type.isDomNode(item))
+			if (!BX.Type.isDomNode(item))
 			{
 				return;
 			}
 
 			if (this.isSubmenuItem(item))
 			{
-				BX.removeClass(item, this.classItemDisabled);
+				BX.Dom.removeClass(item, this.classItemDisabled);
 				alias = this.getItemAlias(item);
 
-				if (BX.type.isDomNode(alias))
+				if (BX.Type.isDomNode(alias))
 				{
 					alias.dataset.disabled = 'false';
 				}
-
 			}
 		},
-
 
 		/**
 		 * Gets alias link
@@ -2306,7 +3158,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return this.dataValue(item, 'link') || '';
 		},
 
-
 		/**
 		 * Gets item alias
 		 * @private
@@ -2316,16 +3167,16 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		getItemAlias: function(item)
 		{
-			var result = null;
+			let result = null;
 
-			if (!BX.type.isDomNode(item))
+			if (!BX.Type.isDomNode(item))
 			{
 				return result;
 			}
 
-			var allItems = this.getAllItems();
-			var isSubmenuItem = this.isSubmenuItem(item);
-			var isListItem = this.isListItem(item);
+			const allItems = this.getAllItems();
+			const isSubmenuItem = this.isSubmenuItem(item);
+			const isListItem = this.isListItem(item);
 
 			if (!isSubmenuItem && !isListItem)
 			{
@@ -2335,7 +3186,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			if (isSubmenuItem)
 			{
 				allItems.forEach(function(current) {
-					BX.hasClass(item, this.getAliasLink(current)) && (result = current);
+					BX.Dom.hasClass(item, this.getAliasLink(current)) && (result = current);
 				}, this);
 			}
 
@@ -2347,24 +3198,21 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
 		 * @param {?HTMLElement} item
 		 */
 		hideItem: function(item)
 		{
-			!!item && BX.addClass(item, this.classSecret);
+			!!item && BX.Dom.addClass(item, this.classSecret);
 		},
-
 
 		/**
 		 * @param {?HTMLElement} item
 		 */
 		showItem: function(item)
 		{
-			!!item && BX.removeClass(item, this.classSecret);
+			!!item && BX.Dom.removeClass(item, this.classSecret);
 		},
-
 
 		/**
 		 * Replaces drag item
@@ -2374,13 +3222,12 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		fakeDragItem: function()
 		{
-			var fakeDragItem = null;
-
-			if (!BX.type.isDomNode(this.dragItem) || !BX.type.isDomNode(this.overItem))
+			if (!BX.Type.isDomNode(this.dragItem) || !BX.Type.isDomNode(this.overItem))
 			{
 				return;
 			}
 
+			let fakeDragItem = null;
 			if (this.isDragToSubmenu())
 			{
 				fakeDragItem = this.getItemAlias(this.dragItem);
@@ -2390,7 +3237,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					this.dragItem = fakeDragItem;
 					this.showItem(this.dragItem);
 					this.adjustMoreButtonPosition();
-					this.updateSubmenuItems();
+					this.updateMoreMenuItems();
 					this.tmp.moved = false;
 					this.tmp.movetToSubmenu = true;
 					this.setOpacity(this.dragItem);
@@ -2405,7 +3252,7 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					this.hideItem(this.dragItem);
 					this.dragItem = fakeDragItem;
 					this.adjustMoreButtonPosition();
-					this.updateSubmenuItems();
+					this.updateMoreMenuItems();
 					this.setOpacity(this.dragItem);
 				}
 			}
@@ -2413,65 +3260,61 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			this.tmp.movetToSubmenu = false;
 		},
 
-
 		/**
 		 * Updates submenu items relative to hidden items
 		 * @private
 		 * @method updateSubmenuItems
 		 * @return {undefined}
 		 */
-		updateSubmenuItems: function()
+		updateMoreMenuItems: function()
 		{
-			var hiddenItems = this.getHiddenItems();
-			var disabledItems = this.getDisabledItems();
-			var self = this;
-			var items = [];
-			var submenu, submenuItems, some;
-
-			submenu = this.getSubmenu();
-
+			const submenu = this.getMoreMenu();
 			if (submenu === null)
 			{
 				return;
 			}
 
-			submenuItems = submenu.menuItems;
-
-			if (!BX.type.isArray(submenuItems) || !submenuItems.length)
+			const submenuItems = submenu.menuItems;
+			if (!BX.Type.isArray(submenuItems) || !submenuItems.length)
 			{
 				return;
 			}
 
-			items = disabledItems.concat(hiddenItems);
+			const hiddenItems = this.getHiddenItems();
+			const disabledItems = this.getDisabledItems();
+			const items = disabledItems.concat(hiddenItems);
 
-			submenuItems.forEach(function(current)
-			{
-				some = [].some.call(items, function(someEl) {
+			submenuItems.forEach(current => {
+				const some = [].some.call(items, someEl => {
 					return (
-						BX.hasClass(current.layout.item, self.dataValue(someEl, 'link')) ||
-						self.isDisabled(current.layout.item) ||
-						self.isSeparator(current.layout.item) ||
-						self.isDropzone(current.layout.item)
+						BX.Dom.hasClass(current.layout.item, this.dataValue(someEl, 'link')) ||
+						this.isDisabled(current.layout.item) ||
+						this.isSeparator(current.layout.item) ||
+						this.isDropzone(current.layout.item)
 					);
 				});
 
-				if (some || (self.isSettings(current.layout.item) ||
-					self.isApplySettingsButton(current.layout.item) ||
-					self.isResetSettingsButton(current.layout.item) ||
-					self.isNotHiddenItem(current.layout.item) ||
-					self.isSeparator(current.layout.item) ||
-					current.layout.item === self.dragItem) &&
-					!self.isMoreButton(current.layout.item))
+				if (
+					some
+					|| (
+						this.isSettings(current.layout.item)
+						|| this.isApplySettingsButton(current.layout.item)
+						|| this.isResetSettingsButton(current.layout.item)
+						|| this.isNotHiddenItem(current.layout.item)
+						|| this.isSeparator(current.layout.item)
+						|| current.layout.item === this.dragItem
+					)
+					&& !this.isMoreButton(current.layout.item)
+				)
 				{
-					self.showItem(current.layout.item);
+					this.showItem(current.layout.item);
 				}
 				else
 				{
-					self.hideItem(current.layout.item);
+					this.hideItem(current.layout.item);
 				}
 			});
 		},
-
 
 		/**
 		 * @param {HTMLElement} item
@@ -2479,18 +3322,16 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isNotHiddenItem: function(item)
 		{
-			return BX.hasClass(item, this.classSubmenuNoHiddenItem);
+			return BX.Dom.hasClass(item, this.classSubmenuNoHiddenItem);
 		},
-
 
 		/**
 		 * @return {?HTMLElement}
 		 */
 		getNotHidden: function()
 		{
-			return BX.Buttons.Utils.getByClass(this.getSubmenuContainer(), this.classSubmenuNoHiddenItem);
+			return BX.Buttons.Utils.getByClass(this.getMoreMenuContainer(), this.classSubmenuNoHiddenItem);
 		},
-
 
 		/**
 		 * Sets styles for hovered item
@@ -2500,12 +3341,11 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		setOverStyles: function(item)
 		{
-			if (BX.type.isDomNode(item) && !BX.hasClass(item, this.classItemOver))
+			if (BX.Type.isDomNode(item) && !BX.Dom.hasClass(item, this.classItemOver))
 			{
-				BX.addClass(item, this.classItemOver);
+				BX.Dom.addClass(item, this.classItemOver);
 			}
 		},
-
 
 		/**
 		 * Unset styles for hovered item
@@ -2516,12 +3356,11 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		unsetOverStyles: function(item)
 		{
-			if (BX.type.isDomNode(item) && BX.hasClass(item, this.classItemOver))
+			if (BX.Type.isDomNode(item) && BX.Dom.hasClass(item, this.classItemOver))
 			{
-				BX.removeClass(item, this.classItemOver);
+				BX.Dom.removeClass(item, this.classItemOver);
 			}
 		},
-
 
 		/**
 		 * Gets value data attribute
@@ -2533,12 +3372,10 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		dataValue: function(item, key)
 		{
-			var result = '';
-			var tmpResult;
-
-			if (BX.type.isDomNode(item))
+			let result = '';
+			if (BX.Type.isDomNode(item))
 			{
-				tmpResult = BX.data(item, key);
+				const tmpResult = BX.data(item, key);
 				if (typeof(tmpResult) !== 'undefined')
 				{
 					result = tmpResult;
@@ -2548,7 +3385,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
 		 * Executes script
 		 * @private
@@ -2556,14 +3392,15 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 * @param  {string} script
 		 */
 		/*jshint -W061 */
-		execScript: function(script)
+		execScript: function(script, event)
 		{
-			if (BX.type.isNotEmptyString(script))
+			if (BX.Type.isStringFilled(script))
 			{
-				eval(script);
+				const fn = new Function('event', script);
+				fn(event);
+				//eval('(function(event) {' + script + '})();');
 			}
 		},
-
 
 		/**
 		 * Shows license window
@@ -2571,14 +3408,12 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		showLicenseWindow: function()
 		{
-			var popup;
-
 			if (!B24.licenseInfoPopup)
 			{
 				return;
 			}
 
-			popup = B24.licenseInfoPopup;
+			const popup = B24.licenseInfoPopup;
 
 			popup.init({
 				B24_LICENSE_BUTTON_TEXT: this.message('MIB_LICENSE_BUY_BUTTON'),
@@ -2601,6 +3436,362 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 
 		},
 
+		/**
+		 * mouse click event handler
+		 * @private
+		 * @method handleItemClick
+		 * @param  {object} event ondragstart event object
+		 * @return {undefined}
+		 */
+		_handleItemClick: function(event)
+		{
+			if (!this.isEditEnabled())
+			{
+				const item = this.getItem(event);
+				this.showChildMenu(item);
+			}
+		},
+
+		handleEditButtonClick: function(event)
+		{
+			event.preventDefault();
+			event.stopPropagation();
+
+			let item = this.getItem(event);
+			if (!BX.Type.isDomNode(item))
+			{
+				return;
+			}
+
+			if (this.isSubmenuItem(item))
+			{
+				item = this.getItemAlias(item);
+			}
+
+			const itemData = this.getItemData(item);
+			const menu = this.getItemEditMenu();
+			if (menu && menu.popupWindow.isShown() && this.lastEditNode === item)
+			{
+				menu.popupWindow.close();
+			}
+			else
+			{
+				this.showItemEditMenu(itemData, event.target);
+			}
+
+			this.lastEditNode = item;
+		},
+
+		handleDragButtonClick: function(event)
+		{
+			event.preventDefault();
+			event.stopPropagation();
+		},
+
+		handleItemPinEnter: function(event)
+		{
+			const subMenu = this.getChildMenu();
+			if (subMenu)
+			{
+				this.showPinHint(event.currentTarget);
+			}
+		},
+
+		showPinHint: function(target)
+		{
+			const height = 48;
+			const hint = BX.Main.PopupManager.create({
+				id: 'main-buttons-pin-hint',
+				closeByEsc: true,
+				padding: 15,
+				className: 'main-buttons-pin-hint-popup',
+				height: height,
+				cacheable: false,
+				autoHide: true,
+				bindOptions: {
+					forceBindPosition: true
+				},
+				content: this.message('MIB_PIN_HINT'),
+				darkMode: true,
+				events: {
+					onAfterShow: function(event) {
+						const popup = event.getTarget();
+
+						const targetPosition = BX.Dom.getPosition(target);
+						const popupPosition = BX.Dom.getPosition(popup.getPopupContainer());
+
+						if (popupPosition.left < targetPosition.left + targetPosition.width)
+						{
+							popup.setAngle({ position: 'top', offset: 0 });
+							popup.setOffset({ offsetLeft: 20, offsetTop: 5 });
+							popup.adjustPosition();
+						}
+					}
+				}
+			});
+
+			hint.setAngle({
+				position: 'left',
+				offset: 0,
+			});
+			hint.setOffset({
+				offsetLeft: target.offsetWidth + 5,
+				offsetTop: -target.offsetHeight / 2 - height / 2 - 2,
+			});
+			hint.setBindElement(target);
+			hint.show();
+			hint.adjustPosition();
+		},
+
+		closePinHint: function()
+		{
+			const hint = BX.Main.PopupManager.getPopupById('main-buttons-pin-hint');
+			if (hint)
+			{
+				hint.close();
+			}
+		},
+
+		handleItemPinLeave: function(event)
+		{
+			this.closePinHint();
+		},
+
+		handleItemPin: function(itemData, rootNode, event)
+		{
+			event.stopPropagation();
+			event.preventDefault();
+
+			const newItem = this.createRootItem(itemData);
+
+			BX.Dom.addClass(newItem, 'main-buttons-item-insert-animation');
+			BX.Dom.insertBefore(newItem, rootNode);
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					BX.Dom.style(newItem, {
+						width: newItem.scrollWidth + 'px',
+						opacity: 1,
+					});
+				});
+			});
+
+			const finalize = () => {
+				BX.Dom.removeClass(newItem, 'main-buttons-item-insert-animation');
+				BX.Dom.style(newItem, 'width', null);
+				BX.Dom.style(newItem, 'opacity', null);
+
+				const rootItemData = this.getItemData(rootNode);
+				this.recalculateItemsCounters([rootItemData]);
+
+				this.showMoreMenu();
+				this.updateMoreButtonCounter();
+				this.showChildMenu(rootNode);
+				this.saveSettings();
+			};
+
+			setTimeout(finalize, 300);
+
+			this.initItem(newItem);
+			this.pinItem(itemData);
+
+			this.destroyMoreMenu();
+			this.destroyChildMenu();
+		},
+
+		handleItemUnpin: function(itemData, rootNode)
+		{
+			BX.Dom.style(rootNode, { width: rootNode.offsetWidth + 'px' });
+			BX.Dom.addClass(rootNode, 'main-buttons-item-insert-animation');
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					BX.Dom.style(
+						rootNode,
+						{
+							width: 0,
+							margin: 0,
+							opacity: 0,
+						}
+					);
+				});
+			});
+
+			const finalize = () => {
+				BX.Dom.remove(rootNode);
+				this.showMoreMenu();
+				this.updateMoreButtonCounter();
+				this.saveSettings();
+			};
+
+			setTimeout(finalize, 300);
+
+			this.pinItem(itemData, false);
+
+			const roots = [];
+			let rootItemId = '';
+			const ids = itemData['ID'].split(':');
+			ids.forEach(id => {
+				rootItemId += `${rootItemId === '' ? '' : ':'}${id}`;
+				const rootItem = this.getItemById(rootItemId);
+				if (rootItem)
+				{
+					roots.push(this.getItemData(rootItem));
+				}
+			});
+
+			this.destroyMoreMenu();
+			this.recalculateItemsCounters(roots);
+		},
+
+		pinItem: function(itemData, flag = true)
+		{
+			const itemId = itemData['ID']
+			const ids = itemId.split(':');
+
+			let rootItemId = '';
+			ids.forEach((id, index) => {
+				rootItemId += `${rootItemId === '' ? '' : ':'}${id}`;
+				const rootItem = this.getItemById(rootItemId);
+				if (!rootItem)
+				{
+					return;
+				}
+
+				const rootItemData = this.getItemData(rootItem);
+
+				let subItems = rootItemData['ITEMS'];
+				let subItemId = rootItemId;
+				const subItemIds = ids.slice(index + 1);
+				const parentItems = [rootItemData];
+
+				while (BX.Type.isArrayFilled(subItemIds) && BX.Type.isArrayFilled(subItems))
+				{
+					subItemId = subItemId + ':' + subItemIds.shift();
+					for (let i = 0; i < subItems.length; i++)
+					{
+						const subItem = subItems[i];
+						if (subItem['ID'] === itemId)
+						{
+							subItem['IS_PINNED'] = flag;
+							for (let index = parentItems.length - 1; index >= 0; index--)
+							{
+								const parentItem = parentItems[index];
+								const firstLevel = index === 0;
+
+								if (flag)
+								{
+									const hasVisibleSubItems = parentItem['ITEMS'].some((item) => {
+										const isPinned = item['IS_PINNED'] === true;
+										const isDisbanded = item['IS_DISBANDED'] === true;
+										const isDelimiter = item['IS_DELIMITER'] === true;
+
+										return !isPinned && !isDisbanded && !isDelimiter;
+									});
+
+									if (!hasVisibleSubItems)
+									{
+										parentItem['IS_DISBANDED'] = true;
+
+										if (firstLevel)
+										{
+											rootItem.dataset.disbanded = true;
+										}
+									}
+								}
+								else
+								{
+									if (firstLevel)
+									{
+										rootItem.dataset.disbanded = false;
+									}
+
+									parentItem['IS_DISBANDED'] = false;
+								}
+
+								const hasActiveSubItems = parentItem['ITEMS'].some((item) => {
+									return (
+										item['IS_ACTIVE'] === true
+										&& item['IS_PINNED'] !== true
+										&& item['IS_DELIMITER'] !== true
+									);
+								});
+
+								if (hasActiveSubItems)
+								{
+									parentItem['IS_ACTIVE'] = true;
+									if (firstLevel)
+									{
+										this.activateItem(rootItem);
+									}
+								}
+								else
+								{
+									parentItem['IS_ACTIVE'] = false;
+									if (firstLevel)
+									{
+										this.deactivateItem(rootItem);
+									}
+								}
+							}
+
+							return; // next forEach
+						}
+						else if (subItem['ID'] === subItemId)
+						{
+							subItems = subItem['ITEMS'];
+							subItemId = subItem['ID'];
+							parentItems.push(subItem);
+
+							break;
+						}
+					}
+				}
+			});
+		},
+
+		getParentItem: function(itemId)
+		{
+			const ids = itemId.split(':');
+			let rootItemId = '';
+			for (let index = 0; index < ids.length; index++)
+			{
+				rootItemId += `${rootItemId === '' ? '' : ':'}${ids[index]}`;
+				const rootItem = this.getItemById(rootItemId);
+				if (!rootItem)
+				{
+					continue;
+				}
+
+				const rootItemData = this.getItemData(rootItem);
+
+				let subItems = rootItemData['ITEMS'];
+				let subItemId = rootItemId;
+				const subItemIds = ids.slice(index + 1);
+				let parentItem = null;
+
+				while (BX.Type.isArrayFilled(subItemIds) && BX.Type.isArrayFilled(subItems))
+				{
+					subItemId = subItemId + ':' + subItemIds.shift();
+					for (let i = 0; i < subItems.length; i++)
+					{
+						const subItem = subItems[i];
+						if (subItem['ID'] === itemId)
+						{
+							return parentItem === null ? rootItemData : parentItem;
+						}
+						else if (subItem['ID'] === subItemId)
+						{
+							subItems = subItem['ITEMS'];
+							subItemId = subItem['ID'];
+							parentItem = subItem;
+
+							break;
+						}
+					}
+				}
+			}
+
+			return null;
+		},
 
 		/**
 		 * dragstart event handler
@@ -2611,35 +3802,42 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		_onDragStart: function(event)
 		{
-			var visibleItems = this.getVisibleItems();
-			var visibleItemsLength = BX.type.isArray(visibleItems) ? visibleItems.length : null;
+			const visibleItems = this.getVisibleItems();
+			const visibleItemsLength = BX.Type.isArray(visibleItems) ? visibleItems.length : null;
 			this.dragItem = this.getItem(event);
 
-			if (!BX.type.isDomNode(this.dragItem))
+			if (!BX.Type.isDomNode(this.dragItem))
 			{
 				return;
 			}
 
-			if (visibleItemsLength === 2 && this.isListItem(this.dragItem))
+			if (visibleItemsLength === 1 && this.isListItem(this.dragItem))
 			{
 				event.preventDefault();
 				BX.onCustomEvent(window, 'BX.Main.InterfaceButtons:onHideLastVisibleItem', [this.dragItem, this]);
 				return;
 			}
 
-			if (this.isMoreButton(this.dragItem) ||
-				this.isSeparator(this.dragItem) ||
-				this.isNotHiddenItem(this.dragItem))
+			if (
+				this.isMoreButton(this.dragItem)
+				|| this.isSeparator(this.dragItem)
+				|| this.isNotHiddenItem(this.dragItem)
+				|| BX.Dom.attr(this.dragItem, 'data-parent-item-id')
+				|| BX.Dom.attr(this.dragItem, 'data-has-child')
+			)
 			{
 				event.preventDefault();
 				return;
 			}
 
-			this.isSubmenuShownOnDragStart = !!this.isSubmenuShown;
+			this.onDragStarted = true;
+
+			this.closeChildMenu();
+			this.destroyItemEditMenu();
 
 			if (this.isListItem(this.dragItem))
 			{
-				this.showSubmenu();
+				this.showMoreMenu();
 			}
 
 			this.setDragStyles();
@@ -2649,7 +3847,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				this.enableEdit();
 			}
 		},
-
 
 		/**
 		 * dragend event handler
@@ -2661,57 +3858,47 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		_onDragEnd: function(event)
 		{
 			event.preventDefault();
-			var item = this.getItem(event);
-			var nextVisible, prevVisible;
+			const item = this.getItem(event);
 
-			if (!BX.type.isDomNode(item))
+			this.onDragStarted = false;
+
+			if (!BX.Type.isDomNode(item))
 			{
 				return;
 			}
 
 			this.unsetDragStyles();
-
-			if (!this.isSubmenuShownOnDragStart)
+			this.refreshMoreMenu();
+			if (!this.isEditEnabled())
 			{
-				this.refreshSubmenu();
-				if (!this.isEditEnabled())
-				{
-					this.closeSubmenu();
-				}
-			}
-			else
-			{
-				this.refreshSubmenu();
+				this.closeMoreMenu();
 			}
 
-
-			nextVisible = BX.findNextSibling(this.dragItem, BX.delegate(function(node) {
+			const nextVisible = BX.findNextSibling(this.dragItem, (node) => {
 				return this.isVisibleItem(node);
-			}, this));
+			});
 
-			prevVisible = BX.findPreviousSibling(this.dragItem, BX.delegate(function(node) {
+			const prevVisible = BX.findPreviousSibling(this.dragItem, (node) => {
 				return this.isVisibleItem(node);
-			}, this));
+			});
 
-
-			if (BX.type.isDomNode(prevVisible) && (BX.hasClass(prevVisible, this.classHiddenLabel) || (this.isDisabled(prevVisible) && this.isSubmenuItem(prevVisible))) ||
-				(BX.type.isDomNode(nextVisible) && BX.hasClass(nextVisible, this.classManage) || (this.isDisabled(nextVisible) && this.isSubmenuItem(nextVisible))))
+			if (
+				BX.Dom.hasClass(prevVisible, this.classHiddenLabel)
+				|| (this.isDisabled(prevVisible) && this.isSubmenuItem(prevVisible))
+				|| (this.isDisabled(nextVisible) && this.isSubmenuItem(nextVisible))
+			)
 			{
 				this.disableItem(this.dragItem);
-				this.refreshSubmenu();
+				this.refreshMoreMenu();
 			}
 
 			if (this.isEditEnabled())
 			{
 				this.enableEdit();
-				BX.show(this.getSettingsApplyButton());
-				BX.hide(this.getSettingsButton());
 			}
 			else
 			{
 				this.disableEdit();
-				BX.hide(this.getSettingsApplyButton());
-				BX.show(this.getSettingsButton());
 			}
 
 			this.updateMoreButtonCounter();
@@ -2722,29 +3909,27 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			this.tmp.moved = false;
 		},
 
-
 		updateMoreButtonCounter: function()
 		{
-			var hiddenItems, sumCount, counter, disabledItems;
-
-			hiddenItems = this.getHiddenItems();
-			disabledItems = this.getDisabledItems();
+			let hiddenItems = this.getHiddenItems();
+			const disabledItems = this.getDisabledItems();
 			hiddenItems = hiddenItems.concat(disabledItems);
-			sumCount = 0;
+			let sumCount = 0;
 
-			if (BX.type.isArray(hiddenItems))
+			if (BX.Type.isArray(hiddenItems))
 			{
-				hiddenItems.forEach(function(current) {
-					sumCount += parseInt(this.dataValue(current, 'counter')) || 0;
-				}, this);
+				hiddenItems.forEach((current) => {
+					const item = this.getItemData(current);
+					const counter = BX.Type.isNumber(item['COUNTER']) && item['COUNTER'] > 0 ? item['COUNTER'] : 0;
+					sumCount += counter;
+				});
 			}
 
-			if (BX.type.isNumber(sumCount))
+			if (BX.Type.isNumber(sumCount))
 			{
 				this.setMoreButtonCounter(sumCount);
 			}
 		},
-
 
 		/**
 		 * dragenter event handler
@@ -2755,14 +3940,12 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		_onDragEnter: function(event)
 		{
-			var item = this.getItem(event);
-
-			if (BX.type.isDomNode(item) && this.isNotHiddenItem(item))
+			const item = this.getItem(event);
+			if (BX.Type.isDomNode(item) && this.isNotHiddenItem(item))
 			{
 				this.setOverStyles(item);
 			}
 		},
-
 
 		/**
 		 * dragover event handler
@@ -2774,59 +3957,74 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		_onDragOver: function(event)
 		{
 			event.preventDefault();
-			var nextSiblingItem = null;
+
 			this.overItem = this.getItem(event);
 
-			if (!BX.type.isDomNode(this.overItem) ||
-				!BX.type.isDomNode(this.dragItem) ||
-				this.overItem === this.dragItem ||
-				this.isNotHiddenItem(this.overItem))
+			if (
+				!BX.Type.isDomNode(this.overItem)
+				|| !BX.Type.isDomNode(this.dragItem)
+				|| this.overItem === this.dragItem
+				|| this.isNotHiddenItem(this.overItem)
+				|| BX.Dom.attr(this.overItem, 'data-parent-item-id')
+				|| BX.Dom.attr(this.overItem, 'data-has-child')
+			)
 			{
 				return;
 			}
 
 			this.fakeDragItem();
 
-			if (this.isNext(event) && this.isGoodPosition(event) && !this.isMoreButton(this.overItem))
+			const isNext = this.isNext(event);
+			const isGoodPosition = this.isGoodPosition(event);
+
+			if (isNext && isGoodPosition)
 			{
-				nextSiblingItem = this.findNextSiblingByClass(
-					this.overItem,
-					this.classItem
-				);
-
-				if (this.isMoreButton(nextSiblingItem) && !this.tmp.moved)
+				let nextSiblingItem;
+				let insertAfter = false;
+				if (this.isListItem(this.overItem))
 				{
-					nextSiblingItem = nextSiblingItem.previousElementSibling;
-					this.tmp.moved = true;
+					nextSiblingItem = this.findNextSiblingByClass(this.overItem, this.classItem);
+					if (nextSiblingItem === null && this.getLastVisibleItem() === this.overItem)
+					{
+						nextSiblingItem = this.overItem;
+						insertAfter = true;
+					}
+				}
+				else
+				{
+					nextSiblingItem = this.findNextSiblingByClass(this.overItem, this.classSubmenuItem);
+					if (
+						this.isSettings(nextSiblingItem)
+						|| this.isApplySettingsButton(nextSiblingItem)
+						|| this.isResetSettingsButton(nextSiblingItem)
+					)
+					{
+						return;
+					}
+
+					if (nextSiblingItem === null && this.getItemAlias(this.getLastDisabledItem()) === this.overItem)
+					{
+						nextSiblingItem = this.overItem;
+						insertAfter = true;
+					}
 				}
 
-				if (!BX.type.isDomNode(nextSiblingItem))
+				if (BX.Type.isDomNode(nextSiblingItem))
 				{
-					nextSiblingItem = this.findNextSiblingByClass(
-						this.overItem,
-						this.classSubmenuItem
-					);
-				}
-
-				if (BX.type.isDomNode(nextSiblingItem))
-				{
-					this.moveButton(nextSiblingItem);
-					this.moveButtonAlias(nextSiblingItem);
+					this.moveButton(nextSiblingItem, insertAfter);
+					this.moveButtonAlias(nextSiblingItem, insertAfter);
 					this.adjustMoreButtonPosition();
-					this.updateSubmenuItems();
+					this.updateMoreMenuItems();
 				}
 			}
-
-			if ((!this.isNext(event) && this.isGoodPosition(event) && !this.isMoreButton(this.overItem)) ||
-				(!this.isGoodPosition(event) && this.isMoreButton(this.overItem) && this.getVisibleItems().length === 1))
+			else if (!isNext && isGoodPosition && !BX.Dom.hasClass(this.overItem, this.classHiddenLabel))
 			{
 				this.moveButton(this.overItem);
 				this.moveButtonAlias(this.overItem);
 				this.adjustMoreButtonPosition();
-				this.updateSubmenuItems();
+				this.updateMoreMenuItems();
 			}
 		},
-
 
 		/**
 		 * dragleave event handler
@@ -2837,14 +4035,12 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		_onDragLeave: function(event)
 		{
-			var item = this.getItem(event);
-
-			if (BX.type.isDomNode(item))
+			const item = this.getItem(event);
+			if (BX.Type.isDomNode(item))
 			{
 				this.unsetOverStyles(event.target);
 			}
 		},
-
 
 		/**
 		 * drop event handler
@@ -2855,9 +4051,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		_onDrop: function(event)
 		{
-			var item = this.getItem(event);
-
-			if (!BX.type.isDomNode(item))
+			const item = this.getItem(event);
+			if (!BX.Type.isDomNode(item))
 			{
 				return;
 			}
@@ -2868,32 +4063,63 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 				this.adjustMoreButtonPosition();
 			}
 
+			const aliasDragItem = this.getItemAlias(this.dragItem);
+			if (this.isListItem(aliasDragItem))
+			{
+				aliasDragItem.dataset.disabled = 'false';
+			}
+
 			this.unsetDragStyles();
 
 			event.preventDefault();
 		},
 
-
-		/**
-		 * @param {array|NodeList} collection
-		 * @param {*} item - collection item
-		 * @return {number}
-		 */
-		getIndex: function(collection, item)
+		handleMoreMenuFirstShow: function(event)
 		{
-			return [].indexOf.call((collection || []), item);
+			const popup = event.getTarget();
+
+			BX.Event.bind(popup.getPopupContainer(), 'mouseenter', this.handleMoreMenuMouseEnter.bind(this));
+			BX.Event.bind(popup.getPopupContainer(), 'mouseleave', this.handleMoreMenuMouseLeave.bind(this));
 		},
 
-
-		/**
-		 * submenuClose custom BX.PopupMenu event handler
-		 * @private
-		 * @method _onSubmenuClose
-		 * @return {undefined}
-		 */
-		_onSubmenuClose: function()
+		handleMoreMenuMouseEnter: function()
 		{
-			this.setSubmenuShown(false);
+			clearTimeout(this.submenuLeaveTimeout);
+		},
+
+		handleMoreMenuMouseLeave: function()
+		{
+			this.tryCloseMoreMenuOnTimeout();
+		},
+
+		tryCloseMoreMenuOnTimeout: function()
+		{
+			clearTimeout(this.submenuLeaveTimeout);
+
+			if (!this.isEditEnabled())
+			{
+				this.submenuLeaveTimeout = setTimeout(() => {
+					this.closeMoreMenu();
+				}, 500);
+			}
+		},
+
+		handleMoreMenuShow: function(event)
+		{
+			BX.Event.EventEmitter.emit('BX.Main.InterfaceButtons:onMenuShow');
+			BX.Event.EventEmitter.emit(this, 'BX.Main.InterfaceButtons:onMoreMenuShow', {event});
+			setTimeout(() => {
+				if (!this.isEditEnabled())
+				{
+					event.getTarget().setAutoHide(true);
+				}
+			}, 500);
+		},
+
+		handleMoreMenuClose: function()
+		{
+			BX.Event.EventEmitter.emit(this, 'BX.Main.InterfaceButtons:onMoreMenuClose');
+			this.setMoreMenuShown(false);
 
 			if (this.isEditEnabled())
 			{
@@ -2906,8 +4132,85 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 					this.deactivateItem(this.moreButton);
 				}
 			}
+
+			this.destroyItemEditMenu();
 		},
 
+		_onChildMenuFirstShow: function(event)
+		{
+			const popup = event.getTarget();
+
+			BX.Event.bind(popup.getPopupContainer(), 'mouseenter', this._onChildMenuMouseEnter.bind(this));
+			BX.Event.bind(popup.getPopupContainer(), 'mouseleave', this._onChildMenuMouseLeave.bind(this));
+		},
+
+		_onChildMenuMouseEnter: function()
+		{
+			clearTimeout(this.childMenuLeaveTimeout);
+		},
+
+		_onChildMenuMouseLeave: function()
+		{
+			this.tryCloseChildMenuOnTimeout();
+		},
+
+		tryCloseChildMenuOnTimeout: function()
+		{
+			if (this.isEditEnabled())
+			{
+				return;
+			}
+
+			clearTimeout(this.childMenuLeaveTimeout);
+
+			this.childMenuLeaveTimeout = setTimeout(() => {
+				this.closeChildMenu();
+			}, 500);
+		},
+
+		_onChildMenuShow: function(item, event)
+		{
+			BX.Dom.addClass(item, this.classMenuShown);
+			BX.Event.EventEmitter.emit('BX.Main.InterfaceButtons:onMenuShow');
+			BX.Event.EventEmitter.emit(this, 'BX.Main.InterfaceButtons:onSubMenuShow', {item, event});
+
+			if (this.theme !== 'default')
+			{
+				this.centerPopupArrow(event.getTarget(), item);
+			}
+
+			setTimeout(() => {
+				event.getTarget().setAutoHide(true);
+			}, 500);
+		},
+
+		_onChildMenuClose: function(item)
+		{
+			BX.Event.EventEmitter.emit(this, 'BX.Main.InterfaceButtons:onSubMenuClose');
+			BX.Dom.removeClass(item, this.classMenuShown);
+			this.closePinHint();
+		},
+
+		handleAdjustPosition: function(item, event)
+		{
+			const activeItemMargin = 25;
+			const position = BX.Dom.getPosition(item);
+			const popup = event.getTarget();
+			if (event.left < (position.left - activeItemMargin))
+			{
+				const popupWidth = popup.getPopupContainer().offsetWidth;
+				const left = position.right - popupWidth + activeItemMargin;
+				if (left > 0)
+				{
+					event.left = left;
+					BX.Dom.addClass(popup.getPopupContainer(), '--left-handed');
+				}
+			}
+			else
+			{
+				BX.Dom.removeClass(popup.getPopupContainer(), '--left-handed');
+			}
+		},
 
 		/**
 		 * resize window event handler
@@ -2918,7 +4221,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		_onResizeHandler: function()
 		{
 			this.adjustMoreButtonPosition();
-			this.updateSubmenuItems();
+			this.updateMoreMenuItems();
+			this.closeChildMenu();
 
 			if (!this.isSettingsEnabled)
 			{
@@ -2926,84 +4230,123 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			}
 		},
 
-
-		/**
-		 * click on more button event handler
-		 * @private
-		 * @method _onClickMoreButton
-		 * @param  {object} event click event object
-		 * @return {undefined}
-		 */
-		_onClickMoreButton: function(event)
+		handleMoreButtonClick: function(event)
 		{
 			event.preventDefault();
-			this.showSubmenu();
+			this.showMoreMenu();
 		},
 
-
-		/**
-		 * mouseover and mouseout events handler
-		 * @private
-		 * @method _onMouse
-		 * @param  {object} event mouseover and mouseout event object
-		 * @return {undefined}
-		 */
-		_onMouse: function(event)
+		handleMoreButtonMouseEnter: function(event)
 		{
-			var item = this.getItem(event);
-
-			if (event.type === 'mouseover' && !BX.hasClass(item, this.classItemOver))
+			if (this.enableItemMouseEnter)
 			{
-				BX.addClass(item, this.classItemOver);
+				clearTimeout(this.menuShowTimeout);
+				this.menuShowTimeout = setTimeout(() => {
+					this.showMoreMenu();
+				}, 100);
 			}
 
-			if (event.type === 'mouseout' && BX.hasClass(item, this.classItemOver))
-			{
-				BX.removeClass(item, this.classItemOver);
-			}
+			clearTimeout(this.submenuLeaveTimeout);
 		},
 
+		handleMoreButtonMouseLeave: function()
+		{
+			clearTimeout(this.menuShowTimeout);
+			this.tryCloseMoreMenuOnTimeout();
+		},
+
+		handleItemMouseEnter: function(event)
+		{
+			if (!this.enableItemMouseEnter)
+			{
+				return;
+			}
+
+			if (this.onDragStarted)
+			{
+				return;
+			}
+
+			const item = this.getItem(event);
+
+			clearTimeout(this.childMenuLeaveTimeout);
+			clearTimeout(this.menuShowTimeout);
+
+			this.menuShowTimeout = setTimeout(() => {
+				this.showChildMenu(item);
+			}, 100);
+
+			BX.Dom.addClass(item, this.classItemOver);
+		},
+
+		handleItemMouseLeave: function(event)
+		{
+			clearTimeout(this.menuShowTimeout);
+
+			if (!this.enableItemMouseEnter)
+			{
+				return;
+			}
+
+			if (this.onDragStarted)
+			{
+				return;
+			}
+
+			const item = this.getItem(event);
+			BX.Dom.removeClass(item, this.classItemOver);
+
+			this.tryCloseChildMenuOnTimeout();
+		},
+
+		handleMoreMenuItemMouseEnter: function(event)
+		{
+			if (this.isEditEnabled())
+			{
+				event.preventDefault();
+			}
+		},
 
 		/**
 		 * @return {?HTMLElement}
 		 */
 		getSettingsResetButton: function()
 		{
-			return BX.Buttons.Utils.getByClass(this.getSubmenuContainer(), this.classSettingsResetButton);
+			return BX.Buttons.Utils.getByClass(this.getMoreMenuContainer(), this.classSettingsResetButton);
 		},
-
-
-		_onScroll: function()
-		{
-			if (BX.style(this.pinContainer, 'position') === 'fixed')
-			{
-				this.closeSubmenu();
-			}
-		},
-
 
 		/**
 		 * Checks whether the item is disabled
-		 * @private
+		 * @public
 		 * @method isDisabled
 		 * @param  {object} item
 		 * @return {boolean}
 		 */
 		isDisabled: function(item)
 		{
-			var result = false;
+			let result = false;
 
-			if (BX.type.isDomNode(item))
+			if (BX.Type.isDomNode(item))
 			{
 				result = (
-					this.dataValue(item, 'disabled') === 'true' ||
-					BX.hasClass(item, this.classItemDisabled)
+					this.dataValue(item, 'disabled') === 'true' || BX.Dom.hasClass(item, this.classItemDisabled)
 				);
 			}
 
 			return result;
 		},
 
+		isPinned: function(item)
+		{
+			let result = false;
+
+			if (BX.Type.isDomNode(item))
+			{
+				result = this.getItemData(item)['IS_PINNED'] === true;
+			}
+
+			return result;
+		},
 
 		/**
 		 * @param {HTMLElement} item
@@ -3011,16 +4354,15 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isSettings: function(item)
 		{
-			var result = false;
+			let result = false;
 
-			if (BX.type.isDomNode(item))
+			if (BX.Type.isDomNode(item))
 			{
-				result = BX.hasClass(item, this.classSettingMenuItem);
+				result = BX.Dom.hasClass(item, this.classSettingMenuItem);
 			}
 
 			return result;
 		},
-
 
 		/**
 		 * Checks whether the item is locked
@@ -3031,19 +4373,18 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isLocked: function(item)
 		{
-			var result = false;
+			let result = false;
 
-			if (BX.type.isDomNode(item))
+			if (BX.Type.isDomNode(item))
 			{
 				result = (
 					this.dataValue(item, 'locked') === 'true' ||
-					BX.hasClass(item, this.classItemLocked)
+					BX.Dom.hasClass(item, this.classItemLocked)
 				);
 			}
 
 			return result;
 		},
-
 
 		/**
 		 * Checks whether the item is dropzone
@@ -3054,9 +4395,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isDropzone: function(item)
 		{
-			return BX.hasClass(item, this.classDropzone);
+			return BX.Dom.hasClass(item, this.classDropzone);
 		},
-
 
 		/**
 		 * Checks whether the hovered item is next
@@ -3067,11 +4407,11 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isNext: function(event)
 		{
-			var dragItemRect = this.dragItem.getBoundingClientRect();
-			var overItemRect = this.overItem.getBoundingClientRect();
-			var styles = getComputedStyle(this.dragItem);
-			var dragItemMarginRight = parseInt(styles.marginRight.replace('px', ''));
-			var result = null;
+			const dragItemRect = this.dragItem.getBoundingClientRect();
+			const overItemRect = this.overItem.getBoundingClientRect();
+			const styles = getComputedStyle(this.dragItem);
+			const dragItemMarginRight = parseInt(styles.marginRight.replace('px', ''));
+			let result = null;
 
 			if (this.isListItem(this.overItem))
 			{
@@ -3090,7 +4430,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
 		 * Checks whether it is possible to move the item
 		 * @private
@@ -3100,16 +4439,14 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isGoodPosition: function(event)
 		{
-			var overItem = this.overItem;
-			var overItemRect, result;
-
-			if (!BX.type.isDomNode(overItem))
+			const overItem = this.overItem;
+			if (!BX.Type.isDomNode(overItem))
 			{
 				return false;
 			}
 
-			overItemRect = overItem.getBoundingClientRect();
-
+			let result;
+			const overItemRect = overItem.getBoundingClientRect();
 			if (this.isListItem(overItem))
 			{
 				result = (
@@ -3129,7 +4466,6 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 			return result;
 		},
 
-
 		/**
 		 * Checks whether the item is a submenu item
 		 * @private
@@ -3139,27 +4475,25 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isSubmenuItem: function(item)
 		{
-			return BX.hasClass(item, this.classSubmenuItem);
+			return BX.Dom.hasClass(item, this.classSubmenuItem);
 		},
-
 
 		/**
 		 * Checks whether the item is visible
-		 * @private
+		 * @public
 		 * @method isVisibleItem
 		 * @param  {object}  item
 		 * @return {boolean}
 		 */
 		isVisibleItem: function(item)
 		{
-			if (!BX.type.isDomNode(item))
+			if (!BX.Type.isDomNode(item))
 			{
 				return false;
 			}
 
 			return item.offsetTop === 0;
 		},
-
 
 		/**
 		 * Checks whether the item is more button
@@ -3170,15 +4504,14 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isMoreButton: function(item)
 		{
-			var result = false;
-			if (BX.type.isDomNode(item) && BX.hasClass(item, this.classItemMore))
+			let result = false;
+			if (BX.Type.isDomNode(item) && BX.Dom.hasClass(item, this.classItemMore))
 			{
 				result = true;
 			}
 
 			return result;
 		},
-
 
 		/**
 		 * Checks whether the item is list item
@@ -3189,16 +4522,15 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isListItem: function(item)
 		{
-			var result = false;
+			let result = false;
 
-			if (BX.type.isDomNode(item) && BX.hasClass(item, this.classItem))
+			if (BX.Type.isDomNode(item) && BX.Dom.hasClass(item, this.classItem))
 			{
 				result = true;
 			}
 
 			return result;
 		},
-
 
 		/**
 		 * Checks whether the item is sublink
@@ -3209,15 +4541,14 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isSublink: function(item)
 		{
-			var result = false;
-			if (BX.type.isDomNode(item))
+			let result = false;
+			if (BX.Type.isDomNode(item))
 			{
-				result = BX.hasClass(item, this.classItemSublink);
+				result = BX.Dom.hasClass(item, this.classItemSublink);
 			}
 
 			return result;
 		},
-
 
 		/**
 		 * Checks whether the item is separator
@@ -3228,15 +4559,14 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isSeparator: function(item)
 		{
-			var result = false;
-			if (BX.type.isDomNode(item))
+			let result = false;
+			if (BX.Type.isDomNode(item))
 			{
-				result = BX.hasClass(item, this.classSeporator);
+				result = BX.Dom.hasClass(item, this.classSeparator);
 			}
 
 			return result;
 		},
-
 
 		/**
 		 * Checks that the element is dragged into the submenu
@@ -3244,11 +4574,8 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isDragToSubmenu: function()
 		{
-			return (!this.isSubmenuItem(this.dragItem) &&
-				this.isSubmenuItem(this.overItem)
-			);
+			return !this.isSubmenuItem(this.dragItem) && this.isSubmenuItem(this.overItem);
 		},
-
 
 		/**
 		 * Checks that the element is dragged into the list
@@ -3256,14 +4583,10 @@ if (typeof(BX.Main.interfaceButtons) === 'undefined')
 		 */
 		isDragToList: function()
 		{
-			return (
-				this.isSubmenuItem(this.dragItem) &&
-				!this.isSubmenuItem(this.overItem)
-			);
+			return this.isSubmenuItem(this.dragItem) && !this.isSubmenuItem(this.overItem);
 		}
 	};
 }
-
 
 
 if (typeof(BX.Main.interfaceButtonsManager) === 'undefined')
@@ -3274,16 +4597,16 @@ if (typeof(BX.Main.interfaceButtonsManager) === 'undefined')
 
 		init: function(params)
 		{
-			var container = null;
+			let container = null;
 
-			if (!BX.type.isPlainObject(params) || !('containerId' in params))
+			if (!BX.Type.isPlainObject(params) || !('containerId' in params))
 			{
 				throw 'BX.Main.interfaceButtonsManager: containerId not set in params Object';
 			}
 
 			container = BX(params.containerId);
 
-			if (BX.type.isDomNode(container))
+			if (BX.Type.isDomNode(container))
 			{
 				this.data[params.containerId] = new BX.Main.interfaceButtons(container, params);
 			}
@@ -3292,7 +4615,7 @@ if (typeof(BX.Main.interfaceButtonsManager) === 'undefined')
 				BX(BX.delegate(function() {
 					container = BX(params.containerId);
 
-					if (!BX.type.isDomNode(container))
+					if (!BX.Type.isDomNode(container))
 					{
 						throw 'BX.Main.interfaceButtonsManager: container is not dom node';
 					}
@@ -3304,9 +4627,9 @@ if (typeof(BX.Main.interfaceButtonsManager) === 'undefined')
 
 		getById: function(containerId)
 		{
-			var result = null;
+			let result = null;
 
-			if (BX.type.isString(containerId) && BX.type.isNotEmptyString(containerId))
+			if (BX.type.isString(containerId) && BX.Type.isStringFilled(containerId))
 			{
 				try
 				{

@@ -3,6 +3,10 @@
 /** @global CUser $USER */
 /** @global CDatabase $DB */
 /** @global CUserTypeManager $USER_FIELD_MANAGER */
+
+use Bitrix\Main\Loader;
+use Bitrix\Catalog;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 CModule::IncludeModule("iblock");
 IncludeModuleLangFile(__FILE__);
@@ -98,7 +102,7 @@ if (!$iblockFix)
 	$lAdmin = new CAdminList($sTableID);
 	$lAdmin->InitFilter(array('find_iblock_id'));
 	/* this code - for delete filter */
-	/** @var string $filter_iblock_id */
+	/** @var string $find_iblock_id */
 	$IBLOCK_ID = (int)(isset($_GET['IBLOCK_ID']) && (int)$_GET['IBLOCK_ID'] > 0 ? $_GET['IBLOCK_ID'] : $find_iblock_id);
 	unset($lAdmin);
 }
@@ -131,7 +135,7 @@ else
 	);
 }
 
-$useParentFilter = $iblockFix;
+$useParentFilter = ($iblockFix || $IBLOCK_ID > 0);
 
 $APPLICATION->SetTitle(GetMessage("IBLOCK_SECSEARCH_TITLE"));
 
@@ -142,7 +146,7 @@ if (!isset($by))
 	$by = 'NAME';
 if (!isset($order))
 	$order = 'ASC';
-$arOrder = (strtoupper($by) === "ID"? array($by => $order): array($by => $order, "ID" => "ASC"));
+$arOrder = (mb_strtoupper($by) === "ID"? array($by => $order): array($by => $order, "ID" => "ASC"));
 $lAdmin = new CAdminList($sTableID, $oSort);
 
 $arFilterFields = array(
@@ -164,7 +168,7 @@ $arFilterFields = array(
 if($entity_id)
 	$USER_FIELD_MANAGER->AdminListAddFilterFields($entity_id, $arFilterFields);
 
-$section_id = strlen($find_section_section) > 0? intval($find_section_section): "";
+$section_id = $find_section_section <> ''? intval($find_section_section): "";
 $lAdmin->InitFilter($arFilterFields);
 $find_section_section = $section_id;
 
@@ -322,12 +326,12 @@ while($arRes = $rsData->NavNext(true, "f_"))
 	$row->AddCheckField("ACTIVE", false);
 
 	if(array_key_exists("ELEMENT_CNT", $arVisibleColumnsMap))
-		$row->AddViewField("ELEMENT_CNT", $f_ELEMENT_CNT.'('.IntVal(CIBlockSection::GetSectionElementsCount($f_ID, Array("CNT_ALL"=>"Y"))).')');
+		$row->AddViewField("ELEMENT_CNT", $f_ELEMENT_CNT.'('.intval(CIBlockSection::GetSectionElementsCount($f_ID, Array("CNT_ALL"=>"Y"))).')');
 
 	if(array_key_exists("SECTION_CNT", $arVisibleColumnsMap))
 	{
 		$arFilter = Array("IBLOCK_ID"=>$IBLOCK_ID, "SECTION_ID"=>$f_ID);
-		$row->AddViewField("SECTION_CNT", '<a href="'.$sec_list_url.'" onclick="'.$lAdmin->ActionRedirect($sec_list_url).'; return false;" title="'.GetMessage("IBLOCK_SECSEARCH_LIST").'">'.IntVal(CIBlockSection::GetCount($arFilter)).'</a>');
+		$row->AddViewField("SECTION_CNT", '<a href="'.$sec_list_url.'" onclick="'.$lAdmin->ActionRedirect($sec_list_url).'; return false;" title="'.GetMessage("IBLOCK_SECSEARCH_LIST").'">'.intval(CIBlockSection::GetCount($arFilter)).'</a>');
 	}
 
 	if(array_key_exists("MODIFIED_BY", $arVisibleColumnsMap) && intval($f_MODIFIED_BY) > 0)
@@ -359,6 +363,7 @@ while($arRes = $rsData->NavNext(true, "f_"))
 			"ACTION"=>"javascript:SelEl('".($get_xml_id? $f_XML_ID: $f_ID)."', '".htmlspecialcharsbx($jsPath.htmlspecialcharsbx(CUtil::JSEscape($arRes["NAME"]), ENT_QUOTES)).$nameSeparator."')",
 		),
 	));
+	unset($row);
 }
 
 $lAdmin->AddFooter(
@@ -588,8 +593,34 @@ if (!$iblockFix)
 	$iblockFilter = array(
 		'MIN_PERMISSION' => 'S'
 	);
+
+	$hideIblockList = [];
 	if ($hideIblockId > 0)
-		$iblockFilter['!ID'] = $hideIblockId;
+	{
+		$hideIblockList[] = $hideIblockId;
+	}
+	if ($boolDiscount && Loader::includeModule('catalog'))
+	{
+		$iterator = Catalog\CatalogIblockTable::getList([
+			'select'=> [
+				'IBLOCK_ID',
+			],
+			'filter' => [
+				'!=PRODUCT_IBLOCK_ID' => 0,
+			]
+		]);
+		while ($row = $iterator->fetch())
+		{
+			$hideIblockList[] = (int)$row['IBLOCK_ID'];
+		}
+		unset($row, $iterator);
+	}
+
+	if (!empty($hideIblockList))
+	{
+		$iblockFilter['!ID'] = $hideIblockList;
+	}
+	unset($hideIblockList);
 	?><tr>
 		<td><b><?echo GetMessage("IBLOCK_SECSEARCH_IBLOCK")?></b></td>
 		<td><?echo GetIBlockDropDownListEx(

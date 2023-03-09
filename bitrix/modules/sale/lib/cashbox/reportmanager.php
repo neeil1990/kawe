@@ -106,7 +106,7 @@ final class ReportManager
 
 			if ($prevPrintDate->getTimestamp() - $datePrintStartTs > static::MIN_TIME_RESENDING_REPORT)
 			{
-				$dbChecksCount = Internals\CashboxCheckTable::getList(
+				$dbChecksCount = CheckManager::getList(
 					array(
 						'select' => array('CNT'),
 						'filter' => array(
@@ -185,13 +185,14 @@ final class ReportManager
 
 				Internals\CashboxZReportTable::update($reportId, $updatedFields);
 				$error = new Errors\Error($errorMessage);
+				Logger::addError($error->getMessage(), $report['CASHBOX_ID']);
 			}
 			else
 			{
 				$error = new Errors\Warning($errorMessage);
+				Logger::addWarning($error->getMessage(), $report['CASHBOX_ID']);
 			}
 
-			Manager::writeToLog($report['CASHBOX_ID'], $error);
 			$result->addError($error);
 		}
 		else

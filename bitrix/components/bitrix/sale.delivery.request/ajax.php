@@ -22,7 +22,7 @@ if (!\Bitrix\Main\Loader::includeModule('sale'))
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 
-if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitrix_sessid())
+if($result["ERROR"] == '' && $saleModulePermissions >= "U" && check_bitrix_sessid())
 {
 	$action = isset($_REQUEST['action']) ? trim($_REQUEST['action']): '';
 
@@ -53,7 +53,7 @@ if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitri
 					{
 						$formFields .=
 							'<tr>
-								<td valign="top">'.(strlen($params["TITLE"]) > 0 ? htmlspecialcharsbx($params["TITLE"]).": " : "").'</td>
+								<td valign="top">'.($params["TITLE"] <> '' ? htmlspecialcharsbx($params["TITLE"]).": " : "").'</td>
 								<td>'.\Bitrix\Sale\Internals\Input\Manager::getEditHtml("requestInputs[".$name."]", $params, (isset($params[$name]) ? $params[$name] : null)).'</td>
 							</tr>';
 					}
@@ -80,7 +80,7 @@ if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitri
 				$isFinal = true;
 			}
 
-			if(strlen($dialogContent) > 0)
+			if($dialogContent <> '')
 			{
 				$result['DAILOG_PARAMS'] = array(
 					'TITLE' => Loc::getMessage('SALE_SDR_AJAX_CREATE'),
@@ -96,11 +96,13 @@ if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitri
 			$shipmentIds = isset($_REQUEST['shipmentIds']) && is_array($_REQUEST['shipmentIds']) ? $_REQUEST['shipmentIds'] : array();
 			$deliveryId = isset($_REQUEST['deliveryId']) ? intval($_REQUEST['deliveryId']) : 0;
 			$weight = isset($_REQUEST['weight']) ? round(floatval($_REQUEST['weight']), 2) : 0;
+			$requestInputsValues = isset($_REQUEST['requestInputs']) && is_array($_REQUEST['requestInputs']) ? $_REQUEST['requestInputs']: array();
+			$requestInputs = array();
 			$dialogContent = '';
 
 			if($requestId > 0)
 			{
-				$res = Requests\Manager::addShipmentsToDeliveryRequest($requestId, $shipmentIds);
+				$res = Requests\Manager::addShipmentsToDeliveryRequest($requestId, $shipmentIds, $requestInputsValues);
 				$dialogContent = createMessagesHtml($res);
 				$result['DELIVERY_BLOCK_HTML'] = getDeliveryBlockHtml($res, $deliveryId, $shipmentIds, 'ADD', $weight);
 				$result['DELIVERY_ID'] = $deliveryId;
@@ -135,10 +137,25 @@ if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitri
 					$dialogContent .= '<option value="'.$row['ID'].'">"'.$row['ID'].'" '.$row['DATE'].' ( '.htmlspecialcharsbx($row['EXTERNAL_ID']).' )</option>';
 				}
 
-				if(strlen($dialogContent) > 0)
+				if($dialogContent <> '')
 				{
+					$requestInputs = Requests\Manager::getDeliveryRequestFormFields($deliveryId, Requests\Manager::FORM_FIELDS_TYPE_ADD, $shipmentIds);
+					if(!empty($requestInputs))
+					{
+						$formFields = '';
+
+						foreach($requestInputs as $name => $params)
+						{
+							$formFields .=
+								'<tr>
+								<td valign="top">'.($params["TITLE"] <> '' ? htmlspecialcharsbx($params["TITLE"]).": " : "").'</td>
+								<td>'.\Bitrix\Sale\Internals\Input\Manager::getEditHtml("requestInputs[".$name."]", $params, (isset($params[$name]) ? $params[$name] : null)).'</td>
+							</tr>';
+						}
+					}
+
 					$dialogContent = '<select name="requestId">'.$dialogContent.'</select>';
-					$dialogContent = '<table width="100%"><tr><td>'.Loc::getMessage('SALE_SDR_AJAX_REQUEST_NUMBER').'</td><td>'.$dialogContent.'</td></tr></table>';
+					$dialogContent = '<table width="100%"><tr><td>'.Loc::getMessage('SALE_SDR_AJAX_REQUEST_NUMBER').'</td><td>'.$dialogContent.'</td></tr>' . $formFields . '</table>';
 					$dialogContent .= '<input type="hidden" name="deliveryId" value="'.$deliveryId.'">';
 					$dialogContent .= '<input type="hidden" name="weight" value="'.$weight.'">';
 					$dialogContent .= '<input type="hidden" name="action" value="'.htmlspecialcharsbx($action).'">';
@@ -157,7 +174,7 @@ if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitri
 				}
 			}
 
-			if(strlen($dialogContent) > 0)
+			if($dialogContent <> '')
 			{
 				$result['DAILOG_PARAMS'] = array(
 					'TITLE' => Loc::getMessage('SALE_SDR_AJAX_SHIPMENTS_ADD'),
@@ -175,22 +192,23 @@ if(strlen($result["ERROR"]) <= 0 && $saleModulePermissions >= "U" && check_bitri
 }
 else
 {
-	if(strlen($result["ERROR"]) <= 0)
+	if($result["ERROR"] == '')
 		$result["ERROR"] = "Error! Access denied";
 }
 
-if(strlen($result["ERROR"]) > 0)
+if($result["ERROR"] <> '')
 	$result["RESULT"] = "ERROR";
 else
 	$result["RESULT"] = "OK";
 
-if(strtolower(SITE_CHARSET) != 'utf-8')
+if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 	$result = \Bitrix\Main\Text\Encoding::convertEncoding($result, SITE_CHARSET, 'utf-8');
 
-$result = json_encode($result);
-\CMain::FinalActions();
+$APPLICATION->RestartBuffer();
 header('Content-Type: application/json');
-die($result);
+echo json_encode($result);
+\CMain::FinalActions();
+die;
 
 /**
  * @param Requests\Result $reqResult

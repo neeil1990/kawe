@@ -48,6 +48,6 @@ $MESS["top_panel_pin"] = "Прикрепление панели";
 $MESS["top_panel_pin_on"] = "Прикрепить панель";
 $MESS["top_panel_pin_off"] = "Открепить панель";
 $MESS["admin_panel_notif_block_title"] = "Просмотр уведомлений";
-$MESS["top_panel_help_loader"] = "Загрузка...";
-$MESS["top_panel_help_title"] = "Поддержка";
+$MESS["adm_top_panel_view_public_site_title"] = "Перейти в режим работы с публичным сайтом";
+$MESS["admin_panel_public_site"] = "Публичный сайт";
 ?>

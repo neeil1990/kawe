@@ -1,5 +1,6 @@
-<?
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
+<?php
+
+require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/modules/main/include/prolog_admin_before.php');
 
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Cashbox\Internals;
@@ -8,6 +9,20 @@ use Bitrix\Main\Page;
 use Bitrix\Sale\Payment;
 use Bitrix\Sale\Shipment;
 use Bitrix\Sale\Internals\StatusTable;
+use Bitrix\Main\Loader;
+use Bitrix\Sale\Link\EntityLinkBuilder\AdminEntityLinkBuilder;
+use Bitrix\Sale\Link\EntityLinkBuilder\CrmEntityLinkBuilder;
+use Bitrix\Sale\Link\Html\EntityLink;
+use Bitrix\Sale\Link\Html\OrderLink;
+
+$publicMode = $adminPage->publicMode || $adminSidePanelHelper->isPublicSidePanel();
+$shouldHideOrderEntities = (
+	$publicMode
+	&& Loader::includeModule('crm')
+	&& !CCrmSaleHelper::isWithOrdersMode()
+);
+
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions < "W")
@@ -18,17 +33,20 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 Page\Asset::getInstance()->addJs("/bitrix/js/sale/cashbox.js");
 \Bitrix\Main\Loader::includeModule('sale');
 
+$orderEntityLinkBuilder =
+	$publicMode && Loader::includeModule('crm')
+		? new CrmEntityLinkBuilder()
+		: new AdminEntityLinkBuilder()
+;
+
 $tableId = "tbl_sale_cashbox_check";
 $instance = \Bitrix\Main\Application::getInstance();
 $context = $instance->getContext();
 $request = $context->getRequest();
 
-$oSort = new CAdminSorting($tableId, "ID", "asc");
-$lAdmin = new CAdminList($tableId, $oSort);
+$oSort = new CAdminUiSorting($tableId, "ID", "asc");
+$lAdmin = new CAdminUiList($tableId, $oSort);
 
-$arFilterFields = array(
-	'filter_cashbox_id'
-);
 if (($ids = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 {
 	foreach ($ids as $id)
@@ -41,7 +59,7 @@ if (($ids = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 			$check = Internals\CashboxCheckTable::getRowById($id);
 			if ($check['STATUS'] == 'E' || $check['STATUS'] == 'N')
 			{
-				Internals\CashboxCheckTable::delete($id);
+				Cashbox\CheckManager::delete($id);
 			}
 			else
 			{
@@ -59,152 +77,154 @@ if (($ids = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 					$lAdmin->AddGroupError(implode("\n", $r->getErrorMessages()), $id);
 			}
 		}
+		elseif ($_REQUEST['action'] === 'check_correction_status')
+		{
+			$check = Cashbox\CheckManager::getObjectById($id);
+
+			if ($check)
+			{
+				$cashbox = Cashbox\Manager::getObjectById($check->getField('CASHBOX_ID'));
+				if (
+					$cashbox
+					&& $cashbox->isCorrection()
+					&& $check instanceof Cashbox\CorrectionCheck
+				)
+				{
+					/** @var Cashbox\ICorrection $cashbox $r */
+					$r = $cashbox->checkCorrection($check);
+					if (!$r->isSuccess())
+					{
+						$lAdmin->AddGroupError(implode("\n", $r->getErrorMessages()), $id);
+					}
+				}
+			}
+		}
+	}
+	if ($lAdmin->hasGroupErrors())
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($lAdmin->getGroupErrors());
+	}
+	else
+	{
+		$adminSidePanelHelper->sendSuccessResponse();
 	}
 }
 
-$lAdmin->InitFilter($arFilterFields);
+$cashBox = array();
+$cashBoxQueryObject = Internals\CashboxTable::getList();
+while ($item = $cashBoxQueryObject->fetch())
+{
+	$cashBox[$item['ID']] = $item['NAME'];
+}
+$statusesList = array(
+	'N' => Loc::getMessage('SALE_CASHBOX_STATUS_N'),
+	'P' => Loc::getMessage('SALE_CASHBOX_STATUS_P'),
+	'Y' => Loc::getMessage('SALE_CASHBOX_STATUS_Y'),
+	'E' => Loc::getMessage('SALE_CASHBOX_STATUS_E')
+);
+
+$filterFields = array(
+	array(
+		"id" => "CASHBOX_ID",
+		"name" => GetMessage("SALE_F_CASHBOX"),
+		"type" => "list",
+		"items" => $cashBox,
+		"filterable" => ""
+	),
+	array(
+		"id" => "ID",
+		"name" => GetMessage("SALE_CHECK_ID"),
+		"type" => "number",
+		"filterable" => "",
+		"default" => true
+	),
+	array(
+		"id" => "DATE_CREATE",
+		"name" => GetMessage("SALE_F_CHECK_CREATE"),
+		"type" => "date",
+		"default" => true
+	),
+	...(
+	$shouldHideOrderEntities
+		? []
+		: [
+		[
+			"id" => "ORDER_ID",
+			"name" => GetMessage("SALE_F_ORDER_ID"),
+			"type" => "number",
+			"filterable" => "",
+			"quickSearch" => ""
+		]
+	]
+	),
+	array(
+		"id" => "STATUS",
+		"name" => GetMessage("SALE_CASHBOX_STATUS"),
+		"type" => "list",
+		"items" => $statusesList,
+		"filterable" => "",
+		"params" => array("multiple" => "Y"),
+	),
+);
 
 $filter = array();
 
-if (strlen($filter_cashbox_id) > 0 && $filter_cashbox_id != "NOT_REF")
-	$filter["CASHBOX_ID"] = trim($filter_cashbox_id);
+$filterPresets = [
+	'base' => [
+		'name' => GetMessage('SALE_CASHBOX_CHECK_PRESET_TITLE'),
+		'default' => true,
+		'current' => true,
+		'fields' => [
+			'DATE_CREATE_datesel' => \Bitrix\Main\UI\Filter\DateType::CURRENT_DAY,
+		]
+	],
+];
+$lAdmin->setFilterPresets($filterPresets);
 
-if (strlen($filter_date_create_from)>0)
+$lAdmin->AddFilter($filterFields, $filter);
+
+global $by, $order;
+$by = isset($by) ? $by : "ID";
+$order = isset($order) ? $order : "ASC";
+
+$params = array(
+	'filter' => $filter,
+	'order' => [$by => $order],
+	'runtime' => []
+);
+
+if ($shouldHideOrderEntities)
 {
-	$filter[">=DATE_CREATE"] = trim($filter_date_create_from);
-}
-elseif($set_filter!="Y" && $del_filter != "Y")
-{
-	$filter_date_create_from_FILTER_PERIOD = 'day';
-	$filter_date_create_from_FILTER_DIRECTION = 'current';
-	$filter[">=DATE_CREATE"] = new \Bitrix\Main\Type\Date();
-}
-
-if (strlen($filter_date_create_to)>0)
-{
-	if($arDate = ParseDateTime($filter_date_create_to, CSite::GetDateFormat("FULL", SITE_ID)))
-	{
-		if(strlen($filter_date_create_to) < 11)
-		{
-			$arDate["HH"] = 23;
-			$arDate["MI"] = 59;
-			$arDate["SS"] = 59;
-		}
-
-		$filter_date_create_to = date($DB->DateFormatToPHP(CSite::GetDateFormat("FULL", SITE_ID)), mktime($arDate["HH"], $arDate["MI"], $arDate["SS"], $arDate["MM"], $arDate["DD"], $arDate["YYYY"]));
-		$filter["<=DATE_CREATE"] = $filter_date_create_to;
-	}
-	else
-	{
-		$filter_date_create_to = "";
-	}
-}
-
-if (strlen($filter_cashbox_id) > 0 && $filter_cashbox_id != "NOT_REF")
-	$filter["CASHBOX_ID"] = trim($filter_cashbox_id);
-
-
-if((int)($filter_order_id_from)>0) $filter[">=ORDER_ID"] = (int)($filter_order_id_from);
-if((int)($filter_order_id_to)>0) $filter["<=ORDER_ID"] = (int)($filter_order_id_to);
-if((int)($filter_id_from)>0) $filter[">=ID"] = (int)($filter_id_from);
-if((int)($filter_id_to)>0) $filter["<=ID"] = (int)($filter_id_to);
-
-if(isset($filter_check_status) && is_array($filter_check_status) && count($filter_check_status) > 0)
-{
-	$countFilter = count($filter_check_status);
-	for ($i = 0; $i < $countFilter; $i++)
-	{
-		$filter_check_status[$i] = trim($filter_check_status[$i]);
-		if(strlen($filter_check_status[$i]) > 0)
-			$filter["=STATUS"][] = $filter_check_status[$i];
-	}
-}
-
-$navyParams = array();
-
-if ($del_filter !== 'Y')
-{
-	$params = array(
-		'filter' => $filter
+	$params['runtime'][] = new \Bitrix\Main\Entity\ReferenceField('ORDER_BINDING',
+		\Bitrix\Crm\Binding\OrderEntityTable::getEntity(),
+		[
+			'=ref.ORDER_ID' => 'this.ORDER_ID',
+		],
+		['join_type' => \Bitrix\Main\ORM\Query\Join::TYPE_INNER]
 	);
 }
+$dbResultList = new CAdminUiResult(Internals\CashboxCheckTable::getList($params), $tableId);
 
-if (isset($by))
-{
-	$order = isset($order) ? $order : "ASC";
-	$params['order'] = array($by => $order);
-}
-$navyParams = CDBResult::GetNavParams(CAdminResult::GetNavSize($tableId));
-
-if ($navyParams['SHOW_ALL'])
-{
-	$usePageNavigation = false;
-}
-else
-{
-	$navyParams['PAGEN'] = (int)$navyParams['PAGEN'];
-	$navyParams['SIZEN'] = (int)$navyParams['SIZEN'];
-}
-
-
-
-if ($usePageNavigation)
-{
-	$params['limit'] = $navyParams['SIZEN'];
-	$params['offset'] = $navyParams['SIZEN']*($navyParams['PAGEN']-1);
-}
-
-$totalPages = 0;
-
-if ($usePageNavigation)
-{
-	$countQuery = new \Bitrix\Main\Entity\Query(Internals\CashboxCheckTable::getEntity());
-	$countQuery->addSelect(new \Bitrix\Main\Entity\ExpressionField('CNT', 'COUNT(1)'));
-	$countQuery->setFilter($params['filter']);
-
-	foreach ($params['runtime'] as $key => $field)
-		$countQuery->registerRuntimeField($key, clone $field);
-
-	$totalCount = $countQuery->setLimit(null)->setOffset(null)->exec()->fetch();
-	unset($countQuery);
-	$totalCount = (int)$totalCount['CNT'];
-
-	if ($totalCount > 0)
-	{
-		$totalPages = ceil($totalCount/$navyParams['SIZEN']);
-
-		if ($navyParams['PAGEN'] > $totalPages)
-			$navyParams['PAGEN'] = $totalPages;
-
-		$params['limit'] = $navyParams['SIZEN'];
-		$params['offset'] = $navyParams['SIZEN']*($navyParams['PAGEN']-1);
-	}
-	else
-	{
-		$navyParams['PAGEN'] = 1;
-		$params['limit'] = $navyParams['SIZEN'];
-		$params['offset'] = 0;
-	}
-}
-
-$dbResultList = new CAdminResult(Internals\CashboxCheckTable::getList($params), $tableId);
-
-if ($usePageNavigation)
-{
-	$dbResultList->NavStart($params['limit'], $navyParams['SHOW_ALL'], $navyParams['PAGEN']);
-	$dbResultList->NavRecordCount = $totalCount;
-	$dbResultList->NavPageCount = $totalPages;
-	$dbResultList->NavPageNomer = $navyParams['PAGEN'];
-}
-else
-{
-	$dbResultList->NavStart();
-}
+$dbResultList->NavStart();
 
 $headers = array(
 	array("id" => "ID", "content" => GetMessage("SALE_CASHBOX_ID"), "sort" => "ID", "default" => true),
 	array("id" => "CHECK_TYPE", "content" => GetMessage("SALE_CASHBOX_CHECK_TYPE"), "sort" => "TYPE", "default" => true),
-	array("id" => "ORDER_ID", "content" => GetMessage("SALE_CASHBOX_ORDER_ID"), "sort" => "ORDER_ID", "default" => true),
+	(
+	$shouldHideOrderEntities
+		? [
+		"id" => "ENTITY_ID",
+		"content" => GetMessage("SALE_CASHBOX_ENTITY_ID_SOURCE"),
+		"sort" => "ORDER_ID",
+		"default" => true
+	]
+		: [
+		"id" => "ORDER_ID",
+		"content" => GetMessage("SALE_CASHBOX_ORDER_ID"),
+		"sort" => "ORDER_ID",
+		"default" => true
+	]
+	),
 	array("id" => "CASHBOX_ID", "content" => GetMessage("SALE_CASHBOX_CASHBOX_ID"), "sort" => "CASHBOX_ID", "default" => true),
 	array("id" => "DATE_CREATE", "content" => GetMessage("SALE_CASHBOX_DATE_CREATE"), "sort" => "DATE_CREATE", "default" => true),
 	array("id" => "SUM", "content" => GetMessage("SALE_CASHBOX_SUM"), "sort" => "SUM", "default" => true),
@@ -216,7 +236,7 @@ $headers = array(
 	array("id" => "SHIPMENT_ID", "content" => GetMessage("SALE_CASHBOX_SHIPMENT_ID"), "sort" => "SHIPMENT_ID", "default" => false),
 );
 
-$lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("group_admin_nav")));
+$lAdmin->SetNavigationParams($dbResultList, array("BASE_LINK" => $selfFolderUrl."sale_cashbox_check.php"));
 
 $lAdmin->AddHeaders($headers);
 
@@ -257,22 +277,29 @@ while ($check = $tempResult->Fetch())
 }
 $paymentIdList = array_unique($paymentIdList);
 $shipmentIdList = array_unique($shipmentIdList);
-unset($tempResult);	
+unset($tempResult);
 
 $paymentData = Payment::getList(
 	array(
 		'select' => array('ID', 'ORDER_ID', 'PAY_SYSTEM_NAME', 'PAID', 'PS_STATUS', 'SUM', 'CURRENCY'),
 		'filter' => array('=ID' => $paymentIdList)
 	)
-);	
+);
 
 while ($payment = $paymentData->fetch())
 {
-	$linkId = '[<a href="/bitrix/admin/sale_order_payment_edit.php?order_id='.$payment['ORDER_ID'].'&payment_id='.$payment["ID"].'&lang='.LANGUAGE_ID.'">'.$payment["ID"].'</a>]';
+	$linkIdUrl = $orderEntityLinkBuilder->getPaymentDetailsLink(
+		(int)$payment['ORDER_ID'],
+		(int)$payment['ID']
+	);
+	$linkId = $linkIdUrl
+		? '[<a href="'.$linkIdUrl.'">'.$payment["ID"].'</a>]'
+		: '['.$payment["ID"].']';
+
 	$paymentRows[$payment['ID']] = $linkId.','.htmlspecialcharsbx($payment["PAY_SYSTEM_NAME"]).','.
 		($payment["PAID"] == "Y" ? Loc::getMessage("SALE_CHECK_PAYMENTS_PAID") :  Loc::getMessage("SALE_CHECK_PAYMENTS_UNPAID")).", ".
-		(strlen($payment["PS_STATUS"]) > 0 ? Loc::getMessage("SALE_CASHBOX_STATUS").": ".htmlspecialcharsbx($payment["PS_STATUS"]).", " : "").
-		'<span style="white-space:nowrap;">'.htmlspecialcharsbx(SaleFormatCurrency($payment["SUM"], $payment["CURRENCY"])).'</span>';
+		($payment["PS_STATUS"] <> '' ? Loc::getMessage("SALE_CASHBOX_STATUS").": ".htmlspecialcharsbx($payment["PS_STATUS"]).", " : "").
+		'<span style="white-space:nowrap;">'.SaleFormatCurrency($payment["SUM"], $payment["CURRENCY"]).'</span>';
 }
 
 if (empty($shipmentStatuses))
@@ -297,17 +324,23 @@ $shipmentData = Shipment::getList(
 
 while ($shipment = $shipmentData->fetch())
 {
-	$linkId = '[<a href="/bitrix/admin/sale_order_shipment_edit.php?order_id='.$shipment['ORDER_ID'].'&shipment_id='.$shipment["ID"].'&lang='.LANGUAGE_ID.'">'.$shipment["ID"].'</a>]';
+	$linkIdUrl = $orderEntityLinkBuilder->getShipmentDetailsLink(
+		(int)$shipment['ORDER_ID'],
+		(int)$shipment['ID']
+	);
+	$linkId = $linkIdUrl
+		? '[<a href="'.$linkIdUrl.'">'.$shipment["ID"].'</a>]'
+		: '[' . $shipment["ID"] . ']';
 
 	$fieldValue = $linkId.", ".
-		(strlen($shipment["DELIVERY_NAME"]) > 0 ? htmlspecialcharsbx($shipment["DELIVERY_NAME"]).",</br> " : "").
-		'<span style="white-space:nowrap;">'.htmlspecialcharsbx(SaleFormatCurrency($shipment["PRICE_DELIVERY"], $shipment["CURRENCY"]))."</span>, ".
+		($shipment["DELIVERY_NAME"] <> '' ? htmlspecialcharsbx($shipment["DELIVERY_NAME"]).",</br> " : "").
+		'<span style="white-space:nowrap;">'.SaleFormatCurrency($shipment["PRICE_DELIVERY"], $shipment["CURRENCY"])."</span>, ".
 		($shipment["ALLOW_DELIVERY"] == "Y" ? Loc::getMessage("SALE_CASHBOX_ALLOW_DELIVERY") : Loc::getMessage("SALE_CASHBOX_NOT_ALLOW_DELIVERY")).", ".
 		($shipment["CANCELED"] == "Y" ? Loc::getMessage("SALE_CASHBOX_CANCELED").", " : "").
 		($shipment["DEDUCTED"] == "Y" ? Loc::getMessage("SALE_CASHBOX_DEDUCTED").", " : "").
 		($shipment["MARKED"] == "Y" ? Loc::getMessage("SALE_CASHBOX_MARKED").", " : "");
 
-	if(strlen($shipment["STATUS_ID"]) > 0)
+	if($shipment["STATUS_ID"] <> '')
 		$fieldValue .= "<br>".($shipmentStatuses[$shipment["STATUS_ID"]] ? htmlspecialcharsbx($shipmentStatuses[$shipment["STATUS_ID"]]) : Loc::getMessage("SALE_CASHBOX_STATUS").": ".$shipment["STATUS_ID"]);
 
 	$shipmentRows[$shipment['ID']] = $fieldValue;
@@ -325,31 +358,73 @@ while ($check = $dbResultList->Fetch())
 	$checkName = class_exists($checkClass) ? $checkClass::getName() : '';
 	$row->AddField("CHECK_TYPE", $checkName);
 
-	$row->AddField("ORDER_ID",  "<a href=\"sale_order_view.php?ID=".(int)$check['ORDER_ID']."&lang=".LANG."\">".(int)$check['ORDER_ID']."</a>");
+	$orderId = (int)$check['ORDER_ID'];
+	if ($shouldHideOrderEntities)
+	{
+		$entityLink = $orderEntityLinkBuilder->getOrderDetailUrl($orderId);
+		if ($orderEntityLinkBuilder instanceof CrmEntityLinkBuilder)
+		{
+			$relatedEntityLink = $orderEntityLinkBuilder->getEntityDetailUrl($orderId);
+			if ($relatedEntityLink)
+			{
+				$entityLink = $relatedEntityLink;
+			}
+		}
+
+		$row->AddField("ENTITY_ID", EntityLink::createByOrder($orderId, $entityLink)->render());
+	}
+	else
+	{
+		$orderField = '';
+		if ($orderId > 0)
+		{
+			$orderField = new OrderLink(
+				$orderId,
+				$orderEntityLinkBuilder->getOrderDetailUrl($orderId)
+			);
+			$orderField = $orderField->render();
+		}
+
+		$row->AddField("ORDER_ID",  $orderField);
+	}
 
 	$paymentIdField = '';
 	if ($check['PAYMENT_ID'] > 0)
 	{
-		$paymentIdField = "<a href=\"sale_order_payment_edit.php?order_id=".(int)$check['ORDER_ID']."&payment_id=".(int)$check['PAYMENT_ID']."&lang=".LANG."\">".(int)$check['PAYMENT_ID']."</a>";
+		$paymentIdUrl = $orderEntityLinkBuilder->getPaymentDetailsLink(
+			(int)$check['ORDER_ID'],
+			(int)$check['PAYMENT_ID']
+		);
+		$paymentIdField = $paymentIdUrl
+			? '<a href="'.$paymentIdUrl.'">'.(int)$check['PAYMENT_ID'].'</a>'
+			: (int)$check['PAYMENT_ID'];
 	}
 
-	if ($relatedEntities[$check['ID']]['P'])
+	$paymentEntityIds = $relatedEntities[$check['ID']]['P'] ?? null;
+	if (is_array($paymentEntityIds))
 	{
-		foreach ($relatedEntities[$check['ID']]['P'] as $entityId)
+		foreach ($paymentEntityIds as $entityId)
 		{
 			if ($paymentIdField)
 				$paymentIdField .= "<br>";
 
-			$paymentIdField .= "<a href=\"sale_order_payment_edit.php?order_id=".(int)$check['ORDER_ID']."&payment_id=".$entityId."&lang=".LANG."\">".(int)$entityId."</a>";
+			$paymentIdUrl = $orderEntityLinkBuilder->getPaymentDetailsLink(
+				(int)$check['ORDER_ID'],
+				(int)$entityId
+			);
+			$paymentIdField = $paymentIdUrl
+				? '<a href="'.$paymentIdUrl.'">'.(int)$entityId.'</a>'
+				: (int)$entityId;
 		}
 	}
 
 	$row->AddField("PAYMENT_ID",  $paymentIdField);
 
-	$paymentField = $paymentRows[(int)$check['PAYMENT_ID']];
-	if ($relatedEntities[$check['ID']]['P'])
+	$paymentId = (int)($check['PAYMENT_ID'] ?? 0);
+	$paymentField = $paymentRows[$paymentId] ?? null;
+	if (is_array($paymentEntityIds))
 	{
-		foreach ($relatedEntities[$check['ID']]['P'] as $entityId)
+		foreach ($paymentEntityIds as $entityId)
 		{
 			if ($paymentField)
 				$paymentField .= "<br>";
@@ -361,24 +436,39 @@ while ($check = $dbResultList->Fetch())
 	$shipmentIdField = '';
 	if ($check['SHIPMENT_ID'] > 0)
 	{
-		$shipmentIdField .= "<a href=\"sale_order_shipment_edit.php?order_id=".(int)$check['ORDER_ID']."&shipment_id=".(int)$check['SHIPMENT_ID']."&lang=".LANG."\">".(int)$check['SHIPMENT_ID']."</a>";
+		$shipmentIdUrl = $orderEntityLinkBuilder->getShipmentDetailsLink(
+			(int)$check['ORDER_ID'],
+			(int)$check['SHIPMENT_ID']
+		);
+		$shipmentIdField = $shipmentIdUrl
+			? '[<a href="'.$shipmentIdUrl.'">'.(int)$check['SHIPMENT_ID'].'</a>]'
+			: '[' . (int)$check['SHIPMENT_ID'] . ']';
 	}
-	if ($relatedEntities[$check['ID']]['S'])
+
+	$shipmentEntityIds = $relatedEntities[$check['ID']]['S'] ?? null;
+	if (is_array($shipmentEntityIds))
 	{
-		foreach ($relatedEntities[$check['ID']]['S'] as $entityId)
+		foreach ($shipmentEntityIds as $entityId)
 		{
 			if ($shipmentIdField)
 				$shipmentIdField .= "<br>";
 
-			$shipmentIdField .= "<a href=\"sale_order_shipment_edit.php?order_id=".(int)$check['ORDER_ID']."&shipment_id=".(int)$entityId."&lang=".LANG."\">".(int)$entityId."</a>";
+			$shipmentIdUrl = $orderEntityLinkBuilder->getShipmentDetailsLink(
+				(int)$check['ORDER_ID'],
+				(int)$entityId
+			);
+			$shipmentIdField = $shipmentIdUrl
+				? '<a href="'.$shipmentIdUrl.'">'.(int)$entityId.'</a>'
+				: (int)$entityId;
 		}
 	}
 	$row->AddField("SHIPMENT_ID",  $shipmentIdField);
 
-	$shipmentField = $shipmentRows[(int)$check['SHIPMENT_ID']];
-	if ($relatedEntities[$check['ID']]['S'])
+	$shipmentId = (int)($check['SHIPMENT_ID'] ?? 0);
+	$shipmentField = $shipmentRows[$shipmentId] ?? '';
+	if (is_array($shipmentEntityIds))
 	{
-		foreach ($relatedEntities[$check['ID']]['S'] as $entityId)
+		foreach ($shipmentEntityIds as $entityId)
 		{
 			if ($shipmentField)
 				$shipmentField .= "<br>";
@@ -389,7 +479,9 @@ while ($check = $dbResultList->Fetch())
 
 	$row->AddField("DATE_CREATE", $check['DATE_CREATE']);
 	$row->AddField("SUM", SaleFormatCurrency($check['SUM'], $check['CURRENCY']));
-	$row->AddField("CASHBOX_ID", htmlspecialcharsbx($cashboxList[$check['CASHBOX_ID']]['NAME']));
+
+	$cashboxName = $cashboxList[$check['CASHBOX_ID']]['NAME'] ?? null;
+	$row->AddField("CASHBOX_ID", htmlspecialcharsbx($cashboxName));
 
 	$cashbox = null;
 	$checkLink = '';
@@ -404,7 +496,14 @@ while ($check = $dbResultList->Fetch())
 		}
 	}
 	$row->AddField("LINK_PARAMS", $checkLink);
-	$row->AddField("STATUS", Loc::getMessage('SALE_CASHBOX_STATUS_'.$check['STATUS']));
+
+	$errorMessage = null;
+	if (isset($check['ERROR_MESSAGE']))
+	{
+		$errorMessage = ' (' . $check['ERROR_MESSAGE'] . ')';
+	}
+
+	$row->AddField("STATUS", Loc::getMessage('SALE_CASHBOX_STATUS_'.$check['STATUS']) . $errorMessage);
 
 	$arActions = array();
 	if ($check['STATUS'] === 'E' || $check['STATUS'] == 'N')
@@ -416,45 +515,58 @@ while ($check = $dbResultList->Fetch())
 		);
 	}
 
-	if ($check['STATUS'] === 'P' && $cashbox && $cashbox->isCheckable() )
+	if (
+		$check['STATUS'] === 'P'
+		&& $cashbox
+	)
 	{
-		$arActions[] = array(
-			"ICON" => "check_status",
-			"TEXT" => GetMessage("SALE_CHECK_CHECK_STATUS"),
-			"ACTION" => $lAdmin->ActionDoGroup($check["ID"], "check_status", GetFilterParams())
-		);
+		if (
+			is_subclass_of($checkClass, Cashbox\CorrectionCheck::class)
+			&& $cashbox->isCorrection()
+		)
+		{
+			$arActions[] = [
+				"ICON" => "check_correction_status",
+				"TEXT" => GetMessage("SALE_CHECK_CHECK_STATUS"),
+				"ACTION" => $lAdmin->ActionDoGroup($check["ID"], "check_correction_status", GetFilterParams())
+			];
+		}
+		elseif (
+			is_subclass_of($checkClass, Cashbox\Check::class)
+			&& $cashbox->isCheckable()
+		)
+		{
+			$arActions[] = [
+				"ICON" => "check_status",
+				"TEXT" => GetMessage("SALE_CHECK_CHECK_STATUS"),
+				"ACTION" => $lAdmin->ActionDoGroup($check["ID"], "check_status", GetFilterParams())
+			];
+		}
 	}
 
 	if ($arActions)
 		$row->AddActions($arActions);
 }
 
-$lAdmin->AddFooter(
-	array(
-		array(
-			"title" => GetMessage("MAIN_ADMIN_LIST_SELECTED"),
-			"value" => $dbResultList->SelectedRowsCount()
-		),
-		array(
-			"counter" => true,
-			"title" => GetMessage("MAIN_ADMIN_LIST_CHECKED"),
-			"value" => "0"
-		),
-	)
-);
-
 $dbRes = Internals\CashboxTable::getList(array('filter' => array('=ACTIVE' => 'Y', '=ENABLED' => 'Y')));
 if ($saleModulePermissions == "W" && $dbRes->fetch())
 {
-	$aContext = array(
-		array(
-			"TEXT" => GetMessage("SALE_CASHBOX_ADD_NEW"),
-			"TITLE" => GetMessage("SALE_CASHBOX_ADD_NEW"),
-			"LINK" => "#",
-			"ICON" => "btn_new",
-			'ONCLICK' => "BX.Sale.Cashbox.showCreateCheckWindow()"
-		)
-	);
+	if ($publicMode)
+	{
+		$aContext = array();
+	}
+	else
+	{
+		$aContext = array(
+			array(
+				"TEXT" => GetMessage("SALE_CASHBOX_ADD_NEW"),
+				"TITLE" => GetMessage("SALE_CASHBOX_ADD_NEW"),
+				"ICON" => "btn_new",
+				'ONCLICK' => "BX.Sale.Cashbox.showCreateCheckWindow()"
+			)
+		);
+	}
+	$lAdmin->setContextSettings(array("pagePath" => $selfFolderUrl."sale_cashbox_check.php"));
 	$lAdmin->AddAdminContextMenu($aContext);
 }
 
@@ -462,127 +574,33 @@ $lAdmin->CheckListMode();
 
 $APPLICATION->SetTitle(GetMessage("SALE_CASHBOX_CHECK_TITLE"));
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-?>
+if (!$publicMode && \Bitrix\Sale\Update\CrmEntityCreatorStepper::isNeedStub())
+{
+	$APPLICATION->IncludeComponent("bitrix:sale.admin.page.stub", ".default");
+}
+else
+{
+	?>
+	<script language="JavaScript">
+		BX.message(
+			{
+				CASHBOX_CREATE_WINDOW_NOT_SELECT: '<?=Loc::getMessage("CASHBOX_CREATE_WINDOW_NOT_SELECT")?>',
+				CASHBOX_CREATE_WINDOW_TITLE: '<?=Loc::getMessage("CASHBOX_CREATE_WINDOW_TITLE")?>',
+				CASHBOX_ADD_CHECK_INPUT_ORDER: '<?=Loc::getMessage("CASHBOX_ADD_CHECK_INPUT_ORDER")?>',
+				CASHBOX_ADD_CHECK_TITLE: '<?=Loc::getMessage("CASHBOX_ADD_CHECK_TITLE")?>',
+				CASHBOX_ADD_CHECK_OPTGROUP_PAYMENTS: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_OPTGROUP_PAYMENTS")?>',
+				CASHBOX_ADD_CHECK_OPTGROUP_SHIPMENTS: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_OPTGROUP_SHIPMENTS")?>',
+				CASHBOX_ADD_CHECK_PAYMENT: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_PAYMENT")?>',
+				CASHBOX_ADD_CHECK_SHIPMENT: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_SHIPMENT")?>',
+				CASHBOX_ADD_CHECK_ENTITIES: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_ENTITIES")?>',
+				CASHBOX_ADD_CHECK_TYPE_CHECKS: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_TYPE_CHECKS")?>',
+				CASHBOX_ADD_CHECK_ADDITIONAL_ENTITIES: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_ADDITIONAL_ENTITIES")?>'
+			}
+		);
+	</script>
+	<?
+	$lAdmin->DisplayFilter($filterFields);
+	$lAdmin->DisplayList();
+}
 
-<form name="find_form" method="GET" action="<?echo $APPLICATION->GetCurPage()?>?">
-<?
-$oFilter = new CAdminFilter(
-	$tableId."_filter",
-	array(
-		"filter_cashbox_id" => Loc::getMessage("SALE_F_CASHBOX"),
-		"filter_cashbox_id" => Loc::getMessage("SALE_CHECK_ID"),
-		"filter_check_create" => Loc::getMessage("SALE_CHECK_CREATE"),
-		"filter_order_id" => Loc::getMessage("SALE_F_ORDER_ID"),
-		"filter_check_status" => Loc::getMessage("SALE_CASHBOX_STATUS"),
-	)
-);
-
-$oFilter->Begin();
-?>
-	<tr>
-		<td><?echo GetMessage("SALE_F_CASHBOX")?>:</td>
-		<td>
-			<select name="filter_cashbox_id">
-				<option value="NOT_REF">(<?echo GetMessage("SALE_ALL")?>)</option>
-				<?
-					$dbRes = Internals\CashboxTable::getList();
-					while ($item = $dbRes->fetch()): ?>
-						<option value="<?=$item['ID']?>"><?= htmlspecialcharsbx($item['NAME']);?></option>
-					<?endwhile;?>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td><?echo Loc::getMessage("SALE_CHECK_ID");?>:</td>
-		<td>
-			<script type="text/javascript">
-				function filter_id_from_change()
-				{
-					if(document.find_form.filter_id_to.value.length<=0)
-					{
-						document.find_form.filter_id_to.value = document.find_form.filter_id_from.value;
-					}
-				}
-			</script>
-			<?echo Loc::getMessage("SALE_F_FROM");?>
-			<input type="text" name="filter_id_from" onchange="filter_id_from_change()" value="<?echo ((int)($filter_id_from)>0)?(int)($filter_id_from):""?>" size="10">
-			<?echo Loc::getMessage("SALE_F_TO");?>
-			<input type="text" name="filter_id_to" value="<?echo ((int)($filter_id_to)>0)?(int)($filter_id_to):""?>" size="10">
-		</td>
-	</tr>
-	<tr>
-		<td><?=GetMessage("SALE_F_CHECK_CREATE");?>:</td>
-		<td>
-			<?=CalendarPeriod("filter_date_create_from", htmlspecialcharsbx($filter_date_create_from), "filter_date_create_to", htmlspecialcharsbx($filter_date_create_to), "find_form", "Y")?>
-		</td>
-	</tr>
-	<tr>
-		<td><?echo Loc::getMessage("SALE_F_ORDER_ID");?>:</td>
-		<td>
-			<script type="text/javascript">
-				function filter_order_id_from_change()
-				{
-					if(document.find_form.filter_order_id_to.value.length<=0)
-					{
-						document.find_form.filter_order_id_to.value = document.find_form.filter_order_id_from.value;
-					}
-				}
-			</script>
-			<?echo Loc::getMessage("SALE_F_FROM");?>
-			<input type="text" name="filter_order_id_from" onchange="filter_order_id_from_change()" value="<?echo ((int)($filter_order_id_from)>0)?(int)($filter_order_id_from):""?>" size="10">
-			<?echo Loc::getMessage("SALE_F_TO");?>
-			<input type="text" name="filter_order_id_to" value="<?echo ((int)($filter_order_id_to)>0)?(int)($filter_order_id_to):""?>" size="10">
-		</td>
-	</tr>
-	<tr>
-		<td valign="top"><?echo Loc::getMessage("SALE_CASHBOX_STATUS")?>:</td>
-		<td valign="top">
-			<select name="filter_check_status[]" multiple size="3">
-				<?
-					$statusesList = array('N','P','Y', 'E');
-					foreach($statusesList as  $statusCode)
-					{
-						?>
-						<option value="<?= htmlspecialcharsbx($statusCode) ?>"<?if(is_array($filter_check_status) && in_array($statusCode, $filter_check_status)) echo " selected"?>>
-							<?= Loc::getMessage('SALE_CASHBOX_STATUS_'.$statusCode)?>
-						</option>
-						<?
-					}
-				?>
-			</select>
-		</td>
-	</tr>
-<?
-$oFilter->Buttons(
-	array(
-		"table_id" => $tableId,
-		"url" => $APPLICATION->GetCurPage(),
-		"form" => "find_form"
-	)
-);
-$oFilter->End();
-?>
-</form>
-<script language="JavaScript">
-	BX.message(
-		{
-			CASHBOX_CREATE_WINDOW_NOT_SELECT: '<?=Loc::getMessage("CASHBOX_CREATE_WINDOW_NOT_SELECT")?>',
-			CASHBOX_CREATE_WINDOW_TITLE: '<?=Loc::getMessage("CASHBOX_CREATE_WINDOW_TITLE")?>',
-			CASHBOX_ADD_CHECK_INPUT_ORDER: '<?=Loc::getMessage("CASHBOX_ADD_CHECK_INPUT_ORDER")?>',
-			CASHBOX_ADD_CHECK_TITLE: '<?=Loc::getMessage("CASHBOX_ADD_CHECK_TITLE")?>',
-			CASHBOX_ADD_CHECK_OPTGROUP_PAYMENTS: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_OPTGROUP_PAYMENTS")?>',
-			CASHBOX_ADD_CHECK_OPTGROUP_SHIPMENTS: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_OPTGROUP_SHIPMENTS")?>',
-			CASHBOX_ADD_CHECK_PAYMENT: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_PAYMENT")?>',
-			CASHBOX_ADD_CHECK_SHIPMENT: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_SHIPMENT")?>',
-			CASHBOX_ADD_CHECK_ENTITIES: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_ENTITIES")?>',
-			CASHBOX_ADD_CHECK_TYPE_CHECKS: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_TYPE_CHECKS")?>',
-			CASHBOX_ADD_CHECK_ADDITIONAL_ENTITIES: '<?=Loc::getMessage("SALE_CASHBOX_ADD_CHECK_ADDITIONAL_ENTITIES")?>',
-		}
-	);
-</script>
-<?
-$lAdmin->DisplayList();
-
-require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
-
-?>
+require($_SERVER["DOCUMENT_ROOT"]. '/bitrix/modules/main/include/epilog_admin.php');

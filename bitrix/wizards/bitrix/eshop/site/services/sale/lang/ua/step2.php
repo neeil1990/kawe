@@ -26,4 +26,5 @@ $MESS["SALE_WIZARD_MAIL_DESC2"] = "Доставка поштою (розраху
 $MESS["SALE_WIZARD_MAIL_FIRST"] = "Відправлення 1 класу";
 $MESS["SALE_WIZARD_UA_POST"] = "Нова пошта";
 $MESS["SALE_WIZARD_KAZ_POST"] = "Казпочта";
+$MESS["SALE_WIZARD_MAIL_FIRST_DESC"] = "Доставка здійснюється протягом 1-3 днів, забрати відправлення ви можете у зручний для вас час з найближчого відділення пошти.";
 ?>

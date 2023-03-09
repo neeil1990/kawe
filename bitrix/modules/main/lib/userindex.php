@@ -17,7 +17,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Main
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_UserIndex_Query query()
+ * @method static EO_UserIndex_Result getByPrimary($primary, array $parameters = [])
+ * @method static EO_UserIndex_Result getById($id)
+ * @method static EO_UserIndex_Result getList(array $parameters = [])
+ * @method static EO_UserIndex_Entity getEntity()
+ * @method static \Bitrix\Main\EO_UserIndex createObject($setDefaultValues = true)
+ * @method static \Bitrix\Main\EO_UserIndex_Collection createCollection()
+ * @method static \Bitrix\Main\EO_UserIndex wakeUpObject($row)
+ * @method static \Bitrix\Main\EO_UserIndex_Collection wakeUpCollection($rows)
+ */
 
 class UserIndexTable extends Main\Entity\DataManager
 {
@@ -77,38 +90,61 @@ class UserIndexTable extends Main\Entity\DataManager
 	}
 
 	public static function merge(array $data)
-    {
-        $result = new Entity\AddResult();
+	{
+		global $DB;
 
-        $helper = Application::getConnection()->getSqlHelper();
-        $insertData = $data;
-        $updateData = $data;
-        $mergeFields = static::getMergeFields();
+		$result = new Entity\AddResult();
 
-        foreach ($mergeFields as $field)
-        {
-            unset($updateData[$field]);
-        }
+		$helper = Application::getConnection()->getSqlHelper();
+		$insertData = $data;
+		$updateData = $data;
+		$mergeFields = static::getMergeFields();
 
-        $merge = $helper->prepareMerge(
-            static::getTableName(),
-            static::getMergeFields(),
-            $insertData,
-            $updateData
-        );
+		foreach ($mergeFields as $field)
+		{
+			unset($updateData[$field]);
+		}
 
-        if ($merge[0] != "")
-        {
-            Application::getConnection()->query($merge[0]);
-            $id = Application::getConnection()->getInsertedId();
-            $result->setId($id);
-            $result->setData($data);
-        }
-        else
-        {
-            $result->addError(new Error('Error constructing query'));
-        }
+		if (isset($updateData['SEARCH_USER_CONTENT']))
+		{
+			$value = $DB->forSql($updateData['SEARCH_USER_CONTENT']);
+			$encryptedValue = sha1($updateData['SEARCH_USER_CONTENT']);
+			$updateData['SEARCH_USER_CONTENT'] = new \Bitrix\Main\DB\SqlExpression("IF(SHA1(SEARCH_USER_CONTENT) = '{$encryptedValue}', SEARCH_USER_CONTENT, '{$value}')");
+		}
 
-        return $result;
-    }
+		if (isset($updateData['SEARCH_DEPARTMENT_CONTENT']))
+		{
+			$value = $DB->forSql($updateData['SEARCH_DEPARTMENT_CONTENT']);
+			$encryptedValue = sha1($updateData['SEARCH_DEPARTMENT_CONTENT']);
+			$updateData['SEARCH_DEPARTMENT_CONTENT'] = new \Bitrix\Main\DB\SqlExpression("IF(SHA1(SEARCH_DEPARTMENT_CONTENT) = '{$encryptedValue}', SEARCH_DEPARTMENT_CONTENT, '{$value}')");
+		}
+
+		if (isset($updateData['SEARCH_ADMIN_CONTENT']))
+		{
+			$value = $DB->forSql($updateData['SEARCH_ADMIN_CONTENT']);
+			$encryptedValue = sha1($updateData['SEARCH_ADMIN_CONTENT']);
+			$updateData['SEARCH_ADMIN_CONTENT'] = new \Bitrix\Main\DB\SqlExpression("IF(SHA1(SEARCH_ADMIN_CONTENT) = '{$encryptedValue}', SEARCH_ADMIN_CONTENT, '{$value}')");
+		}
+
+		$merge = $helper->prepareMerge(
+			static::getTableName(),
+			static::getMergeFields(),
+			$insertData,
+			$updateData
+		);
+
+		if ($merge[0] != "")
+		{
+			Application::getConnection()->query($merge[0]);
+			$id = Application::getConnection()->getInsertedId();
+			$result->setId($id);
+			$result->setData($data);
+		}
+		else
+		{
+			$result->addError(new Error('Error constructing query'));
+		}
+
+		return $result;
+	}
 }

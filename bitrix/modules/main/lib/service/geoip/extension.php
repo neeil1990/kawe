@@ -1,9 +1,8 @@
-<?
+<?php
+
 namespace Bitrix\Main\Service\GeoIp;
 
 use Bitrix\Main\Localization\Loc;
-
-Loc::loadMessages(__FILE__);
 
 /**
  * Class Extension
@@ -26,7 +25,7 @@ class Extension extends Base
 	 */
 	public function getDescription()
 	{
-		return Loc::getMessage('MAIN_SRV_GEOIP_EXT_DESCRIPTION');
+		return Loc::getMessage('MAIN_SRV_GEOIP_EXT_DESCRIPTION') . '<br>' . Loc::getMessage("main_srv_geoip_ext_unsupported");
 	}
 
 	/**
@@ -37,34 +36,45 @@ class Extension extends Base
 	{
 		return array('en');
 	}
-	
+
+	private function decode($text)
+	{
+		if(!is_string($text) && !is_array($text))
+		{
+			return $text;
+		}
+
+		return mb_convert_encoding($text, SITE_CHARSET, 'ISO-8859-1');
+	}
+
 	/**
 	 * @param string $ip Ip address
 	 * @param string $lang Language identifier
 	 * @return Result
 	 */
-	public function getDataResult($ip, $lang = '')
+	public function getDataResult($ip, $lang = ''): Result
 	{
 		$dataResult = new Result;
 		$geoData = new Data();
-
 		$geoData->lang = 'en';
 
 		if (self::isAvailableBaseCountry())
 		{
-			$geoData->countryCode = geoip_country_code_by_name($ip);
-			$geoData->countryName = geoip_country_name_by_name($ip);
+			$geoData->countryCode = $this->decode(geoip_country_code_by_name($ip));
+			$geoData->countryName = $this->decode(geoip_country_name_by_name($ip));
 		}
 
 		if (self::isAvailableBaseCity())
 		{
-			$recordByName = geoip_record_by_name($ip);
+			$recordByName = $this->decode(geoip_record_by_name($ip));
 
 			if (isset($recordByName['country_code']) && isset($recordByName['region']))
 			{
-				$geoData->timezone = geoip_time_zone_by_country_and_region(
-					$recordByName['country_code'],
-					$recordByName['region']
+				$geoData->timezone = $this->decode(
+					geoip_time_zone_by_country_and_region(
+						$recordByName['country_code'],
+						$recordByName['region']
+					)
 				);
 			}
 
@@ -79,17 +89,17 @@ class Extension extends Base
 
 		if (self::isAvailableBaseOrganization())
 		{
-			$geoData->organizationName = geoip_org_by_name($ip);
+			$geoData->organizationName = $this->decode(geoip_org_by_name($ip));
 		}
 
 		if (self::isAvailableBaseIsp())
 		{
-			$geoData->ispName = geoip_isp_by_name($ip);
+			$geoData->ispName = $this->decode(geoip_isp_by_name($ip));
 		}
 
 		if (self::isAvailableBaseAsn())
 		{
-			$geoData->asn = geoip_asnum_by_name($ip);
+			$geoData->asn = $this->decode(geoip_asnum_by_name($ip));
 		}
 
 		$dataResult->setGeoData($geoData);

@@ -10,9 +10,9 @@ namespace Bitrix\Fileman\Block;
 use Bitrix\Main\Event;
 use Bitrix\Main\EventResult;
 use Bitrix\Main\Localization\Loc;
-use Bitrix\Main\SiteTable;
 use Bitrix\Main\Mail\EventMessageCompiler;
-use \Bitrix\Main\Web\DOM\StyleInliner;
+use Bitrix\Main\SiteTable;
+use Bitrix\Main\Web\DOM\StyleInliner;
 
 Loc::loadMessages(__FILE__);
 
@@ -94,6 +94,8 @@ class EditorMail
 					.'</span>';
 				$html = str_replace($php[2], $surrogate, $html);
 			}
+
+			$html = str_replace(['<?', '?>'], ['< ?', '? >'], $html);
 		}
 
 		return $html;
@@ -126,9 +128,9 @@ class EditorMail
 		if(is_object($GLOBALS["USER"]))
 		{
 			/* @var $GLOBALS["USER"] \CAllUser */
-			$fields['EMAIL_TO'] = $GLOBALS["USER"]->GetEmail();
+			$fields['EMAIL_TO'] = htmlspecialcharsbx($GLOBALS["USER"]->GetEmail());
 			$fields['USER_ID'] = $GLOBALS["USER"]->GetID();
-			$fields['NAME'] = $GLOBALS["USER"]->GetFirstName() ?: $GLOBALS["USER"]->GetLastName();
+			$fields['NAME'] = htmlspecialcharsbx($GLOBALS["USER"]->GetFirstName() ?: $GLOBALS["USER"]->GetLastName());
 		}
 
 		$siteDb = SiteTable::getList(array(
@@ -315,21 +317,15 @@ class EditorMail
 									<tbody>
 										<tr>
 											<td valign="top" class="bxBlockPadding bxBlockContentImage">
-												<a href="#">
-													<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
-												</a>
+												<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
 											</td>
 										</tr>
 									</tbody>
-									</table>
-
-									<table align="left" border="0" cellpadding="0" cellspacing="0" width="260">
+									</table><table align="left" border="0" cellpadding="0" cellspacing="0" width="260">
 									<tbody>
 										<tr>
 											<td valign="top" class="bxBlockPadding bxBlockContentImage">
-												<a href="#">
-													<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
-												</a>
+												<img align="left" data-bx-editor-def-image="1" src="/bitrix/images/fileman/block_editor/photo-default.png" class="bxImage">
 											</td>
 										</tr>
 									</tbody>
@@ -474,6 +470,7 @@ class EditorMail
 							<tr>
 								<td valign="top" class="bxBlockPadding bxBlockContentText" style="text-align: center;">
 									<br><a href="#UNSUBSCRIBE_LINK#">' . Loc::getMessage('BLOCK_EDITOR_BLOCK_FOOTER_EXAMPLE') . '</a>
+									<br><a href="#CONSENT_LINK#">' . Loc::getMessage('BLOCK_EDITOR_BLOCK_FOOTER_CONSENT_EXAMPLE') . '</a>
 								</td>
 							</tr>
 						</tbody>
@@ -497,7 +494,7 @@ class EditorMail
 							<tbody>
 								<tr>
 									<td valign="top" class="bxBlockPadding">
-
+										' . (Editor::isAvailableRussian() ? '
 										<table align="left" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate !important; margin-right: 10px;">
 										<tbody>
 											<tr>
@@ -512,6 +509,7 @@ class EditorMail
 											</tr>
 										</tbody>
 										</table>
+										' : '') . '
 
 										<table align="left" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate !important; margin-right: 10px;">
 										<tbody>
@@ -543,6 +541,7 @@ class EditorMail
 										</tbody>
 										</table>
 
+										' . (!Editor::isAvailableRussian() ? '
 										<table align="left" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate !important; margin-right: 10px;">
 										<tbody>
 											<tr>
@@ -557,6 +556,8 @@ class EditorMail
 											</tr>
 										</tbody>
 										</table>
+										' : '') . '
+										
 									</td>
 								</tr>
 							</tbody>

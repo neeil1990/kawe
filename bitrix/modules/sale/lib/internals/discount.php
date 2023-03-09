@@ -13,8 +13,8 @@ use Bitrix\Main,
 	Bitrix\Main\Localization\Loc,
 	Bitrix\Sale\Discount\Actions,
 	Bitrix\Sale\Discount\Gift,
-	Bitrix\Sale\Discount\Index;
-use Bitrix\Sale\Discount\Analyzer;
+	Bitrix\Sale\Discount\Index,
+	Bitrix\Sale\Discount\Analyzer;
 
 Loc::loadMessages(__FILE__);
 
@@ -62,7 +62,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Sale\Internals
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Discount_Query query()
+ * @method static EO_Discount_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Discount_Result getById($id)
+ * @method static EO_Discount_Result getList(array $parameters = array())
+ * @method static EO_Discount_Entity getEntity()
+ * @method static \Bitrix\Sale\Internals\EO_Discount createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Internals\EO_Discount_Collection createCollection()
+ * @method static \Bitrix\Sale\Internals\EO_Discount wakeUpObject($row)
+ * @method static \Bitrix\Sale\Internals\EO_Discount_Collection wakeUpCollection($rows)
+ */
 class DiscountTable extends Main\Entity\DataManager
 {
 	const VERSION_OLD = 0x0001;
@@ -367,7 +380,7 @@ class DiscountTable extends Main\Entity\DataManager
 		if (isset($fields['ACTIONS_LIST']))
 		{
 			if (!is_array($fields['ACTIONS_LIST']) && \CheckSerializedData($fields['ACTIONS_LIST']))
-				$fields['ACTIONS_LIST'] = unserialize($fields['ACTIONS_LIST']);
+				$fields['ACTIONS_LIST'] = unserialize($fields['ACTIONS_LIST'], ['allowed_classes' => false]);
 			if (is_array($fields['ACTIONS_LIST']))
 			{
 				$giftManager = Gift\Manager::getInstance();
@@ -392,6 +405,8 @@ class DiscountTable extends Main\Entity\DataManager
 
 		static::updateSpecificFields($id['ID'], $specificFields);
 		static::updateConfigurationIfNeeded($fields, $specificFields);
+
+		self::dropIblockCache();
 	}
 
 	/**
@@ -404,6 +419,11 @@ class DiscountTable extends Main\Entity\DataManager
 	protected static function resolveExecuteModeByDiscountId($discountId)
 	{
 		$fields = static::getRowById($discountId);
+
+		if (empty($fields))
+		{
+			return self::EXECUTE_MODE_GENERAL;
+		}
 
 		return Analyzer::getInstance()->canCalculateSeparately($fields) ?
 			self::EXECUTE_MODE_SEPARATELY : self::EXECUTE_MODE_GENERAL;
@@ -500,7 +520,7 @@ class DiscountTable extends Main\Entity\DataManager
 		if (isset($fields['ACTIONS_LIST']))
 		{
 			if (!is_array($fields['ACTIONS_LIST']) && \CheckSerializedData($fields['ACTIONS_LIST']))
-				$fields['ACTIONS_LIST'] = unserialize($fields['ACTIONS_LIST']);
+				$fields['ACTIONS_LIST'] = unserialize($fields['ACTIONS_LIST'], ['allowed_classes' => false]);
 			if (is_array($fields['ACTIONS_LIST']))
 			{
 				Gift\RelatedDataTable::deleteByDiscount($id['ID']);
@@ -525,6 +545,8 @@ class DiscountTable extends Main\Entity\DataManager
 
 		static::updateSpecificFields($id['ID'], $specificFields);
 		static::updateConfigurationIfNeeded($fields, $specificFields);
+
+		self::dropIblockCache();
 	}
 
 	/**
@@ -569,6 +591,8 @@ class DiscountTable extends Main\Entity\DataManager
 		}
 		Gift\RelatedDataTable::deleteByDiscount($id);
 		Index\Manager::getInstance()->dropIndex($id);
+
+		self::dropIblockCache();
 
 		unset($id);
 	}
@@ -654,16 +678,14 @@ class DiscountTable extends Main\Entity\DataManager
 
 	protected static function setShortDescription(&$result, array $data)
 	{
-		if(!empty($data['SHORT_DESCRIPTION_STRUCTURE']) || empty($data['ACTIONS']))
-		{
+		if (!empty($data['SHORT_DESCRIPTION_STRUCTURE']))
 			return;
-		}
+		if (empty($data['ACTIONS']) && empty($data['ACTIONS_LIST']))
+			return;
 
 		$actionConfiguration = Actions::getActionConfiguration($data);
-		if(!$actionConfiguration)
-		{
+		if (!$actionConfiguration)
 			return;
-		}
 
 		$result['SHORT_DESCRIPTION_STRUCTURE'] = $actionConfiguration;
 	}
@@ -700,9 +722,30 @@ class DiscountTable extends Main\Entity\DataManager
 	protected static function copyOldFields(&$result, $data)
 	{
 		if (!isset($data['CONDITIONS_LIST']) && isset($data['CONDITIONS']))
-			$result['CONDITIONS_LIST'] = (is_array($data['CONDITIONS']) ? $data['CONDITIONS'] : unserialize($data['CONDITIONS']));
+			$result['CONDITIONS_LIST'] = (is_array($data['CONDITIONS']) ? $data['CONDITIONS'] : unserialize($data['CONDITIONS'], ['allowed_classes' => false]));
 
 		if (!isset($data['ACTIONS_LIST']) && isset($data['ACTIONS']))
-			$result['ACTIONS_LIST'] = (is_array($data['ACTIONS']) ? $data['ACTIONS'] : unserialize($data['ACTIONS']));
+			$result['ACTIONS_LIST'] = (is_array($data['ACTIONS']) ? $data['ACTIONS'] : unserialize($data['ACTIONS'], ['allowed_classes' => false]));
+	}
+
+	/**
+	 * Temporary drop iblock cache method.
+	 *
+	 * @return void
+	 * @throws Main\LoaderException
+	 */
+	private static function dropIblockCache()
+	{
+		if (
+			!Main\ModuleManager::isModuleInstalled('bitrix24')
+			|| !Main\Loader::includeModule('crm')
+			|| !Main\Loader::includeModule('iblock')
+		)
+			return;
+
+		$iblockId = \CCrmCatalog::GetDefaultID();
+		if ($iblockId > 0)
+			\CIBlock::clearIblockTagCache($iblockId);
+		unset($iblockId);
 	}
 }

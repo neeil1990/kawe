@@ -13,13 +13,13 @@
  * @global CAdminPage $adminPage
  */
 
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+require_once(__DIR__."/../include/prolog_admin_before.php");
 define("HELP_FILE", "settings/settings/settings.php");
 
 if(!$USER->CanDoOperation('view_other_settings') && !$USER->CanDoOperation('edit_other_settings'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-if(strpos($_REQUEST["back_url_settings"], '/') !== 0 || strpos($_REQUEST["back_url_settings"], '//') === 0)
+if(mb_strpos($_REQUEST["back_url_settings"], '/') !== 0 || mb_strpos($_REQUEST["back_url_settings"], '//') === 0)
 	$_REQUEST["back_url_settings"] = '';
 
 IncludeModuleLangFile(__FILE__);
@@ -48,7 +48,13 @@ foreach($adminPage->aModules as $module)
 		$arModules[$module]["SORT"] = $info->MODULE_SORT;
 	}
 }
-uasort($arModules, create_function('$a, $b', 'if($a["SORT"] == $b["SORT"]) return strcasecmp($a["NAME"], $b["NAME"]); return ($a["SORT"] < $b["SORT"])? -1 : 1;'));
+\Bitrix\Main\Type\Collection::sortByColumn(
+	$arModules,
+	['SORT' => SORT_ASC, 'NAME' => SORT_STRING],
+	'',
+	null,
+	true
+);
 
 $mid = $_REQUEST["mid"];
 if($mid == "" || !isset($arModules[$mid]) || !file_exists($arModules[$mid]["PAGE"]))
@@ -64,7 +70,7 @@ require_once ($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/prolog_ad
 ?>
 
 <form action="">
-<select name="mid" onchange="window.location='settings.php?lang=<?=LANGUAGE_ID.($_REQUEST["mid_menu"]<>""? "&amp;mid_menu=1":"")?>&amp;mid='+this[this.selectedIndex].value;">
+<select name="mid" onchange="window.location='settings.php?lang=<?=LANGUAGE_ID.(isset($_REQUEST["mid_menu"]) && $_REQUEST["mid_menu"] != ''? "&amp;mid_menu=1":"")?>&amp;mid='+this[this.selectedIndex].value;">
 <?foreach($arModules as $k=>$m):?>
 	<option value="<?echo htmlspecialcharsbx($k)?>"<?if($mid == $k) echo " selected"?>><?echo htmlspecialcharsbx($m["NAME"])?></option>
 <?endforeach;?>
@@ -99,7 +105,7 @@ function __AdmSettingsSaveOption($module_id, $arOption)
 
 	if ($isChoiceSites)
 	{
-		if (isset($_REQUEST[$name."_all"]) && strlen($_REQUEST[$name."_all"]) > 0)
+		if (isset($_REQUEST[$name."_all"]) && $_REQUEST[$name."_all"] <> '')
 			COption::SetOptionString($module_id, $name, $_REQUEST[$name."_all"], $arOption[1]);
 		else
 			COption::RemoveOption($module_id, $name);
@@ -110,14 +116,18 @@ function __AdmSettingsSaveOption($module_id, $arOption)
 		));
 		while ($site = $queryObject->fetch())
 		{
-			if (isset($_REQUEST[$name."_".$site["LID"]]) && strlen($_REQUEST[$name."_".$site["LID"]]) > 0 &&
+			if (isset($_REQUEST[$name."_".$site["LID"]]) && $_REQUEST[$name."_".$site["LID"]] <> '' &&
 				!isset($_REQUEST[$name."_all"]))
 			{
 				$val = $_REQUEST[$name."_".$site["LID"]];
 				if($arOption[3][0] == "checkbox" && $val != "Y")
+				{
 					$val = "N";
-				if($arOption[3][0] == "multiselectbox")
-					$val = @implode(",", $val);
+				}
+				if($arOption[3][0] == "multiselectbox" && is_array($val))
+				{
+					$val = implode(",", $val);
+				}
 				COption::SetOptionString($module_id, $name, $val, $arOption[1], $site["LID"]);
 			}
 			else
@@ -128,20 +138,24 @@ function __AdmSettingsSaveOption($module_id, $arOption)
 	}
 	else
 	{
-		$val = $_REQUEST[$name];
-		//disabled
 		if(!isset($_REQUEST[$name]))
 		{
-			if($arOption[3][0] == 'checkbox')
-				$val = 'N';
-			else
+			if($arOption[3][0] <> 'checkbox' && $arOption[3][0] <> "multiselectbox")
+			{
 				return false;
+			}
 		}
 
+		$val = $_REQUEST[$name];
+
 		if($arOption[3][0] == "checkbox" && $val != "Y")
+		{
 			$val = "N";
-		if($arOption[3][0] == "multiselectbox")
-			$val = @implode(",", $val);
+		}
+		if($arOption[3][0] == "multiselectbox" && is_array($val))
+		{
+			$val = implode(",", $val);
+		}
 
 		COption::SetOptionString($module_id, $name, $val, $arOption[1]);
 	}
@@ -152,6 +166,11 @@ function __AdmSettingsSaveOption($module_id, $arOption)
 function __AdmSettingsDrawRow($module_id, $Option)
 {
 	$arControllerOption = CControllerClient::GetInstalledOptions($module_id);
+	if($Option === null)
+	{
+		return;
+	}
+
 	if(!is_array($Option)):
 	?>
 		<tr class="heading">
@@ -238,7 +257,7 @@ function __AdmSettingsDrawRow($module_id, $Option)
 			<tr>
 				<td width="50%">
 					<a href="javascript:void(0)" onclick="addSiteSelector(this)" class="bx-action-href">
-						<?=GetMessage("MAIN_ADMIN_ADD_SITE_SELECTOR")?>
+						<?=GetMessage("MAIN_ADMIN_ADD_SITE_SELECTOR_1")?>
 					</a>
 				</td>
 				<td width="50%"></td>
@@ -264,12 +283,20 @@ function renderLable($Option, array $listSite, $siteValue = "")
 	?>
 	<?if ($isChoiceSites): ?>
 	<script type="text/javascript">
-		//TODO It is possible to modify the functions if necessary to clone different elements
 		function changeSite(el, fieldName)
 		{
 			var tr = jsUtils.FindParentObject(el, "tr");
-			var sel = jsUtils.FindChildObject(tr.cells[1], "select");
-			sel.name = fieldName+"_"+el.value;
+			var sel = null, tagNames = ["select", "input", "textarea"];
+			for (var i = 0; i < tagNames.length; i++)
+			{
+				sel = jsUtils.FindChildObject(tr.cells[1], tagNames[i]);
+				if (sel)
+				{
+					sel.name = fieldName+"_"+el.value;
+					break;
+				}
+
+			}
 		}
 		function addSiteSelector(a)
 		{
@@ -301,7 +328,7 @@ function renderLable($Option, array $listSite, $siteValue = "")
 			echo "<label for='".htmlspecialcharsbx($Option[0])."'>".$Option[1]."</label>";
 		else
 			echo $Option[1];
-		if (strlen($sup_text) > 0)
+		if ($sup_text <> '')
 		{
 			?><span class="required"><sup><?=$sup_text?></sup></span><?
 		}
@@ -315,9 +342,9 @@ function renderInput($Option, $arControllerOption, $fieldName, $val)
 	$disabled = array_key_exists(4, $Option) && $Option[4] == 'Y' ? ' disabled' : '';
 	?><td width="50%"><?
 	if($type[0]=="checkbox"):
-		?><input type="checkbox" <?if(isset($arControllerOption[$Option[0]]))echo ' disabled title="'.GetMessage("MAIN_ADMIN_SET_CONTROLLER_ALT").'"';?> id="<?echo htmlspecialcharsbx($Option[0])?>" name="<?=htmlspecialcharsbx($fieldName)?>" value="Y"<?if($val=="Y")echo" checked";?><?=$disabled?><?if($type[2]<>'') echo " ".$type[2]?>><?
+		?><input type="checkbox" <?if(isset($arControllerOption[$Option[0]]))echo ' disabled title="'.GetMessage("MAIN_ADMIN_SET_CONTROLLER_ALT").'"';?> id="<?echo htmlspecialcharsbx($Option[0])?>" name="<?=htmlspecialcharsbx($fieldName)?>" value="Y"<?if($val=="Y")echo" checked";?><?=$disabled?><?if(isset($type[2]) && $type[2]<>'') echo " ".$type[2]?>><?
 	elseif($type[0]=="text" || $type[0]=="password"):
-		?><input type="<?echo $type[0]?>"<?if(isset($arControllerOption[$Option[0]]))echo ' disabled title="'.GetMessage("MAIN_ADMIN_SET_CONTROLLER_ALT").'"';?> size="<?echo $type[1]?>" maxlength="255" value="<?echo htmlspecialcharsbx($val)?>" name="<?=htmlspecialcharsbx($fieldName)?>"<?=$disabled?><?=($type[0]=="password" || $type["noautocomplete"]? ' autocomplete="new-password"':'')?>><?
+		?><input type="<?echo $type[0]?>"<?if(isset($arControllerOption[$Option[0]]))echo ' disabled title="'.GetMessage("MAIN_ADMIN_SET_CONTROLLER_ALT").'"';?> size="<?echo $type[1]?>" maxlength="255" value="<?echo htmlspecialcharsbx($val)?>" name="<?=htmlspecialcharsbx($fieldName)?>"<?=$disabled?><?=($type[0]=="password" || isset($type["noautocomplete"]) && $type["noautocomplete"]? ' autocomplete="new-password"':'')?>><?
 	elseif($type[0]=="selectbox"):
 		$arr = $type[1];
 		if(!is_array($arr))

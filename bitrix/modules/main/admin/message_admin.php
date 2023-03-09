@@ -13,7 +13,9 @@
  * @global CDatabase $DB
  */
 
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+use Bitrix\Main\Mail\Internal\EventTypeTable;
+
+require_once(__DIR__."/../include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "settings/mail_events/message_admin.php");
 
@@ -28,7 +30,7 @@ $err_mess = "File: ".__FILE__."<br>Line: ";
 // variable with ID of table
 $sTableID = "tbl_main_message";
 // sorting
-$oSort = new CAdminSorting($sTableID, "TIMESTAMP_X", "desc");
+$oSort = new CAdminSorting($sTableID, "id", "desc");
 // list
 $lAdmin = new CAdminList($sTableID, $oSort);
 
@@ -66,21 +68,21 @@ function CheckFilter($arFilterFields) // checking input fields
 		global ${$f};
 
 	$str = "";
-	if (strlen(trim($find_timestamp_1))>0 || strlen(trim($find_timestamp_2))>0)
+	if (trim($find_timestamp_1) <> '' || trim($find_timestamp_2) <> '')
 	{
 		$date_1_ok = false;
 		$date1_stm = MkDateTime(FmtDate($find_timestamp_1,"D.M.Y"),"d.m.Y");
 		$date2_stm = MkDateTime(FmtDate($find_timestamp_2,"D.M.Y")." 23:59","d.m.Y H:i");
-		if (!$date1_stm && strlen(trim($find_timestamp_1))>0)
+		if (!$date1_stm && trim($find_timestamp_1) <> '')
 			$str.= GetMessage("MAIN_WRONG_TIMESTAMP_FROM")."<br>";
 		else $date_1_ok = true;
-		if (!$date2_stm && strlen(trim($find_timestamp_2))>0)
+		if (!$date2_stm && trim($find_timestamp_2) <> '')
 			$str.= GetMessage("MAIN_WRONG_TIMESTAMP_TILL")."<br>";
-		elseif ($date_1_ok && $date2_stm <= $date1_stm && strlen($date2_stm)>0)
+		elseif ($date_1_ok && $date2_stm <= $date1_stm && $date2_stm <> '')
 			$str.= GetMessage("MAIN_FROM_TILL_TIMESTAMP")."<br>";
 	}
 	$lAdmin->AddFilterError($str);
-	if (strlen($str)>0)
+	if ($str <> '')
 		return false;
 	return true;
 }
@@ -147,17 +149,17 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 {
 	if($_REQUEST['action_target']=='selected')
 	{
-		$rsData = CEventMessage::GetList($by, $order, $arFilter);
+		$rsData = CEventMessage::GetList('', '', $arFilter);
 		while($arRes = $rsData->Fetch())
 			$arID[] = $arRes['ID'];
 	}
 
 	foreach($arID as $ID)
 	{
-		if(strlen($ID)<=0)
+		if($ID == '')
 			continue;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$emessage = new CEventMessage;
 		switch($_REQUEST['action'])
@@ -181,6 +183,8 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 		}
 	}
 }
+
+global $by, $order;
 
 $rsData = CEventMessage::GetList($by, $order, $arFilter);
 $resultObject = null;
@@ -210,10 +214,11 @@ $lAdmin->AddHeaders(array(
 ));
 
 $arText_HTML = Array("text"=>GetMessage("MAIN_TEXT"), "html"=>GetMessage("MAIN_HTML"));
+
 $arEventTypes = Array();
-$eventTypeDb = \Bitrix\Main\Mail\Internal\EventTypeTable::getList(array(
+$eventTypeDb = EventTypeTable::getList(array(
 	'select' => array('EVENT_NAME', 'NAME'),
-	'filter' => array('=LID' => LANGUAGE_ID),
+	'filter' => array('=LID' => LANGUAGE_ID, "=EVENT_TYPE" => EventTypeTable::TYPE_EMAIL),
 	'order' => array('EVENT_NAME' => 'ASC')
 ));
 while($eventType = $eventTypeDb->fetch())
@@ -222,10 +227,13 @@ while($eventType = $eventTypeDb->fetch())
 }
 
 $langOptions = array("" => "");
-$languages = \Bitrix\Main\Localization\LanguageTable::getList(array("filter" => array("ACTIVE" => "Y"), "order" => array("SORT" => "ASC", "NAME" => "ASC")));
+$languages = \Bitrix\Main\Localization\LanguageTable::getList(array(
+	"select" => array('LID', 'NAME'),
+	"filter" => array("=ACTIVE" => "Y"),
+	"order" => array("SORT" => "ASC", "NAME" => "ASC")));
 while($language = $languages->fetch())
 {
-	$langOptions[$language["LID"]] = \Bitrix\Main\Text\HtmlFilter::encode($language["NAME"]);
+	$langOptions[$language["LID"]] = $language["NAME"];
 }
 
 // Body
@@ -329,7 +337,10 @@ $oFilter->Begin();
 		$event_type_ref = array();
 		$event_type_ref_id = array();
 		$ref_en = array();
-		$rsType = CEventType::GetList(array("LID"=>LANGUAGE_ID), array("name"=>"asc"));
+		$rsType = CEventType::GetList(
+			array("LID"=>LANGUAGE_ID, "EVENT_TYPE"=>EventTypeTable::TYPE_EMAIL),
+			array("name"=>"asc")
+		);
 		while($arType = $rsType->Fetch())
 		{
 			$event_type_ref[] = $arType["NAME"].($arType["NAME"] == ''? '' : ' ')."[".$arType["EVENT_NAME"]."]";
@@ -358,7 +369,7 @@ $oFilter->Begin();
 				?>
 				<? foreach($langOptions as $language_id => $name): ?>
 					<option value="<?=$language_id?>"<? if($find_language_id == $language_id) echo " selected" ?>>
-						<?=$name?>
+						<?=\Bitrix\Main\Text\HtmlFilter::encode($name)?>
 					</option>
 				<? endforeach ?>
 			</select>

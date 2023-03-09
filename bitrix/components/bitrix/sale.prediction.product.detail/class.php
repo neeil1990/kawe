@@ -1,6 +1,7 @@
 <?php
 use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale;
 
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 
@@ -16,6 +17,11 @@ class CSalePredictionProductDetailComponent extends CBitrixComponent
 		if (!isset($params['SGP_CUR_BASE_PAGE']))
 		{
 			$params['SGP_CUR_BASE_PAGE'] = $APPLICATION->GetCurPage();
+		}
+
+		if (isset($params['CUSTOM_SITE_ID']))
+		{
+			$this->setSiteId($params['CUSTOM_SITE_ID']);
 		}
 
 		$this->arResult['_ORIGINAL_PARAMS'] = $params;
@@ -42,6 +48,23 @@ class CSalePredictionProductDetailComponent extends CBitrixComponent
 			$params['POTENTIAL_PRODUCT_TO_BUY']['ID'] = $params['POTENTIAL_PRODUCT_TO_BUY']['PRIMARY_OFFER_ID'];
 		}
 
+		$pageTemplates = [];
+		if (empty($params['PAGE_TEMPLATES']) && is_array($params['PAGE_TEMPLATES']))
+		{
+			$templates = $params['PAGE_TEMPLATES'];
+			if (!empty($templates['PRODUCT_URL']) && is_string($templates['PRODUCT_URL']))
+			{
+				$pageTemplates['PRODUCT_URL'] = $templates['PRODUCT_URL'];
+			}
+			if (!empty($templates['SECTION_URL']) && is_string($templates['SECTION_URL']))
+			{
+				$pageTemplates['SECTION_URL'] = $templates['SECTION_URL'];
+			}
+			unset($templates);
+		}
+		$params['PAGE_TEMPLATES'] = $pageTemplates;
+		unset($pageTemplates);
+
 		return $params;
 	}
 
@@ -66,8 +89,17 @@ class CSalePredictionProductDetailComponent extends CBitrixComponent
 				'QUANTITY' => true,
 			));
 
-			$manager = Bitrix\Sale\Discount\Prediction\Manager::getInstance();
-			$basket = \Bitrix\Sale\Basket::loadItemsForFUser(\Bitrix\Sale\Fuser::getId(), SITE_ID)->getOrderableItems();
+			$manager = Sale\Discount\Prediction\Manager::getInstance();
+
+			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+			/** @var Sale\Basket $basketClass */
+			$basketClass = $registry->getBasketClassName();
+
+			/** @var Sale\Basket $basket */
+			$basket = $basketClass::loadItemsForFUser(
+				Sale\Fuser::getId(),
+				$this->getSiteId()
+			)->getOrderableItems();
 
 			global $USER;
 			if ($USER instanceof \CUser && $USER->getId())
@@ -75,7 +107,11 @@ class CSalePredictionProductDetailComponent extends CBitrixComponent
 				$manager->setUserId($USER->getId());
 			}
 
-			$this->arResult['PREDICTION_TEXT'] = $manager->getFirstPredictionTextByProduct($basket, $potentialBuy);
+			$this->arResult['PREDICTION_TEXT'] = $manager->getFirstPredictionTextByProduct(
+				$basket,
+				$potentialBuy,
+				$this->arParams['PAGE_TEMPLATES']
+			);
 		}
 
 		$this->includeComponentTemplate();

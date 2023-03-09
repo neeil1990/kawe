@@ -107,6 +107,8 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 
 	protected $needItemProperties = array();
 
+	protected $oldPriceFields = [];
+
 	/**
 	 * Load language file.
 	 */
@@ -410,6 +412,11 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 	 */
 	public function onPrepareComponentParams($params)
 	{
+		if (isset($params['CUSTOM_SITE_ID']))
+		{
+			$this->setSiteId($params['CUSTOM_SITE_ID']);
+		}
+
 		$params["DETAIL_URL"] = trim($params["DETAIL_URL"]);
 		$params["BASKET_URL"] = trim($params["BASKET_URL"]);
 
@@ -436,7 +443,7 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 			$params["PRODUCT_PROPS_VARIABLE"] = "prop";
 
 		$params['ADD_PROPERTIES_TO_BASKET'] = (isset($params['ADD_PROPERTIES_TO_BASKET']) && $params['ADD_PROPERTIES_TO_BASKET'] == 'N' ? 'N' : 'Y');
-		$arParams['PARTIAL_PRODUCT_PROPERTIES'] = (isset($arParams['PARTIAL_PRODUCT_PROPERTIES']) && $arParams['PARTIAL_PRODUCT_PROPERTIES'] === 'Y' ? 'Y' : 'N');
+		$params['PARTIAL_PRODUCT_PROPERTIES'] = (isset($params['PARTIAL_PRODUCT_PROPERTIES']) && $params['PARTIAL_PRODUCT_PROPERTIES'] === 'Y' ? 'Y' : 'N');
 		$params["SET_TITLE"] = $params["SET_TITLE"] != "N";
 		$params["DISPLAY_COMPARE"] = $params["DISPLAY_COMPARE"] == "Y";
 
@@ -894,9 +901,7 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 			$cached['CURRENCY'] = array();
 			if ($this->isCurrency)
 			{
-				$by = "currency";
-				$order = "asc";
-				$currencyIterator = CCurrency::getList($by, $order);
+				$currencyIterator = CCurrency::getList("currency", "asc");
 				while ($currency = $currencyIterator->fetch())
 				{
 					$cached['CURRENCY'][$currency['CURRENCY']] = $currency;
@@ -952,7 +957,7 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 			array($this->arParams['PRODUCT_ID_VARIABLE'], $this->arParams['ACTION_VARIABLE'], ''),
 			array('delete_system_params' => true)
 		);
-		$currentPath .= (stripos($currentPath, '?') === false ? '?' : '&');
+		$currentPath .= (mb_stripos($currentPath, '?') === false ? '?' : '&');
 		if ($this->arParams['COMPARE_PATH'] == '')
 		{
 			$comparePath = $currentPath;
@@ -964,7 +969,7 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 				array($this->arParams['PRODUCT_ID_VARIABLE'], $this->arParams['ACTION_VARIABLE'], ''),
 				array('delete_system_params' => true)
 			);
-			$comparePath .= (stripos($comparePath, '?') === false ? '?' : '&');
+			$comparePath .= (mb_stripos($comparePath, '?') === false ? '?' : '&');
 		}
 		$this->arParams['COMPARE_PATH'] = $comparePath.$this->arParams['ACTION_VARIABLE'].'=COMPARE';
 
@@ -991,17 +996,68 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 
 		$defaultMeasure = $this->data['DEFAULT_MEASURE'];
 
+		$usePropertyFeatures = Iblock\Model\PropertyFeature::isEnabledFeatures();
 		$items = array();
 		foreach (array_keys($this->arParams['SHOW_PRODUCTS']) as $iblock)
 		{
 			$this->linkItems = array();
+			$itemsIds = [];
 			if (empty($this->iblockItems[$iblock]))
 				continue;
+
+			if ($usePropertyFeatures)
+			{
+				$list = Iblock\Model\PropertyFeature::getListPageShowPropertyCodes(
+					$iblock,
+					['CODE' => 'Y']
+				);
+				if (!empty($list))
+					$this->arParams['PROPERTY_CODE'][$iblock] = $list;
+				if ($this->arParams['ADD_PROPERTIES_TO_BASKET'] == 'Y')
+				{
+					$list = Catalog\Product\PropertyCatalogFeature::getBasketPropertyCodes(
+						$iblock,
+						['CODE' => 'Y']
+					);
+					if (!empty($list))
+						$this->arParams['CART_PROPERTIES'][$iblock] = $list;
+				}
+				$sku = \CCatalogSku::GetInfoByProductIBlock($iblock);
+				if (!empty($sku))
+				{
+					$offersId = $sku['IBLOCK_ID'];
+					$list = Iblock\Model\PropertyFeature::getListPageShowPropertyCodes(
+						$offersId,
+						['CODE' => 'Y']
+					);
+					if (!empty($list))
+						$this->arParams['PROPERTY_CODE'][$offersId] = $list;
+					if ($this->arParams['ADD_PROPERTIES_TO_BASKET'] == 'Y')
+					{
+						$list = Catalog\Product\PropertyCatalogFeature::getBasketPropertyCodes(
+							$offersId,
+							['CODE' => 'Y']
+						);
+						if (!empty($list))
+							$this->arParams['CART_PROPERTIES'][$offersId] = $list;
+					}
+					$list = Catalog\Product\PropertyCatalogFeature::getOfferTreePropertyCodes(
+						$offersId,
+						['CODE' => 'Y']
+					);
+					if (!empty($list))
+						$params['OFFER_TREE_PROPS'][$offersId] = $list;
+				}
+				unset($list);
+			}
+
 			$filter = $this->filter;
 			$filter['IBLOCK_ID'] = $iblock;
 			$filter['ID'] = $this->iblockItems[$iblock];
 
-			$elementIterator = CIBlockElement::GetList(array(), $filter, false, false, $this->selectFields);
+			$priceIds = $this->getPriceIds();
+
+			$elementIterator = CIBlockElement::GetList(array(), $filter, false, false, $this->getElementSelectFields());
 			$elementIterator->SetUrlTemplates($this->arParams['DETAIL_URL']);
 			while ($element = $elementIterator->GetNext())
 			{
@@ -1061,54 +1117,103 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 				$element['CATALOG_MEASURE_NAME'] = $defaultMeasure['SYMBOL_RUS'];
 				$element['~CATALOG_MEASURE_NAME'] = $defaultMeasure['~SYMBOL_RUS'];
 
+				if (!empty($priceIds))
+				{
+					$element = $element + $this->oldPriceFields;
+				}
+
 				$items[$element['ID']] = $element;
 				$this->linkItems[$element['ID']] = &$items[$element['ID']];
+				$itemsIds[] = $element['ID'];
 			}
 			unset($element, $elementIterator);
 
-			$propFilter = array(
-				'ID' => $this->iblockItems[$iblock],
-				'IBLOCK_ID' => $iblock
-			);
-			CIBlockElement::GetPropertyValuesArray($this->linkItems, $iblock, $propFilter);
-			unset($propFilter);
-
-			foreach ($this->linkItems as &$element)
+			if (!empty($itemsIds))
 			{
-				CCatalogDiscount::SetProductPropertiesCache($element['ID'], $element['PROPERTIES']);
-
-				if (isset($this->arParams['PROPERTY_CODE'][$iblock]))
+				Main\Type\Collection::normalizeArrayValuesByInt($itemsIds, true);
+			}
+			if (!empty($itemsIds))
+			{
+				if (!empty($priceIds))
 				{
-					$properties = $this->arParams['PROPERTY_CODE'][$iblock];
-					foreach ($properties as $propertyName)
+					foreach (array_chunk($itemsIds, 500) as $pageIds)
 					{
-						if (!isset($element['PROPERTIES'][$propertyName]))
-							continue;
-
-						$prop = &$element['PROPERTIES'][$propertyName];
-						$boolArr = is_array($prop["VALUE"]);
-						if (
-							($boolArr && !empty($prop["VALUE"]))
-							|| (!$boolArr && strlen($prop["VALUE"]) > 0)
-						)
+						$priceIterator = Catalog\PriceTable::getList([
+							'select' => [
+								'ID', 'PRODUCT_ID', 'CATALOG_GROUP_ID',
+								'PRICE', 'CURRENCY',
+								'QUANTITY_FROM', 'QUANTITY_TO',
+								'EXTRA_ID'
+							],
+							'filter' => ['@PRODUCT_ID' => $pageIds, '@CATALOG_GROUP_ID' => $priceIds]
+						]);
+						while ($row = $priceIterator->fetch())
 						{
-							$element['DISPLAY_PROPERTIES'][$propertyName] = CIBlockFormatProperties::GetDisplayValue($element, $prop, 'catalog_out');
+							$id = (int)$row['PRODUCT_ID'];
+							$priceType = $row['CATALOG_GROUP_ID'];
+							$this->linkItems[$id]['CATALOG_PRICE_ID_'.$priceType] = $row['ID'];
+							$this->linkItems[$id]['~CATALOG_PRICE_ID_'.$priceType] = $row['ID'];
+							$this->linkItems[$id]['CATALOG_PRICE_'.$priceType] = $row['PRICE'];
+							$this->linkItems[$id]['~CATALOG_PRICE_'.$priceType] = $row['PRICE'];
+							$this->linkItems[$id]['CATALOG_CURRENCY_'.$priceType] = $row['CURRENCY'];
+							$this->linkItems[$id]['~CATALOG_CURRENCY_'.$priceType] = $row['CURRENCY'];
+							$this->linkItems[$id]['CATALOG_QUANTITY_FROM_'.$priceType] = $row['QUANTITY_FROM'];
+							$this->linkItems[$id]['~CATALOG_QUANTITY_FROM_'.$priceType] = $row['QUANTITY_FROM'];
+							$this->linkItems[$id]['CATALOG_QUANTITY_TO_'.$priceType] = $row['QUANTITY_TO'];
+							$this->linkItems[$id]['~CATALOG_QUANTITY_TO_'.$priceType] = $row['QUANTITY_TO'];
+							$this->linkItems[$id]['CATALOG_EXTRA_ID_'.$priceType] = $row['EXTRA_ID'];
+							$this->linkItems[$id]['~CATALOG_EXTRA_ID_'.$priceType] = $row['EXTRA_ID'];
 						}
-						unset($prop);
+						unset($row, $priceIterator);
 					}
+					unset($pageIds);
 				}
+				unset($priceIds);
 
-				if ($this->arParams['ADD_PROPERTIES_TO_BASKET'] == 'Y' && !empty($this->arParams['CART_PROPERTIES'][$iblock]))
+				$propFilter = array(
+					'ID' => $this->iblockItems[$iblock],
+					'IBLOCK_ID' => $iblock
+				);
+				CIBlockElement::GetPropertyValuesArray($this->linkItems, $iblock, $propFilter);
+				unset($propFilter);
+
+				foreach ($this->linkItems as &$element)
 				{
-					$element["PRODUCT_PROPERTIES"] = CIBlockPriceTools::GetProductProperties(
-						$element['IBLOCK_ID'],
-						$element["ID"],
-						$this->arParams['CART_PROPERTIES'][$iblock],
-						$element["PROPERTIES"]
-					);
+					CCatalogDiscount::SetProductPropertiesCache($element['ID'], $element['PROPERTIES']);
 
-					if (!empty($element["PRODUCT_PROPERTIES"]))
-						$element['PRODUCT_PROPERTIES_FILL'] = CIBlockPriceTools::getFillProductProperties($element['PRODUCT_PROPERTIES']);
+					if (isset($this->arParams['PROPERTY_CODE'][$iblock]))
+					{
+						$properties = $this->arParams['PROPERTY_CODE'][$iblock];
+						foreach ($properties as $propertyName)
+						{
+							if (!isset($element['PROPERTIES'][$propertyName]))
+								continue;
+
+							$prop = &$element['PROPERTIES'][$propertyName];
+							$boolArr = is_array($prop["VALUE"]);
+							if (
+								($boolArr && !empty($prop["VALUE"]))
+								|| (!$boolArr && $prop["VALUE"] <> '')
+							)
+							{
+								$element['DISPLAY_PROPERTIES'][$propertyName] = CIBlockFormatProperties::GetDisplayValue($element, $prop, 'catalog_out');
+							}
+							unset($prop);
+						}
+					}
+
+					if ($this->arParams['ADD_PROPERTIES_TO_BASKET'] == 'Y' && !empty($this->arParams['CART_PROPERTIES'][$iblock]))
+					{
+						$element["PRODUCT_PROPERTIES"] = CIBlockPriceTools::GetProductProperties(
+							$element['IBLOCK_ID'],
+							$element["ID"],
+							$this->arParams['CART_PROPERTIES'][$iblock],
+							$element["PROPERTIES"]
+						);
+
+						if (!empty($element["PRODUCT_PROPERTIES"]))
+							$element['PRODUCT_PROPERTIES_FILL'] = CIBlockPriceTools::getFillProductProperties($element['PRODUCT_PROPERTIES']);
+					}
 				}
 			}
 			unset($element, $this->linkItems);
@@ -1163,6 +1268,7 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 
 		$this->prepareFilter();
 		$this->prepareSelectFields();
+		$this->fillOldPriceFields();
 		$this->items = $this->getItems();
 		$this->resortItemsByIds($this->productIds);
 
@@ -1389,8 +1495,6 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 	 */
 	protected function prepareFilter()
 	{
-		$prices = $this->data['CATALOG_PRICES'];
-
 		$this->filter = array(
 			"ID" => empty($this->productIdsMap) ? -1 : array_values($this->productIdsMap),
 			"IBLOCK_LID" => $this->getSiteId(),
@@ -1405,12 +1509,18 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 		if ($this->arParams['HIDE_NOT_AVAILABLE'] == 'Y')
 			$this->filter['CATALOG_AVAILABLE'] = 'Y';
 
-		foreach ($prices as $value)
+		$prices = $this->data['CATALOG_PRICES'];
+		if (!empty($prices) && is_array($prices))
 		{
-			if (!$value['CAN_VIEW'] && !$value['CAN_BUY'])
-				continue;
-			$this->filter["CATALOG_SHOP_QUANTITY_" . $value["ID"]] = $this->arParams["SHOW_PRICE_COUNT"];
+			foreach ($prices as $value)
+			{
+				if (!$value['CAN_VIEW'] && !$value['CAN_BUY'])
+					continue;
+				$this->filter["CATALOG_SHOP_QUANTITY_".$value["ID"]] = $this->arParams["SHOW_PRICE_COUNT"];
+			}
+			unset($value);
 		}
+		unset($prices);
 	}
 
 	/**
@@ -1419,7 +1529,20 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 	 */
 	protected function prepareSelectFields()
 	{
-		$this->selectFields = array(
+		$this->selectFields = array_merge(
+			$this->getElementSelectFields(),
+			$this->getPriceSelectFields()
+		);
+	}
+
+	/**
+	 * Returns element fields and old product fields.
+	 *
+	 * @return array
+	 */
+	protected function getElementSelectFields(): array
+	{
+		return [
 			"ID",
 			"IBLOCK_ID",
 			"CODE",
@@ -1429,16 +1552,83 @@ class CCatalogViewedProductsComponent extends CBitrixComponent
 			"DATE_ACTIVE_TO",
 			"DETAIL_PAGE_URL",
 			"DETAIL_PICTURE",
-			"PREVIEW_PICTURE"
-		);
+			"PREVIEW_PICTURE",
+			"CATALOG_TYPE" // compatibility
+		];
+	}
 
-		$prices = $this->data['CATALOG_PRICES'];
+	protected function getPriceSelectFields(): array
+	{
+		$result = [];
 
-		foreach ($prices as $value)
+		if (!empty($this->data['CATALOG_PRICES']))
 		{
-			if (!$value['CAN_VIEW'] && !$value['CAN_BUY'])
-				continue;
-			$this->selectFields[] = $value["SELECT"];
+			foreach ($this->data['CATALOG_PRICES'] as $value)
+			{
+				if (!$value['CAN_VIEW'] && !$value['CAN_BUY'])
+					continue;
+				$result[] = $value["SELECT"];
+			}
+			unset($value);
+		}
+
+		return $result;
+	}
+
+	protected function getPriceIds(): array
+	{
+		$result = [];
+
+		if (!empty($this->data['CATALOG_PRICES']))
+		{
+			foreach ($this->data['CATALOG_PRICES'] as $value)
+			{
+				if (!$value['CAN_VIEW'] && !$value['CAN_BUY'])
+					continue;
+				$result[] = (int)$value["ID"];
+			}
+			unset($value);
+			if (!empty($result))
+			{
+				sort($result);
+			}
+		}
+
+		return $result;
+	}
+
+	protected function fillOldPriceFields(): void
+	{
+		$this->oldPriceFields = [];
+		if (!empty($this->data['CATALOG_PRICES']))
+		{
+			foreach ($this->data['CATALOG_PRICES'] as $value)
+			{
+				if (!$value['CAN_VIEW'] && !$value['CAN_BUY'])
+					continue;
+
+				$priceType = $value['ID'];
+				$this->oldPriceFields['CATALOG_GROUP_ID_'.$priceType] = $priceType;
+				$this->oldPriceFields['~CATALOG_GROUP_ID_'.$priceType] = $priceType;
+				$this->oldPriceFields['CATALOG_GROUP_NAME_'.$priceType] = $value['TITLE'];
+				$this->oldPriceFields['~CATALOG_GROUP_NAME_'.$priceType] = $value['~TITLE'];
+				$this->oldPriceFields['CATALOG_CAN_ACCESS_'.$priceType] = ($value['CAN_VIEW'] ? 'Y' : 'N');
+				$this->oldPriceFields['~CATALOG_CAN_ACCESS_'.$priceType] = ($value['CAN_VIEW'] ? 'Y' : 'N');
+				$this->oldPriceFields['CATALOG_CAN_BUY_'.$priceType] = ($value['CAN_BUY'] ? 'Y' : 'N');
+				$this->oldPriceFields['~CATALOG_CAN_BUY_'.$priceType] = ($value['CAN_BUY'] ? 'Y' : 'N');
+				$this->oldPriceFields['CATALOG_PRICE_ID_'.$priceType] = null;
+				$this->oldPriceFields['~CATALOG_PRICE_ID_'.$priceType] = null;
+				$this->oldPriceFields['CATALOG_PRICE_'.$priceType] = null;
+				$this->oldPriceFields['~CATALOG_PRICE_'.$priceType] = null;
+				$this->oldPriceFields['CATALOG_CURRENCY_'.$priceType] = null;
+				$this->oldPriceFields['~CATALOG_CURRENCY_'.$priceType] = null;
+				$this->oldPriceFields['CATALOG_QUANTITY_FROM_'.$priceType] = null;
+				$this->oldPriceFields['~CATALOG_QUANTITY_FROM_'.$priceType] = null;
+				$this->oldPriceFields['CATALOG_QUANTITY_TO_'.$priceType] = null;
+				$this->oldPriceFields['~CATALOG_QUANTITY_TO_'.$priceType] = null;
+				$this->oldPriceFields['CATALOG_EXTRA_ID_'.$priceType] = null;
+				$this->oldPriceFields['~CATALOG_EXTRA_ID_'.$priceType] = null;
+			}
 		}
 	}
 

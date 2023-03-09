@@ -1,40 +1,44 @@
-<?
+<?php
+
 ##############################################
 # Bitrix Site Manager Forum                  #
 # Copyright (c) 2002-2009 Bitrix             #
 # http://www.bitrixsoft.com                  #
 # mailto:admin@bitrixsoft.com                #
 ##############################################
+
 IncludeModuleLangFile(__FILE__);
 
 class CAllFilterDictionary
 {
-	function CheckFields($arFields = array(), $ACTION = "ADD")
+	public static function CheckFields($arFields = array(), $ACTION = "ADD")
 	{
 		global $APPLICATION, $DB;
 		$strError = "";
 
-		if ((!is_set($arFields, "TITLE")) || (strlen(trim($arFields["TITLE"]))<=0))
+		if ((!is_set($arFields, "TITLE")) || (trim($arFields["TITLE"]) == ''))
 			$strError .= GetMessage("FLT_ERR_TITLE_MISSED");
 		if ($ACTION != "UPDATE" && empty($arFields["TYPE"]))
 			$strError .= GetMessage("FLT_ERR_TYPE_MISSED");
-		if (strlen($strError) <= 0)
+		if ($strError == '')
 			return true;
 		$APPLICATION->ThrowException($strError);
 		return false;
 	}
-	function Add($arFields)
+
+	public static function Add($arFields)
 	{
 		global $DB;
 		$arFields["TITLE"] = trim($arFields["TITLE"]);
-		$arFields["TYPE"] = strtoupper(trim($arFields["TYPE"]));
+		$arFields["TYPE"] = mb_strtoupper(trim($arFields["TYPE"]));
 		if ($arFields["TYPE"] != "T")
 			$arFields["TYPE"] = "W";
 		if(CFilterDictionary::CheckFields($arFields))
 			return $DB->Add("b_forum_dictionary", $arFields);
 		return false;
 	}
-	function Update($ID, $arFields)
+
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 		$ID = intval($ID);
@@ -42,7 +46,7 @@ class CAllFilterDictionary
 			$arFields["TITLE"]=trim($arFields["TITLE"]);
 		if(is_set($arFields, "TYPE"))
 		{
-			$arFields["TYPE"] = strtoupper(trim($arFields["TYPE"]));
+			$arFields["TYPE"] = mb_strtoupper(trim($arFields["TYPE"]));
 			if ($arFields["TYPE"] != "T")
 				$arFields["TYPE"] = "W";
 		}
@@ -54,11 +58,12 @@ class CAllFilterDictionary
 		}
 		return false;
 	}
-	function Delete($ID)
+
+	public static function Delete($ID)
 	{
 		global $DB, $USER;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		$Dictionary = "";
 		$Dictionary = CFilterDictionary::GetList(array(), array("ID"=>$ID));
 		$Dictionary = $Dictionary->Fetch();
@@ -77,43 +82,43 @@ class CAllFilterDictionary
 		return $res;
 	}
 
-	function GetFilterOperation($key)
+	public static function GetFilterOperation($key)
 	{
 		$strNegative = "N";
-		if (substr($key, 0, 1)=="!")
+		if (mb_substr($key, 0, 1) == "!")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strNegative = "Y";
 		}
 
-		if (substr($key, 0, 2)==">=")
+		if (mb_substr($key, 0, 2) == ">=")
 		{
-			$key = substr($key, 2);
+			$key = mb_substr($key, 2);
 			$strOperation = ">=";
 		}
-		elseif (substr($key, 0, 1)==">")
+		elseif (mb_substr($key, 0, 1) == ">")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = ">";
 		}
-		elseif (substr($key, 0, 2)=="<=")
+		elseif (mb_substr($key, 0, 2) == "<=")
 		{
-			$key = substr($key, 2);
+			$key = mb_substr($key, 2);
 			$strOperation = "<=";
 		}
-		elseif (substr($key, 0, 1)=="<")
+		elseif (mb_substr($key, 0, 1) == "<")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = "<";
 		}
-		elseif (substr($key, 0, 1)=="@")
+		elseif (mb_substr($key, 0, 1) == "@")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = "IN";
 		}
-		elseif (substr($key, 0, 1)=="%")
+		elseif (mb_substr($key, 0, 1) == "%")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = "LIKE";
 		}
 		else
@@ -126,27 +131,27 @@ class CAllFilterDictionary
 
 class CAllFilterLetter
 {
-	function CheckFields($arFields = array())
+	public static function CheckFields($arFields = array())
 	{
 		global $APPLICATION, $DB;
 		$strError = "";
 
-		if ((!is_set($arFields, "LETTER")) || (strlen(trim($arFields["LETTER"]))<=0))
+		if ((!is_set($arFields, "LETTER")) || (trim($arFields["LETTER"]) == ''))
 			$strError .= GetMessage("FLT_ERR_SIMBOL_MISSED");
-		if ((!is_set($arFields, "DICTIONARY_ID")) || (intVal(trim($arFields["DICTIONARY_ID"]))<=0))
+		if ((!is_set($arFields, "DICTIONARY_ID")) || (intval(trim($arFields["DICTIONARY_ID"]))<=0))
 			$strError .= GetMessage("FLT_ERR_DICTIONARY_MISSED");
-		if (strlen($strError) <= 0)
+		if ($strError == '')
 			return true;
 		$APPLICATION->ThrowException($strError);
 		return false;
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		global $DB, $APPLICATION;
 		$arFields["LETTER"] = trim($arFields["LETTER"]);
 		$arFields["REPLACEMENT"] = trim($arFields["REPLACEMENT"]);
-		$arFields["DICTIONARY_ID"] = intVal($arFields["DICTIONARY_ID"]);
+		$arFields["DICTIONARY_ID"] = intval($arFields["DICTIONARY_ID"]);
 		$db_res = CFilterLetter::GetList(array(), array("DICTIONARY_ID"=>$arFields["DICTIONARY_ID"], "LETTER"=>trim($arFields["LETTER"])));
 		$db_res = $db_res->Fetch();
 		if ($db_res["ID"]<=0)
@@ -159,7 +164,7 @@ class CAllFilterLetter
 		return false;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB, $APPLICATION;
 		$ID = intval($ID);
@@ -173,7 +178,7 @@ class CAllFilterLetter
 			$arFields["REPLACEMENT"] = trim($arFields["REPLACEMENT"]);
 		if (is_set($arFields, "DICTIONARY_ID"))
 		{
-			$arFields["DICTIONARY_ID"] = intVal($arFields["DICTIONARY_ID"]);
+			$arFields["DICTIONARY_ID"] = intval($arFields["DICTIONARY_ID"]);
 			$dictionary_id = true;
 		}
 
@@ -189,7 +194,7 @@ class CAllFilterLetter
 				$request = array("DICTIONARY_ID"=>$arFields["DICTIONARY_ID"], "LETTER"=>$arFields["LETTER"]);
 			$db_res = CFilterLetter::GetList(array(), $request);
 			$db_res = $db_res->Fetch();
-			if ((intVal($db_res["ID"])<=0) || (intVal($db_res["ID"]) == $ID))
+			if ((intval($db_res["ID"])<=0) || (intval($db_res["ID"]) == $ID))
 				$update = true;
 		}
 		if (!$update)
@@ -203,14 +208,14 @@ class CAllFilterLetter
 		return false;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB, $USER;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		return $DB->Query("DELETE FROM b_forum_letter WHERE ID=".$ID);
 	}
 
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		$res = array();
 		$res = CFilterLetter::GetList(array(), array("ID"=>$ID));
@@ -223,17 +228,17 @@ class CAllFilterLetter
 
 class CAllFilterUnquotableWords
 {
-	function CheckPattern($sPattern, &$sError)
+	public static function CheckPattern($sPattern, &$sError)
 	{
 		$arError = array();
-		$sDelimiter = substr($sPattern, 0, 1);
+		$sDelimiter = mb_substr($sPattern, 0, 1);
 		if ($sDelimiter !== '/') // security restriction
 			$arError[] = array(
 				"code" => "bad_delimiter",
 				"title" => GetMessage("FLT_ERR_BAD_DELIMITER"));
 		// Check Modificators
-		$sModificators = strrchr(substr($sPattern, 1), $sDelimiter);
-		if ($sModificators && strpos($sModificators, "e") !== false)
+		$sModificators = strrchr(mb_substr($sPattern, 1), $sDelimiter);
+		if ($sModificators && mb_strpos($sModificators, "e") !== false)
 			$arError[] = array(
 				"code" => "bad_modificator",
 				"title" => GetMessage("FLT_ERR_BAD_MODIFICATOR"));
@@ -253,20 +258,20 @@ class CAllFilterUnquotableWords
 		return false;
 	}
 
-	function CheckFields($action = "INSERT", $ID = false, $arFields = array())
+	public static function CheckFields($action = "INSERT", $ID = false, $arFields = array())
 	{
 		global $APPLICATION, $DB;
 		$arError = array();
 		$sError = '';
-		$ID = intVal($ID);
+		$ID = intval($ID);
 
 		if ($action == "INSERT")
 		{
-			if ($action == "INSERT" && strlen(trim($arFields["WORDS"])) <= 0 && strlen(trim($arFields["PATTERN"])) <= 0)
+			if ($action == "INSERT" && trim($arFields["WORDS"]) == '' && trim($arFields["PATTERN"]) == '')
 				$arError[] = array(
 					"code" => "empty_data",
 					"title" => GetMessage("FLT_ERR_DICT_PATT_MISSED"));
-			if (intVal($arFields["DICTIONARY_ID"]) <= 0)
+			if (intval($arFields["DICTIONARY_ID"]) <= 0)
 				$arError[] = array(
 					"code" => "bad_dictionary_id",
 					"title" => GetMessage("FLT_ERR_DICTIONARY_MISSED"));
@@ -277,7 +282,7 @@ class CAllFilterUnquotableWords
 				$arError = array(
 					"code" => "empty_id",
 					"title" => GetMessage("FLT_ERR_ID_NOT_ENTER"));
-			if (is_set($arFields, "DICTIONARY_ID") && intVal($arFields["DICTIONARY_ID"]) <= 0)
+			if (is_set($arFields, "DICTIONARY_ID") && intval($arFields["DICTIONARY_ID"]) <= 0)
 				$arError[] = array(
 					"code" => "bad_dictionary_id",
 					"title" => GetMessage("FLT_ERR_DICTIONARY_MISSED"));
@@ -286,12 +291,12 @@ class CAllFilterUnquotableWords
 			$arError[] = array(
 				"code" => "bad_pattern",
 				"title" => $sError);
-		if (strlen(trim($arFields["WORDS"])) > 0)
+		if (trim($arFields["WORDS"]) <> '')
 		{
 			$db_res = CFilterUnquotableWords::GetList(array(), array("WORDS" => trim($arFields["WORDS"])));
 			if ($db_res && $res = $db_res->Fetch())
 			{
-				if ($action == "INSERT" || ($action=="UPDATE" && intVal($res["ID"]) != $ID))
+				if ($action == "INSERT" || ($action=="UPDATE" && intval($res["ID"]) != $ID))
 				{
 					$arError[] = array(
 						"code" => "already_exists",
@@ -305,18 +310,18 @@ class CAllFilterUnquotableWords
 		return false;
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		global $DB;
 		if(CACHED_b_forum_filter !== false)
 			$GLOBALS["CACHE_MANAGER"]->CleanDir("b_forum_filter");
-		$arFields["DICTIONARY_ID"] = intVal($arFields["DICTIONARY_ID"]);
-		$arFields["PATTERN_CREATE"] = strToUpper(trim($arFields["PATTERN_CREATE"]));
+		$arFields["DICTIONARY_ID"] = intval($arFields["DICTIONARY_ID"]);
+		$arFields["PATTERN_CREATE"] = mb_strtoupper(trim($arFields["PATTERN_CREATE"]));
 		$arFields["PATTERN_CREATE"] = in_array($arFields["PATTERN_CREATE"], array("WORDS", "PTTRN", "TRNSL")) ? $arFields["PATTERN_CREATE"] : false;
 		if (!$arFields["PATTERN_CREATE"])
 			$arFields["PATTERN_CREATE"] = ($arFields["WORDS"] ? "TRNSL" : "PTTRN");
 
-		$arFields["WORDS"] = trim($arFields["PATTERN_CREATE"] == "TRNSL" ? strToLower($arFields["WORDS"]) : $arFields["WORDS"]);
+		$arFields["WORDS"] = trim($arFields["PATTERN_CREATE"] == "TRNSL"? mb_strtolower($arFields["WORDS"]) : $arFields["WORDS"]);
 		$arFields["PATTERN"] = trim($arFields["PATTERN"]);
 		$arFields["REPLACEMENT"] = trim($arFields["REPLACEMENT"]);
 		$arFields["DESCRIPTION"] = trim($arFields["DESCRIPTION"]);
@@ -326,18 +331,18 @@ class CAllFilterUnquotableWords
 		return false;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 		$ID = intval($ID);
 		if(CACHED_b_forum_filter !== false)
 			$GLOBALS["CACHE_MANAGER"]->CleanDir("b_forum_filter");
 		if(is_set($arFields, "DICTIONARY_ID"))
-			$arFields["DICTIONARY_ID"] = intVal($arFields["DICTIONARY_ID"]);
+			$arFields["DICTIONARY_ID"] = intval($arFields["DICTIONARY_ID"]);
 		if(is_set($arFields, "PATTERN_CREATE"))
 		{
-			$arFields["PATTERN_CREATE"] = strToUpper(trim($arFields["PATTERN_CREATE"]));
-			if (strLen($arFields["PATTERN_CREATE"])<=0)
+			$arFields["PATTERN_CREATE"] = mb_strtoupper(trim($arFields["PATTERN_CREATE"]));
+			if ($arFields["PATTERN_CREATE"] == '')
 			{
 				if ($arFields["WORDS"])
 					$arFields["PATTERN_CREATE"] = "TRNSL";
@@ -349,7 +354,7 @@ class CAllFilterUnquotableWords
 		{
 			$arFields["WORDS"] = trim($arFields["WORDS"]);
 			if ($arFields["PATTERN_CREATE"] == "TRNSL")
-				$arFields["WORDS"] = strToLower($arFields["WORDS"]);
+				$arFields["WORDS"] = mb_strtolower($arFields["WORDS"]);
 		}
 
 		if(is_set($arFields, "PATTERN"))
@@ -371,59 +376,59 @@ class CAllFilterUnquotableWords
 		return false;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB, $USER;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if(CACHED_b_forum_filter !== false)
 			$GLOBALS["CACHE_MANAGER"]->CleanDir("b_forum_filter");
 		return $DB->Query("DELETE FROM b_forum_filter WHERE ID=".$ID);
 	}
 
-	function GetById($ID)
+	public static function GetById($ID)
 	{
 		$ID = intval($ID);
 		$res = CFilterUnquotableWords::GetList(array(), array("ID"=>$ID));
 		return $res->Fetch();
 	}
 
-	function GetFilterOperation($key)
+	public static function GetFilterOperation($key)
 	{
 		$strNegative = "N";
-		if (substr($key, 0, 1)=="!")
+		if (mb_substr($key, 0, 1) == "!")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strNegative = "Y";
 		}
 
-		if (substr($key, 0, 2)==">=")
+		if (mb_substr($key, 0, 2) == ">=")
 		{
-			$key = substr($key, 2);
+			$key = mb_substr($key, 2);
 			$strOperation = ">=";
 		}
-		elseif (substr($key, 0, 1)==">")
+		elseif (mb_substr($key, 0, 1) == ">")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = ">";
 		}
-		elseif (substr($key, 0, 2)=="<=")
+		elseif (mb_substr($key, 0, 2) == "<=")
 		{
-			$key = substr($key, 2);
+			$key = mb_substr($key, 2);
 			$strOperation = "<=";
 		}
-		elseif (substr($key, 0, 1)=="<")
+		elseif (mb_substr($key, 0, 1) == "<")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = "<";
 		}
-		elseif (substr($key, 0, 1)=="@")
+		elseif (mb_substr($key, 0, 1) == "@")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = "IN";
 		}
-		elseif (substr($key, 0, 1)=="%")
+		elseif (mb_substr($key, 0, 1) == "%")
 		{
-			$key = substr($key, 1);
+			$key = mb_substr($key, 1);
 			$strOperation = "LIKE";
 		}
 		else
@@ -433,15 +438,15 @@ class CAllFilterUnquotableWords
 		return array("FIELD"=>$key, "NEGATIVE"=>$strNegative, "OPERATION"=>$strOperation);
 	}
 
-	function GenPattern($ID=false, $DICTIONARY_ID_T=0)
+	public static function GenPattern($ID=false, $DICTIONARY_ID_T=0)
 	{
-		$DICTIONARY_ID_T = intVal($DICTIONARY_ID_T);
+		$DICTIONARY_ID_T = intval($DICTIONARY_ID_T);
 		if (!$DICTIONARY_ID_T)
 			$DICTIONARY_ID_T = (COption::GetOptionString("forum", "FILTER_DICT_T", '', LANGUAGE_ID));
-		$ID = intVal($ID);
+		$ID = intval($ID);
 		if ($ID):
 			$res = CFilterUnquotableWords::GetByID($ID);
-			if ((strlen(trim($res["WORDS"]))>0) && ($res["PATTERN_CREATE"] == "TRNSL")):
+			if ((trim($res["WORDS"]) <> '') && ($res["PATTERN_CREATE"] == "TRNSL")):
 				$pattern = CFilterUnquotableWords::CreatePattern(trim($res["WORDS"]), $DICTIONARY_ID_T);
 				if ($pattern && CFilterUnquotableWords::Update($ID, array("PATTERN"=>$pattern)))
 					return true;
@@ -450,10 +455,10 @@ class CAllFilterUnquotableWords
 		return false;
 	}
 
-	function GenPatternAll($DICTIONARY_ID_W=0, $DICTIONARY_ID_T=0)
+	public static function GenPatternAll($DICTIONARY_ID_W=0, $DICTIONARY_ID_T=0)
 	{
-		$DICTIONARY_ID_W = intVal($DICTIONARY_ID_W);
-		$DICTIONARY_ID_T = intVal($DICTIONARY_ID_T);
+		$DICTIONARY_ID_W = intval($DICTIONARY_ID_W);
+		$DICTIONARY_ID_T = intval($DICTIONARY_ID_T);
 		if (!$DICTIONARY_ID_W)
 			$DICTIONARY_ID_W = (COption::GetOptionString("forum", "FILTER_DICT_W", '', LANGUAGE_ID));
 		if (!$DICTIONARY_ID_T)
@@ -461,7 +466,7 @@ class CAllFilterUnquotableWords
 		if ($DICTIONARY_ID_W):
 			$db_res = CFilterUnquotableWords::GetList(array(), array("DICTIONARY_ID"=>$DICTIONARY_ID_W));
 			while ($res = $db_res->Fetch()):
-				if ((strlen(trim($res["WORDS"]))>0) && ($res["PATTERN_CREATE"] == "TRNSL")):
+				if ((trim($res["WORDS"]) <> '') && ($res["PATTERN_CREATE"] == "TRNSL")):
 					$pattern = CFilterUnquotableWords::CreatePattern(trim($res["WORDS"]), $DICTIONARY_ID_T);
 					if ($pattern)
 						CFilterUnquotableWords::Update($res["ID"], array("PATTERN"=>$pattern));
@@ -472,15 +477,15 @@ class CAllFilterUnquotableWords
 		return false;
 	}
 
-	function CreatePattern($pattern="", $DICTIONARY_ID=0)
+	public static function CreatePattern($pattern="", $DICTIONARY_ID=0)
 	{
 		$res = "";
 		$NotWord = "\s.,;:!?\#\-\*\|\[\]\(\)";
 		$word_separator = "[".$NotWord."]";
-		$pattern = strtolower(trim($pattern));
+		$pattern = mb_strtolower(trim($pattern));
 		$DICTIONARY_ID = intval($DICTIONARY_ID);
 
-		if (strlen($pattern) <= 0)
+		if ($pattern == '')
 			return false;
 
 		if ($DICTIONARY_ID == 0)
@@ -503,30 +508,30 @@ class CAllFilterUnquotableWords
 			for ($ii = 0; $ii < count($arrRepl); $ii++)
 			{
 				$arrRepl[$ii] = trim($arrRepl[$ii]);
-				if (strLen($lett["LETTER"])==1)
+				if (mb_strlen($lett["LETTER"]) == 1)
 				{
-					if (strLen($arrRepl[$ii]) == 1)
+					if (mb_strlen($arrRepl[$ii]) == 1)
 						$arrRes[$ii] = $arrRepl[$ii]."+";
-					elseif (substr($arrRepl[$ii], 0, 1) == "(" && (substr($arrRepl[$ii], -1, 1) == ")" || substr($arrRepl[$ii], -2, 1) == ")"))
+					elseif (mb_substr($arrRepl[$ii], 0, 1) == "(" && (mb_substr($arrRepl[$ii], -1, 1) == ")" || mb_substr($arrRepl[$ii], -2, 1) == ")"))
 					{
-						if (substr($arrRepl[$ii], -1, 1) == ")")
+						if (mb_substr($arrRepl[$ii], -1, 1) == ")")
 							$arrRes[$ii] = $arrRepl[$ii]."+";
 						else
 							$arrRes[$ii] = $arrRepl[$ii];
 					}
-					elseif (strLen($arrRepl[$ii]) > 1)
+					elseif (mb_strlen($arrRepl[$ii]) > 1)
 						$arrRes[$ii] = "[".$arrRepl[$ii]."]+";
 					else
 						$space = true;
 				}
 				else
 				{
-					if (strLen($arrRepl[$ii]) > 0)
+					if ($arrRepl[$ii] <> '')
 						$arrRes[$ii] = $arrRepl[$ii];
 				}
 			}
 
-			if (strLen($lett["LETTER"])==1)
+			if (mb_strlen($lett["LETTER"]) == 1)
 			{
 				if ($space)
 					$arrRes[] = "";
@@ -541,14 +546,14 @@ class CAllFilterUnquotableWords
 		// letters
 		foreach ($lettersPatt as $key => $val)
 			$pattern = preg_replace($key.BX_UTF_PCRE_MODIFIER, $val, $pattern);
-		for ($ii = 0; $ii < strLen($pattern); $ii++)
+		for ($ii = 0; $ii < mb_strlen($pattern); $ii++)
 		{
-			$sPattern = substr($pattern, $ii, 1);
-			if (is_set($lettPatt, substr($pattern, $ii, 1)))
-				$res .= "(".$lettPatt[substr($pattern, $ii, 1)].")";
+			$sPattern = mb_substr($pattern, $ii, 1);
+			if (is_set($lettPatt, mb_substr($pattern, $ii, 1)))
+				$res .= "(".$lettPatt[mb_substr($pattern, $ii, 1)].")";
 			else
 			{
-				$ord = ord(substr($pattern, $ii, 1));
+				$ord = ord(mb_substr($pattern, $ii, 1));
 				if ((48>$ord) || ((64>$ord) and ($ord>57)) || ((97>$ord) and ($ord>90)) || ((127>$ord) and ($ord>122)))
 				{
 					if ($ord == 42)
@@ -558,10 +563,10 @@ class CAllFilterUnquotableWords
 					elseif ($ord == 63)
 						$res .= ".?";
 					else
-						$res .= substr($pattern, $ii, 1);
+						$res .= mb_substr($pattern, $ii, 1);
 				}
 				else
-					$res .= substr($pattern, $ii, 1)."+";
+					$res .= mb_substr($pattern, $ii, 1)."+";
 			}
 			$res .= $separator;
 		}
@@ -569,13 +574,12 @@ class CAllFilterUnquotableWords
 		return $res;
 	}
 
-
-	function FilterPerm()
+	public static function FilterPerm()
 	{
 		return CForumUser::IsAdmin();
 	}
 
-	function Filter($message)
+	public static function Filter($message)
 	{
 		global $USER, $DB, $CACHE_MANAGER, $APPLICATION;
 		static $arFilterPattern = array();
@@ -597,10 +601,10 @@ class CAllFilterUnquotableWords
 				$replace = COption::GetOptionString("forum", "FILTER_RPL", "*");
 				while ($res = $db_res->Fetch())
 				{
-					if (strlen(trim($res["PATTERN"])) > 0 )
+					if (trim($res["PATTERN"]) <> '' )
 					{
 						$arFilterPattern[LANGUAGE_ID]["pattern"][] = trim($res["PATTERN"]);
-						$arFilterPattern[LANGUAGE_ID]["replacement"][] = strlen($res["REPLACEMENT"]) > 0 ? " ".$res["REPLACEMENT"]." " : " ".$replace." ";
+						$arFilterPattern[LANGUAGE_ID]["replacement"][] = $res["REPLACEMENT"] <> '' ? " ".$res["REPLACEMENT"]." " : " ".$replace." ";
 					}
 				}
 			}
@@ -627,4 +631,3 @@ class CAllFilterUnquotableWords
 		return trim($message);
 	}
 }
-?>

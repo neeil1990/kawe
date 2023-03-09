@@ -23,7 +23,8 @@ class CASDiblockPropSection {
 			'GetPublicViewHTML' => array(__CLASS__, 'GetPublicViewHTML'),
 			'GetAdminFilterHTML' => array(__CLASS__,'GetAdminFilterHTML'),
 			'GetSettingsHTML' => array(__CLASS__,'GetSettingsHTML'),
-			'PrepareSettings' => array(__CLASS__,'PrepareSettings')
+			'PrepareSettings' => array(__CLASS__,'PrepareSettings'),
+			'GetUIFilterProperty' => array(__CLASS__, 'GetUIFilterProperty')
 		);
 	}
 
@@ -90,7 +91,7 @@ class CASDiblockPropSection {
 		return $arResult;
 	}
 
-	public function ConvertToDB($arProperty, $value) {
+	public static function ConvertToDB($arProperty, $value) {
 		if (isset($value['VALUE']) && $value['VALUE']>0) {
 			$value['VALUE'] = intval($value['VALUE']);
 		}
@@ -197,6 +198,22 @@ class CASDiblockPropSection {
 		$strResult = ob_get_contents();
 		ob_end_clean();
 		return $strResult;
+	}
+
+	public static function GetUIFilterProperty($property, $strHTMLControlName, &$fields) {
+		$arSettings = self::PrepareSettings($property);
+		if (self::$treeCache === null) {
+			self::GetTree($property['IBLOCK_ID'], $arSettings['MAX_LEVEL']);
+		}
+		$items = array();
+		foreach (self::$treeCache as $section) {
+			$items[$section["ID"]] = str_repeat(". ", $section["DEPTH_LEVEL"] - 1).$section["NAME"];
+		}
+		unset($section);
+		$fields['type'] = 'list';
+		$fields['items'] = $items;
+		$fields['params'] = array("multiple" => "Y");
+		unset($items);
 	}
 
 	public static function GetSettingsHTML($arFields, $strHTMLControlName, &$arPropertyFields) {

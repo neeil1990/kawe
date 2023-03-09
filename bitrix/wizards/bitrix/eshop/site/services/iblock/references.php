@@ -133,7 +133,7 @@ if (!$dbHblock->Fetch())
 			)
 		);
 		$arLanguages = Array();
-		$rsLanguage = CLanguage::GetList($by, $order, array());
+		$rsLanguage = CLanguage::GetList();
 		while($arLanguage = $rsLanguage->Fetch())
 			$arLanguages[] = $arLanguage["LID"];
 
@@ -162,7 +162,7 @@ if (!$dbHblock->Fetch())
 
 $dbHblock = HL\HighloadBlockTable::getList(
 	array(
-		"filter" => array("NAME" => "BrandReference", "TABLE_NAME" => "eshop_color_reference")
+		"filter" => array("NAME" => "BrandReference", "TABLE_NAME" => "eshop_brand_reference")
 	)
 );
 if (!$dbHblock->Fetch())
@@ -290,7 +290,7 @@ if (!$dbHblock->Fetch())
 			)
 		);
 		$arLanguages = Array();
-		$rsLanguage = CLanguage::GetList($by, $order, array());
+		$rsLanguage = CLanguage::GetList();
 		while($arLanguage = $rsLanguage->Fetch())
 			$arLanguages[] = $arLanguage["LID"];
 

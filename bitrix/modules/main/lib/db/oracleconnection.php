@@ -2,8 +2,7 @@
 namespace Bitrix\Main\DB;
 
 use Bitrix\Main\ArgumentException;
-use Bitrix\Main\Diag;
-use Bitrix\Main\Entity;
+use Bitrix\Main\ORM\Fields\ScalarField;
 
 /**
  * Class OracleConnection
@@ -22,7 +21,7 @@ class OracleConnection extends Connection
 	 **********************************************************/
 
 	/**
-	 * @return \Bitrix\Main\Db\SqlHelper
+	 * @inheritDoc
 	 */
 	protected function createSqlHelper()
 	{
@@ -39,7 +38,7 @@ class OracleConnection extends Connection
 	 * Throws exception on failure.
 	 *
 	 * @return void
-	 * @throws \Bitrix\Main\DB\ConnectionException
+	 * @throws ConnectionException
 	 */
 	protected function connectInternal()
 	{
@@ -80,18 +79,7 @@ class OracleConnection extends Connection
 	 *********************************************************/
 
 	/**
-	 * Executes a query against connected database.
-	 * Rises SqlQueryException on any database error.
-	 * <p>
-	 * When object $trackerQuery passed then calls its startQuery and finishQuery
-	 * methods before and after query execution.
-	 *
-	 * @param string                            $sql Sql query.
-	 * @param array                             $binds Array of binds.
-	 * @param \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery Debug collector object.
-	 *
-	 * @return resource
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	protected function queryInternal($sql, array $binds = null, \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery = null)
 	{
@@ -173,12 +161,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Returns database depended result of the query.
-	 *
-	 * @param resource $result Result of internal query function.
-	 * @param \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery Debug collector object.
-	 *
-	 * @return Result
+	 * @inheritDoc
 	 */
 	protected function createResult($result, \Bitrix\Main\Diag\SqlTrackerQuery $trackerQuery = null)
 	{
@@ -186,22 +169,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Executes a query to the database.
-	 *
-	 * - query($sql)
-	 * - query($sql, $limit)
-	 * - query($sql, $offset, $limit)
-	 * - query($sql, $binds)
-	 * - query($sql, $binds, $limit)
-	 * - query($sql, $binds, $offset, $limit)
-	 *
-	 * @param string $sql Sql query.
-	 * @param array $binds Array of binds.
-	 * @param int $offset Offset of the first row to return, starting from 0.
-	 * @param int $limit Limit rows count.
-	 *
-	 * @return Result
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function query($sql)
 	{
@@ -212,7 +180,7 @@ class OracleConnection extends Connection
 			$binds1 = $binds2 = "";
 			foreach ($binds as $key => $value)
 			{
-				if (strlen($value) > 0)
+				if ($value <> '')
 				{
 					if ($binds1 != "")
 					{
@@ -233,16 +201,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Adds row to table and returns ID of the added row.
-	 * <p>
-	 * $identity parameter must be null when table does not have autoincrement column.
-	 *
-	 * @param string $tableName Name of the table for insertion of new row..
-	 * @param array $data Array of columnName => Value pairs.
-	 * @param string $identity For Oracle only.
-	 *
-	 * @return integer
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function add($tableName, array $data, $identity = "ID")
 	{
@@ -294,7 +253,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * @return integer
+	 * @inheritDoc
 	 */
 	public function getInsertedId()
 	{
@@ -302,9 +261,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Returns affected rows count from last executed query.
-	 *
-	 * @return integer
+	 * @inheritDoc
 	 */
 	public function getAffectedRowsCount()
 	{
@@ -312,11 +269,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Checks if a table exists.
-	 *
-	 * @param string $tableName The table name.
-	 *
-	 * @return boolean
+	 * @inheritDoc
 	 */
 	public function isTableExists($tableName)
 	{
@@ -332,15 +285,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Checks if an index exists.
-	 * Actual columns in the index may differ from requested.
-	 * $columns may present an "prefix" of actual index columns.
-	 *
-	 * @param string $tableName A table name.
-	 * @param array  $columns An array of columns in the index.
-	 *
-	 * @return boolean
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function isIndexExists($tableName, array $columns)
 	{
@@ -348,14 +293,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Returns the name of an index.
-	 *
-	 * @param string $tableName A table name.
-	 * @param array $columns An array of columns in the index.
-	 * @param bool $strict The flag indicating that the columns in the index must exactly match the columns in the $arColumns parameter.
-	 *
-	 * @return string|null Name of the index or null if the index doesn't exist.
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function getIndexName($tableName, array $columns, $strict = false)
 	{
@@ -384,34 +322,11 @@ class OracleConnection extends Connection
 			}
 		}
 
-		$columnsList = implode(",", $columns);
-		foreach ($indexes as $indexName => $indexColumns)
-		{
-			ksort($indexColumns);
-			$indexColumnList = implode(",", $indexColumns);
-			if ($strict)
-			{
-				if ($indexColumnList === $columnsList)
-					return $indexName;
-			}
-			else
-			{
-				if (substr($indexColumnList, 0, strlen($columnsList)) === $columnsList)
-					return $indexName;
-			}
-		}
-
-		return null;
+		return static::findIndex($indexes, $columns, $strict);
 	}
 
 	/**
-	 * Returns fields objects according to the columns of a table.
-	 * Table must exists.
-	 *
-	 * @param string $tableName The table name.
-	 *
-	 * @return Entity\ScalarField[] An array of objects with columns information.
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function getTableFields($tableName)
 	{
@@ -429,14 +344,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * @param string $tableName Name of the new table.
-	 * @param \Bitrix\Main\Entity\ScalarField[] $fields Array with columns descriptions.
-	 * @param string[] $primary Array with primary key column names.
-	 * @param string[] $autoincrement Which columns will be auto incremented ones.
-	 *
-	 * @return void
-	 * @throws \Bitrix\Main\ArgumentException
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function createTable($tableName, $fields, $primary = array(), $autoincrement = array())
 	{
@@ -445,7 +353,7 @@ class OracleConnection extends Connection
 
 		foreach ($fields as $columnName => $field)
 		{
-			if (!($field instanceof Entity\ScalarField))
+			if (!($field instanceof ScalarField))
 			{
 				throw new ArgumentException(sprintf(
 					'Field `%s` should be an Entity\ScalarField instance', $columnName
@@ -512,13 +420,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Renames the table. Renamed table must exists and new name must not be occupied by any database object.
-	 *
-	 * @param string $currentName Old name of the table.
-	 * @param string $newName New name of the table.
-	 *
-	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function renameTable($currentName, $newName)
 	{
@@ -554,12 +456,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Drops the table.
-	 *
-	 * @param string $tableName Name of the table to be dropped.
-	 *
-	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function dropTable($tableName)
 	{
@@ -580,10 +477,7 @@ class OracleConnection extends Connection
 	 *********************************************************/
 
 	/**
-	 * Starts new database transaction.
-	 *
-	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function startTransaction()
 	{
@@ -591,10 +485,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Commits started database transaction.
-	 *
-	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function commitTransaction()
 	{
@@ -604,10 +495,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Rollbacks started database transaction.
-	 *
-	 * @return void
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function rollbackTransaction()
 	{
@@ -635,13 +523,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Returns connected database version.
-	 * Version presented in array of two elements.
-	 * - First (with index 0) is database version.
-	 * - Second (with index 1) is true when light/express version of database is used.
-	 *
-	 * @return array
-	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @inheritDoc
 	 */
 	public function getVersion()
 	{
@@ -651,7 +533,7 @@ class OracleConnection extends Connection
 			if ($version != null)
 			{
 				$version = trim($version);
-				$this->versionExpress = (strpos($version, "Express Edition") > 0);
+				$this->versionExpress = (mb_strpos($version, "Express Edition") > 0);
 				preg_match("#[0-9]+\\.[0-9]+\\.[0-9]+#", $version, $arr);
 				$this->version = $arr[0];
 			}
@@ -661,10 +543,7 @@ class OracleConnection extends Connection
 	}
 
 	/**
-	 * Returns error message of last failed database operation.
-	 *
-	 * @param resource $resource Connection or query result resource.
-	 * @return string
+	 * @inheritDoc
 	 */
 	protected function getErrorMessage($resource = null)
 	{

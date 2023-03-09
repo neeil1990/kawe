@@ -26,8 +26,8 @@ Loader::includeModule('socialservices');
 
 CUtil::JSPostUnescape();
 
-Loc::loadMessages(dirname(__FILE__).'/../include.php');
-Loc::loadMessages(dirname(__FILE__).'/../admin/seo_adv.php');
+Loc::loadMessages(__DIR__.'/../include.php');
+Loc::loadMessages(__DIR__.'/../admin/seo_adv.php');
 
 $action = isset($_REQUEST['action']) ? $_REQUEST["action"] : null;
 
@@ -137,7 +137,7 @@ if(isset($action) && !$bNeedAuth)
 				if(is_array($phraseList))
 				{
 					$phraseList = array_values(array_unique($phraseList));
-					$geoList = strlen($geo) > 0 ? preg_split("/[^0-9\\-]+\\s*/", $geo) : array();
+					$geoList = $geo <> '' ? preg_split("/[^0-9\\-]+\\s*/", $geo) : array();
 
 					$phraseHash = md5(implode('|', $phraseList).'|||'.$geo);
 
@@ -209,7 +209,7 @@ if(isset($action) && !$bNeedAuth)
 				if(is_array($phraseList))
 				{
 					$phraseList = array_values(array_unique($phraseList));
-					$geoList = strlen($geo) > 0 ? preg_split("/[^0-9\-]+\\s*/", $geo) : array();
+					$geoList = $geo <> '' ? preg_split("/[^0-9\-]+\\s*/", $geo) : array();
 
 					$phraseHash = md5(implode('|', $phraseList).'|||'.$geo);
 
@@ -377,7 +377,7 @@ if(isset($action) && !$bNeedAuth)
 							$campaignList[$campaign['ID']] = $campaign;
 						}
 
-						require(dirname(__FILE__)."/../admin/tab/seo_search_yandex_direct_list_link.php");
+						require(__DIR__."/../admin/tab/seo_search_yandex_direct_list_link.php");
 					}
 					elseif($_REQUEST['get_list_html'] == '2')
 					{
@@ -407,7 +407,7 @@ if(isset($action) && !$bNeedAuth)
 
 						$ID = $bannerId;
 
-						require(dirname(__FILE__)."/../admin/tab/seo_search_yandex_direct_list_banner.php");
+						require(__DIR__."/../admin/tab/seo_search_yandex_direct_list_banner.php");
 					}
 
 					$res['list_html'] = ob_get_contents();
@@ -923,7 +923,7 @@ if(isset($action) && !$bNeedAuth)
 							}
 
 							ob_start();
-							require(dirname(__FILE__)."/../admin/tab/seo_search_yandex_direct_stat.php");
+							require(__DIR__."/../admin/tab/seo_search_yandex_direct_stat.php");
 							$res = array('html' => ob_get_contents());
 							ob_end_clean();
 						}

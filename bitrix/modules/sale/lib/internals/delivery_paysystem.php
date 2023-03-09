@@ -7,6 +7,7 @@ use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Delivery\Restrictions;
 use Bitrix\Sale\Delivery\Services;
 use Bitrix\Sale\Services\PaySystem\Restrictions\Manager;
+use Bitrix\Sale\PaySystem;
 
 Loc::loadMessages(__FILE__);
 
@@ -20,7 +21,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Sale
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_DeliveryPaySystem_Query query()
+ * @method static EO_DeliveryPaySystem_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_DeliveryPaySystem_Result getById($id)
+ * @method static EO_DeliveryPaySystem_Result getList(array $parameters = array())
+ * @method static EO_DeliveryPaySystem_Entity getEntity()
+ * @method static \Bitrix\Sale\Internals\EO_DeliveryPaySystem createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Internals\EO_DeliveryPaySystem_Collection createCollection()
+ * @method static \Bitrix\Sale\Internals\EO_DeliveryPaySystem wakeUpObject($row)
+ * @method static \Bitrix\Sale\Internals\EO_DeliveryPaySystem_Collection wakeUpCollection($rows)
+ */
 
 class DeliveryPaySystemTable extends \Bitrix\Main\Entity\DataManager
 {
@@ -379,7 +393,7 @@ class DeliveryPaySystemTable extends \Bitrix\Main\Entity\DataManager
 		$restrictions = array();
 		$dbR = \Bitrix\Sale\Internals\ServiceRestrictionTable::getList(array(
 			'filter' => array(
-				'=CLASS_NAME' => '\Bitrix\Sale\Services\PaySystem\Restrictions\Delivery'
+				'=CLASS_NAME' => '\\'.\Bitrix\Sale\Services\PaySystem\Restrictions\Delivery::class
 			),
 			'select' => array('SERVICE_ID')
 		));
@@ -459,7 +473,7 @@ class DeliveryPaySystemTable extends \Bitrix\Main\Entity\DataManager
 			$sql = "";
 
 			foreach($needRestriction as $deliveryId)
-				$sql .= ($sql == "" ? " " : ", ")."(".$sqlHelper->forSql($deliveryId).", '".$sqlHelper->forSql('\Bitrix\Sale\Services\PaySystem\Restrictions\Delivery')."', ".Manager::SERVICE_TYPE_PAYMENT.")";
+				$sql .= ($sql == "" ? " " : ", ")."(".$sqlHelper->forSql($deliveryId).", '".$sqlHelper->forSql('\\'.\Bitrix\Sale\Services\PaySystem\Restrictions\Delivery::class)."', ".Manager::SERVICE_TYPE_PAYMENT.")";
 
 			$sql = "INSERT INTO ".\Bitrix\Sale\Internals\ServiceRestrictionTable::getTableName()."(SERVICE_ID, CLASS_NAME, SERVICE_TYPE) VALUES".$sql;
 			$con->queryExecute($sql);
@@ -470,7 +484,7 @@ class DeliveryPaySystemTable extends \Bitrix\Main\Entity\DataManager
 	{
 		$con = \Bitrix\Main\Application::getConnection();
 		$sqlHelper = $con->getSqlHelper();
-		$entityId = $sqlHelper->forSql($entityId);
+		$entityId = (int)$entityId;
 		$linkDirection = $sqlHelper->forSql($linkDirection);
 
 		$sql = "INSERT INTO ".
@@ -487,7 +501,7 @@ class DeliveryPaySystemTable extends \Bitrix\Main\Entity\DataManager
 			else
 				$first = false;
 
-			$id = $sqlHelper->forSql($id);
+			$id = (int)$id;
 
 			if($entityType == self::ENTITY_TYPE_DELIVERY)
 				$sql .= " (".$entityId.", ".$id;
@@ -763,7 +777,7 @@ class DeliveryPaySystemTable extends \Bitrix\Main\Entity\DataManager
 				),
 				'select' => array('*', 'PARENT_CLASS_NAME' => 'PARENT.CLASS_NAME')
 			));
-			
+
 			while($dsrv = $res->fetch())
 			{
 				$obj = Services\Manager::createObject($dsrv);
@@ -777,7 +791,7 @@ class DeliveryPaySystemTable extends \Bitrix\Main\Entity\DataManager
 		}
 		else
 		{
-			$dbRes = PaySystemActionTable::getList(array(
+			$dbRes = PaySystem\Manager::getList(array(
 				'filter' => array("ACTIVE" =>  "Y"),
 				'select' => array("ID")
 			));

@@ -8,7 +8,7 @@ $PREVIEW_HEIGHT = intval($arParams["PREVIEW_HEIGHT"]);
 if ($PREVIEW_HEIGHT <= 0)
 	$PREVIEW_HEIGHT = 75;
 
-$arParams["PRICE_VAT_INCLUDE"] = $arParams["PRICE_VAT_INCLUDE"] !== "N";
+$arParams["PRICE_VAT_INCLUDE"] = (!isset($arParams["PRICE_VAT_INCLUDE"]) || $arParams["PRICE_VAT_INCLUDE"] !== "N");
 
 $arCatalogs = false;
 
@@ -23,7 +23,7 @@ foreach($arResult["CATEGORIES"] as $category_id => $arCategory)
 			$arResult["SEARCH"][] = &$arResult["CATEGORIES"][$category_id]["ITEMS"][$i];
 			if (
 				$arItem["MODULE_ID"] == "iblock"
-				&& substr($arItem["ITEM_ID"], 0, 1) !== "S"
+				&& mb_substr($arItem["ITEM_ID"], 0, 1) !== "S"
 			)
 			{
 				if ($arCatalogs === false)

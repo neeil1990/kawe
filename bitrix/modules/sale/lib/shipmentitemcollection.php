@@ -21,8 +21,6 @@ class ShipmentItemCollection
 
 	protected $shipmentItemIndexMap = array();
 
-	private static $eventClassName = null;
-
 	/**
 	 * @return Shipment
 	 */
@@ -33,27 +31,18 @@ class ShipmentItemCollection
 
 	/**
 	 * @param Basket $basket
-	 *
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
 	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
 	 * @throws Main\NotSupportedException
 	 * @throws Main\ObjectNotFoundException
-	 * @throws \ErrorException
 	 */
 	public function resetCollection(Basket $basket)
 	{
 		if ($this->getShipment()->isShipped())
+		{
 			throw new Main\NotSupportedException();
-
-		/** @var Shipment $shipment */
-		if (!$shipment = $this->getShipment())
-		{
-			throw new Main\ObjectNotFoundException('Entity "Shipment" not found');
-		}
-
-		/** @var ShipmentCollection $shipmentCollection */
-		if (!$shipmentCollection = $shipment->getCollection())
-		{
-			throw new Main\ObjectNotFoundException('Entity "ShipmentCollection" not found');
 		}
 
 		if (!empty($this->collection))
@@ -66,18 +55,24 @@ class ShipmentItemCollection
 			}
 		}
 
-		$quantityList = array();
+		$quantityList = [];
+
+		/** @var ShipmentCollection $shipmentCollection */
+		$shipmentCollection = $this->getShipment()->getCollection();
 
 		/** @var BasketItem $basketItem */
 		foreach ($basket as $basketItem)
 		{
-			$quantityList[$basketItem->getBasketCode()] = $shipmentCollection->getBasketItemQuantity($basketItem);
+			$quantityList[$basketItem->getBasketCode()] = $shipmentCollection->getBasketItemDistributedQuantity($basketItem);
 		}
 
+		/** @var ShipmentItem $itemClassName */
+		$itemClassName = static::getItemCollectionClassName();
+
 		/** @var BasketItem $basketItem */
 		foreach ($basket as $basketItem)
 		{
-			$shipmentItem = ShipmentItem::create($this, $basketItem);
+			$shipmentItem = $itemClassName::create($this, $basketItem);
 			$this->addItem($shipmentItem);
 
 			$basketItemQuantity = 0;
@@ -95,25 +90,35 @@ class ShipmentItemCollection
 			{
 				$this->addBundleToCollection($basketItem);
 			}
-
 		}
 	}
 
 	/**
 	 * @param BasketItem $basketItem
-	 * @return ShipmentItem
+	 * @return ShipmentItem|null
+	 * @throws Main\ArgumentNullException
 	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\NotSupportedException
+	 * @throws Main\ObjectNotFoundException
 	 */
 	public function createItem(BasketItem $basketItem)
 	{
 		if ($this->getShipment()->isShipped())
+		{
 			return null;
+		}
 
 		$shipmentItem = $this->getItemByBasketCode($basketItem->getBasketCode());
 		if ($shipmentItem !== null)
+		{
 			return $shipmentItem;
+		}
 
-		$shipmentItem = ShipmentItem::create($this, $basketItem);
+		/** @var ShipmentItem $itemClassName */
+		$itemClassName = static::getItemCollectionClassName();
+
+		$shipmentItem = $itemClassName::create($this, $basketItem);
 
 		$shipmentItem->setCollection($this);
 		$this->addItem($shipmentItem);
@@ -208,7 +213,9 @@ class ShipmentItemCollection
 			if ($quantity == 0)
 				continue;
 
-			$shipmentItemBundle = ShipmentItem::create($this, $bundleBasketItem);
+			/** @var ShipmentItem $itemClassName */
+			$itemClassName = static::getItemCollectionClassName();
+			$shipmentItemBundle = $itemClassName::create($this, $bundleBasketItem);
 			$this->addItem($shipmentItemBundle);
 
 
@@ -276,7 +283,9 @@ class ShipmentItemCollection
 	 * @param null $name
 	 * @param null $oldValue
 	 * @param null $value
-	 * @return bool
+	 * @return Result
+	 * @throws Main\NotSupportedException
+	 * @throws Main\SystemException
 	 */
 	public function onItemModify(Internals\CollectableEntity $item, $name = null, $oldValue = null, $value = null)
 	{
@@ -320,17 +329,15 @@ class ShipmentItemCollection
 	}
 
 	/**
+	 * Returns shippable items
+	 *
 	 * @return Internals\CollectionFilterIterator
 	 */
 	public function getShippableItems()
 	{
 		$callback = function (ShipmentItem $shipmentItem)
 		{
-			$basketItem = $shipmentItem->getBasketItem();
-			if ($basketItem)
-				return !$basketItem->isBundleParent();
-
-			return true;
+			return $shipmentItem->isShippable();
 		};
 
 		return new Internals\CollectionFilterIterator($this->getIterator(), $callback);
@@ -355,20 +362,43 @@ class ShipmentItemCollection
 
 	/**
 	 * @return float|int
+	 * @throws Main\ArgumentNullException
 	 */
 	public function getPrice()
 	{
 		$price = 0;
+
 		$sellableItems = $this->getSellableItems();
 		/** @var ShipmentItem $shipmentItem */
 		foreach ($sellableItems as $shipmentItem)
 		{
 			/** @var BasketItem $basketItem */
 			if ($basketItem = $shipmentItem->getBasketItem())
-				$price += $basketItem->getPrice() * $shipmentItem->getQuantity();
+			{
+				$price += PriceMaths::roundPrecision($basketItem->getPriceWithVat() * $shipmentItem->getQuantity());
+			}
 		}
 
 		return $price;
+	}
+
+	/**
+	 * @return float
+	 * @throws Main\ArgumentNullException
+	 */
+	public function getWeight() : float
+	{
+		$weight = 0;
+
+		/** @var ShipmentItem $shipmentItem */
+		foreach ($this->getShippableItems() as $shipmentItem)
+		{
+			$basketItem = $shipmentItem->getBasketItem();
+
+			$weight += $basketItem->getWeight() * $shipmentItem->getQuantity();
+		}
+
+		return $weight;
 	}
 
 	/**
@@ -411,7 +441,7 @@ class ShipmentItemCollection
 		$itemsFromDb = array();
 		if ($this->getShipment()->getId() > 0)
 		{
-			$itemsFromDbList = Internals\ShipmentItemTable::getList(
+			$itemsFromDbList = static::getList(
 				array(
 					"filter" => array("ORDER_DELIVERY_ID" => $this->getShipment()->getId()),
 					"select" => array("ID", 'BASKET_ID')
@@ -428,7 +458,7 @@ class ShipmentItemCollection
 			/** @var BasketItem $basketItem */
 			if (!$basketItem = $shipmentItem->getBasketItem())
 			{
-				throw new Main\ObjectNotFoundException('Entity "BasketItem" not found');
+				continue;
 			}
 
 			if ($basketItem->isBundleParent())
@@ -451,17 +481,17 @@ class ShipmentItemCollection
 		/** @var ShipmentItem $shipmentItem */
 		foreach ($this->collection as $shipmentItem)
 		{
+			/** @var BasketItem $basketItem */
+			if (!$basketItem = $shipmentItem->getBasketItem())
+			{
+				continue;
+			}
+
 			$isNew = (bool)($shipmentItem->getId() <= 0);
 			$isChanged = $shipmentItem->isChanged();
 
 			if ($order->getId() > 0 && $isChanged)
 			{
-				/** @var BasketItem $basketItem */
-				if (!$basketItem = $shipmentItem->getBasketItem())
-				{
-					throw new Main\ObjectNotFoundException('Entity "BasketItem" not found');
-				}
-
 				$logFields = array(
 					"BASKET_ID" => $basketItem->getId(),
 					"BASKET_ITEM_NAME" => $basketItem->getField("NAME"),
@@ -483,16 +513,24 @@ class ShipmentItemCollection
 				}
 			}
 
-
-			if ($shipment->isSystem() && $shipmentItem->getQuantity() == 0)
-				continue;
-
 			$r = $shipmentItem->save();
 			if ($r->isSuccess())
 			{
 				if ($order->getId() > 0 && $isChanged)
 				{
-					OrderHistory::addLog('SHIPMENT_ITEM', $order->getId(), $isNew ? 'SHIPMENT_ITEM_ADD' : 'SHIPMENT_ITEM_UPDATE', $shipmentItem->getId(), $shipmentItem, $logFields , OrderHistory::SALE_ORDER_HISTORY_LOG_LEVEL_1);
+					$registry = Registry::getInstance(static::getRegistryType());
+
+					/** @var OrderHistory $orderHistory */
+					$orderHistory = $registry->getOrderHistoryClassName();
+					$orderHistory::addLog(
+						'SHIPMENT_ITEM',
+						$order->getId(),
+						$isNew ? 'SHIPMENT_ITEM_ADD' : 'SHIPMENT_ITEM_UPDATE',
+						$shipmentItem->getId(),
+						$shipmentItem,
+						$logFields,
+						$orderHistory::SALE_ORDER_HISTORY_LOG_LEVEL_1
+					);
 				}
 			}
 			else
@@ -501,21 +539,9 @@ class ShipmentItemCollection
 			}
 
 			if (isset($itemsFromDb[$shipmentItem->getId()]))
+			{
 				unset($itemsFromDb[$shipmentItem->getId()]);
-
-		}
-
-		/** @var ShipmentCollection $shipmentCollection */
-		if (!$shipmentCollection = $shipment->getCollection())
-		{
-			throw new Main\ObjectNotFoundException('Entity "ShipmentCollection" not found');
-		}
-
-
-		/** @var Order $order */
-		if(!$order = $shipmentCollection->getOrder())
-		{
-			throw new Main\ObjectNotFoundException('Entity "Order" not found');
+			}
 		}
 
 		/** @var Basket $basket */
@@ -524,25 +550,20 @@ class ShipmentItemCollection
 			throw new Main\ObjectNotFoundException('Entity "Basket" not found');
 		}
 
-		if (self::$eventClassName === null)
-		{
-			$registry = Registry::getInstance(Registry::REGISTRY_TYPE_ORDER);
-			$shipmentItemClassName = $registry->getShipmentItemClassName();
-			self::$eventClassName = $shipmentItemClassName::getEntityEventName();
-		}
-
 		foreach ($itemsFromDb as $k => $v)
 		{
+			$v['ENTITY_REGISTRY_TYPE'] = static::getRegistryType();
+
 			/** @var Main\Event $event */
-			$event = new Main\Event('sale', "OnBefore".self::$eventClassName."Deleted", array(
+			$event = new Main\Event('sale', "OnBeforeSaleShipmentItemDeleted", array(
 					'VALUES' => $v,
 			));
 			$event->send();
 
-			Internals\ShipmentItemTable::deleteWithItems($k);
+			static::deleteInternal($k);
 
 			/** @var Main\Event $event */
-			$event = new Main\Event('sale', "On".self::$eventClassName."Deleted", array(
+			$event = new Main\Event('sale', "OnSaleShipmentItemDeleted", array(
 					'VALUES' => $v,
 			));
 			$event->send();
@@ -550,8 +571,11 @@ class ShipmentItemCollection
 			/** @var BasketItem $basketItem */
 			if ($basketItem = $basket->getItemById($k))
 			{
+				$registry = Registry::getInstance(static::getRegistryType());
 
-				OrderHistory::addAction(
+				/** @var OrderHistory $orderHistory */
+				$orderHistory = $registry->getOrderHistoryClassName();
+				$orderHistory::addAction(
 					'SHIPMENT',
 					$order->getId(),
 					'SHIPMENT_ITEM_BASKET_REMOVED',
@@ -568,7 +592,11 @@ class ShipmentItemCollection
 
 		if ($order->getId() > 0)
 		{
-			OrderHistory::collectEntityFields('SHIPMENT_ITEM', $order->getId());
+			$registry = Registry::getInstance(static::getRegistryType());
+
+			/** @var OrderHistory $orderHistory */
+			$orderHistory = $registry->getOrderHistoryClassName();
+			$orderHistory::collectEntityFields('SHIPMENT_ITEM', $order->getId());
 		}
 
 		return $result;
@@ -577,12 +605,29 @@ class ShipmentItemCollection
 	/**
 	 * @return ShipmentItemCollection
 	 */
-	protected static function createShipmentItemCollectionObject()
+	private static function createShipmentItemCollectionObject()
 	{
-		$registry = Registry::getInstance(Registry::REGISTRY_TYPE_ORDER);
+		$registry = Registry::getInstance(static::getRegistryType());
 		$shipmentItemCollectionClassName = $registry->getShipmentItemCollectionClassName();
 
 		return new $shipmentItemCollectionClassName();
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getRegistryType()
+	{
+		return Registry::REGISTRY_TYPE_ORDER;
+	}
+
+	/**
+	 * @return string
+	 */
+	private static function getItemCollectionClassName()
+	{
+		$registry = Registry::getInstance(static::getRegistryType());
+		return $registry->getShipmentItemClassName();
 	}
 
 	/**
@@ -613,7 +658,9 @@ class ShipmentItemCollection
 				throw new Main\ObjectNotFoundException('Entity "Order" not found');
 			}
 
-			$shipmentItemList = ShipmentItem::loadForShipment($shipment->getId());
+			/** @var ShipmentItem $itemClassName */
+			$itemClassName = static::getItemCollectionClassName();
+			$shipmentItemList = $itemClassName::loadForShipment($shipment->getId());
 
 			/** @var ShipmentItem $shipmentItem */
 			foreach ($shipmentItemList as $shipmentItem)
@@ -632,7 +679,11 @@ class ShipmentItemCollection
 					$r = new Result();
 					$r->addError( new ResultError($msg, 'SALE_SHIPMENT_ITEM_COLLECTION_BASKET_ITEM_NOT_FOUND'));
 
-					EntityMarker::addMarker($order, $shipment, $r);
+
+					$registry = Registry::getInstance(static::getRegistryType());
+					/** @var EntityMarker $entityMarker */
+					$entityMarker = $registry->getEntityMarkerClassName();
+					$entityMarker::addMarker($order, $shipment, $r);
 					if (!$shipment->isSystem())
 					{
 						$shipment->setField('MARKED', 'Y');
@@ -645,15 +696,45 @@ class ShipmentItemCollection
 	}
 
 	/**
-	 * @param array $filter
+	 * @param array $parameters
 	 * @return Main\DB\Result
 	 * @throws Main\ArgumentException
 	 */
-	public static function getList(array $filter = array())
+	public static function getList(array $parameters = array())
 	{
-		return Internals\ShipmentItemTable::getList($filter);
+		return Internals\ShipmentItemTable::getList($parameters);
 	}
 
+	/**
+	 * @param $primary
+	 * @return Main\Entity\DeleteResult
+	 */
+	protected function deleteInternal($primary)
+	{
+		return Internals\ShipmentItemTable::deleteWithItems($primary);
+	}
+
+	/**
+	 * @param BasketItem $basketItem
+	 * @return Result
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotSupportedException
+	 * @throws Main\ObjectNotFoundException
+	 * @throws Main\SystemException
+	 */
+	public function onBeforeBasketItemDelete(BasketItem $basketItem)
+	{
+		$result = new Result();
+
+		$r = $this->deleteByBasketItem($basketItem);
+		if (!$r->isSuccess())
+		{
+			$result->addErrors($r->getErrors());
+		}
+
+		return $result;
+	}
 
 	/**
 	 * @param $action
@@ -661,64 +742,44 @@ class ShipmentItemCollection
 	 * @param null $name
 	 * @param null $oldValue
 	 * @param null $value
-	 * @return bool
+	 * @return Result
+	 * @throws Main\ArgumentNullException
 	 * @throws Main\ArgumentOutOfRangeException
-	 * @throws Main\NotImplementedException
-	 * @throws \Exception
+	 * @throws Main\NotSupportedException
+	 * @throws Main\ObjectNotFoundException
+	 * @throws Main\SystemException
 	 */
 	public function onBasketModify($action, BasketItem $basketItem, $name = null, $oldValue = null, $value = null)
 	{
-		throw new Main\NotImplementedException();
+		$result = new Result();
 
-		$foundItem = false;
-		/** @var ShipmentItem $shipmentItem */
-		foreach ($this->collection as $shipmentItemIndex => $shipmentItem)
+		if ($action === EventActions::ADD)
 		{
-			$code = $shipmentItem->getBasketCode();
-			if ($code === $basketItem->getBasketCode())
+			$shipmentItem = $this->createItem($basketItem);
+			if ($shipmentItem)
 			{
 				$shipmentItem->onBasketModify($action, $basketItem, $name, $oldValue, $value);
-
-				if ($action == "ADD")
-				{
-					$foundItem = true;
-					break;
-				}
-				elseif ($action === "DELETE")
-				{
-					unset($this->collection[$shipmentItemIndex]);
-				}
-
-				return true;
 			}
+
+			return $result;
 		}
-
-		if (!$foundItem && $action == "ADD" || ($action == "UPDATE" && $value > $oldValue))
+		elseif ($action === EventActions::UPDATE)
 		{
-			$shipmentFields = array(
-				'ORDER_DELIVERY' => $this->shipment,
-				'BASKET' => $basketItem,
-				'QUANTITY' => ($basketItem->getQuantity()),
-				'RESERVED_QUANTITY' => 0
-			);
+			$shipmentItem = $this->getItemByBasketCode($basketItem->getBasketCode());
 
-			if ($action == "UPDATE")
+			if (!$shipmentItem)
 			{
-				$shipmentItem->initFields($shipmentFields);
-				$shipmentFields['QUANTITY'] = $value - $oldValue;
+				$shipmentItem = $this->createItem($basketItem);
 			}
 
-			$shipmentItem = $this->createItem($basketItem);
-			$shipmentItem->initFields($shipmentFields);
-			return true;
+			$r = $shipmentItem->setField('QUANTITY', $value);
+			if (!$r->isSuccess())
+			{
+				return $result->addErrors($r->getErrors());
+			}
 		}
 
-		if ($action == "UPDATE" && $value < $oldValue)
-		{
-			throw new Main\SystemException("no quantity");
-		}
-
-		return false;
+		return $result;
 	}
 
 	/**
@@ -740,11 +801,12 @@ class ShipmentItemCollection
 
 	/**
 	 * @param BasketItem $basketItem
-	 *
 	 * @return Result
+	 * @throws Main\ArgumentNullException
 	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\NotSupportedException
 	 * @throws Main\ObjectNotFoundException
-	 * @throws \ErrorException
+	 * @throws Main\SystemException
 	 */
 	public function deleteByBasketItem(BasketItem $basketItem)
 	{
@@ -756,7 +818,6 @@ class ShipmentItemCollection
 		{
 			throw new Main\ObjectNotFoundException('Entity "Shipment" not found');
 		}
-
 
 		/** @var ShipmentItem $shipmentItem */
 		foreach ($this->collection as $shipmentItem)
@@ -823,9 +884,8 @@ class ShipmentItemCollection
 
 	/**
 	 * @param BasketItem $basketItem
-	 *
 	 * @return float|int
-	 * @throws Main\ObjectNotFoundException
+	 * @throws Main\ArgumentNullException
 	 */
 	public function getBasketItemQuantity(BasketItem $basketItem)
 	{
@@ -862,9 +922,12 @@ class ShipmentItemCollection
 
 	/**
 	 * @internal
-	 * @param \SplObjectStorage $cloneEntity
 	 *
-	 * @return ShipmentItemCollection
+	 * @param \SplObjectStorage $cloneEntity
+	 * @return Internals\EntityCollection|object
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ObjectNotFoundException
 	 */
 	public function createClone(\SplObjectStorage $cloneEntity)
 	{
@@ -873,13 +936,8 @@ class ShipmentItemCollection
 			return $cloneEntity[$this];
 		}
 
-		$shipmentItemCollectionClone = clone $this;
-		$shipmentItemCollectionClone->isClone = true;
-
-		if (!$cloneEntity->contains($this))
-		{
-			$cloneEntity[$this] = $shipmentItemCollectionClone;
-		}
+		/** @var ShipmentItemCollection $shipmentItemCollectionClone */
+		$shipmentItemCollectionClone = parent::createClone($cloneEntity);
 
 		/** @var Shipment $shipment */
 		if ($shipment = $this->shipment)
@@ -893,22 +951,6 @@ class ShipmentItemCollection
 			{
 				$shipmentItemCollectionClone->shipment = $cloneEntity[$shipment];
 			}
-
-		}
-
-
-		/**
-		 * @var int key
-		 * @var ShipmentItem $shipmentItem
-		 */
-		foreach ($shipmentItemCollectionClone->collection as $key => $shipmentItem)
-		{
-			if (!$cloneEntity->contains($shipmentItem))
-			{
-				$cloneEntity[$shipmentItem] = $shipmentItem->createClone($cloneEntity);
-			}
-
-			$shipmentItemCollectionClone->collection[$key] = $cloneEntity[$shipmentItem];
 		}
 
 		return $shipmentItemCollectionClone;
@@ -922,6 +964,7 @@ class ShipmentItemCollection
 	public function getErrorEntity($value)
 	{
 		$className = null;
+
 		/** @var ShipmentItem $shipmentItem */
 		foreach ($this->collection as $shipmentItem)
 		{

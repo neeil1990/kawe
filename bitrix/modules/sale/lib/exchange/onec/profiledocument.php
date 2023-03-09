@@ -1,7 +1,7 @@
 <?php
 namespace Bitrix\Sale\Exchange\OneC;
 
-use Bitrix\Sale\Exchange;
+use Bitrix\Main\Localization\Loc;
 
 /**
  * Class ProfileDocument
@@ -11,13 +11,50 @@ use Bitrix\Sale\Exchange;
  */
 class ProfileDocument extends UserProfileDocument
 {
-    private static $FIELD_INFOS = null;
-
 	/**
 	 * @return int
 	 */
-	public function getOwnerEntityTypeId()
+	public function getTypeId()
 	{
-		return Exchange\EntityType::PROFILE;
+		return DocumentType::PROFILE;
+	}
+
+	/**
+	 * @return array
+	 */
+	static protected function getMessageExport()
+	{
+		return Loc::loadLanguageFile($_SERVER["DOCUMENT_ROOT"].'/bitrix/modules/sale/general/export.php', self::CML_LANG_ID);
+	}
+
+	public function outputXml(array $fields, $level = 0)
+	{
+		$xml = '';
+		foreach ($fields as $name=>$value)
+		{
+			if(is_array($value))
+			{
+				switch ($name)
+				{
+					case 'REGISTRATION_ADDRESS':
+					case 'UR_ADDRESS':
+					case 'ADDRESS':
+					case 'CONTACTS':
+					case 'REPRESENTATIVES':
+						$xml .= $this->openNodeDirectory($level+2, $name);
+						$xml .= $this->outputXmlAddress($level+3, $value);
+						$xml .= $this->closeNodeDirectory($level+2, $name);
+						break;
+				}
+			}
+			else
+				$xml .= $this->formatXMLNode($level+2, $name, $value);
+		}
+		return $xml;
+	}
+
+	public function getNameNodeDocument()
+	{
+		return 'AGENT';
 	}
 }

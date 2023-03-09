@@ -12,11 +12,11 @@
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);?>
 <div id="fb-root"></div>
-<script>(function(d, s, id) {
+<script type="text/javascript">(function(d, s, id) {
 	var js, fjs = d.getElementsByTagName(s)[0];
 	if (d.getElementById(id)) return;
 	js = d.createElement(s); js.id = id;
-	js.src = "//connect.facebook.net/<?=GetMessage("ESHOP_FACEBOOK_PLUGIN_SET")?>/all.js#xfbml=1";
+	js.src = "https://connect.facebook.net/<?=GetMessage("ESHOP_FACEBOOK_PLUGIN_SET")?>/all.js#xfbml=1&version=v2.8";
 	fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script>
 <h4><?=GetMessage("ESHOP_SOCNET_TITLE")?></h4>

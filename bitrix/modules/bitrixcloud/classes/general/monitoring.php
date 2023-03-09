@@ -27,9 +27,7 @@ class CBitrixCloudMonitoring
 		if ($domainName != "")
 			$result[$domainName] = $domainName;
 
-		$by = "";
-		$order = "";
-		$siteList = CSite::GetList($by, $order, array("ACTIVE"=>"Y"));
+		$siteList = CSite::GetList('', '', array("ACTIVE"=>"Y"));
 		while($site = $siteList->Fetch())
 		{
 			$domains = explode("\r\n", $site["DOMAINS"]);
@@ -278,12 +276,15 @@ class CBitrixCloudMonitoring
 							&& $testResult->getStatus() === CBitrixCloudMonitoringResult::RED_LAMP
 						)
 						{
-							$uptime = explode("/", $testResult->getUptime());
-							$diff = $uptime[1] - $uptime[0];
-							if ($diff > $maxDiff)
+							if ($testResult->getUptime())
 							{
-								$maxDiff = $diff;
-								$result = $testResult->getUptime();
+								$uptime = explode("/", $testResult->getUptime());
+								$diff = $uptime[1] - $uptime[0];
+								if ($diff > $maxDiff)
+								{
+									$maxDiff = $diff;
+									$result = $testResult->getUptime();
+								}
 							}
 						}
 					}
@@ -298,12 +299,15 @@ class CBitrixCloudMonitoring
 						&& $testResult->getStatus() === CBitrixCloudMonitoringResult::RED_LAMP
 					)
 					{
-						$uptime = explode("/", $testResult->getUptime());
-						$diff = $uptime[1] - $uptime[0];
-						if ($diff > $maxDiff)
+						if ($testResult->getUptime())
 						{
-							$maxDiff = $diff;
-							$result = $testResult->getUptime();
+							$uptime = explode("/", $testResult->getUptime());
+							$diff = $uptime[1] - $uptime[0];
+							if ($diff > $maxDiff)
+							{
+								$maxDiff = $diff;
+								$result = $testResult->getUptime();
+							}
 						}
 					}
 				}

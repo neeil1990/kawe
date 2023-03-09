@@ -5,7 +5,7 @@ use Bitrix\Main\Entity;
 use Bitrix\Main\Error;
 use Bitrix\Main\ErrorCollection;
 
-class Result extends Entity\Result
+class Result extends \Bitrix\Main\ORM\Data\Result
 {
 	/** @var  int */
 	protected $id;
@@ -102,8 +102,7 @@ class Result extends Entity\Result
 	 * Adds the error.
 	 *
 	 * @param Error $error
-	 *
-	 * @return void
+	 * @return Result
 	 */
 	public function addError(Error $error)
 	{
@@ -116,6 +115,8 @@ class Result extends Entity\Result
 			$this->isSuccess = false;
 			$this->errors[] = $error;
 		}
+
+		return $this;
 	}
 
 	/**

@@ -18,7 +18,7 @@ foreach($arResult['MAP_TYPES_LIST'] as $type => $name)
 ?>
 <link rel="stylesheet" type="text/css" href="/bitrix/css/main/font-awesome.css">
 
-<?if(strlen($arParams['TITLE']) > 0):?>
+<?if($arParams['TITLE'] <> ''):?>
 	<div style="font-size: 13px;color: #c0c0c0;line-height: 1.5em;">
 		<span style="padding-left:3px;"><?=htmlspecialcharsbx($arParams['TITLE'])?></span>
 		<?if($arParams['SHOW_MAP_TYPE_SETTINGS'] == 'Y'):?>
@@ -152,7 +152,7 @@ foreach($arResult['MAP_TYPES_LIST'] as $type => $name)
 			<input type="hidden" name="<?=$arParams["INPUT_NAME"]?>" id="<?=$arParams["INPUT_ID"]?>" value="<?=$arParams["SELECTED_STORE"]?>" />
 
 <script type="text/javascript">
-	BX.loadScript('<?=$templateFolder.'/script.js?'.mktime()?>', function () {
+	BX.loadScript('<?=$templateFolder.'/script.js?'.time()?>', function () {
 		BX.ready(function () {
 			BX.message({
 				"SALE_SSC_GOOGLE_MAP_INFO": "<?=Loc::getMessage(

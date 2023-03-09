@@ -5,6 +5,13 @@ use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Location;
 
 Loc::loadMessages(__FILE__);
+
+global $adminSidePanelHelper;
+if (!is_object($adminSidePanelHelper))
+{
+	require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/interface/admin_lib.php");
+	$adminSidePanelHelper = new \CAdminSidePanelHelper();
+}
 ?>
 
 <?if(!empty($arResult['ERRORS']['FATAL'])):?>
@@ -151,8 +158,9 @@ Loc::loadMessages(__FILE__);
 
 											<?else:?>
 												<div class="adm-loc-error">
+													<? $importUrl = $adminSidePanelHelper->editUrlToPublicPage((string) $arParams['PATH_TO_LOCATION_IMPORT'] != '' ? $arParams['PATH_TO_LOCATION_IMPORT'] : Location\Admin\Helper::getImportUrl());?>
 													<?=Loc::getMessage('SALE_SLSS_NO_LOCATIONS', array(
-														'#ANCHOR_IMPORT#' => '<a href="'.((string) $arParams['PATH_TO_LOCATION_IMPORT'] != '' ? $arParams['PATH_TO_LOCATION_IMPORT'] : Location\Admin\Helper::getImportUrl()).'" target="_blank">',
+														'#ANCHOR_IMPORT#' => '<a href="'.$importUrl.'" target="_blank">',
 														'#ANCHOR_END#' => '</a>'
 													))?>
 												</div>
@@ -309,10 +317,10 @@ Loc::loadMessages(__FILE__);
 
 		<div class="bx-ui-slss-input-pool">
 			<script type="text/html" data-template-id="bx-ui-slss-location-input">
-				<input type="hidden" name="<?=$arParams['INPUT_NAME']?>[L]" value="{{ids}}" />
+				<input type="hidden" name="<?=$arParams['INPUT_NAME']?>[<?=$arResult['DB_LOCATION_FLAG']?>]" value="{{ids}}" />
 			</script>
 			<script type="text/html" data-template-id="bx-ui-slss-group-input">
-				<input type="hidden" name="<?=$arParams['INPUT_NAME']?>[G]" value="{{ids}}" />
+				<input type="hidden" name="<?=$arParams['INPUT_NAME']?>[<?=$arResult['DB_GROUP_FLAG']?>]" value="{{ids}}" />
 			</script>
 		</div>
 
@@ -321,8 +329,10 @@ Loc::loadMessages(__FILE__);
 	<?
 	// todo: i dont like it, refactor later (may be with strong assistance of parse_url() and $_SERVER['REQUEST_URI'])
 	$urlComponents = array();
-	if(strlen($arParams['ENTITY_PRIMARY']))
+	if($arParams['ENTITY_PRIMARY'] <> '')
+	{
 		$urlComponents[] = $arParams['ENTITY_VARIABLE_NAME'].'='.$arParams['ENTITY_PRIMARY'];
+	}
 
 	$urlComponents[] = $arParams['EDIT_MODE_SWITCH'].'=1';
 
@@ -334,14 +344,14 @@ Loc::loadMessages(__FILE__);
 		if (!window.BX && top.BX)
 			window.BX = top.BX;
 
-		<?if(strlen($arParams['JS_CONTROL_DEFERRED_INIT'])):?>
-			if(typeof window.BX.locationsDeferred == 'undefined') window.BX.locationsDeferred = {};
-			window.BX.locationsDeferred['<?=$arParams['JS_CONTROL_DEFERRED_INIT']?>'] = function(){
-		<?endif?>
+		<?if($arParams['JS_CONTROL_DEFERRED_INIT'] <> ''):?>
+		if (typeof window.BX.locationsDeferred == 'undefined') window.BX.locationsDeferred = {};
+		window.BX.locationsDeferred['<?=$arParams['JS_CONTROL_DEFERRED_INIT']?>'] = function () {
+			<?endif?>
 
-			<?if(strlen($arParams['JS_CONTROL_GLOBAL_ID'])):?>
-				if(typeof window.BX.locationSelectors == 'undefined') window.BX.locationSelectors = {};
-				window.BX.locationSelectors['<?=$arParams['JS_CONTROL_GLOBAL_ID']?>'] = 
+			<?if($arParams['JS_CONTROL_GLOBAL_ID'] <> ''):?>
+			if (typeof window.BX.locationSelectors == 'undefined') window.BX.locationSelectors = {};
+			window.BX.locationSelectors['<?=$arParams['JS_CONTROL_GLOBAL_ID']?>'] =
 			<?endif?>
 
 				new BX.Sale.component.location.selector.system(<?=CUtil::PhpToJSObject(array(
@@ -392,8 +402,8 @@ Loc::loadMessages(__FILE__);
 
 				), false, false, true)?>);
 
-		<?if(strlen($arParams['JS_CONTROL_DEFERRED_INIT'])):?>
-			};
+		<?if($arParams['JS_CONTROL_DEFERRED_INIT'] <> ''):?>
+		};
 		<?endif?>
 
 	</script>

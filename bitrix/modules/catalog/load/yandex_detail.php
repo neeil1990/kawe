@@ -2,7 +2,10 @@
 /** @global CDatabase $DB */
 /** @global CUser $USER */
 /** @global CMain $APPLICATION */
+
 use Bitrix\Iblock,
+	Bitrix\Catalog\Access\AccessController,
+	Bitrix\Catalog\Access\ActionDictionary,
 	Bitrix\Currency;
 
 define("STOP_STATISTICS", true);
@@ -10,6 +13,7 @@ define("BX_SECURITY_SHOW_MESSAGE", true);
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 IncludeModuleLangFile($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/catalog/export_yandex.php');
+IncludeModuleLangFile(__FILE__);
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET')
 {
@@ -30,7 +34,7 @@ $APPLICATION->SetTitle(GetMessage('YANDEX_DETAIL_TITLE'));
 
 CModule::IncludeModule('catalog');
 
-if (!$USER->CanDoOperation('catalog_export_edit'))
+if (!AccessController::getCurrent()->check(ActionDictionary::ACTION_CATALOG_EXPORT_EDIT))
 {
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 	ShowError(GetMessage('YANDEX_ERR_NO_ACCESS_EXPORT'));
@@ -38,7 +42,7 @@ if (!$USER->CanDoOperation('catalog_export_edit'))
 	die();
 }
 
-if ((!isset($_REQUEST['IBLOCK_ID'])) || (0 == strlen($_REQUEST['IBLOCK_ID'])))
+if ((!isset($_REQUEST['IBLOCK_ID'])) || ($_REQUEST['IBLOCK_ID'] == ''))
 {
 	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 	ShowError(GetMessage("YANDEX_ERR_NO_IBLOCK_CHOSEN"));
@@ -232,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 		}
 
 		$type = trim($_POST['type']);
-		if ($type != 'none' && !in_array($type,$arTypesConfigKeys))
+		if ($type == '' || ($type != 'none' && !isset($arTypesConfig[$type])))
 			$type = 'none';
 
 		$addParams = array(
@@ -279,6 +283,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 		{
 			if (!$value)
 				unset($XML_DATA[$key]);
+		}
+
+		$commonFields = [];
+		if (!empty($_POST['COMMON_FIELDS']) && is_array($_POST['COMMON_FIELDS']))
+		{
+			foreach ($_POST['COMMON_FIELDS'] as $index => $value)
+			{
+				if (empty($value))
+					continue;
+				$commonFields[$index] = $value;
+			}
+			unset($index, $value);
 		}
 
 		$arSKUExport = false;
@@ -335,7 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 						if ($boolCheck)
 						{
 							foreach($_POST['SKU_PROP_VALUE_'.$intPropID] as $strValue)
-								if (strlen($strValue) > 0)
+								if ($strValue <> '')
 									$arPropValues[] = $strValue;
 						}
 						if (empty($arPropValues))
@@ -384,7 +400,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 				'CURRENCY' => $arCurrency,
 				'PRICE' => intval($_POST['PRICE']),
 				'SKU_EXPORT' => $arSKUExport,
-				'VAT_EXPORT' => $vatExport
+				'VAT_EXPORT' => $vatExport,
+				'COMMON_FIELDS' => $commonFields
 			);
 ?><script type="text/javascript">
 top.BX.closeWait();
@@ -490,13 +507,16 @@ HTML form
 			),
 		);
 		$vatExport = $defaultVatExport;
+		$commonFields = [
+			'DESCRIPTION' => 'PREVIEW_TEXT'
+		];
 
 		$arXmlData = array();
 		if (!empty($_REQUEST['XML_DATA']))
 		{
 			$xmlData = base64_decode($_REQUEST['XML_DATA']);
 			if (CheckSerializedData($xmlData))
-				$arXmlData = unserialize($xmlData);
+				$arXmlData = unserialize($xmlData, ['allowed_classes' => false]);
 			unset($xmlData);
 		}
 
@@ -508,6 +528,8 @@ HTML form
 			$type = $arXmlData['TYPE'];
 		if ($type != 'none' && !in_array($type,$arTypesConfigKeys))
 			$type = 'none';
+		if (isset($arXmlData['COMMON_FIELDS']) && is_array($arXmlData['COMMON_FIELDS']))
+			$commonFields = array_merge($commonFields, $arXmlData['COMMON_FIELDS']);
 		if (isset($arXmlData['XML_DATA']))
 		{
 			foreach ($arXmlData['XML_DATA'] as $key => $value)
@@ -596,6 +618,24 @@ HTML form
 		<?echo BeginNote(), GetMessage('YANDEX_TYPE_NOTE'), EndNote();?>
 			</td>
 		</tr>
+			<tr class="heading">
+				<td colspan="2"><?=GetMessage('BX_CATALOG_EXPORT_YANDEX_COMMON_FIELDS')?></td>
+			</tr>
+			<tr>
+				<td colspan="2">
+			<div style="padding: 10px;">
+				<table width="90%" class="inner" style="text-align: center;">
+					<tr>
+						<td align="right"><?=GetMessage('BX_CATALOG_EXPORT_YANDEX_DESCRIPTION'); ?></td>
+						<td style="white-space: nowrap;"><select name="COMMON_FIELDS[DESCRIPTION]">
+								<option value="PREVIEW_TEXT"<?=($commonFields['DESCRIPTION'] == 'PREVIEW_TEXT' ? ' selected' : '');?>><?=GetMessage('BX_CATALOG_EXPORT_YANDEX_DESCRIPTION_PREVIEW_TEXT'); ?></option>
+								<option value="DETAIL_TEXT"<?=($commonFields['DESCRIPTION'] == 'DETAIL_TEXT' ? ' selected' : '');?>><?=GetMessage('BX_CATALOG_EXPORT_YANDEX_DESCRIPTION_DETAIL_TEXT'); ?></option>
+							</select></td>
+					</tr>
+				</table>
+			</div>
+				</td>
+			</tr>
 		<tr class="heading">
 			<td colspan="2"><?=GetMessage('YANDEX_PROPS_TYPE')?></td>
 		</tr>

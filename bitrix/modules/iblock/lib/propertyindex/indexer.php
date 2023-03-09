@@ -5,11 +5,13 @@
  * @subpackage iblock
  */
 namespace Bitrix\Iblock\PropertyIndex;
-use Bitrix\Catalog;
+
+use Bitrix\Iblock;
 
 class Indexer
 {
 	protected $iblockId = 0;
+	protected $lastElementId = null;
 	protected static $catalog = null;
 	protected $skuIblockId = 0;
 	protected $skuPropertyId = 0;
@@ -54,6 +56,28 @@ class Indexer
 				$this->skuPropertyId = $catalog["SKU_PROPERTY_ID"];
 			}
 		}
+	}
+
+	/**
+	 * Sets index mark/cursor.
+	 *
+	 * @param integer $lastElementId Element identifier.
+	 *
+	 * @return void
+	 */
+	public function setLastElementId($lastElementId)
+	{
+		$this->lastElementId = intval($lastElementId);
+	}
+
+	/**
+	 * Returns index mark/cursor. Last indexed element or null if there was none.
+	 *
+	 * @return integer|null
+	 */
+	public function getLastElementId()
+	{
+		return $this->lastElementId;
 	}
 
 	/**
@@ -123,12 +147,18 @@ class Indexer
 			$endTime = 0;
 
 		$indexedCount = 0;
-		$lastElementID = $this->storage->getLastStoredElementId();
-		$elementList = $this->getElementsCursor($lastElementID);
+
+		if ($this->lastElementId === null)
+			$lastElementId = $this->storage->getLastStoredElementId();
+		else
+			$lastElementId = $this->lastElementId;
+
+		$elementList = $this->getElementsCursor($lastElementId);
 		while ($element = $elementList->fetch())
 		{
 			$this->indexElement($element["ID"]);
 			$indexedCount++;
+			$this->lastElementId = $element["ID"];
 			if ($endTime > 0 && $endTime < microtime(true))
 				break;
 		}
@@ -165,14 +195,14 @@ class Indexer
 
 		$elementSections = $element->getSections();
 		$elementIndexValues = $this->getSectionIndexEntries($element);
-		
+
 		foreach ($element->getParentSections() as $sectionId)
 		{
 			foreach ($elementIndexValues as $facetId => $values)
 			{
 				foreach ($values as $value)
 				{
-					$this->storage->addIndexEntry(
+					$this->storage->queueIndexEntry(
 						$sectionId,
 						$elementId,
 						$facetId,
@@ -188,7 +218,7 @@ class Indexer
 		{
 			foreach ($values as $value)
 			{
-				$this->storage->addIndexEntry(
+				$this->storage->queueIndexEntry(
 					0,
 					$elementId,
 					$facetId,
@@ -198,6 +228,8 @@ class Indexer
 				);
 			}
 		}
+
+		$this->storage->flushIndexEntries();
 	}
 
 	/**
@@ -217,23 +249,28 @@ class Indexer
 	 * This list contains only active elements,
 	 * starts with $lastElementID and ID in ascending order.
 	 *
-	 * @param integer $lastElementID Element identifier.
-	 * @return \CIBlockResult
+	 * @param int $lastElementID Element identifier.
+	 * @return \Bitrix\Main\ORM\Query\Result
 	 */
-	protected function getElementsCursor($lastElementID = 0)
+	protected function getElementsCursor(int $lastElementID = 0): \Bitrix\Main\ORM\Query\Result
 	{
-		$filter = array(
-			"IBLOCK_ID" => $this->iblockId,
-			"ACTIVE" => "Y",
-			"CHECK_PERMISSIONS" => "N",
-		);
+		$filter = [
+			'=IBLOCK_ID' => $this->iblockId,
+			'=ACTIVE' => 'Y',
+			'=WF_STATUS_ID' => 1,
+			'==WF_PARENT_ELEMENT_ID' => null,
+		];
 
 		if ($lastElementID > 0)
 		{
-			$filter[">ID"] = $lastElementID;
+			$filter['>ID'] = $lastElementID;
 		}
 
-		return \CIBlockElement::getList(array("ID" => "ASC"), $filter, false, false, array("ID"));
+		return Iblock\ElementTable::getList([
+			'select' => ['ID'],
+			'filter' => $filter,
+			'order' => ['ID' => 'ASC'],
+		]);
 	}
 
 	/**
@@ -368,14 +405,11 @@ class Indexer
 			));
 			while ($link = $propertyList->fetch())
 			{
-				if ($link["IBLOCK_SECTION_PROPERTY_PROPERTY_PROPERTY_TYPE"] === "N")
-					$this->propertyFilter[Storage::NUMERIC][] = $link["PROPERTY_ID"];
-				elseif ($link["IBLOCK_SECTION_PROPERTY_PROPERTY_USER_TYPE"] === "DateTime")
-					$this->propertyFilter[Storage::DATETIME][] = $link["PROPERTY_ID"];
-				elseif ($link["IBLOCK_SECTION_PROPERTY_PROPERTY_PROPERTY_TYPE"] === "S")
-					$this->propertyFilter[Storage::STRING][] = $link["PROPERTY_ID"];
-				else
-					$this->propertyFilter[Storage::DICTIONARY][] = $link["PROPERTY_ID"];
+				$storageType = $this->getPropertyStorageType(array(
+					"PROPERTY_TYPE" => $link["IBLOCK_SECTION_PROPERTY_PROPERTY_PROPERTY_TYPE"],
+					"USER_TYPE" => $link["IBLOCK_SECTION_PROPERTY_PROPERTY_USER_TYPE"],
+				));
+				$this->propertyFilter[$storageType][] = $link["PROPERTY_ID"];
 			}
 		}
 		return $this->propertyFilter[$propertyType];
@@ -393,17 +427,43 @@ class Indexer
 			$this->priceFilter = array();
 			if (self::$catalog)
 			{
-				$priceList = Catalog\GroupTable::getList(array(
-					'select' => array('ID'),
-					'order' => array('ID' => 'ASC')
-				));
-				while($price = $priceList->fetch())
-				{
-					$this->priceFilter[] = (int)$price['ID'];
-				}
-				unset($price, $priceList);
+				//TODO: replace \CCatalogGroup::GetListArray after create cached d7 method
+				$priceList = \CCatalogGroup::GetListArray();
+				if (!empty($priceList))
+					$this->priceFilter = array_keys($priceList);
+				unset($priceList);
 			}
 		}
 		return $this->priceFilter;
+	}
+
+	/**
+	 * Returns storage type for the property.
+	 * - N - maps to Indexer::NUMERIC
+	 * - S - to Indexer::STRING
+	 * - F, E, G, L - to Indexer::DICTIONARY
+	 *
+	 * @param array[string]string $property Property description.
+	 *
+	 * @return integer
+	 */
+	public static function getPropertyStorageType($property)
+	{
+		if ($property["PROPERTY_TYPE"] === Iblock\PropertyTable::TYPE_NUMBER)
+		{
+			return Storage::NUMERIC;
+		}
+		elseif ($property["USER_TYPE"] === \CIBlockPropertyDateTime::USER_TYPE)
+		{
+			return Storage::DATETIME;
+		}
+		elseif ($property["PROPERTY_TYPE"] === Iblock\PropertyTable::TYPE_STRING)
+		{
+			return Storage::STRING;
+		}
+		else
+		{
+			return Storage::DICTIONARY;
+		}
 	}
 }

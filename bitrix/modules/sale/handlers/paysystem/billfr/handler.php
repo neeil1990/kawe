@@ -8,9 +8,13 @@ use Bitrix\Sale;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Main\Loader;
 
-Loader::registerAutoLoadClasses('sale', array(PaySystem\Manager::getClassNameFromPath('Bill') => 'handlers/paysystem/bill/handler.php'));
+PaySystem\Manager::includeHandler('Bill');
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class BillFrHandler
+ * @package Sale\Handlers\PaySystem
+ */
 class BillFrHandler extends BillHandler
 {
 	/**
@@ -32,8 +36,20 @@ class BillFrHandler extends BillHandler
 	public function getDemoParams()
 	{
 		$data = parent::getDemoParams();
+
+		$data['CURRENCY'] = 'EUR';
+		$data['BUYER_PERSON_COMPANY_PHONE'] = '+33 1 45 62 02 01';
+		$data['SELLER_COMPANY_PHONE'] = '+33 1 45 62 02 11';
 		$data['BILLFR_COMMENT1'] = Loc::getMessage('SALE_HPS_BILL_FR_COMMENT');
 		$data['BILLFR_COMMENT2'] = Loc::getMessage('SALE_HPS_BILL_FR_COMMENT_ADD');
+		$data['SELLER_COMPANY_BANK_CITY'] = Loc::getMessage('SALE_HPS_BILL_FR_BANK_CITY');
+		$data['SELLER_COMPANY_ADDRESS'] = Loc::getMessage('SALE_HPS_BILL_FR_BANK_ADDRESS');
+		$data['BUYER_PERSON_COMPANY_ADDRESS'] = Loc::getMessage('SALE_HPS_BILL_FR_BUYER_COMPANY_ADDRESS');
+
+		foreach ($data['BASKET_ITEMS'] as $i => $item)
+		{
+			$data['BASKET_ITEMS'][$i]['CURRENCY'] = 'EUR';
+		}
 
 		return $data;
 	}

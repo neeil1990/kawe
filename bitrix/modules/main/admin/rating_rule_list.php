@@ -6,7 +6,7 @@
 # mailto:admin@bitrixsoft.com                #
 ##############################################
 
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+require_once(__DIR__."/../include/prolog_admin_before.php");
 
 if(!$USER->CanDoOperation('edit_ratings'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
@@ -48,7 +48,7 @@ if($lAdmin->EditAction())
 {
 	foreach($FIELDS as $ID=>$arFields)
 	{
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if($ID <= 0)
 			continue;
 
@@ -73,7 +73,7 @@ if(($arID = $lAdmin->GroupAction()))
 
 	foreach($arID as $ID)
 	{
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if($ID <= 0)
 			continue;
 		switch($_REQUEST['action'])

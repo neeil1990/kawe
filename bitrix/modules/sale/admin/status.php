@@ -1,13 +1,13 @@
 <?
-##############################################
-# Bitrix: SiteManager                        #
-# Copyright (c) 2002-2006 Bitrix             #
-# http://www.bitrixsoft.com                  #
-# mailto:admin@bitrixsoft.com                #
-##############################################
+
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+
+\Bitrix\Main\Loader::includeModule('sale');
+
+$publicMode = $adminPage->publicMode;
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions < "W")
@@ -18,12 +18,8 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
 $sTableID = "tbl_sale_status";
 
-$oSort = new CAdminSorting($sTableID, "ID", "asc");
-$lAdmin = new CAdminList($sTableID, $oSort);
-
-$arFilterFields = array();
-
-$lAdmin->InitFilter($arFilterFields);
+$oSort = new CAdminUiSorting($sTableID, "ID", "asc");
+$lAdmin = new CAdminUiList($sTableID, $oSort);
 
 $arFilter = array();
 $arFilter["LID"] = LANGUAGE_ID;
@@ -32,72 +28,138 @@ if (($arID = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 {
 	if ($_REQUEST['action_target']=='selected')
 	{
-		$arID = Array();
-		$dbResultList = CSaleStatus::GetList(
-				array($by => $order),
-				$arFilter,
-				false,
-				false,
-				array("ID", $by)
-			);
-		while ($arResult = $dbResultList->Fetch())
+		$arID = [];
+
+		$query = \Bitrix\Sale\Internals\StatusTable::query();
+		$query->addSelect('ID');
+		$query->where(
+			\Bitrix\Main\ORM\Query\Query::filter()
+				->logic('OR')
+				->where('STATUS_LANG.LID', '=', LANGUAGE_ID)
+				->where('STATUS_LANG.LID', NULL)
+		);
+		$query->addOrder($by, $order);
+
+		$dbResultList = $query->exec();
+		while ($arResult = $dbResultList->fetch())
+		{
 			$arID[] = $arResult['ID'];
+		}
 	}
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
 		{
 			case "delete":
-				$lockedStatusList = array(
-					\Bitrix\Sale\OrderStatus::getInitialStatus(),
-					\Bitrix\Sale\OrderStatus::getFinalStatus(),
-					\Bitrix\Sale\DeliveryStatus::getInitialStatus(),
-					\Bitrix\Sale\DeliveryStatus::getFinalStatus(),
-				);
+				if (\Bitrix\Main\Loader::includeModule('crm'))
+				{
+					foreach (\Bitrix\Crm\Order\OrderStatus::getDefaultStatuses() as $statusId => $item)
+					{
+						if ($item['SYSTEM'] === 'Y')
+						{
+							$lockedStatusList[] = $statusId;
+						}
+					}
+
+					foreach (\Bitrix\Crm\Order\DeliveryStatus::getDefaultStatuses() as $statusId => $item)
+					{
+						if ($item['SYSTEM'] === 'Y')
+						{
+							$lockedStatusList[] = $statusId;
+						}
+					}
+				}
+				else
+				{
+					$lockedStatusList = array(
+						\Bitrix\Sale\OrderStatus::getInitialStatus(),
+						\Bitrix\Sale\OrderStatus::getFinalStatus(),
+						\Bitrix\Sale\DeliveryStatus::getInitialStatus(),
+						\Bitrix\Sale\DeliveryStatus::getFinalStatus(),
+					);
+				}
 
 				if (in_array($ID, $lockedStatusList))
 				{
-					continue;
+					continue 2;
 				}
 
-				@set_time_limit(0);
+				$registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
 
-				$DB->StartTransaction();
+				/** @var Sale\Order $orderClass */
+				$orderClass = $registry->getOrderClassName();
 
-				if (!CSaleStatus::Delete($ID))
+				$dbRes = $orderClass::getList([
+					'select' => ['ID'],
+					'filter' => ['=STATUS_ID' => $ID],
+				]);
+				if ($dbRes->fetch())
 				{
-					$DB->Rollback();
-
-					if ($ex = $APPLICATION->GetException())
-						$lAdmin->AddGroupError($ex->GetString(), $ID);
-					else
-						$lAdmin->AddGroupError(GetMessage("ERROR_DEL_STATUS"), $ID);
+					$lAdmin->AddGroupError(Loc::getMessage('ERROR_DEL_STATUS_ORDER_USE', ['#STATUS_ID#' => $ID]));
 				}
 
-				$DB->Commit();
+				if (!$lAdmin->hasGroupErrors())
+				{
+					$dbRes = Sale\Shipment::getList([
+						'select' => ['ID'],
+						'filter' => ['=STATUS_ID' => $ID],
+					]);
+					if ($dbRes->fetch())
+					{
+						$lAdmin->AddGroupError(Loc::getMessage('ERROR_DEL_STATUS_SHIPMENT_USE', ['#STATUS_ID#' => $ID]));
+					}
+				}
+
+				if (!$lAdmin->hasGroupErrors())
+				{
+					if (!CSaleStatus::Delete($ID))
+					{
+						if ($ex = $APPLICATION->GetException())
+						{
+							$lAdmin->AddGroupError($ex->GetString(), $ID);
+						}
+						else
+						{
+							$lAdmin->AddGroupError(GetMessage("ERROR_DEL_STATUS"), $ID);
+						}
+					}
+				}
 
 				break;
 
 		}
 	}
+	if ($lAdmin->hasGroupErrors())
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($lAdmin->getGroupErrors());
+	}
+	else
+	{
+		$adminSidePanelHelper->sendSuccessResponse();
+	}
 }
 
-$dbResultList = CSaleStatus::GetList(
-	array($by => $order),
-	$arFilter,
-	false,
-	false,
-	array('ID', 'SORT', 'TYPE', 'NOTIFY', 'LID', 'COLOR' ,'NAME', 'DESCRIPTION', $by)
+$query = \Bitrix\Sale\Internals\StatusTable::query();
+$query->setSelect([
+	'ID', 'SORT', 'TYPE', 'NOTIFY', 'LID' => 'STATUS_LANG.LID',
+	'COLOR' ,'NAME' => 'STATUS_LANG.NAME', 'DESCRIPTION' => 'STATUS_LANG.DESCRIPTION'
+]);
+$query->where(
+	\Bitrix\Main\ORM\Query\Query::filter()
+		->logic('OR')
+		->where('STATUS_LANG.LID', '=', LANGUAGE_ID)
+		->where('STATUS_LANG.LID', NULL)
 );
+$query->addOrder($by, $order);
 
-$dbResultList = new CAdminResult($dbResultList, $sTableID);
+$dbResultList = new CAdminUiResult($query->exec(), $sTableID);
 $dbResultList->NavStart();
 
-$lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("STATUS_NAV")));
+$lAdmin->SetNavigationParams($dbResultList, array("BASE_LINK" => "/bitrix/admin/sale_status.php"));
 
 $lAdmin->AddHeaders(array(
 	array("id"=>"ID", "content"=>GetMessage("STATUS_ID"), "sort"=>"ID", "default"=>true),
@@ -110,49 +172,48 @@ $lAdmin->AddHeaders(array(
 
 $arVisibleColumns = $lAdmin->GetVisibleHeaderColumns();
 
-while ($arCCard = $dbResultList->NavNext(true, "f_"))
+while ($arCCard = $dbResultList->NavNext(false))
 {
-	$row =& $lAdmin->AddRow($f_ID, $arCCard);
+	$row =& $lAdmin->AddRow($arCCard["ID"], $arCCard, "sale_status_edit.php?ID=".$arCCard["ID"]."&lang=".LANGUAGE_ID."");
 
-	$row->AddField("ID", "<a href=\"/bitrix/admin/sale_status_edit.php?ID=".$f_ID."&lang=".LANG.GetFilterParams("filter_")."\" title=\"".GetMessage("SALE_EDIT_DESCR")."\">".$f_ID."</a>");
-	$row->AddField("SORT", $f_SORT);
-	$row->AddField("NAME", $f_NAME."<br><small>".$f_DESCRIPTION."</small><br>");
+	$row->AddField("ID", "<a href=\"/bitrix/admin/sale_status_edit.php?ID=".$arCCard["ID"]."&lang=".LANGUAGE_ID."\" title=\"".GetMessage("SALE_EDIT_DESCR")."\">".$arCCard["ID"]."</a>");
+	$row->AddField("SORT", $arCCard["SORT"]);
+	$row->AddField("NAME", htmlspecialcharsbx($arCCard["NAME"])."<br><small>".htmlspecialcharsbx($arCCard["DESCRIPTION"])."</small><br>");
 	$row->AddField(
 		"COLOR",
-		strlen($f_COLOR) ? "<div style=\"background:".$f_COLOR."; width: 23px; border: 1px solid #87919c; border-radius: 4px; height: 23px;\"></div>" : $f_COLOR
+		$arCCard["COLOR"] <> ''? "<div style=\"background:".$arCCard["COLOR"]."; width: 23px; border: 1px solid #87919c; border-radius: 4px; height: 23px;\"></div>" : $arCCard["COLOR"]
 	);
 	$row->AddField("TYPE", (
-		$f_TYPE == 'O' ? GetMessage('SSEN_TYPE_O') :
-		($f_TYPE == 'D' ? GetMessage('SSEN_TYPE_D') :
-		'Invalid '.$f_TYPE)));
-	$row->AddField("NOTIFY", $f_NOTIFY == 'Y'
-		? '<a href="/bitrix/admin/message_admin.php?find_event_type=SALE_STATUS_CHANGED_'.$f_ID.'" target="_blank">'.GetMessage('SSAN_NOTIFY_Y').'</a>'
-		: GetMessage('SSAN_NOTIFY_N'));
+		$arCCard["TYPE"] == 'O' ? GetMessage('SSEN_TYPE_O') :
+		($arCCard["TYPE"] == 'D' ? GetMessage('SSEN_TYPE_D') :
+		'Invalid '.$arCCard["TYPE"])));
+	$textForNotify = $arCCard["NOTIFY"] == 'Y'
+		? '<a href="/bitrix/admin/message_admin.php?find_event_type=SALE_STATUS_CHANGED_'.$arCCard["ID"].
+		'" target="_blank">'.GetMessage('SSAN_NOTIFY_Y').'</a>' : GetMessage('SSAN_NOTIFY_N');
+	if ($publicMode)
+	{
+		$textForNotify = ($arCCard["NOTIFY"] == 'Y' ? GetMessage('SSAN_NOTIFY_Y') : GetMessage('SSAN_NOTIFY_N'));
+	}
+	$row->AddField("NOTIFY", $textForNotify);
 
 	$arActions = Array();
-	$arActions[] = array("ICON"=>"edit", "TEXT"=>GetMessage("SALE_EDIT_DESCR"), "ACTION"=>$lAdmin->ActionRedirect("sale_status_edit.php?ID=".$f_ID."&lang=".LANG.GetFilterParams("filter_").""), "DEFAULT"=>true);
-	if ($saleModulePermissions >= "W" && $f_ID != "N" && $f_ID != "F")
+	$arActions[] = array(
+		"ICON" => "edit",
+		"TEXT" => GetMessage("SALE_EDIT_DESCR"),
+		"ACTION" => $lAdmin->ActionRedirect("sale_status_edit.php?ID=".$arCCard["ID"]."&lang=".LANGUAGE_ID.""),
+		"DEFAULT" => true
+	);
+	if ($saleModulePermissions >= "W" && $arCCard["ID"] != "N" && $arCCard["ID"] != "F")
 	{
-		$arActions[] = array("SEPARATOR" => true);
-		$arActions[] = array("ICON"=>"delete", "TEXT"=>GetMessage("SALE_DELETE_DESCR"), "ACTION"=>"if(confirm('".GetMessage('STATUS_DEL_CONF')."')) ".$lAdmin->ActionDoGroup($f_ID, "delete"));
+		$arActions[] = array(
+			"ICON" => "delete",
+			"TEXT" => GetMessage("SALE_DELETE_DESCR"),
+			"ACTION" => "if(confirm('".GetMessage('STATUS_DEL_CONF')."')) ".$lAdmin->ActionDoGroup($arCCard["ID"], "delete")
+		);
 	}
 
 	$row->AddActions($arActions);
 }
-
-$lAdmin->AddFooter(
-	array(
-		array(
-			"title" => GetMessage("MAIN_ADMIN_LIST_SELECTED"),
-			"value" => $dbResultList->SelectedRowsCount()
-		),
-		array(
-			"counter" => true,
-			"title" => GetMessage("MAIN_ADMIN_LIST_CHECKED"),
-			"value" => "0"
-		),
-	)
-);
 
 $lAdmin->AddGroupActionTable(
 	array(
@@ -166,10 +227,11 @@ if ($saleModulePermissions == "W")
 		array(
 			"TEXT" => GetMessage("SSAN_ADD_NEW"),
 			"ICON" => "btn_new",
-			"LINK" => "sale_status_edit.php?lang=".LANG,
+			"LINK" => "sale_status_edit.php?lang=".LANGUAGE_ID,
 			"TITLE" => GetMessage("SSAN_ADD_NEW_ALT")
 		),
 	);
+	$lAdmin->setContextSettings(array("pagePath" => "/bitrix/admin/sale_status.php"));
 	$lAdmin->AddAdminContextMenu($aContext);
 }
 

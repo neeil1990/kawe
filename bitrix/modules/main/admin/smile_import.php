@@ -5,12 +5,12 @@ IncludeModuleLangFile(__FILE__);
 if(!$USER->CanDoOperation('edit_other_settings'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
-$ID = intVal($ID);
+$ID = intval($ID);
 $arError = $arSmile = $arFields = $arLang = array();
 
 /* LANGS */
 $arLangTitle = array("reference_id" => array(), "reference" => array());
-$db_res = CLanguage::GetList(($b="sort"), ($o="asc"));
+$db_res = CLanguage::GetList();
 while ($res = $db_res->Fetch())
 {
 	$arLang[$res["LID"]] = $res;
@@ -23,7 +23,7 @@ $bImportComplete = false;
 $APPLICATION->SetTitle(GetMessage("SMILE_IMPORT_TITLE"));
 
 $fileName = '';
-if ($REQUEST_METHOD == "POST" && (strlen($save) > 0 || strlen($apply) > 0))
+if ($REQUEST_METHOD == "POST" && ($save <> '' || $apply <> ''))
 {
 	$fileName = 'import'.$USER->GetID().time().'.zip';
 
@@ -39,7 +39,7 @@ if ($REQUEST_METHOD == "POST" && (strlen($save) > 0 || strlen($apply) > 0))
 		CheckDirPath($sUploadDir);
 
 		$res = CFile::CheckFile($_FILES["IMPORT"], 0, false, 'zip');
-		if (strLen($res) > 0)
+		if ($res <> '')
 		{
 			$arError[] = array(
 				"id" => "IMPORT",

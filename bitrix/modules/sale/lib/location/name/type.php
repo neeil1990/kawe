@@ -14,6 +14,22 @@ use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class TypeTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Type_Query query()
+ * @method static EO_Type_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Type_Result getById($id)
+ * @method static EO_Type_Result getList(array $parameters = array())
+ * @method static EO_Type_Entity getEntity()
+ * @method static \Bitrix\Sale\Location\Name\EO_Type createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Location\Name\EO_Type_Collection createCollection()
+ * @method static \Bitrix\Sale\Location\Name\EO_Type wakeUpObject($row)
+ * @method static \Bitrix\Sale\Location\Name\EO_Type_Collection wakeUpCollection($rows)
+ */
 class TypeTable extends NameEntity
 {
 	public static function getFilePath()
@@ -26,7 +42,7 @@ class TypeTable extends NameEntity
 		return 'b_sale_loc_type_name';
 	}
 
-	public function getReferenceFieldName()
+	public static function getReferenceFieldName()
 	{
 		return 'TYPE_ID';
 	}

@@ -1,24 +1,25 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
 
 $GLOBALS["SALE_AFFILIATE_PLAN"] = Array();
 
 class CAllSaleAffiliatePlan
 {
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
-		if ((is_set($arFields, "SITE_ID") || $ACTION=="ADD") && StrLen($arFields["SITE_ID"]) <= 0)
+		if ((is_set($arFields, "SITE_ID") || $ACTION=="ADD") && $arFields["SITE_ID"] == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SCGAP1_NO_SITE"), "EMPTY_SITE_ID");
 			return false;
 		}
-		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && StrLen($arFields["NAME"]) <= 0)
+		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && $arFields["NAME"] == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SCGAP1_NO_NAME"), "EMPTY_NAME");
 			return false;
 		}
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		$arPlan = false;
 		if ($ACTION != "ADD")
 		{
@@ -38,7 +39,7 @@ class CAllSaleAffiliatePlan
 			}
 		}
 
-		if (is_set($arFields, "DESCRIPTION") && StrLen($arFields["DESCRIPTION"]) <= 0)
+		if (is_set($arFields, "DESCRIPTION") && $arFields["DESCRIPTION"] == '')
 			$arFields["DESCRIPTION"] = false;
 
 		if ((is_set($arFields, "ACTIVE") || $ACTION=="ADD") && $arFields["ACTIVE"] != "Y")
@@ -68,7 +69,7 @@ class CAllSaleAffiliatePlan
 			if ($arFields["BASE_RATE_TYPE"] == "P")
 				$arFields["BASE_RATE_CURRENCY"] = false;
 
-			if ($arFields["BASE_RATE_TYPE"] == "F" && (!is_set($arFields, "BASE_RATE_CURRENCY") || StrLen($arFields["BASE_RATE_CURRENCY"]) <= 0))
+			if ($arFields["BASE_RATE_TYPE"] == "F" && (!is_set($arFields, "BASE_RATE_CURRENCY") || $arFields["BASE_RATE_CURRENCY"] == ''))
 			{
 				$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SCGAP1_NO_CURRENCY"), "EMPTY_BASE_RATE_CURRENCY");
 				return false;
@@ -88,7 +89,7 @@ class CAllSaleAffiliatePlan
 				if (!is_set($arFields, "BASE_RATE_CURRENCY"))
 					$arFields["BASE_RATE_CURRENCY"] = $arPlan["BASE_RATE_CURRENCY"];
 
-				if (!is_set($arFields, "BASE_RATE_CURRENCY") || StrLen($arFields["BASE_RATE_CURRENCY"]) <= 0)
+				if (!is_set($arFields, "BASE_RATE_CURRENCY") || $arFields["BASE_RATE_CURRENCY"] == '')
 				{
 					$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SCGAP1_NO_CURRENCY"), "EMPTY_BASE_RATE_CURRENCY");
 					return false;
@@ -99,11 +100,11 @@ class CAllSaleAffiliatePlan
 		return True;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if ($ID <= 0)
 			return False;
 
@@ -112,7 +113,7 @@ class CAllSaleAffiliatePlan
 			if (ExecuteModuleEventEx($arEvent, Array($ID))===false)
 
 		$cnt = CSaleAffiliate::GetList(array(), array("PLAN_ID" => $ID), array());
-		if (IntVal($cnt) > 0)
+		if (intval($cnt) > 0)
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(str_replace("#ID#", $ID, GetMessage("SCGAP1_AFF_EXISTS")), "NOT_EMPTY_PLAN");
 			return false;
@@ -130,11 +131,11 @@ class CAllSaleAffiliatePlan
 		return $bResult;
 	}
 
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if ($ID <= 0)
 			return false;
 
@@ -162,12 +163,12 @@ class CAllSaleAffiliatePlan
 		return false;
 	}
 
-	function CheckAffiliatePlanFunc($affiliatePlan)
+	public static function CheckAffiliatePlanFunc($affiliatePlan)
 	{
 		if (is_array($affiliatePlan))
 		{
 			$arAffiliatePlan = $affiliatePlan;
-			$affiliatePlanID = IntVal($arAffiliatePlan["ID"]);
+			$affiliatePlanID = intval($arAffiliatePlan["ID"]);
 
 			if ($affiliatePlanID <= 0)
 			{
@@ -177,7 +178,7 @@ class CAllSaleAffiliatePlan
 		}
 		else
 		{
-			$affiliatePlanID = IntVal($affiliatePlan);
+			$affiliatePlanID = intval($affiliatePlan);
 			if ($affiliatePlanID <= 0)
 				return False;
 
@@ -199,4 +200,3 @@ class CAllSaleAffiliatePlan
 		return $arAffiliatePlan;
 	}
 }
-?>

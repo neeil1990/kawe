@@ -1,19 +1,21 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
+
 $GLOBALS["BLOG_USER_GROUP"] = Array();
 
 class CAllBlogUserGroup
 {
 	/*************** ADD, UPDATE, DELETE *****************/
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
-		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && strlen($arFields["NAME"]) <= 0)
+		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && $arFields["NAME"] == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("BLG_GUG_EMPTY_NAME"), "EMPTY_NAME");
 			return false;
 		}
 
-		if ((is_set($arFields, "BLOG_ID") || $ACTION=="ADD") && IntVal($arFields["BLOG_ID"]) <= 0)
+		if ((is_set($arFields, "BLOG_ID") || $ACTION=="ADD") && intval($arFields["BLOG_ID"]) <= 0)
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("BLG_GUG_EMPTY_BLOG_ID"), "EMPTY_BLOG_ID");
 			return false;
@@ -31,11 +33,11 @@ class CAllBlogUserGroup
 		return True;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if ($ID == 1 || $ID == 2)
 			return False;
 
@@ -65,13 +67,13 @@ class CAllBlogUserGroup
 		return True;
 	}
 
-	function SetGroupPerms($ID, $blogID, $postID = 0, $permission = BLOG_PERMS_DENY, $permsType = BLOG_PERMS_POST)
+	public static function SetGroupPerms($ID, $blogID, $postID = 0, $permission = BLOG_PERMS_DENY, $permsType = BLOG_PERMS_POST)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
-		$blogID = IntVal($blogID);
-		$postID = IntVal($postID);
+		$ID = intval($ID);
+		$blogID = intval($blogID);
+		$postID = intval($postID);
 
 		$arAvailPerms = array_keys($GLOBALS["AR_BLOG_PERMS"]);
 		if (!in_array($permission, $arAvailPerms))
@@ -177,11 +179,11 @@ class CAllBlogUserGroup
 	}
 
 	//*************** SELECT *********************/
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (isset($GLOBALS["BLOG_USER_GROUP"]["BLOG_USER_GROUP_CACHE_".$ID]) && is_array($GLOBALS["BLOG_USER_GROUP"]["BLOG_USER_GROUP_CACHE_".$ID]) && is_set($GLOBALS["BLOG_USER_GROUP"]["BLOG_USER_GROUP_CACHE_".$ID], "ID"))
 		{
@@ -208,9 +210,9 @@ class CAllBlogUserGroup
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
-		$blogID = IntVal($blogID);
-		$postID = IntVal($postID);
+		$ID = intval($ID);
+		$blogID = intval($blogID);
+		$postID = intval($postID);
 		$permsType = (($permsType == BLOG_PERMS_COMMENT) ? BLOG_PERMS_COMMENT : BLOG_PERMS_POST);
 
 		$varName = "BLOG_GROUP_PERMS_CACHE_".$blogID."_".$postID."_".$permsType."_";
@@ -256,4 +258,3 @@ class CAllBlogUserGroup
 		return False;
 	}
 }
-?>

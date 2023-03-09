@@ -1,4 +1,7 @@
 <?php
+define('STOP_STATISTICS', true);
+define('PUBLIC_AJAX_MODE', true);
+define('NOT_CHECK_PERMISSIONS', true);
 
 if (empty($_POST['parameters']))
 {
@@ -18,12 +21,25 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.ph
 
 $signer = new \Bitrix\Main\Security\Sign\Signer;
 
-$parameters = $signer->unsign($_POST['parameters'], 'bx.sale.prediction.product.detail');
-$template = $signer->unsign($_POST['template'], 'bx.sale.prediction.product.detail');
+try
+{
+	$parameters = $signer->unsign($_POST['parameters'], 'bx.sale.prediction.product.detail');
+	$template = $signer->unsign($_POST['template'], 'bx.sale.prediction.product.detail');
+}
+catch (\Bitrix\Main\Security\Sign\BadSignatureException $e)
+{
+	die;
+}
 
 $APPLICATION->IncludeComponent(
 	"bitrix:sale.prediction.product.detail",
 	$template,
-	unserialize(base64_decode($parameters)),
+	unserialize(base64_decode($parameters), ['allowed_classes' => [
+		\Bitrix\Main\Type\DateTime::class,
+		\Bitrix\Main\Type\Date::class,
+		\Bitrix\Main\Web\Uri::class,
+		\DateTime::class,
+		\DateTimeZone::class,
+	]]),
 	false
 );

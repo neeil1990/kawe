@@ -1,4 +1,6 @@
 <?
+$MESS["FILEMAN_OPTION_YANDEX_MAP_API_KEY"] = "Yandex.Maps API key";
+$MESS["FILEMAN_OPTION_YANDEX_MAP_API_KEY_NOTE"] = "How to get the key: #A#";
 $MESS["FILEMAN_OPTION_DEF_EDITOR"] = "Default page editor:";
 $MESS["FILEMAN_OPTION_EDITOR_TEXT"] = "Text editor";
 $MESS["FILEMAN_OPTION_EDITOR_HTML"] = "Visual HTML editor";
@@ -17,7 +19,6 @@ $MESS["FILEMAN_OPTION_PROPS_NAME"] = "Name";
 $MESS["FILEMAN_OPTION_PROPS_DESCR"] = "Description";
 $MESS["FILEMAN_OPTION_PROPS_KEYW"] = "Keywords";
 $MESS["FILEMAN_OPTION_EDITOR_PHP"] = "PHP source editing";
-$MESS["FILEMAN_OPTION_MENU_SHOW_INC"] = "Show include area edit buttons in the toolbar";
 $MESS["FILEMAN_OPTION_USE_OLD_VER"] = "Use previous version of the visual HTML editor:";
 $MESS["FILEMAN_OPTION_USE_ONLY_DEFINED_STYLES"] = "Show nameless CSS styles in the styles combobox";
 $MESS["FILEMAN_OPT_FULLSCREEN"] = "Open visual editor in fullscreen mode";

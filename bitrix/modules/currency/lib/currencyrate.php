@@ -25,7 +25,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Currency
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_CurrencyRate_Query query()
+ * @method static EO_CurrencyRate_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_CurrencyRate_Result getById($id)
+ * @method static EO_CurrencyRate_Result getList(array $parameters = array())
+ * @method static EO_CurrencyRate_Entity getEntity()
+ * @method static \Bitrix\Currency\EO_CurrencyRate createObject($setDefaultValues = true)
+ * @method static \Bitrix\Currency\EO_CurrencyRate_Collection createCollection()
+ * @method static \Bitrix\Currency\EO_CurrencyRate wakeUpObject($row)
+ * @method static \Bitrix\Currency\EO_CurrencyRate_Collection wakeUpCollection($rows)
+ */
 
 class CurrencyRateTable extends Main\Entity\DataManager
 {
@@ -76,6 +89,7 @@ class CurrencyRateTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('CURRENCY_RATE_ENTITY_CREATED_BY_FIELD')
 			)),
 			'DATE_CREATE' => new Main\Entity\DatetimeField('DATE_CREATE', array(
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('CURRENCY_RATE_ENTITY_DATE_CREATE_FIELD')
 			)),
 			'MODIFIED_BY' => new Main\Entity\IntegerField('MODIFIED_BY', array(
@@ -83,6 +97,7 @@ class CurrencyRateTable extends Main\Entity\DataManager
 			)),
 			'TIMESTAMP_X' => new Main\Entity\DatetimeField('TIMESTAMP_X', array(
 				'required' => true,
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('CURRENCY_RATE_ENTITY_TIMESTAMP_X_FIELD')
 			)),
 			'CREATED_BY_USER' => new Main\Entity\ReferenceField(

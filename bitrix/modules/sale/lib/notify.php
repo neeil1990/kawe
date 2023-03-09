@@ -10,9 +10,12 @@ namespace Bitrix\Sale;
 
 use Bitrix\Main;
 use Bitrix\Sale\Cashbox\CheckManager;
+use Bitrix\Sale\Cashbox\Internals\CashboxCheckTable;
+use Bitrix\Sale\Cashbox\Manager;
 use Bitrix\Sale\Compatible;
 use Bitrix\Sale\Internals;
 use Bitrix\Sale\Helpers;
+use Bitrix\Sale\TradingPlatform\Platform;
 
 Main\Localization\Loc::loadMessages(__FILE__);
 
@@ -29,6 +32,8 @@ class Notify
 	const EVENT_SHIPMENT_DELIVER_SEND_EMAIL_EVENT_NAME = "SALE_ORDER_DELIVERY";
 
 	const EVENT_ON_CHECK_PRINT_SEND_EMAIL = "SALE_CHECK_PRINT";
+	const EVENT_ON_CHECK_PRINT_ERROR_SEND_EMAIL = "SALE_CHECK_PRINT_ERROR";
+	const EVENT_ON_CHECK_VALIDATION_ERROR_SEND_EMAIL = "SALE_CHECK_VALIDATION_ERROR";
 
 	const EVENT_ON_ORDER_PAID_SEND_EMAIL = "OnOrderPaySendEmail";
 
@@ -52,17 +57,23 @@ class Notify
 	const EVENT_MOBILE_PUSH_ORDER_STATUS_CHANGE = "ORDER_STATUS_CHANGED";
 	const EVENT_MOBILE_PUSH_ORDER_CANCELED = "ORDER_CANCELED";
 	const EVENT_MOBILE_PUSH_ORDER_PAID = "ORDER_PAYED";
+	const EVENT_MOBILE_PUSH_ORDER_CHECK_ERROR = "ORDER_CHECK_ERROR";
 	const EVENT_MOBILE_PUSH_SHIPMENT_ALLOW_DELIVERY = "ORDER_DELIVERY_ALLOWED";
 
-	private static $cacheUserData = array();
+	protected static $cacheUserData = array();
 
-	private static $sentEventList = array();
+	protected static $sentEventList = array();
 
-	private static $disableNotify = false;
+	protected static $disableNotify = false;
 
-	protected function __construct()
+	protected function __construct() {}
+
+	/**
+	 * @return string
+	 */
+	public static function getRegistryType()
 	{
-
+		return Registry::REGISTRY_TYPE_ORDER;
 	}
 
 	/**
@@ -96,8 +107,6 @@ class Notify
 			return $result;
 		}
 
-		$by = $sort = '';
-
 		$separator = "<br/>";
 
 		$eventName = static::EVENT_ORDER_NEW_SEND_EMAIL_EVENT_NAME;
@@ -116,7 +125,7 @@ class Notify
 			$filter['SITE_ID'] = SITE_ID;
 		}
 
-		$res = \CEventMessage::GetList($by, $sort, $filter);
+		$res = \CEventMessage::GetList('', '', $filter);
 		if ($eventMessage = $res->Fetch())
 		{
 			if ($eventMessage['BODY_TYPE'] == 'text')
@@ -410,12 +419,10 @@ class Notify
 
 			if($isSend)
 			{
-				$b = '';
-				$o = '';
 				$eventMessage = new \CEventMessage;
 				$eventMessageRes = $eventMessage->GetList(
-					$b,
-					$o,
+					'',
+					'',
 					array(
 						"EVENT_NAME" => $eventName,
 						"SITE_ID" => $entity->getSiteId(),
@@ -503,7 +510,7 @@ class Notify
 		{
 			$siteData = $cacheSiteData[$order->getSiteId()];
 		}
-		
+
 		$statusData = Internals\StatusTable::getList(array(
 								 'select' => array(
 									 'ID',
@@ -579,12 +586,10 @@ class Notify
 
 			if($isSend)
 			{
-				$b = '';
-				$o = '';
 				$eventMessage = new \CEventMessage;
 				$eventMessageRes = $eventMessage->GetList(
-					$b,
-					$o,
+					'',
+					'',
 					array(
 						"EVENT_NAME" => $statusEventName,
 						"SITE_ID" => $order->getSiteId(),
@@ -729,12 +734,10 @@ class Notify
 
 			if($isSend)
 			{
-				$b = '';
-				$o = '';
 				$eventMessage = new \CEventMessage;
 				$eventMessageRes = $eventMessage->GetList(
-					$b,
-					$o,
+					'',
+					'',
 					array(
 						"EVENT_NAME" => $statusEventName,
 						"SITE_ID" => $entity->getSiteId(),
@@ -913,9 +916,10 @@ class Notify
 
 	/**
 	 * @param Internals\Entity $entity
-	 *
 	 * @return Result
+	 * @throws Main\ArgumentException
 	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
 	 * @throws Main\ArgumentTypeException
 	 */
 	public static function sendPrintableCheck(Internals\Entity $entity)
@@ -927,20 +931,22 @@ class Notify
 			return $result;
 		}
 
-		if (!$entity instanceof Payment)
+		if (!($entity instanceof Payment)
+			&& !($entity instanceof Shipment)
+		)
 		{
-			throw new Main\ArgumentTypeException('entity', '\Bitrix\Sale\Payment');
+			return $result;
 		}
 
-		/** @var PaymentCollection $paymentCollection */
-		if (!$paymentCollection = $entity->getCollection())
+		/** @var PaymentCollection|ShipmentCollection $collection */
+		if (!$collection = $entity->getCollection())
 		{
-			$result->addError(new ResultError(Main\Localization\Loc::getMessage("SALE_NOTIFY_PAYMENT_COLLECTION_NOT_FOUND")));
+			$result->addError(new ResultError(Main\Localization\Loc::getMessage("SALE_NOTIFY_ENTITY_COLLECTION_NOT_FOUND")));
 			return $result;
 		}
 
 		/** @var Order $order */
-		if (!$order = $paymentCollection->getOrder())
+		if (!$order = $collection->getOrder())
 		{
 			$result->addError(new ResultError(Main\Localization\Loc::getMessage("SALE_NOTIFY_ORDER_NOT_FOUND")));
 			return $result;
@@ -957,15 +963,252 @@ class Notify
 				"EMAIL" => static::getUserEmail($order),
 				"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
 				"CHECK_LINK" => $check['LINK'],
-				"ORDER_PUBLIC_URL" => Helpers\Order::isAllowGuestView($order) ? Helpers\Order::getPublicLink($order) : ""
+				"ORDER_PUBLIC_URL" => Helpers\Order::isAllowGuestView($order) ? Helpers\Order::getPublicLink($order) : "",
+				"LINK_URL" => static::getOrderPersonalDetailLink($order)
 			);
+
+			$info = static::getSiteInfo($order);
+			if ($info)
+			{
+				$fields["SITE_NAME"] = $info['TITLE'];
+				$fields["SERVER_NAME"] = $info['PUBLIC_URL'];
+			}
 
 			$eventName = static::EVENT_ON_CHECK_PRINT_SEND_EMAIL;
 			$event = new \CEvent;
 			$event->Send($eventName, $order->getField('LID'), $fields, "N");
 
-			static::addSentEvent('p'.$entity->getId(), $eventName);
+			if ($entity instanceof Payment)
+			{
+				static::addSentEvent('p'.$entity->getId(), $eventName);
+			}
+			elseif ($entity instanceof Shipment)
+			{
+				static::addSentEvent('s'.$entity->getId(), $eventName);
+			}
 		}
+
+		return $result;
+	}
+
+	/**
+	 * @param Order $order
+	 * @return array
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
+	 */
+	protected static function getSiteInfo(Order $order)
+	{
+		$collection = $order->getTradeBindingCollection();
+		/** @var TradeBindingEntity $tradeBinding */
+		foreach ($collection as $tradeBinding)
+		{
+			$platform = $tradeBinding->getTradePlatform();
+			if ($platform !== null)
+			{
+				return $platform->getInfo();
+			}
+		}
+
+		return [];
+	}
+
+	/**
+	 * @param Order $order
+	 * @return string
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
+	 */
+	protected static function getOrderPersonalDetailLink(Order $order)
+	{
+		$context = Main\Context::getCurrent();
+		$server = $context->getServer();
+
+		$accountNumberEncode = urlencode(urlencode($order->getField("ACCOUNT_NUMBER")));
+		$result = 'http://'.$server->getServerName().'/personal/order/detail/'.$accountNumberEncode.'/';
+
+		$collection = $order->getTradeBindingCollection();
+		/** @var TradeBindingEntity $tradeBinding */
+		foreach ($collection as $tradeBinding)
+		{
+			$platform = $tradeBinding->getTradePlatform();
+			if ($platform === null)
+			{
+				continue;
+			}
+
+			$link = $platform->getExternalLink(Platform::LINK_TYPE_PUBLIC_DETAIL_ORDER, $order);
+			if ($link)
+			{
+				$result = $link;
+			}
+
+			break;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param Internals\Entity $entity
+	 * @return Result
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\ObjectPropertyException
+	 * @throws Main\SystemException
+	 */
+	public static function sendCheckError(Internals\Entity $entity)
+	{
+		$result = new Result();
+
+		if (static::isNotifyDisabled())
+		{
+			return $result;
+		}
+
+		if (!($entity instanceof Payment)
+			&& !($entity instanceof Shipment)
+		)
+		{
+			throw new Main\ArgumentTypeException('entity', '\Bitrix\Sale\Payment or \Bitrix\Sale\Shipment');
+		}
+
+		/** @var PaymentCollection|ShipmentCollection $collection */
+		if (!$collection = $entity->getCollection())
+		{
+			$result->addError(new ResultError(Main\Localization\Loc::getMessage("SALE_NOTIFY_ENTITY_COLLECTION_NOT_FOUND")));
+			return $result;
+		}
+
+		/** @var Order $order */
+		if (!$order = $collection->getOrder())
+		{
+			$result->addError(new ResultError(Main\Localization\Loc::getMessage("SALE_NOTIFY_ORDER_NOT_FOUND")));
+			return $result;
+		}
+
+		$filter = array('STATUS' => 'E');
+		if ($entity instanceof Payment)
+		{
+			$filter['PAYMENT_ID'] = $entity->getId();
+		}
+		elseif ($entity instanceof Shipment)
+		{
+			$filter['SHIPMENT_ID'] = $entity->getId();
+		}
+
+		$dbRes = CashboxCheckTable::getList(
+			array(
+				'select' => array('*'),
+				'filter' => $filter,
+				'order' => array('DATE_PRINT_END' => 'DESC'),
+				'limit' => 1
+			)
+		);
+		$check = $dbRes->fetch();
+		if (!$check)
+		{
+			$result->addError(new ResultError(Main\Localization\Loc::getMessage("SALE_NOTIFY_ORDER_CHECK_NOT_FOUND")));
+			return $result;
+		}
+
+		$cashbox = Manager::getCashboxFromCache($check['CASHBOX_ID']);
+		if ($cashbox['EMAIL'])
+		{
+			$cashbox = Manager::getCashboxFromCache($check['CASHBOX_ID']);
+
+			$fields = array(
+				"ORDER_ACCOUNT_NUMBER" => $order->getField("ACCOUNT_NUMBER"),
+				"CHECK_ID" => $check['ID'],
+				"ORDER_ID" => $order->getId(),
+				"ORDER_DATE" => $order->getDateInsert()->toString(),
+				"EMAIL" => $cashbox['EMAIL'],
+				"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$_SERVER["SERVER_NAME"]),
+			);
+
+			$context = Main\Context::getCurrent();
+			$server = $context->getServer();
+
+			if (IsModuleInstalled('crm'))
+			{
+				$fields['LINK_URL'] = 'http://'.$server->getServerName().'/shop/orders/details/'.$order->getId().'/';
+			}
+			else
+			{
+				$fields['LINK_URL'] = 'http://'.$server->getServerName().'/bitrix/admin/sale_order_view.php?ID='.$order->getId();
+			}
+
+			$eventName = static::EVENT_ON_CHECK_PRINT_ERROR_SEND_EMAIL;
+			$event = new \CEvent;
+			$event->Send($eventName, $order->getField('LID'), $fields, "N");
+
+			if ($entity instanceof Payment)
+			{
+				static::addSentEvent('p'.$entity->getId(), $eventName);
+			}
+			elseif ($entity instanceof Shipment)
+			{
+				static::addSentEvent('s'.$entity->getId(), $eventName);
+			}
+		}
+
+		\CSaleMobileOrderPush::send(
+			static::EVENT_MOBILE_PUSH_ORDER_CHECK_ERROR,
+			array(
+				'ORDER' => static::getOrderFields($order),
+				'CHECK' => $check
+			)
+		);
+
+		return $result;
+	}
+
+	/**
+	 * @param Internals\Entity $order
+	 * @return Result
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 */
+	public static function sendCheckValidationError(Internals\Entity $order)
+	{
+		$result = new Result();
+
+		if (static::isNotifyDisabled())
+		{
+			return $result;
+		}
+
+		$context = Main\Context::getCurrent();
+		$server = $context->getServer();
+
+		$fields = array(
+			"ORDER_ID" => $order->getId(),
+			"ORDER_ACCOUNT_NUMBER" => $order->getField("ACCOUNT_NUMBER"),
+			"ORDER_DATE" => $order->getDateInsert()->toString(),
+			"EMAIL" => Main\Config\Option::get("main", "email_from"),
+			"SALE_EMAIL" => Main\Config\Option::get("sale", "order_email", "order@".$server->getServerName()),
+		);
+
+		if (IsModuleInstalled('crm'))
+		{
+			$fields['LINK_URL'] = 'http://'.$server->getServerName().'/shop/orders/details/'.$order->getId().'/';
+		}
+		else
+		{
+			$fields['LINK_URL'] = 'http://'.$server->getServerName().'/bitrix/admin/sale_order_view.php?ID='.$order->getId();
+		}
+
+		$eventName = static::EVENT_ON_CHECK_VALIDATION_ERROR_SEND_EMAIL;
+		$event = new \CEvent;
+		$event->Send($eventName, $order->getField('LID'), $fields, "N");
 
 		return $result;
 	}
@@ -1168,6 +1411,8 @@ class Notify
 			{
 				$fields['BASKET_ITEMS'][] = static::getBasketItemFields($basketItem);
 			}
+
+			$fields['ORDER_WEIGHT'] = $basket->getWeight();
 		}
 
 		/** @var PropertyValueCollection $basket */
@@ -1209,12 +1454,6 @@ class Notify
 		if ($propTaxLocation = $propertyCollection->getTaxLocation())
 		{
 			$fields['TAX_LOCATION'] = $propTaxLocation->getValue();
-		}
-
-		/** @var ShipmentCollection $shipmentCollection */
-		if ($shipmentCollection = $order->getShipmentCollection())
-		{
-			$fields['ORDER_WEIGHT'] = $shipmentCollection->getWeight();
 		}
 
 		$fields['DISCOUNT_LIST'] = Compatible\DiscountCompatibility::getOldDiscountResult();
@@ -1351,6 +1590,7 @@ class Notify
 		if (!static::hasSentEvent($code, $event))
 		{
 			static::$sentEventList[$code][] = $event;
+
 			return true;
 		}
 
@@ -1363,14 +1603,13 @@ class Notify
 	 */
 	public static function callNotify(Internals\Entity $entity, $eventName)
 	{
-		if (($eventNotifyMap = EventActions::getEventNotifyMap()) && !empty($eventNotifyMap) && is_array($eventNotifyMap))
+		$eventNotifyMap = EventActions::getEventNotifyMap();
+
+		if (isset($eventNotifyMap[$eventName]))
 		{
-			if (array_key_exists($eventName, $eventNotifyMap) && !empty($eventNotifyMap[$eventName]) && !empty($eventNotifyMap[$eventName]['METHOD']))
+			if ($entity instanceof $eventNotifyMap[$eventName]['ENTITY'])
 			{
-				if ($entity instanceof $eventNotifyMap[$eventName]['ENTITY'])
-				{
-					call_user_func_array($eventNotifyMap[$eventName]['METHOD'], array($entity));
-				}
+				call_user_func_array($eventNotifyMap[$eventName]['METHOD'], [$entity]);
 			}
 		}
 	}

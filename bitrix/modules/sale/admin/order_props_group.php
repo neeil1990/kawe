@@ -1,13 +1,8 @@
 <?
-##############################################
-# Bitrix: SiteManager                        #
-# Copyright (c) 2002-2006 Bitrix             #
-# http://www.bitrixsoft.com                  #
-# mailto:admin@bitrixsoft.com                #
-##############################################
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+
+\Bitrix\Main\Loader::includeModule('sale');
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions < "W")
@@ -29,7 +24,7 @@ $lAdmin->InitFilter($arFilterFields);
 
 $arFilter = array();
 
-if (IntVal($filter_person_type_id)>0)
+if (intval($filter_person_type_id)>0)
 	$arFilter["PERSON_TYPE_ID"] = $filter_person_type_id;
 else
 	Unset($arFilter["PERSON_TYPE_ID"]);
@@ -39,7 +34,7 @@ if ($lAdmin->EditAction() && $saleModulePermissions >= "W")
 	foreach ($FIELDS as $ID => $arFields)
 	{
 		$DB->StartTransaction();
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (!$lAdmin->IsUpdated($ID))
 			continue;
@@ -78,7 +73,7 @@ if (($arID = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
 			continue;
 
 		switch ($_REQUEST['action'])
@@ -105,12 +100,21 @@ if (($arID = $lAdmin->GroupAction()) && $saleModulePermissions >= "W")
 	}
 }
 
-$dbResultList = CSaleOrderPropsGroup::GetList(
-	array($by => $order),
-	$arFilter
-);
+$arFilter['=PERSON_TYPE.ENTITY_REGISTRY_TYPE'] = 'ORDER';
 
-$dbResultList = new CAdminResult($dbResultList, $sTableID);
+$dbRes = \Bitrix\Sale\Internals\OrderPropsGroupTable::getList([
+	'filter' => $arFilter,
+	'order' => array($by => $order),
+	'runtime' => [
+		new \Bitrix\Main\Entity\ReferenceField(
+			'PERSON_TYPE',
+			'Bitrix\Sale\Internals\PersonType',
+			array('=this.PERSON_TYPE_ID' => 'ref.ID')
+		),
+	]
+]);
+
+$dbResultList = new CAdminResult($dbRes, $sTableID);
 $dbResultList->NavStart();
 
 $lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("PERS_TYPE_NAV")));
@@ -154,12 +158,16 @@ while ($arPropsGroup = $dbResultList->NavNext(true, "f_"))
 	$fieldValue = "";
 	if (in_array("PROPS", $arVisibleColumns))
 	{
-		$numProps = CSaleOrderProps::GetList(
-			array(),
-			array("PROPS_GROUP_ID" => $f_ID),
-			array()
-		);
-		$numProps = IntVal($numProps);
+		$numProps = (int)\Bitrix\Sale\Internals\OrderPropsTable::getList([
+			'filter' => [
+				'PROPS_GROUP_ID' => (int)$f_ID,
+				'ENTITY_TYPE' => \Bitrix\Sale\Registry::ENTITY_ORDER,
+			],
+			'select' => ['CNT'],
+			'runtime' => [
+				new \Bitrix\Main\Entity\ExpressionField('CNT', 'COUNT(1)')
+			],
+		])->fetch()['CNT'];
 
 		if ($numProps > 0)
 			$fieldValue = "<a href=\"sale_order_props.php?lang=".LANG."&set_filter=Y&filter_group=".$f_ID."\">".$numProps."</a>";

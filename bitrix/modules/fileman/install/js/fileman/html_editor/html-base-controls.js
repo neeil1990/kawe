@@ -439,10 +439,14 @@
 
 		BuildElement: function(element)
 		{
-			var
-				_this = this,
-				parentCont = this.GetSectionContByPath(element.key || element.path, true),
-				pElement = BX.create("DIV", {props: {className: "bxhtmled-tskbr-element"}, html: '<span class="bxhtmled-tskbr-element-icon"></span><span class="bxhtmled-tskbr-element-text">' + element.title + '</span>'});
+			const _this = this;
+			const parentCont = this.GetSectionContByPath(element.key || element.path, true);
+			const pElement = BX.create('DIV', {
+				props: { className: 'bxhtmled-tskbr-element' },
+				html: '<span class="bxhtmled-tskbr-element-icon"></span><span class="bxhtmled-tskbr-element-text">'
+					+ BX.Text.encode(element.title)
+				+ '</span>',
+			});
 
 			var dd = pElement.appendChild(BX.create("IMG", {props: {
 				src: this.editor.util.GetEmptyImage(),
@@ -452,7 +456,7 @@
 			this.HandleElementEx(pElement, dd, element);
 
 			this.searchIndex.push({
-				content: (element.title + ' ' + element.name).toLowerCase(),
+				content: (BX.Text.encode(element.title) + ' ' + element.name).toLowerCase(),
 				element: pElement
 			});
 
@@ -585,6 +589,7 @@
 
 				_this.editor.skipPasteHandler = false;
 				_this.editor.skipPasteControl = false;
+				_this.editor.iframeView.pasteLoader.hide();
 			}, 20);
 		},
 
@@ -899,8 +904,7 @@
 				this.dialogShownTimeout = clearTimeout(this.dialogShownTimeout);
 			}
 			this.oDialog.Show();
-			this.oDialog.DIV.style.zIndex = this.zIndex;
-			this.oDialog.OVERLAY.style.zIndex = this.zIndex - 2;
+
 			var
 				top = parseInt(this.oDialog.DIV.style.top) - 180,
 				scrollPos = BX.GetWindowScrollPos(document),
@@ -1751,6 +1755,13 @@
 
 		Show: function(e, target, collapsedSelection)
 		{
+			//open context menu only in admin html-editor
+			const targetBxTag = this.editor.GetBxTag(target);
+			if (targetBxTag.tag === 'diskfile0')
+			{
+				return;
+			}
+
 			this.savedRange = this.editor.selection.GetBookmark();
 			this.Hide();
 
@@ -1901,7 +1912,6 @@
 				});
 				this.OPENER.Open();
 				var popupDiv = this.OPENER.GetMenu().DIV;
-				popupDiv.style.zIndex = '3005';
 				popupDiv.id = 'bx-admin-prefix';
 				BX.addClass(popupDiv, 'bx-core-popup-menu-editor');
 
@@ -1953,7 +1963,7 @@
 		this.topControls = topControls;
 		this.showMoreButton = false;
 		this.shown = true;
-		this.height = 34;
+		this.height = null;
 		this.Init();
 	}
 
@@ -1964,6 +1974,44 @@
 			// Init Event handlers
 			BX.addCustomEvent(this.editor, "OnIframeFocus", BX.delegate(this.EnableWysiwygButtons, this));
 			BX.addCustomEvent(this.editor, "OnTextareaFocus", BX.delegate(this.DisableWysiwygButtons, this));
+			BX.bind(this.pCont, 'scroll', BX.proxy(this.SetScrollShadows, this));
+		},
+
+		SetScrollShadows: function()
+		{
+			const scrollWidth = this.pCont.scrollWidth;
+			const width = this.pCont.offsetWidth;
+			let scrollLeft = this.pCont.scrollLeft;
+			let scrollRight = scrollWidth - width - scrollLeft;
+			if (scrollRight < 0)
+			{
+				scrollLeft += scrollRight;
+				scrollRight = 0;
+			}
+			if (scrollLeft > 20 && scrollRight > 20)
+			{
+				this.pCont.parentNode.classList.remove('has-tools-on-left');
+				this.pCont.parentNode.classList.remove('has-tools-on-right');
+				this.pCont.parentNode.classList.add('has-tools-on-sides');
+			}
+			else if (scrollLeft > 20)
+			{
+				this.pCont.parentNode.classList.add('has-tools-on-left');
+				this.pCont.parentNode.classList.remove('has-tools-on-right');
+				this.pCont.parentNode.classList.remove('has-tools-on-sides');
+			}
+			else if (scrollRight > 20)
+			{
+				this.pCont.parentNode.classList.remove('has-tools-on-left');
+				this.pCont.parentNode.classList.add('has-tools-on-right');
+				this.pCont.parentNode.classList.remove('has-tools-on-sides');
+			}
+			else if (scrollLeft < 20 && scrollRight < 20)
+			{
+				this.pCont.parentNode.classList.remove('has-tools-on-left');
+				this.pCont.parentNode.classList.remove('has-tools-on-right');
+				this.pCont.parentNode.classList.remove('has-tools-on-sides');
+			}
 		},
 
 		BuildControls: function()
@@ -2151,6 +2199,7 @@
 
 		AdaptControls: function(width)
 		{
+			this.SetScrollShadows();
 			var bCompact = width < this.editor.normalWidth;
 			if (this.controls.More)
 			{
@@ -2558,7 +2607,7 @@
 	{
 		this.editor = editor;
 		this.id = 'bxeditor_overlay' + this.editor.id;
-		this.zIndex = params && params.zIndex ? params.zIndex : 3001;
+		this.zIndex = params && params.zIndex ? params.zIndex : 1001;
 	}
 
 	Overlay.prototype =
@@ -2568,7 +2617,7 @@
 			this.bCreated = true;
 			this.bShown = false;
 			var ws = BX.GetWindowScrollSize();
-			this.pWnd = document.body.appendChild(BX.create("DIV", {props: {id: this.id, className: "bxhtmled-overlay"}, style: {zIndex: this.zIndex, width: ws.scrollWidth + "px", height: ws.scrollHeight + "px"}}));
+			this.pWnd = document.body.appendChild(BX.create("DIV", {props: {id: this.id, className: "bxhtmled-overlay"}, style: { width: ws.scrollWidth + "px", height: ws.scrollHeight + "px"}}));
 			this.pWnd.ondrag = BX.False;
 			this.pWnd.onselectstart = BX.False;
 		},
@@ -2934,11 +2983,22 @@
 			{
 				this.popupShownTimeout = clearTimeout(this.popupShownTimeout);
 			}
+
+			var firstOpen = this.pValuesCont.parentNode === null;
 			document.body.appendChild(this.pValuesCont);
+
+			if (firstOpen)
+			{
+				BX.ZIndexManager.register(this.pValuesCont);
+			}
+
+			var component = BX.ZIndexManager.bringToFront(this.pValuesCont);
+			var zIndex = component.getZIndex();
+
 			this.pValuesCont.style.display = 'block';
 			BX.addClass(this.pCont, this.activeClassName);
 			var
-				pOverlay = this.editor.overlay.Show({zIndex: this.zIndex - 1}),
+				pOverlay = this.editor.overlay.Show({ zIndex: zIndex - 1 }),
 				bindCont = this.GetPopupBindCont(),
 				pos = BX.pos(bindCont),
 				left = Math.round(pos.left - this.pValuesCont.offsetWidth / 2 + bindCont.offsetWidth / 2 + this.posOffset.left),
@@ -2998,6 +3058,10 @@
 		},
 
 		GetValue: function()
+		{
+		},
+
+		OnPopupClose: function()
 		{
 		}
 	};
@@ -3539,7 +3603,16 @@
 				this.popupShownTimeout = clearTimeout(this.popupShownTimeout);
 			}
 
+			var firstShow = this.pValuesCont.parentNode === null;
 			document.body.appendChild(this.pValuesCont);
+
+			if (firstShow)
+			{
+				BX.ZIndexManager.register(this.pValuesCont);
+			}
+
+			BX.ZIndexManager.bringToFront(this.pValuesCont);
+
 			this.pValuesCont.style.display = 'block';
 
 			var
@@ -3768,7 +3841,7 @@
 			this.lastPreviewMode = false;
 			this.Hide();
 
-			this.pOverlay = this.editor.overlay.Show();
+			this.pOverlay = this.editor.overlay.Show({zIndex: 1040});
 			BX.bind(this.pOverlay, 'click', BX.proxy(this.Hide, this));
 			BX.bind(this.pOverlay, 'mousemove', BX.proxy(function(){this.PreviewContent({mode: 'default'});}, this));
 
@@ -3826,7 +3899,6 @@
 			this.OPENER.Open();
 
 			var popupDiv = this.OPENER.GetMenu().DIV;
-			popupDiv.style.zIndex = '3005';
 			BX.addClass(popupDiv, 'bxhtmled-paste-control bx-core-popup-menu-editor');
 
 			BX.addCustomEvent(this.OPENER.GetMenu(), 'onMenuClose', BX.proxy(this.Hide, this));

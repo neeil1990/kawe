@@ -9,11 +9,11 @@ if(!$USER->CanDoOperation('edit_php'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 $res=false;
-if(strlen($Reindex)>0 && check_bitrix_sessid())
+if($Reindex <> '' && check_bitrix_sessid())
 {
 	require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_js.php");
 
-	if(strlen($Next)<=0 || !CheckSerializedData($_REQUEST['NS']))
+	if($Next == '' || !CheckSerializedData($_REQUEST['NS']))
 	{
 		$NS = array(
 			"max_execution_time" => $max_execution_time,
@@ -24,14 +24,14 @@ if(strlen($Reindex)>0 && check_bitrix_sessid())
 			$NS["SITE_ID"] = $site_id;
 	}
 	else
-		$NS = unserialize($_REQUEST['NS']);
+		$NS = unserialize($_REQUEST['NS'], ['allowed_classes' => false]);
 
 	$res = \Bitrix\Main\UrlRewriter::reindexAll(($NS["stepped"]=="Y"? $NS["max_execution_time"]:0), $NS);
 
 	if(is_array($res)):
 		//$res["STAT"]=$NS["STAT"];
 		//$res["STAT"][]=$res["CNT"]-$NS["CNT"];
-		//$perfomance = "<br>",implode($res["STAT"],", ");
+		//$perfomance = "<br>",implode(", ", $res["STAT"]);
 		CAdminMessage::ShowMessage(array(
 			"MESSAGE"=>GetMessage("url_rewrite_mess_title"),
 			"DETAILS"=>GetMessage("MURL_REINDEX_TOTAL")." <b>".$res["CNT"]."</b>",

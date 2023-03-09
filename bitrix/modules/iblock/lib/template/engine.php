@@ -98,7 +98,7 @@ class Engine
 			$parent->setModifiers($modifiers);
 
 		$parsedTemplate = preg_split('/({=|})/',  $template, -1, PREG_SPLIT_DELIM_CAPTURE);
-		while (list(,$token) = each($parsedTemplate))
+		while (($token = array_shift($parsedTemplate)) !== null)
 		{
 			$node = null;
 
@@ -129,7 +129,7 @@ class Engine
 	protected static function parseFormula(array &$parsedTemplate)
 	{
 		$node = null;
-		if (list(,$token) = each($parsedTemplate))
+		if (($token = array_shift($parsedTemplate)) !== null)
 		{
 			if (preg_match("/^([a-zA-Z0-9_]+\\.[a-zA-Z0-9_.]+)\\s*\$/", $token, $match))
 			{
@@ -142,7 +142,7 @@ class Engine
 			}
 		}
 		//Eat up to the formula end
-		while (list(,$token) = each($parsedTemplate))
+		while (($token = array_shift($parsedTemplate)) !== null)
 		{
 			if ($token === "}")
 				break;
@@ -169,11 +169,11 @@ class Engine
 		if ($token !== "")
 			self::explodeFunctionArgument($token, $function);
 
-		while (list(,$token) = each($parsedTemplate))
+		while (($token = array_shift($parsedTemplate)) !== null)
 		{
 			if ($token === "}")
 			{
-				prev($parsedTemplate);
+				array_unshift($parsedTemplate, $token);
 				break;
 			}
 			elseif ($token === "{=")
@@ -286,7 +286,7 @@ class NodeRoot extends NodeBase
 				$modifierFunction = Functions\Fabric::createInstance("lower");
 			else
 				$modifierFunction = Functions\Fabric::createInstance("translit", array(
-					"replace_space" => substr($mod, 1),
+					"replace_space" => mb_substr($mod, 1),
 				));
 			$this->modifiers[] = $modifierFunction;
 		}
@@ -375,7 +375,7 @@ class NodeEntityField extends NodeBase
 	 */
 	function __construct($entityField = "")
 	{
-		$this->entityField = strtolower($entityField);
+		$this->entityField = mb_strtolower($entityField);
 	}
 
 	/**
@@ -420,7 +420,7 @@ class NodeFunction extends NodeBase
 	 */
 	public function __construct($functionName = "")
 	{
-		$this->functionName = strtolower($functionName);
+		$this->functionName = mb_strtolower($functionName);
 	}
 
 	/**

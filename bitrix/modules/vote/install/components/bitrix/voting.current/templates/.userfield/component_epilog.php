@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" &&
 	($questions = $arResult["VOTING.RESULT"]["arResult"]["QUESTIONS"]) &&
 	!empty($questions) &&
 	array_key_exists("PUBLIC_VOTE_ID", $_REQUEST) && $_REQUEST["PUBLIC_VOTE_ID"] == $arResult["VOTE_ID"] &&
-	array_key_exists("vote", $_REQUEST) && strlen($_REQUEST["vote"])>0 &&
+	array_key_exists("vote", $_REQUEST) && $_REQUEST["vote"] <> '' &&
 	($GLOBALS["VOTING_ID"] == $arResult["VOTE_ID"] && array_key_exists($arResult["VOTE_ID"], $_SESSION["VOTE"]["VOTES"])) &&
 	CModule::IncludeModule("pull"))
 {
@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" &&
 	}
 }
 
-CJSCore::Init(array('ajax', 'popup'));
+CJSCore::Init(array('ajax', 'popup', 'ui.fonts.opensans'));
 $GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/components/bitrix/rating.vote/templates/like/popup.css');
 
 $uid = $this->params["uid"];

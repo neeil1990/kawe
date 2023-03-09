@@ -42,7 +42,7 @@ if(!$zr=$z->Fetch())
 $sTableID = "tbl_iblock_history";
 // sort init
 $oSort = new CAdminSorting($sTableID, "ID", "desc");
-$arOrder = (strtoupper($by) === "ID"? array($by => $order): array($by => $order, "ID" => "ASC"));
+$arOrder = (mb_strtoupper($by) === "ID"? array($by => $order): array($by => $order, "ID" => "ASC"));
 // list init
 $lAdmin = new CAdminList($sTableID, $oSort);
 
@@ -76,14 +76,14 @@ if(($arID = $lAdmin->GroupAction()))
 	if($_REQUEST['action_target']=='selected')
 	{
 		$arID = Array();
-		$rsData = CIBlockElement::WF_GetHistoryList($ELEMENT_ID, $by, $order, $arFilter, $is_filtered);
+		$rsData = CIBlockElement::WF_GetHistoryList($ELEMENT_ID, '', '', $arFilter);
 		while($arRes = $rsData->Fetch())
 			$arID[] = $arRes['ID'];
 	}
 
 	foreach($arID as $ID)
 	{
-		if(strlen($ID)<=0)
+		if($ID == '')
 			continue;
 		$ID = intval($ID);
 		$arRes = CIBlockElement::GetByID($ID);
@@ -117,7 +117,7 @@ if(($arID = $lAdmin->GroupAction()))
 			$d = CIBlockElement::GetByID($ID);
 			if($dr = $d->Fetch())
 			{
-				if(strlen($dr["WF_PARENT_ELEMENT_ID"])>0)
+				if($dr["WF_PARENT_ELEMENT_ID"] <> '')
 				{
 					$DB->StartTransaction();
 					if(!CIBlockElement::Delete(intval($ID)))
@@ -144,7 +144,9 @@ if(($arID = $lAdmin->GroupAction()))
 }
 
 // dataset
-$rsData = CIBlockElement::WF_GetHistoryList($ELEMENT_ID, $by, $order, $arFilter, $is_filtered);
+global $by, $order;
+
+$rsData = CIBlockElement::WF_GetHistoryList($ELEMENT_ID, $by, $order, $arFilter);
 $rsData = new CAdminResult($rsData, $sTableID);
 $rsData->NavStart();
 
@@ -335,7 +337,7 @@ $oFilter->Begin();
 ?>
 <tr>
 	<td><font class="tableheadtext"><b><?=GetMessage("IBLOCK_FIELD_NAME")?>:</b></td>
-	<td><input type="text" name="find_name" value="<?echo (strlen($find_name)>0) ? htmlspecialcharsbx($find_name) : ""?>" size="38"></td>
+	<td><input type="text" name="find_name" value="<?echo ($find_name <> '') ? htmlspecialcharsbx($find_name) : ""?>" size="38"></td>
 </tr>
 <tr>
 	<td><?=GetMessage("IBLOCK_FIELD_ID")?>:</td>

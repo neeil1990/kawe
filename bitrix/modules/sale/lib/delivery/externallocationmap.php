@@ -2,15 +2,20 @@
 namespace Bitrix\Sale\Delivery;
 
 use Bitrix\Main\Error;
-use Bitrix\Sale\Location\Comparator;
 use Bitrix\Sale\Result;
 use Bitrix\Main\Text\Encoding;
 use Bitrix\Main\SystemException;
+use Bitrix\Sale\Location\Comparator;
 use Bitrix\Main\ArgumentNullException;
 use Bitrix\Sale\Location\ExternalTable;
 use Bitrix\Sale\Location\LocationTable;
 use Bitrix\Sale\Location\ExternalServiceTable;
 
+/**
+ * Class ExternalLocationMap
+ * @package Bitrix\Sale\Delivery
+ * Helper class for locations mapping.
+ */
 class ExternalLocationMap
 {
 	//Dlivery idtifyer, stored in \Bitrix\Sale\Location\ExternalServiceTable : CODE
@@ -36,11 +41,10 @@ class ExternalLocationMap
 	 * Returns internal location id
 	 * @param string $externalCode
 	 * @return int
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function getInternalId($externalCode)
 	{
-		if(strlen($externalCode) <= 0)
+		if($externalCode == '')
 			return 0;
 
 		$srvId = static::getExternalServiceId();
@@ -65,11 +69,10 @@ class ExternalLocationMap
 	 * Returns external location id
 	 * @param int $locationId
 	 * @return int|string
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function getExternalId($locationId)
 	{
-		if(strlen($locationId) <= 0)
+		if($locationId == '')
 			return '';
 
 		$srvId = static::getExternalServiceId();
@@ -97,7 +100,7 @@ class ExternalLocationMap
 		if($loc = $res->fetch())
 			$result = $loc['XML_ID'];
 
-		if(strlen($result) <= 0)
+		if($result == '')
 			$result = self::getUpperCityExternalId($locationId, $srvId);
 
 		return $result;
@@ -150,11 +153,10 @@ class ExternalLocationMap
 	 * Returns external location city id
 	 * @param int $locationId
 	 * @return int|string
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function getCityId($locationId)
 	{
-		if(strlen($locationId) <= 0)
+		if($locationId == '')
 			return 0;
 
 		$res = LocationTable::getList(array(
@@ -227,7 +229,6 @@ class ExternalLocationMap
 	/**
 	 * Check locations map was sat.
 	 * @return bool
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function isInstalled()
 	{
@@ -292,7 +293,7 @@ class ExternalLocationMap
 	{
 		set_time_limit(0);
 
-		if(strlen($path) <= 0)
+		if($path == '')
 			return 0;
 
 		if(!\Bitrix\Main\IO\File::isFileExists($path))
@@ -341,7 +342,6 @@ class ExternalLocationMap
 	 * Export locations map from database to file, csv format.
 	 * @param string $path
 	 * @return bool|int
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function exportToCsv($path)
 	{
@@ -364,7 +364,7 @@ class ExternalLocationMap
 		$content = '';
 
 		while($row = $res->fetch())
-			if(strlen($row['CODE']) > 0)
+			if($row['CODE'] <> '')
 				$content .= $row['CODE'].";".$row['XML_ID']."\n";
 
 		return \Bitrix\Main\IO\File::putFileContents($path, $content);
@@ -373,12 +373,11 @@ class ExternalLocationMap
 	/**
 	 * If exist returns id, if not exist create it
 	 * @return int External service Id
-	 * @throws \Bitrix\Main\ArgumentException
 	 * @throws \Exception
 	 */
 	public static function getExternalServiceId()
 	{
-		if(strlen(static::EXTERNAL_SERVICE_CODE) <=0)
+		if(static::EXTERNAL_SERVICE_CODE == '')
 			throw new SystemException('EXTERNAL_SERVICE_CODE must be defined!');
 
 		static $result = null;
@@ -415,7 +414,7 @@ class ExternalLocationMap
 	 */
 	protected static function utfDecode($str)
 	{
-		if(strtolower(SITE_CHARSET) != 'utf-8')
+		if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 			$str = Encoding::convertEncoding($str, 'UTF-8', SITE_CHARSET);
 
 		return $str;
@@ -496,10 +495,10 @@ class ExternalLocationMap
 	 */
 	public static function setExternalLocation2($srvId, $locationId, $xmlId, $updateExist = false)
 	{
-		if(strlen($xmlId) <= 0)
+		if($xmlId == '')
 			throw new ArgumentNullException('code');
 
-		if(strlen($srvId) <= 0)
+		if($srvId == '')
 			throw new ArgumentNullException('srvId');
 
 		if(intval($locationId) <= 0)
@@ -586,6 +585,10 @@ class ExternalLocationMap
 
 	/**
 	 * Fill table b_sale_hdaln with locations with normalized names
+	 * @param int|bool $startId
+	 * @param int $timeout
+	 * @return int
+	 * @throws \Bitrix\Main\Db\SqlQueryException
 	 */
 	public static function fillNormalizedTable($startId = false, $timeout = 0)
 	{
@@ -623,9 +626,9 @@ class ExternalLocationMap
 				INSERT INTO
 					  b_sale_hdaln (LOCATION_ID, LEFT_MARGIN, RIGHT_MARGIN, NAME)
 				VALUES(
-					".$sqlHelper->forSql($loc['ID']).",
-					".$sqlHelper->forSql($loc['LEFT_MARGIN']).",
-					".$sqlHelper->forSql($loc['RIGHT_MARGIN']).",
+					".intval($loc['ID']).",
+					".intval($loc['LEFT_MARGIN']).",
+					".intval($loc['RIGHT_MARGIN']).",
 					'".$sqlHelper->forSql(
 							preg_replace(
 									'/\s*(\(.*\))/i'.BX_UTF_PCRE_MODIFIER,
@@ -644,6 +647,17 @@ class ExternalLocationMap
 		return $lastProcessedId;
 	}
 
+	/**
+	 * @param string $name Location name.
+	 * @param string $city Citry name.
+	 * @param string $subregion Subregions name.
+	 * @param string $region Region name.
+	 * @param string $country Country name.
+	 * @param bool $exactOnly If we search exact name, or partly coincidence is enought
+	 * @return int
+	 * @throws \Bitrix\Main\Db\SqlQueryException
+	 * @throws \Exception
+	 */
 	public static function getLocationIdByNames($name, $city, $subregion, $region, $country = '', $exactOnly = false)
 	{
 		$nameNorm = Comparator::normalizeEntity($name, 'LOCALITY');
@@ -726,21 +740,21 @@ class ExternalLocationMap
 
 				$found = null;
 
-				if($loc['PARENTS_TYPE_CODE'] == 'REGION' && strlen($region) > 0)
+				if($loc['PARENTS_TYPE_CODE'] == 'REGION' && $region <> '')
 				{
 					if(!is_array($regionNorm))
 						$regionNorm = Comparator::normalizeEntity($region, 'REGION');
 
 					$found = Comparator::isEntityEqual($loc['PARENTS_NAME_UPPER'], $regionNorm, 'REGION');
 				}
-				elseif(strlen($subregion) > 0 && $loc['PARENTS_TYPE_CODE'] == 'SUBREGION')
+				elseif($subregion <> '' && $loc['PARENTS_TYPE_CODE'] == 'SUBREGION')
 				{
 					if(!is_array($subregionNorm))
 						$subregionNorm = Comparator::normalizeEntity($subregion, 'SUBREGION');
 
 					$found = Comparator::isEntityEqual($loc['PARENTS_NAME_UPPER'], $subregionNorm, 'SUBREGION');
 				}
-				elseif(strlen($city) > 0 && $loc['PARENTS_TYPE_CODE'] == 'CITY')
+				elseif($city <> '' && $loc['PARENTS_TYPE_CODE'] == 'CITY')
 				{
 					if(!is_array($cityNorm))
 						$subregionNorm = Comparator::normalizeEntity($city, 'LOCALITY');
@@ -817,5 +831,4 @@ class ExternalLocationMap
 
 		return 0;
 	}
-
 }

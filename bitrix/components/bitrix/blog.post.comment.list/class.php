@@ -34,7 +34,10 @@ class CBlogPostCommentList extends CBlogPostCommentEdit
 		{
 			$vars = $cache->GetVars();
 			$this->arResult = array_merge($this->arResult, $vars["arResult"]);
-			CBitrixComponentTemplate::ApplyCachedData($vars["templateCachedData"]);
+
+			$template = new CBitrixComponentTemplate();
+			$template->ApplyCachedData($vars["templateCachedData"]);
+
 			$cache->Output();
 		}
 		else
@@ -67,7 +70,7 @@ class CBlogPostCommentList extends CBlogPostCommentEdit
 			if (!($this->arResult["Perm"] >= BLOG_PERMS_MODERATE || $this->arParams["BLOG_MODULE_PERMS"] >= "W"))
 				$arFilter["PUBLISH_STATUS"] = array(BLOG_PUBLISH_STATUS_PUBLISH);
 //			AJAX - use only one comment
-			if ($this->arResult["is_ajax_post"] == "Y" && IntVal($this->arResult["ajax_comment"]) > 0)
+			if ($this->arResult["is_ajax_post"] == "Y" && intval($this->arResult["ajax_comment"]) > 0)
 			{
 				$arFilter["ID"] = $this->arResult["ajax_comment"];
 //				for ajax - show hidden comment too, but only once
@@ -100,7 +103,7 @@ class CBlogPostCommentList extends CBlogPostCommentEdit
 					&&
 					!(
 						$comment["PUBLISH_STATUS"] == BLOG_PUBLISH_STATUS_READY && $this->arResult["Perm"] == BLOG_PUBLISH_STATUS_READY
-						&& $this->arResult["is_ajax_post"] == "Y" && IntVal($this->arResult["ajax_comment"]) > 0
+						&& $this->arResult["is_ajax_post"] == "Y" && intval($this->arResult["ajax_comment"]) > 0
 						&& $this->arResult["ajax_comment"] == $comment["ID"]
 					)
 				)
@@ -179,7 +182,7 @@ class CBlogPostCommentList extends CBlogPostCommentEdit
 //		COMMENT DATA for js
 		$jsString = 'top.text' . $comment["ID"] . '= "' . CUtil::JSescape($comment["POST_TEXT"]) . '";';
 //		todo: images and files
-		if(strlen($jsString) > 0)
+		if($jsString <> '')
 			$comment["BEFORE"] = "<script>".$jsString."</script>";
 		
 //		AUTHOR registered or unregister params
@@ -229,7 +232,7 @@ class CBlogPostCommentList extends CBlogPostCommentEdit
 		$this->saveLastPostView();
 		foreach ($this->arResult["CommentsResult"] as $key => $comment)
 		{
-			if(strlen($this->arResult["lastPostView"]) > 0 && $this->arResult["lastPostView"] < MakeTimeStamp($comment["DATE_CREATE"]))
+			if($this->arResult["lastPostView"] <> '' && $this->arResult["lastPostView"] < MakeTimeStamp($comment["DATE_CREATE"]))
 				$this->arResult["CommentsResult"][$key]["NEW"] = "Y";
 		}
 	}
@@ -237,7 +240,7 @@ class CBlogPostCommentList extends CBlogPostCommentEdit
 	private function addTitleToMessage($message, $title)
 	{
 		$messageWithTitle = '';
-		if(strlen($title) > 0)
+		if($title <> '')
 			$messageWithTitle .= "<b>" . $title . "</b><br>";
 		$messageWithTitle .= $message;
 		
@@ -253,7 +256,7 @@ class CBlogPostCommentList extends CBlogPostCommentEdit
 		
 		foreach($_REQUEST as $key => $value)
 		{
-			if(strpos($key,"PAGEN_") !== false)
+			if(mb_strpos($key, "PAGEN_") !== false)
 				$str .= $key."-".$value;
 		}
 		

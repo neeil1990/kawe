@@ -10,4 +10,10 @@ $arResult["LIKE_TEMPLATE"] = (
 		? $arParams["LIKE_TEMPLATE"]
 		: 'light'
 );
+
+$arResult['COMMENT'] = (
+	!empty($arParams["COMMENT"])
+		? $arParams["COMMENT"]
+		: 'N'
+);
 ?>

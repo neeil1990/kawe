@@ -34,42 +34,42 @@ function CheckFilter()
 	$find_date_end_1 = trim($find_date_end_1);
 	$find_date_end_2 = trim($find_date_end_2);
 
-	if (strlen($find_date_start_1)>0 || strlen($find_date_start_2)>0)
+	if ($find_date_start_1 <> '' || $find_date_start_2 <> '')
 	{
 		$date_start_1_stm = MkDateTime(ConvertDateTime($find_date_start_1,"D.M.Y"),"d.m.Y");
 		$date_start_2_stm = MkDateTime(ConvertDateTime($find_date_start_2,"D.M.Y")." 23:59:59","d.m.Y H:i:s");
-		if (!$date_start_1_stm && strlen(trim($find_date_start_1))>0)
+		if (!$date_start_1_stm && trim($find_date_start_1) <> '')
 		{
 			$bGotErr = true;
 			$lAdmin->AddUpdateError(GetMessage("VOTE_WRONG_START_DATE_FROM"));
 		}
-		if (!$date_start_2_stm && strlen(trim($find_date_start_2))>0)
+		if (!$date_start_2_stm && trim($find_date_start_2) <> '')
 		{
 			$bGotErr = true;
 			$lAdmin->AddUpdateError(GetMessage("VOTE_WRONG_START_DATE_TILL"));
 		}
-		if (!$bGotErr && $date_start_2_stm <= $date_start_1_stm && strlen($date_start_2_stm)>0)
+		if (!$bGotErr && $date_start_2_stm <= $date_start_1_stm && $date_start_2_stm <> '')
 		{
 			$bGotErr = true;
 			$lAdmin->AddUpdateError(GetMessage("VOTE_WRONG_START_FROM_TILL"));
 		}
 	}
 
-	if (strlen($find_date_end_1)>0 || strlen($find_date_end_2)>0)
+	if ($find_date_end_1 <> '' || $find_date_end_2 <> '')
 	{
 		$date_end_1_stm = MkDateTime(ConvertDateTime($find_date_end_1,"D.M.Y"),"d.m.Y");
 		$date_end_2_stm = MkDateTime(ConvertDateTime($find_date_end_2,"D.M.Y")." 23:59:59","d.m.Y H:i:s");
-		if (!$date_end_1_stm && strlen(trim($find_date_end_1))>0)
+		if (!$date_end_1_stm && trim($find_date_end_1) <> '')
 		{
 			$bGotErr = true;
 			$lAdmin->AddUpdateError(GetMessage("VOTE_WRONG_END_DATE_FROM"));
 		}
-		if (!$date_end_2_stm && strlen(trim($find_date_end_2))>0)
+		if (!$date_end_2_stm && trim($find_date_end_2) <> '')
 		{
 			$bGotErr = true;
 			$lAdmin->AddUpdateError(GetMessage("VOTE_WRONG_END_DATE_TILL"));
 		}
-		if ($bGotErr && $date_end_2_stm <= $date_end_1_stm && strlen($date_end_2_stm)>0)
+		if ($bGotErr && $date_end_2_stm <= $date_end_1_stm && $date_end_2_stm <> '')
 		{
 			$bGotErr = true;
 			$lAdmin->AddUpdateError(GetMessage("VOTE_WRONG_END_FROM_TILL"));
@@ -137,14 +137,14 @@ if(($arID = $lAdmin->GroupAction()) && $VOTE_RIGHT=="W" && check_bitrix_sessid()
 	if($_REQUEST['action_target']=='selected')
 	{
 			$arID = Array();
-			$rsData = CVoteUser::GetList($by, $order, $arFilter, $is_filtered);
+			$rsData = CVoteUser::GetList('', '', $arFilter);
 			while($arRes = $rsData->Fetch())
 					$arID[] = $arRes['ID'];
 	}
 
 	foreach($arID as $ID)
 	{
-		if (strlen($ID)<=0)
+		if ($ID == '')
 			continue;
 		$ID = intval($ID);
 		switch($_REQUEST['action'])
@@ -163,7 +163,9 @@ if(($arID = $lAdmin->GroupAction()) && $VOTE_RIGHT=="W" && check_bitrix_sessid()
 	}
 }
 
-$rsData = CVoteUser::GetList($by, $order, $arFilter, $is_filtered);
+global $by, $order;
+
+$rsData = CVoteUser::GetList($by, $order, $arFilter);
 $rsData = new CAdminResult($rsData, $sTableID);
 $rsData->NavStart();
 

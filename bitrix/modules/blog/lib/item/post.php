@@ -11,6 +11,8 @@ use Bitrix\Main;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Blog\PostTable;
+use Bitrix\Socialnetwork\LogTable;
+use Bitrix\Socialnetwork\Livefeed;
 
 Loc::loadMessages(__FILE__);
 
@@ -25,21 +27,30 @@ class Post
 		$this->perm = Permissions::DENY;
 		$this->permByOpenGroup = false;
 		$this->fields = array();
+		$this->id = false;
 	}
 
-	public static function getById($postId = 0)
+	public static function getById($postId = 0, $params = array())
 	{
 		static $cachedFields = array();
 
 		$postItem = false;
 		$postId = intval($postId);
 
+		$useStaticCache = (
+			!empty($params['USE_STATIC_CACHE'])
+			&& $params['USE_STATIC_CACHE'] === true
+		);
+
 		if ($postId > 0)
 		{
 			$postItem = new Post;
 			$postFields = array();
 
-			if (isset($cachedFields[$postId]))
+			if (
+				$useStaticCache
+				&& isset($cachedFields[$postId])
+			)
 			{
 				$postFields = $cachedFields[$postId];
 			}
@@ -85,6 +96,13 @@ class Post
 			}
 
 			$postItem->setFields($postFields);
+			if (
+				isset($postFields['ID'])
+				&& intval($postFields['ID']) > 0
+			)
+			{
+				$postItem->setId(intval($postFields['ID']));
+			}
 		}
 
 		return $postItem;
@@ -98,6 +116,16 @@ class Post
 	public function getFields()
 	{
 		return $this->fields;
+	}
+
+	public function setId($id = 0)
+	{
+		$this->id = $id;
+	}
+
+	public function getId()
+	{
+		return $this->id;
 	}
 
 	public function getSonetPerms($params = array())
@@ -159,10 +187,11 @@ class Post
 			$perms = Permissions::FULL;
 		}
 
+		$openedWorkgroupsList = [];
 		$readByOpenSonetGroup = false;
 		$alreadyFound = false;
 
-		if($perms <= Permissions::DENY)
+		if ($perms <= Permissions::DENY)
 		{
 			$permsList = \CBlogPost::getSocNetPerms($fields['ID']);
 
@@ -322,34 +351,36 @@ class Post
 					}
 				}
 
-				if(
+				if (
 					$perms <= Permissions::READ
 					&& !empty($permsList['SG'])
 				) // check open sonet groups
 				{
-					foreach($permsList['SG'] as $sonetGroupPermList)
+					foreach ($permsList['SG'] as $sonetGroupPermList)
 					{
-						if (!empty($sonetGroupPermList))
+						if (empty($sonetGroupPermList))
 						{
-							foreach($sonetGroupPermList as $sonetGroupPerm)
-							{
-								if (preg_match('/^OSG(\d+)_'.(!$userId ? SONET_ROLES_ALL : SONET_ROLES_AUTHORIZED).'$/', $sonetGroupPerm, $matches))
-								{
-									$readByOpenSonetGroup = true;
-									break;
-								}
-							}
+							continue;
+						}
 
-							if ($readByOpenSonetGroup)
+						foreach ($sonetGroupPermList as $sonetGroupPerm)
+						{
+							if (!preg_match('/^OSG(\d+)_'.(!$userId ? SONET_ROLES_ALL : SONET_ROLES_AUTHORIZED).'$/', $sonetGroupPerm, $matches))
 							{
-								break;
+								continue;
 							}
+							$openedWorkgroupsList[] = (int)$matches[1];
 						}
 					}
 
-					if ($readByOpenSonetGroup)
+					if (
+						!empty($openedWorkgroupsList)
+						&& Loader::includeModule('socialnetwork')
+						&& \Bitrix\Socialnetwork\Helper\Workgroup::checkAnyOpened($openedWorkgroupsList)
+					)
 					{
 						$perms = Permissions::READ;
+						$readByOpenSonetGroup = true;
 					}
 				}
 
@@ -412,10 +443,10 @@ class Post
 			}
 		}
 
-		$cache[$cacheId] = $result = array(
+		$cache[$cacheId] = $result = [
 			'PERM' => $perms,
-			'READ_BY_OSG' => $readByOpenSonetGroup
-		);
+			'READ_BY_OSG' => $readByOpenSonetGroup,
+		];
 
 		return $result;
 	}
@@ -493,5 +524,95 @@ class Post
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Returns log entry Id of a blog post
+	 * @return int|boolean
+	 */
+	public function getLogId(array $params = [])
+	{
+		$result = false;
+
+		$postId = $this->getId();
+		if ($postId <= 0)
+		{
+			return $result;
+		}
+
+		if (!Loader::includeModule('socialnetwork'))
+		{
+			return $result;
+		}
+
+		$provider = Livefeed\Provider::init(array(
+			'ENTITY_TYPE' => Livefeed\Provider::DATA_ENTITY_TYPE_BLOG_POST,
+			'ENTITY_ID' => $postId,
+		));
+		if (!$provider)
+		{
+			return $result;
+		}
+
+		return $provider->getLogId($params);
+	}
+
+	/**
+	 * Deactivates log entry of a blog post
+	 * @param int $postId
+	 * @return boolean
+	 */
+	public function deactivateLogEntry()
+	{
+		$result = false;
+
+		if (!Loader::includeModule('socialnetwork'))
+		{
+			return $result;
+		}
+
+		$logId = $this->getLogId();
+		if (intval($logId) <= 0)
+		{
+			return $result;
+		}
+
+		LogTable::update($logId, [
+			'INACTIVE' => 'Y'
+		]);
+
+		return true;
+	}
+
+	/**
+	 * Activates log entry of a blog post
+	 * @param int $postId
+	 * @return boolean
+	 */
+	public function activateLogEntry()
+	{
+		$result = false;
+
+		if (!Loader::includeModule('socialnetwork'))
+		{
+			return $result;
+		}
+
+		$logId = $this->getLogId([
+			'inactive' => true
+		]);
+		if (intval($logId) <= 0)
+		{
+			return $result;
+		}
+
+		$currentDateTime = new \Bitrix\Main\DB\SqlExpression(\Bitrix\Main\Application::getInstance()->getConnection()->getSqlHelper()->getCurrentDateTimeFunction());
+		LogTable::update($logId, [
+			'INACTIVE' => 'N',
+			'LOG_DATE' => $currentDateTime,
+			'LOG_UPDATE' => $currentDateTime
+		]);
+
+		return true;
 	}
 }

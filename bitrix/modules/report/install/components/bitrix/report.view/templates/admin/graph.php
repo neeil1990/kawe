@@ -131,22 +131,22 @@ function checkPostChartData(&$postData, $chartXValueTypes, $chartTypes)
 }
 
 $chartXValueTypes = array('boolean', 'date', 'datetime', 'float', 'integer', 'string', 'text', 'enum', 'file',
-	'disk_file', 'employee', 'crm', 'crm_status', 'iblock_element', 'iblock_section');
+	'disk_file', 'employee', 'crm', 'crm_status', 'iblock_element', 'iblock_section', 'money');
 
 // <editor-fold defaultstate="collapsed" desc="chart types">
 $chartTypes = array(
 	array('id' => 'line', 'name' => GetMessage('REPORT_CHART_TYPE_LINE'), 'value_types' => array(
 		/*'boolean', 'date', 'datetime', */
 		'float', 'integer'/* , 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-		'iblock_element', 'iblock_section'*/)),
+		'iblock_element', 'iblock_section', 'money'*/)),
 	array('id' => 'bar', 'name' => GetMessage('REPORT_CHART_TYPE_BAR'), 'value_types' => array(
 		/*'boolean', 'date', 'datetime', */
 		'float', 'integer'/* , 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-		'iblock_element', 'iblock_section'*/)),
+		'iblock_element', 'iblock_section', 'money'*/)),
 	array('id' => 'pie', 'name' => GetMessage('REPORT_CHART_TYPE_PIE'), 'value_types' => array(
 		/*'boolean', 'date', 'datetime', */
 		'float', 'integer'/* , 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-		'iblock_element', 'iblock_section'*/)),
+		'iblock_element', 'iblock_section', 'money'*/)),
 );
 // </editor-fold>
 
@@ -358,7 +358,7 @@ if ($errorCode === 0)
 				foreach ($arCounting as $k => $v)
 				{
 					$arCounting[$k] = $v * 100 / $sumAll;
-					$sumAllPrcnt =+ $arCounting[$k];
+					$sumAllPrcnt += $arCounting[$k];
 				}
 				if (arsort($arCounting, SORT_NUMERIC))
 				{
@@ -438,7 +438,7 @@ if ($errorCode === 0)
 		ShowImageHeader($imageHandle);
 		$img_base64 = base64_encode(ob_get_contents());
 		ob_end_clean();
-		if (substr($img_base64, 0, 5) === 'iVBOR')
+		if (mb_substr($img_base64, 0, 5) === 'iVBOR')
 		{
 			$imageData = 'data:image/png;base64,'.PHP_EOL.chunk_split($img_base64);
 			$response = array(

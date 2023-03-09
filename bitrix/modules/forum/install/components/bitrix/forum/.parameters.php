@@ -239,12 +239,12 @@ $arComponentParameters = array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("F_FORUMS_PER_PAGE"),
 			"TYPE" => "STRING",
-			"DEFAULT" => intVal(COption::GetOptionString("forum", "FORUMS_PER_PAGE", "10"))),
+			"DEFAULT" => intval(COption::GetOptionString("forum", "FORUMS_PER_PAGE", "10"))),
 		"TOPICS_PER_PAGE" => Array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("F_TOPICS_PER_PAGE"),
 			"TYPE" => "STRING",
-			"DEFAULT" => intVal(COption::GetOptionString("forum", "TOPICS_PER_PAGE", "10"))),
+			"DEFAULT" => intval(COption::GetOptionString("forum", "TOPICS_PER_PAGE", "10"))),
 		"MESSAGES_PER_PAGE" => Array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("F_MESSAGES_PER_PAGE"),
@@ -451,7 +451,7 @@ if (IsModuleInstalled("vote"))
 		{
 			$arVoteChannels = array();
 			CModule::IncludeModule("vote");
-			$db_res = CVoteChannel::GetList($by = "", $order = "", array("ACTIVE" => "Y"), $is_filtered);
+			$db_res = CVoteChannel::GetList("", "", array("ACTIVE" => "Y"));
 			if ($db_res && $res = $db_res->Fetch())
 			{
 				do 
@@ -467,18 +467,18 @@ if (IsModuleInstalled("vote"))
 					"DEFAULT" => "", 
 					"REFRESH" => "Y");
 			reset($arVoteChannels);
-			if (intVal($arCurrentValues["VOTE_CHANNEL_ID"]) > 0)
-				$voteId = intVal($arCurrentValues["VOTE_CHANNEL_ID"]);
+			if (intval($arCurrentValues["VOTE_CHANNEL_ID"]) > 0)
+				$voteId = intval($arCurrentValues["VOTE_CHANNEL_ID"]);
 			else
 				$voteId = key($arVoteChannels);
 			if (!empty($voteId))
 			{
 				$arPermissions = CVoteChannel::GetArrayGroupPermission($voteId);
 				$arUGroupsEx = array();
-				$db_res = CGroup::GetList($by = "c_sort", $order = "asc");
+				$db_res = CGroup::GetList();
 				while($res = $db_res -> Fetch())
 				{
-					if ((isset($arPermissions[$res["ID"]]) && intVal($arPermissions[$res["ID"]]) >= 2) || intVal($res["ID"]) == 1):
+					if ((isset($arPermissions[$res["ID"]]) && intval($arPermissions[$res["ID"]]) >= 2) || intval($res["ID"]) == 1):
 						$arUGroupsEx[$res["ID"]] = $res["NAME"]."[".$res["ID"]."]";
 					endif;
 				}

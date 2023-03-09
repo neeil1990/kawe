@@ -12,7 +12,9 @@
  * @global CDatabase $DB
  */
 
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+use Bitrix\Main\Mail\Internal\EventTypeTable;
+
+require_once(__DIR__."/../include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "settings/mail_events/messagetype_edit.php");
 
@@ -29,10 +31,8 @@ $strError = "";
 $bVarsFromForm = false;
 $message = null;
 $arLangs = array();
-$by = "sort";
-$order = "asc";
 
-$db_res = CLanguage::GetList($by, $order);
+$db_res = CLanguage::GetList();
 if ($db_res && $res = $db_res->GetNext())
 {
 	do 
@@ -67,6 +67,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] <> '' || $_POST["appl
 			"DESCRIPTION" => $_POST["FIELDS"][$idLang]["DESCRIPTION"],
 			"LID" => $idLang,
 			"EVENT_NAME" => $res["EVENT_NAME"],
+			"EVENT_TYPE" => ($_POST["EVENT_TYPE"] == EventTypeTable::TYPE_SMS? EventTypeTable::TYPE_SMS : EventTypeTable::TYPE_EMAIL),
 		);
 		$admList = new CAdminList("dummy");
 		if ($admList->IsUpdated($idLang) && $_REQUEST[$idLang] == "Y")
@@ -136,8 +137,8 @@ if ($arParams["EVENT_NAME"] <> '')
 	}
 }
 
-$aTabs = array(array("DIV" => "edit1", "TAB" => GetMessage("EVENT_NAME_TITLE"), "ICON" => "mail", "TITLE" => GetMessage("EVENT_NAME_DESCR")));
-if ($arParams["ACTION"] == "UPDATE")
+$aTabs = array(array("DIV" => "edit1", "TAB" => GetMessage("EVENT_NAME_TITLE"), "ICON" => "mail", "TITLE" => GetMessage("EVENT_NAME_DESCR1")));
+if ($arParams["ACTION"] == "UPDATE" && $arParams["DATA"]["EVENT_TYPE"] == EventTypeTable::TYPE_EMAIL)
 	$aTabs[] = array("DIV" => "edit2", "TAB" => GetMessage("TEMPLATES_TITLE"), "ICON" => "mail", "TITLE" => GetMessage("TEMPLATES_DESCR"));
 	
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
@@ -205,14 +206,23 @@ $arParams["EVENT_NAME"] = htmlspecialcharsbx($arParams["EVENT_NAME"]);
 <?$tabControl->Begin();?>
 <?$tabControl->BeginNextTab();?>
 <tr class="adm-detail-required-field">
-	<td width="40%"><?=GetMessage('EVENT_NAME')?>:</td>
+	<td width="40%"><?=GetMessage('EVENT_NAME1')?>:</td>
 	<td width="0%">
 	<?if ($arParams["ACTION"] == "ADD"):?>
-		<input type="text" name="EVENT_NAME" value="<?=$arParams["EVENT_NAME"]?>">
+		<input type="text" name="EVENT_NAME" value="<?=$arParams["EVENT_NAME"]?>" size="50">
 	<?else:?>
 		<input type="hidden" name="EVENT_NAME" value="<?=$arParams["EVENT_NAME"]?>"> 
 		<?=$arParams["EVENT_NAME"]?>
 	<?endif;?>
+	</td>
+</tr>
+<tr>
+	<td><?echo GetMessage("type_edit_event_type")?></td>
+	<td>
+		<select name="EVENT_TYPE">
+			<option value="<?=EventTypeTable::TYPE_EMAIL?>"<?if($arParams["DATA"]["EVENT_TYPE"] == EventTypeTable::TYPE_EMAIL) echo " selected"?>><?echo GetMessage("type_edit_event_type_email")?></option>
+			<option value="<?=EventTypeTable::TYPE_SMS?>"<?if($arParams["DATA"]["EVENT_TYPE"] == EventTypeTable::TYPE_SMS) echo " selected"?>><?echo GetMessage("type_edit_event_type_sms")?></option>
+		</select>
 	</td>
 </tr>
 <?
@@ -233,8 +243,8 @@ $arParams["EVENT_NAME"] = htmlspecialcharsbx($arParams["EVENT_NAME"]);
 <tr>
 	<td><?=GetMessage("EVENT_SORT_LANG")?>:</td>
 	<td>
-		<input type="hidden" name="FIELDS_OLD[<?=$arLang["ID"]?>][SORT]" value="<?=htmlspecialcharsbx($arParams["DATA_OLD"][$arLang["ID"]]["SORT"])?>">
-		<input type="text" name="FIELDS[<?=$arLang["ID"]?>][SORT]" value="<?=(intval($arParams["DATA"][$arLang["ID"]]["SORT"]) ? $arParams["DATA"][$arLang["ID"]]["SORT"] : "150")?>">
+		<input type="hidden" name="FIELDS_OLD[<?=$arLang["ID"]?>][SORT]" value="<?=(int)$arParams["DATA_OLD"][$arLang["ID"]]["SORT"]?>">
+		<input type="text" name="FIELDS[<?=$arLang["ID"]?>][SORT]" value="<?=(int)($arParams["DATA"][$arLang["ID"]]["SORT"] ?: "150")?>">
 	</td>
 </tr>
 <tr>
@@ -253,7 +263,7 @@ $arParams["EVENT_NAME"] = htmlspecialcharsbx($arParams["EVENT_NAME"]);
 </tr>
 <?endforeach;?>
 <?
-if ($arParams["ACTION"] == "UPDATE"):
+if ($arParams["ACTION"] == "UPDATE" && $arParams["DATA"]["EVENT_TYPE"] == EventTypeTable::TYPE_EMAIL):
 	$tabControl->BeginNextTab();
 ?>
 <tr>
@@ -265,7 +275,7 @@ if ($arParams["ACTION"] == "UPDATE"):
 	if (is_array($arParams["DATA"]["TEMPLATES"])):
 		foreach ($arParams["DATA"]["TEMPLATES"] as $k => $v):
 ?><tr>
-	<td colspan="2">[<a href="/bitrix/admin/message_edit.php?ID=<?=$v["ID"]?>"><?=$v["ID"]?></a>]<?=(strlen(trim($v["SUBJECT"])) > 0 ? " " : "").htmlspecialcharsEx($v["SUBJECT"])?>
+	<td colspan="2">[<a href="/bitrix/admin/message_edit.php?ID=<?=(int)$v["ID"]?>&amp;lang=<?=LANGUAGE_ID?>"><?=(int)$v["ID"]?></a>]<?=(trim($v["SUBJECT"]) <> '' ? " " : "").htmlspecialcharsEx($v["SUBJECT"])?>
 	<?
 	$arLID = array();
 	$db_LID = CEventMessage::GetLang($v["ID"]);

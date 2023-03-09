@@ -1,4 +1,10 @@
 <?
+
+/**
+ * Class CSecuritySessionMC
+ * @deprecated
+ * @see \Bitrix\Main\Session\Handlers\MemcacheSessionHandler
+ */
 class CSecuritySessionMC
 {
 	/** @var Memcache $connection*/
@@ -6,7 +12,7 @@ class CSecuritySessionMC
 	protected static $sessionId = null;
 	protected static $isReadOnly = false;
 	protected static $isSessionReady = false;
-
+	protected static $hasFailedRead = false;
 	/**
 	 * @return bool
 	 */
@@ -104,7 +110,14 @@ class CSecuritySessionMC
 		self::$isSessionReady = true;
 		$res = self::$connection->get($sid.$id);
 		if($res === false)
+		{
+			if (!self::$hasFailedRead)
+			{
+				AddEventHandler("main", "OnPageStart", array("CSecuritySession", "UpdateSessID"));
+				self::$hasFailedRead = true;
+			}
 			$res = "";
+		}
 
 		return $res;
 	}
@@ -251,7 +264,7 @@ class CSecuritySessionMC
 		{
 			$port = defined("BX_SECURITY_SESSION_MEMCACHE_PORT")? intval(BX_SECURITY_SESSION_MEMCACHE_PORT): 11211;
 			self::$connection = new Memcache;
-			$result = self::$connection->connect(BX_SECURITY_SESSION_MEMCACHE_HOST, $port);
+			$result = self::$connection->pconnect(BX_SECURITY_SESSION_MEMCACHE_HOST, $port);
 			if (!$result)
 			{
 				$error = error_get_last();

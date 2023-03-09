@@ -1,11 +1,12 @@
-<?
+<?php
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/location_group.php");
 
 use Bitrix\Sale\Location;
 
 class CSaleLocationGroup extends CAllSaleLocationGroup
 {
-	function GetList($arOrder = Array("NAME"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
+	public static function GetList($arOrder = Array("NAME"=>"ASC"), $arFilter=Array(), $strLang = LANGUAGE_ID)
 	{
 		global $DB;
 		$arSqlSearch = Array();
@@ -20,12 +21,12 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 		for($i=0; $i < $countFilterKey; $i++)
 		{
 			$val = $DB->ForSql($arFilter[$filter_keys[$i]]);
-			if (strlen($val)<=0) continue;
+			if ($val == '') continue;
 
 			$key = $filter_keys[$i];
 			if ($key[0]=="!")
 			{
-				$key = substr($key, 1);
+				$key = mb_substr($key, 1);
 				$bInvert = true;
 			}
 			else
@@ -34,7 +35,7 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 			switch(ToUpper($key))
 			{
 			case "ID":
-				$arSqlSearch[] = "LG.ID ".($bInvert?"<>":"=")." ".IntVal($val)." ";
+				$arSqlSearch[] = "LG.ID ".($bInvert?"<>":"=")." ".intval($val)." ";
 				break;
 			case "LOCATION":
 
@@ -43,7 +44,7 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 					try
 					{
 						$class = self::CONN_ENTITY_NAME.'Table';
-						$arSqlSearch[] = "	LG.ID ".($bInvert ? 'not' : '')." in (".$class::getConnectedEntitiesQuery(IntVal($val), 'id', array('select' => array('ID'))).") ";
+						$arSqlSearch[] = "	LG.ID ".($bInvert ? 'not' : '')." in (".$class::getConnectedEntitiesQuery(intval($val), 'id', array('select' => array('ID'))).") ";
 					}
 					catch(Exception $e)
 					{
@@ -51,7 +52,7 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 				}
 				else
 				{
-					$arSqlSearch[] = "LG.ID = L2LG.LOCATION_GROUP_ID AND L2LG.LOCATION_GROUP_ID ".($bInvert?"<>":"=")." ".IntVal($val)." ";
+					$arSqlSearch[] = "LG.ID = L2LG.LOCATION_GROUP_ID AND L2LG.LOCATION_GROUP_ID ".($bInvert?"<>":"=")." ".intval($val)." ";
 					$arSqlSearchFrom[] = ", b_sale_location2location_group L2LG ";
 				}
 
@@ -116,11 +117,11 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 		return $db_res;
 	}
 
-	function GetByID($ID, $strLang = LANGUAGE_ID)
+	public static function GetByID($ID, $strLang = LANGUAGE_ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		$strSql =
 			"SELECT LG.ID, LG.SORT, LGL.NAME, LGL.LID ".
 			"FROM b_sale_location_group LG ".
@@ -135,7 +136,7 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 		return False;
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		global $DB;
 
@@ -157,7 +158,7 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 
 		$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-		$ID = IntVal($DB->LastID());
+		$ID = intval($DB->LastID());
 
 		// make IX_B_SALE_LOC_CODE feel happy
 		Location\GroupTable::update($ID, array('CODE' => $ID));
@@ -189,7 +190,7 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 		else
 		{
 			$strSqlHead ="INSERT INTO b_sale_location2location_group (LOCATION_ID, LOCATION_GROUP_ID) VALUES ";
-			$strSqlHeadLength = strlen($strSqlHead);
+			$strSqlHeadLength = mb_strlen($strSqlHead);
 
 			$res = $DB->Query('SHOW VARIABLES LIKE \'max_allowed_packet\'');
 			$maxPack = $res->Fetch();
@@ -205,9 +206,9 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 			for ($i = 0; $i < $countFieldLoc; $i++)
 			{
 				$tmpSql ="(".$arFields["LOCATION_ID"][$i].", ".$ID.")";
-				$strSqlLen = strlen($strSql);
+				$strSqlLen = mb_strlen($strSql);
 
-				if($strSqlHeadLength + $strSqlLen + strlen($tmpSql) < $max_allowed_packet || $max_allowed_packet <= 0)
+				if($strSqlHeadLength + $strSqlLen + mb_strlen($tmpSql) < $max_allowed_packet || $max_allowed_packet <= 0)
 				{
 					if($strSqlLen > 0)
 						$strSql .=",";
@@ -221,7 +222,7 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 				}
 			}
 
-			if(strlen($strSql) > 0)
+			if($strSql <> '')
 				$DB->Query($strSqlHead.$strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 		}
 
@@ -232,4 +233,3 @@ class CSaleLocationGroup extends CAllSaleLocationGroup
 		return $ID;
 	}
 }
-?>

@@ -71,7 +71,7 @@ define('DELIVERY_CPCR_VALUE_CHECK_STRING', '"Total"'); // first check string - t
 
 class CDeliveryCPCR
 {
-	function Init()
+	public static function Init()
 	{
 		// fix a possible currency bug
 		if (\Bitrix\Main\Loader::includeModule('currency') && $arCurrency = CCurrency::GetByID('RUR'))
@@ -157,7 +157,7 @@ class CDeliveryCPCR
 		);
 	}
 
-	function GetConfig()
+	public static function GetConfig()
 	{
 		return array();
 
@@ -185,7 +185,7 @@ class CDeliveryCPCR
 		return $arConfig;
 	}
 
-	function GetSettings($strSettings)
+	public static function GetSettings($strSettings)
 	{
 		return array();
 		return array(
@@ -193,7 +193,7 @@ class CDeliveryCPCR
 		);
 	}
 
-	function SetSettings($arSettings)
+	public static function SetSettings($arSettings)
 	{
 		return array();
 		$category = intval($arSettings["category"]);
@@ -201,7 +201,7 @@ class CDeliveryCPCR
 		else return $category;
 	}
 
-	function __GetLocation($location)
+	public static function __GetLocation($location)
 	{
 		static $arCPCRCountries;
 		static $arCPCRCity;
@@ -271,7 +271,7 @@ class CDeliveryCPCR
 		return $arReturn;
 	}
 
-	function Calculate($profile, $arConfig, $arOrder, $STEP)
+	public static function Calculate($profile, $arConfig, $arOrder, $STEP)
 	{
 		if ($STEP >= 3)
 			return array(
@@ -351,7 +351,7 @@ class CDeliveryCPCR
 					DELIVERY_CPCR_SERVER_METHOD,
 					DELIVERY_CPCR_SERVER,
 					DELIVERY_CPCR_SERVER_PORT,
-					$query_page . (DELIVERY_CPCR_SERVER_METHOD == 'GET' ? ((strpos($query_page, '?') === false ? '?' : '&') . $query_string) : ''),
+					$query_page . (DELIVERY_CPCR_SERVER_METHOD == 'GET' ? ((mb_strpos($query_page, '?') === false ? '?' : '&') . $query_string) : ''),
 					DELIVERY_CPCR_SERVER_METHOD == 'POST' ? $query_string : false
 					//,
 					// "",
@@ -366,7 +366,7 @@ class CDeliveryCPCR
 			CDeliveryCPCR::__Write2Log($error_number.": ".$error_text);
 			CDeliveryCPCR::__Write2Log($data);
 
-			if (strpos($data, "<?xml") === false)
+			if (mb_strpos($data, "<?xml") === false)
 			{
 				return array(
 					"RESULT" => "ERROR",
@@ -460,7 +460,7 @@ class CDeliveryCPCR
 		}
 	}
 
-	function Compability($arOrder)
+	public static function Compability($arOrder)
 	{
 		$arLocationFrom = CDeliveryCPCR::__GetLocation($arOrder["LOCATION_FROM"]);
 		$arLocationTo = CDeliveryCPCR::__GetLocation($arOrder["LOCATION_TO"]);
@@ -513,18 +513,18 @@ class CDeliveryCPCR
 		}
 	}
 
-	function __Write2Log($data)
+	public static function __Write2Log($data)
 	{
 		if (defined('DELIVERY_CPCR_WRITE_LOG') && DELIVERY_CPCR_WRITE_LOG === 1)
 		{
-			$fp = fopen(dirname(__FILE__)."/cpcr.log", "a");
+			$fp = fopen(__DIR__."/cpcr.log", "a");
 			fwrite($fp, "\r\n==========================================\r\n");
 			fwrite($fp, $data);
 			fclose($fp);
 		}
 	}
 
-	public function getAdminMessage()
+	public static  function getAdminMessage()
 	{
 		return array(
 			'MESSAGE' => GetMessage(

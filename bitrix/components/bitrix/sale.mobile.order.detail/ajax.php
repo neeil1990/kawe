@@ -10,15 +10,27 @@ CComponentUtil::__IncludeLang(dirname($_SERVER["SCRIPT_NAME"]), "/ajax.php");
 
 if (!CModule::IncludeModule('sale')) die(GetMessage("SMOD_SALE_NOT_INSTALLED"));
 
+$saleModulePermissions = $APPLICATION->GetGroupRight("sale");
+
+if ($saleModulePermissions == "D")
+{
+	die('Access denied');
+}
+
 if(!isset($_REQUEST['id'])) die();
 
-$id = trim($_REQUEST['id']);
+$id = (int)($_REQUEST['id']);
+$registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
 
-$bUserCanViewOrder = CSaleOrder::CanUserViewOrder($id, $GLOBALS["USER"]->GetUserGroupArray(), $GLOBALS["USER"]->GetID());
+/** @var \Bitrix\Sale\Order $orderClass */
+$orderClass = $registry->getOrderClassName();
 
-if($USER->IsAuthorized() && check_bitrix_sessid() && $bUserCanViewOrder)
+$order = $orderClass::load($id);
+$allowedStatusesView = \Bitrix\Sale\OrderStatus::getStatusesUserCanDoOperations($USER->GetID(), array('view'));
+$isAllowView = in_array($order->getField('STATUS_ID'), $allowedStatusesView);
+
+if($USER->IsAuthorized() && check_bitrix_sessid() && $isAllowView)
 {
-
 	if (!CModule::IncludeModule('mobileapp')) die(GetMessage('SMOD_MOBILEAPP_NOT_INSTALLED'));
 
 	$action = isset($_REQUEST['action']) ? trim($_REQUEST['action']): '';
@@ -81,7 +93,7 @@ if($USER->IsAuthorized() && check_bitrix_sessid() && $bUserCanViewOrder)
 			$cancel = isset($_REQUEST['cancel']) ? trim($_REQUEST['cancel']) : 'N';
 			$comment = isset($_REQUEST['comment']) ? trim($_REQUEST['comment']) : '';
 
-			if(strlen($comment) > 0)
+			if($comment <> '')
 				$comment = $APPLICATION->ConvertCharset($comment, 'utf-8', SITE_CHARSET);
 
 			$result = CSaleOrder::CancelOrder($id, $cancel, $comment);

@@ -10,7 +10,7 @@ if($md->SHOW_SUPER_ADMIN_GROUP_RIGHTS != "Y")
 	$arFilter["ADMIN"] = "N";
 
 $arGROUPS = array();
-$z = CGroup::GetList($v1="sort", $v2="asc", $arFilter);
+$z = CGroup::GetList("sort", "asc", $arFilter);
 while($zr = $z->Fetch())
 {
 	$ar = array();
@@ -23,10 +23,10 @@ if (!function_exists("__GroupRightsShowRow"))
 {
 	function __GroupRightsShowRowDefault($module_id, $ar, $arSites, $arRightsUseSites, $site_id_tmp)
 	{
-		$GROUP_DEFAULT_RIGHT = COption::GetOptionString($module_id, "GROUP_DEFAULT_RIGHT", false, (strlen($site_id_tmp) > 0 ? $site_id_tmp : ""), (strlen($site_id_tmp) > 0));
+		$GROUP_DEFAULT_RIGHT = COption::GetOptionString($module_id, "GROUP_DEFAULT_RIGHT", false, ($site_id_tmp <> '' ? $site_id_tmp : ""), ($site_id_tmp <> ''));
 		if (!$GROUP_DEFAULT_RIGHT)
 		{
-			if (strlen($site_id_tmp) == 0)
+			if ($site_id_tmp == '')
 				$GROUP_DEFAULT_RIGHT = "D";
 			else
 				return;
@@ -40,6 +40,8 @@ if (!function_exists("__GroupRightsShowRow"))
 
 	function __GetGroupRight($module_id, $groupID, $site_id_tmp, $arSites, $arGROUPS)
 	{
+		global $APPLICATION;
+
 		static $arRightsAll = array();
 		static $bInit = false;
 
@@ -60,7 +62,7 @@ if (!function_exists("__GroupRightsShowRow"))
 
 			if (!empty($arGroupId))
 			{
-				$arRightsAll = $GLOBALS["APPLICATION"]->GetUserRightArray($module_id, $arGroupId);
+				$arRightsAll = $APPLICATION->GetUserRightArray($module_id, $arGroupId);
 			}
 
 			$bInit = true;
@@ -142,7 +144,7 @@ $arSites = array(
 		"reference" => array()
 	);
 
-$rsSites = CSite::GetList($by="sort", $order="asc", Array("ACTIVE" => "Y"));
+$rsSites = CSite::GetList("sort", "asc", Array("ACTIVE" => "Y"));
 while ($arSite = $rsSites->GetNext())
 {
 	$arSites["reference_id"][] = $arSite["ID"];
@@ -194,7 +196,7 @@ echo "<script type=\"text/javascript\">\n".
 	"}\n".
 	"</script>\n";
 				
-if($REQUEST_METHOD=="POST" && strlen($Update)>0 && $MODULE_RIGHT=="W" && check_bitrix_sessid())
+if($REQUEST_METHOD=="POST" && $Update <> '' && $MODULE_RIGHT=="W" && check_bitrix_sessid())
 {
 	if (count($GROUPS)>0)
 	{
@@ -210,12 +212,12 @@ if($REQUEST_METHOD=="POST" && strlen($Update)>0 && $MODULE_RIGHT=="W" && check_b
 
 		foreach($GROUPS as $i => $group_id)
 		{
-			if (strlen($group_id) <= 0)
+			if ($group_id == '')
 				continue;
 				
 			if (
 				!array_key_exists($i, $RIGHTS)
-				|| strlen($RIGHTS[$i]) <= 0
+				|| $RIGHTS[$i] == ''
 			)
 				continue;
 
@@ -223,7 +225,7 @@ if($REQUEST_METHOD=="POST" && strlen($Update)>0 && $MODULE_RIGHT=="W" && check_b
 			{
 				if (
 					!in_array($RIGHTS[$i], $arRightsUseSites)
-					|| strlen($SITES[$i]) <= 0
+					|| $SITES[$i] == ''
 				)
 				{
 // echo "Set Default for all sites: ". $RIGHTS[$i]."<br>";
@@ -240,7 +242,7 @@ if($REQUEST_METHOD=="POST" && strlen($Update)>0 && $MODULE_RIGHT=="W" && check_b
 			{
 				if (
 					!in_array($RIGHTS[$i], $arRightsUseSites)
-					|| strlen($SITES[$i]) <= 0
+					|| $SITES[$i] == ''
 				)
 				{
 // echo "Set Right for group ".$group_id." all sites: ".$RIGHTS[$i]."<br>";						

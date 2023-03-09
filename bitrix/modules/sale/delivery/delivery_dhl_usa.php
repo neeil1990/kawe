@@ -31,9 +31,10 @@ define (
 
 class CDeliveryDHLUSA
 {
-	function Init()
+	public static function Init()
 	{
 		$arReturn = array(
+			"DEPRECATED" => "Y",
 			/* Basic description */
 			"SID" => "dhlusa",
 			"NAME" => GetMessage('SALE_DH_DHL_USA_NAME'),
@@ -66,8 +67,8 @@ class CDeliveryDHLUSA
 		
 		return $arReturn;
 	}
-	
-	function GetConfig()
+
+	public static function GetConfig()
 	{
 		$arConfig = array(
 			"CONFIG_GROUPS" => array(
@@ -91,18 +92,18 @@ class CDeliveryDHLUSA
 		
 		return $arConfig; 
 	}
-	
-	function GetSettings($strSettings)
+
+	public static function GetSettings($strSettings)
 	{
-		return unserialize($strSettings);
+		return unserialize($strSettings, ['allowed_classes' => false]);
 	}
-	
-	function SetSettings($arSettings)
+
+	public static function SetSettings($arSettings)
 	{
 		return serialize($arSettings);
 	}
-	
-	function __GetLocation($location_id)
+
+	public static function __GetLocation($location_id)
 	{
 		static $arDHLUSACountryList;
 	
@@ -122,8 +123,8 @@ class CDeliveryDHLUSA
 		
 		return $arLocation;
 	}
-	
-	function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
+
+	public static function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
 	{
 		$arLocationFrom = CDeliveryDHLUSA::__GetLocation($arOrder['LOCATION_FROM']);
 		$arLocationTo = CDeliveryDHLUSA::__GetLocation($arOrder['LOCATION_TO']);
@@ -220,7 +221,7 @@ class CDeliveryDHLUSA
 		
 		CDeliveryDHLUSA::__Write2Log($data);		
 		
-		if (strlen($data) <= 0)
+		if ($data == '')
 		{
 			return array(
 				"RESULT" => "ERROR",
@@ -228,13 +229,13 @@ class CDeliveryDHLUSA
 			);
 		}
 
-		if (strstr($data, DELIVERY_DHL_USA_VALUE_CHECK_STRING))
+		if(mb_strstr($data, DELIVERY_DHL_USA_VALUE_CHECK_STRING))
 		{
 			// first check string found
-			
-			if (preg_match(
-				DELIVERY_DHL_USA_VALUE_CHECK_REGEXP, 
-				$data, 
+
+			if(preg_match(
+				DELIVERY_DHL_USA_VALUE_CHECK_REGEXP,
+				$data,
 				$matches
 			))
 			{
@@ -247,7 +248,7 @@ class CDeliveryDHLUSA
 
 				$matches = array();
 				$transit_time = 0;
-				if (preg_match(
+				if(preg_match(
 					DELIVERY_DHL_USA_TIME_CHECK_REGEXP,
 					$data,
 					$matches
@@ -255,14 +256,14 @@ class CDeliveryDHLUSA
 				{
 					$transit_time = intval($matches[1]);
 				}
-				
+
 				$obCache->EndDataCache(
 					array(
 						"RESULT" => $result,
 						"TRANSIT" => $transit_time,
 					)
 				);
-				
+
 				return array(
 					"RESULT" => "OK",
 					"VALUE" => $result,
@@ -283,21 +284,21 @@ class CDeliveryDHLUSA
 			"TEXT" => GetMessage('SALE_DH_DHL_USA_ERROR_RESPONSE'),
 		);
 	}
-	
-	function Compability($arOrder)
+
+	public static function Compability($arOrder)
 	{
 		$arLocationFrom = CDeliveryDHLUSA::__GetLocation($arOrder['LOCATION_FROM']);
 		
 		if ($arLocationFrom['COUNTRY_DHLUSA'] != 'US') return array();
 	
 		return array('simple');
-	} 
-	
-	function __Write2Log($data)
+	}
+
+	public static function __Write2Log($data)
 	{
 		if (defined('DELIVERY_DHL_USA_WRITE_LOG') && DELIVERY_DHL_USA_WRITE_LOG === 1)
 		{
-			$fp = fopen(dirname(__FILE__)."/dhl_usa.log", "a");
+			$fp = fopen(__DIR__."/dhl_usa.log", "a");
 			fwrite($fp, "\r\n==========================================\r\n");
 			fwrite($fp, $data);
 			fclose($fp);

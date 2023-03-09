@@ -34,7 +34,7 @@ class CCurrencyMoneyInputComponent extends \CBitrixComponent
 		$params['CONTROL_ID'] = !empty($params['CONTROL_ID']) ? trim($params['CONTROL_ID']) : 'bxme_'.(\Bitrix\Main\Security\Random::getString(5));
 		$params['FIELD_NAME'] = !empty($params['FIELD_NAME']) ? trim($params['FIELD_NAME']) : 'money_'.(\Bitrix\Main\Security\Random::getString(5));
 		$params['FIELD_NAME_CURRENCY'] = !empty($params['FIELD_NAME_CURRENCY']) ? trim($params['FIELD_NAME']) : '';
-		$params['VALUE'] = strlen($params['VALUE']) > 0 ? trim($params['VALUE']) : '';
+		$params['VALUE'] = $params['VALUE'] <> '' ? trim($params['VALUE']) : '';
 
 		$params['EXTENDED_CURRENCY_SELECTOR'] = $params['EXTENDED_CURRENCY_SELECTOR'] === 'Y' ? 'Y' : 'N';
 
@@ -66,7 +66,7 @@ class CCurrencyMoneyInputComponent extends \CBitrixComponent
 		$defaultCurrency = '';
 		foreach($this->currencyList as $currency => $currencyInfo)
 		{
-			if($defaultCurrency === '')
+			if($defaultCurrency === '' || $currencyInfo['BASE'] == 'Y')
 			{
 				$defaultCurrency = $currency;
 			}
@@ -77,11 +77,14 @@ class CCurrencyMoneyInputComponent extends \CBitrixComponent
 		$this->arResult['VALUE_NUMBER'] = '';
 		$this->arResult['VALUE_CURRENCY'] = '';
 
-		if(strlen($this->arParams['VALUE']) > 0)
+		if($this->arParams['VALUE'] <> '')
 		{
 			list($this->arResult['VALUE_NUMBER'], $this->arResult['VALUE_CURRENCY']) = explode('|', $this->arParams['VALUE']);
 
 			$this->arResult['VALUE_NUMBER'] = $this->formatNumber($this->arResult['VALUE_NUMBER'], $this->arResult['VALUE_CURRENCY']);
+
+			if ($this->arResult['VALUE_CURRENCY'] !== '' && !isset($this->arResult['CURRENCY_LIST'][$this->arResult['VALUE_CURRENCY']]))
+				$this->arResult['CURRENCY_LIST'][$this->arResult['VALUE_CURRENCY']] = $this->arResult['VALUE_CURRENCY'];
 		}
 		else
 		{
@@ -93,12 +96,17 @@ class CCurrencyMoneyInputComponent extends \CBitrixComponent
 	{
 		if($currentValue !== '')
 		{
-			if(array_key_exists($currentCurrency, $this->currencyList))
+			$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
+			//TODO: in the future - remove this hack
+			if ($format['THOUSANDS_VARIANT'] == \CCurrencyLang::SEP_NBSPACE)
 			{
-				$format = \CCurrencyLang::GetFormatDescription($currentCurrency);
-
-				$currentValue = number_format((float)$currentValue, $format['DECIMALS'], $format['DEC_POINT'], $format['THOUSANDS_SEP']);
+				$format['THOUSANDS_VARIANT'] = \CCurrencyLang::SEP_SPACE;
+				$separators = \CCurrencyLang::GetSeparators();
+				$format['THOUSANDS_SEP'] = $separators[\CCurrencyLang::SEP_SPACE];
+				unset($separators);
 			}
+			$currentValue = \CCurrencyLang::formatValue($currentValue, $format, false);
+			unset($format);
 		}
 
 		return $currentValue;

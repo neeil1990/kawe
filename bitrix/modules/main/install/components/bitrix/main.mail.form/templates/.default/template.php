@@ -1,8 +1,19 @@
-<? if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
+<?
+if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
+{
+	die();
+}
+
+\Bitrix\Main\UI\Extension::load([
+	'ui.design-tokens',
+	'ui.alerts',
+	'ui.buttons',
+	'ui.entity-selector',
+]);
 
 $htmlFormId = htmlspecialcharsbx('main_mail_form_'.$arParams['FORM_ID']);
 
-$renderField = function($htmlFormId, $field, $isExt = false)
+$renderField = function($htmlFormId, $field, $isExt = false, $version)
 {
 	global $APPLICATION;
 
@@ -70,6 +81,14 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 					<span class="main-mail-form-field-title main-mail-form-field-value-menu"><?
 						echo htmlspecialcharsbx($field['value'] ?: $field['placeholder']);
 					?></span>
+					<? if (!empty($field['copy'])): ?>
+						<label class="main-mail-form-field-from-copy">
+							<span class="main-mail-form-field-spacer-25"></span>
+							<input class="main-mail-form-field-from-copy-checkbox" type="checkbox"
+								name="<?=htmlspecialcharsbx($field['copy']) ?>" value="Y" id="<?=$htmlFieldId ?>_copy">
+							<span class="main-mail-form-field-title main-mail-form-field-from-copy-text"><?=getMessage('MAIN_MAIL_FORM_FROM_FIELD_COPY') ?></span>
+						</label>
+					<? endif ?>
 				</td>
 				<?
 				break;
@@ -81,20 +100,188 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 					<span class="main-mail-form-field-spacer"></span>
 					<span class="main-mail-form-field-title"><?=preg_replace('/[\r\n]+/', '<br>', htmlspecialcharsbx($field['title'])) ?>:</span>
 				</td>
-				<td class="main-mail-form-fields-table-cell <?=$valueSubClass ?>">
-					<div class="main-mail-form-field-value-wrapper">
+				<td class="main-mail-form-fields-table-cell <?=$valueSubClass ?>"><?
+
+					if ($version >= 2)
+					{
+						$enabledCrmContacts = (
+							!empty($field['selector'])
+							&& !empty($field['selector']['CrmTypes'])
+							&& is_array($field['selector']['CrmTypes'])
+							&& in_array('CRMCONTACT', $field['selector']['CrmTypes'])
+						);
+						$enabledCrmCompanies = (
+							!empty($field['selector'])
+							&& !empty($field['selector']['CrmTypes'])
+							&& is_array($field['selector']['CrmTypes'])
+							&& in_array('CRMCOMPANY', $field['selector']['CrmTypes'])
+						);
+						$enabledCrmLeads = (
+							!empty($field['selector'])
+							&& !empty($field['selector']['CrmTypes'])
+							&& is_array($field['selector']['CrmTypes'])
+							&& in_array('CRMLEAD', $field['selector']['CrmTypes'])
+						);
+
+						$selectedItemsData = [];
+						if (
+							!empty($field['selector']['itemsSelected'])
+							&& !empty($field['selector']['items'])
+							&& !empty($field['selector']['items']['mailcontacts'])
+						)
+						{
+							foreach($field['selector']['itemsSelected'] as $key => $value)
+							{
+								if (!empty($field['selector']['items']['mailcontacts'][$key]))
+								{
+									$selectedItemsData[$key] = [
+										'name' => $field['selector']['items']['mailcontacts'][$key]['name']
+									];
+								}
+							}
+						}
+
+						$APPLICATION->IncludeComponent(
+							"bitrix:main.user.selector",
+							"",
+							[
+								"ID" => $field['id'],
+								"LIST" => $field['selector']['itemsSelected'],
+								"LAZYLOAD" => "N",
+								"INPUT_NAME" => $field['name']."[]",
+								"API_VERSION" => 3,
+								"USE_SYMBOLIC_ID" => "Y",
+								"BUTTON_SELECT_CAPTION" => $field['placeholder'],
+								"SELECTOR_OPTIONS" => array(
+									'lazyLoad' => 'N',
+									'enableCrm' => (
+										!empty($field['selector'])
+										&& !empty($field['selector']['isCrmFeed'])
+											? 'Y'
+											: 'N'
+									),
+									'context' => 'MAIL_LAST_RCPT',
+									'contextCode' => '',
+									'enableDepartments' => 'N',
+									'enableUsers' => (!isset($field['selector']['enableUsers']) || $field['selector']['enableUsers'] ? 'Y' : 'N'),
+									'enableEmailUsers' => (isset($field['selector']['enableUsers']) && $field['selector']['enableUsers'] ? 'Y' : 'N'),
+									'allowSearchEmailUsers' => (isset($field['selector']['enableUsers']) && $field['selector']['enableUsers'] ? 'Y' : 'N'),
+									'enableMailContacts' => 'Y',
+									'addMailContactsTab' => 'Y',
+									'allowAddMailContact' => 'Y',
+									'enableCrmContacts' => ($enabledCrmContacts ? 'Y' : 'N'),
+									'addTabCrmContacts' => ($enabledCrmContacts ? 'Y' : 'N'),
+									'enableCrmCompanies' => ($enabledCrmCompanies ? 'Y' : 'N'),
+									'addTabCrmCompanies' => ($enabledCrmCompanies ? 'Y' : 'N'),
+									'enableCrmLeads' => ($enabledCrmLeads ? 'Y' : 'N'),
+									'addTabCrmLeads' => ($enabledCrmLeads ? 'Y' : 'N'),
+									'onlyWithEmail' => 'Y',
+									'returnMultiEmail' => 'Y',
+									'returnJsonValue' => 'Y',
+									'selectedItemsData' => $selectedItemsData,
+									'nameTemplate' => '#NAME# <#EMAIL#>'
+								)
+							]
+						);
+					}
+					else
+					{
+						?>
+						<div class="main-mail-form-field-value-wrapper">
 						<span class="main-mail-form-field-rcpt-more-wrapper" style="display: none; ">
 							<span class="feed-add-post-destination main-mail-form-field-rcpt-item-more"
 								title="<?=getMessage('MAIN_MAIL_FORM_RCPT_MORE_HINT', array('#NUM#' => 0)) ?>">...</span>
 						</span>
-						<span class="main-mail-form-field-rcpt-value-wrapper" style="display: none; ">
+							<span class="main-mail-form-field-rcpt-value-wrapper" style="display: none; ">
 							<input class="main-mail-form-field-value main-mail-form-field-rcpt-value"
 								type="text" id="<?=$htmlFieldId ?>_fvalue">
 						</span>
-						<a class="feed-add-destination-link main-mail-form-field-rcpt-add-link" href="javascript:void(0)"><?
-							echo htmlspecialcharsbx($field['placeholder']);
-						?></a>
-					</div>
+							<a class="feed-add-destination-link main-mail-form-field-rcpt-add-link" href="javascript:void(0)"><?
+								echo htmlspecialcharsbx($field['placeholder']);
+								?></a>
+						</div>
+						<?
+					}
+					?>
+				</td>
+				<?
+				break;
+
+			case 'entity':
+				$valueSubClass .= ' main-mail-form-field-value-rcpt';
+				?>
+				<td class="main-mail-form-fields-table-cell <?=$titleSubClass ?>">
+					<span class="main-mail-form-field-spacer"></span>
+					<span class="main-mail-form-field-title"><?=preg_replace('/[\r\n]+/', '<br>', htmlspecialcharsbx($field['title'])) ?>:</span>
+				</td>
+				<td class="main-mail-form-fields-table-cell <?=$valueSubClass ?>"><?
+
+					$enabledCrmDeals = (
+						!empty($field['selector'])
+						&& !empty($field['selector']['CrmTypes'])
+						&& is_array($field['selector']['CrmTypes'])
+						&& in_array('CRMDEAL', $field['selector']['CrmTypes'])
+					);
+					$enabledCrmLeads = (
+						!empty($field['selector'])
+						&& !empty($field['selector']['CrmTypes'])
+						&& is_array($field['selector']['CrmTypes'])
+						&& in_array('CRMLEAD', $field['selector']['CrmTypes'])
+					);
+					$enabledCrmCompanies = (
+						!empty($field['selector'])
+						&& !empty($field['selector']['CrmTypes'])
+						&& is_array($field['selector']['CrmTypes'])
+						&& in_array('CRMCOMPANY', $field['selector']['CrmTypes'])
+					);
+					$enabledCrmContacts = (
+						!empty($field['selector'])
+						&& !empty($field['selector']['CrmTypes'])
+						&& is_array($field['selector']['CrmTypes'])
+						&& in_array('CRMCONTACT', $field['selector']['CrmTypes'])
+					);
+
+					$APPLICATION->IncludeComponent(
+						"bitrix:main.user.selector",
+						"",
+						[
+							"ID" => $field['id'],
+							"LIST" => $field['selector']['itemsSelected'],
+							"LAZYLOAD" => "N",
+							"INPUT_NAME" => $field['name']."[]",
+							"API_VERSION" => 3,
+							"USE_SYMBOLIC_ID" => "Y",
+							"SELECTOR_OPTIONS" => array(
+								'lazyLoad' => 'N',
+								'enableCrm' => (
+									!empty($field['selector'])
+									&& !empty($field['selector']['isCrmFeed'])
+										? 'Y'
+										: 'N'
+								),
+								'context' => 'MAIL_LAST_ENTITY',
+								'contextCode' => '',
+								'enableDepartments' => 'N',
+								'enableUsers' => 'N',
+								'enableEmailUsers' => 'N',
+								'enableMailContacts' => 'N',
+								'addMailContactsTab' => 'N',
+								'allowAddMailContact' => 'N',
+								'enableCrmCompanies' => ($enabledCrmCompanies ? 'Y' : 'N'),
+								'addTabCrmCompanies' => ($enabledCrmCompanies ? 'Y' : 'N'),
+								'enableCrmContacts' => ($enabledCrmContacts ? 'Y' : 'N'),
+								'addTabCrmContacts' => ($enabledCrmContacts ? 'Y' : 'N'),
+								'enableCrmLeads' => ($enabledCrmLeads ? 'Y' : 'N'),
+								'addTabCrmLeads' => ($enabledCrmLeads ? 'Y' : 'N'),
+								'enableCrmDeals' => ($enabledCrmDeals ? 'Y' : 'N'),
+								'addTabCrmDeals' => ($enabledCrmDeals ? 'Y' : 'N'),
+								'onlyWithEmail' => 'N',
+								'returnJsonValue' => 'Y'
+							)
+						]
+					);
+					?>
+
 				</td>
 				<?
 				break;
@@ -135,16 +322,29 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 
 	?></tr><?
 };
-
-\Bitrix\Main\UI\Extension::load('ui.buttons');
-
 ?>
 <div class="main-mail-form-wrapper" id="<?=$htmlFormId ?>">
 	<div class="main-mail-form-fields-wrapper">
 		<table class="main-mail-form-fields-table">
 			<?
+			/**
+			 * Fix erroneous autocomplete (it won't work without an id)
+			 *
+			 * Some browsers define the form of sending messages as an authorization
+			 * form and give appropriate hints on autofill, modern browsers
+			 * do not take into account the "autocomplete=off" when prompted for autofill
+			 * and can also ignore the name of the field if they "think" that the form is similar
+			 * to the authorization form.
+			 */
+			?>
+			<tr>
+				<td>
+					<input style="display:none" id="mail-form-pseudo-field">
+				</td>
+			</tr>
+			<?
 			foreach ($arParams['FIELDS'] as $field)
-				$renderField($htmlFormId, $field);
+				$renderField($htmlFormId, $field, false, $arParams['VERSION']);
 			?>
 			<tr id="<?=sprintf('%s_fields_footer', $htmlFormId) ?>">
 				<td class="main-mail-form-fields-footer-cell" colspan="2">
@@ -164,7 +364,30 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 		</table>
 	</div>
 
-	<? $editorHeight = isset($arParams['EDITOR']['height']) && $arParams['EDITOR']['height'] > 0 ? (int) $arParams['EDITOR']['height'] : 200; ?>
+	<? $editorHeight = isset($arParams['EDITOR']['height']) && $arParams['EDITOR']['height'] > 0 ? (int) $arParams['EDITOR']['height'] : 200;
+	$editorValue = '';
+	$fromField = false;
+	foreach($arParams['FIELDS'] as $field)
+	{
+		if($field['type'] === 'from')
+		{
+			$fromField = $field;
+			break;
+		}
+	}
+	if(is_array($fromField) && $fromField['value'])
+	{
+		foreach($fromField['mailboxes'] as $mailbox)
+		{
+			if($mailbox['formated'] == $fromField['value'] && !empty($mailbox['signature']))
+			{
+				$editorValue = '<div id="main-mail-form-signature"><br />--<br />'.$mailbox['signature'].'</div>';
+				break;
+			}
+		}
+	}
+
+	?>
 	<div id="<?=sprintf('%s_%s', $htmlFormId, htmlspecialcharsbx($arParams['EDITOR']['id'])) ?>"
 		class="main-mail-form-editor-wrapper <? if (!empty($arParams['EDITOR']['menu'])): ?> main-mail-form-field-value-menu-ext<? endif ?>"
 		style="min-height: <?=$editorHeight ?>px; ">
@@ -180,23 +403,22 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 					'CreateLink', 'Image', 'UploadImage',
 					'Justify', 'InsertOrderedList', 'InsertUnorderedList',
 				),
-				'BUTTONS' => array_merge(
-					!empty($arParams['FOLD_QUOTE']) ? array('ReplyQuote') : array(),
-					array('UploadImage', 'UploadFile', 'Panel')
-				),
-				'BUTTONS_HTML' => array(
-					'ReplyQuote' => '<span class="main-mail-form-quote-button-wrapper"><span class="main-mail-form-quote-button">...</span></span>',
-					'Panel' => '<span class="feed-add-post-form-but-cnt"><span class="bxhtmled-top-bar-btn feed-add-post-form-editor-btn"></span></span>',
+				'BUTTONS' => ['UploadImage', 'UploadFile'],
+				'BUTTONS_HTML' => (!empty($arParams['FOLD_QUOTE']) ?
+					['ReplyQuote' => '<span class="main-mail-form-quote-button-wrapper"><span class="main-mail-form-quote-button">...</span></span>'] : []
 				),
 				'TEXT' => array(
 					'INPUT_NAME' => 'dummy_'.$arParams['EDITOR']['name'],
-					'VALUE' => '',
-					'SHOW' => !empty($arParams['EDITOR_TOOLBAR']) ? 'Y' : 'N',
+					'VALUE' => $editorValue,
+					'SHOW' => 'Y',
 				),
 				'PROPERTIES' => array(
 					array(
 						'USER_TYPE_ID' => 'disk_file',
-						'USER_TYPE'    => array('TAG' => 'ATTACHMENT'),
+						'USER_TYPE' => array(
+							'TAG' => 'bxacid:#id#',
+							'REGEXP' => '/(?:bxacid):(n?\d+)/ig'
+						),
 						'FIELD_NAME'   => $arParams['FILES']['name'].'[]',
 						'VALUE'        => $arParams['FILES']['value'],
 						'HIDE_CHECKBOX_ALLOW_EDIT' => 'Y',
@@ -205,7 +427,6 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 				'LHE' => array(
 					'id' => sprintf('%s_editor', $htmlFormId),
 					'documentCSS' => 'body { color:#434343; }',
-					'fontFamily' => "'Helvetica Neue', Helvetica, Arial, sans-serif",
 					'fontSize' => '15px',
 					'height' => $editorHeight,
 					'lazyLoad' => true,
@@ -213,7 +434,9 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 					'setFocusAfterShow' => true,
 					'iframeCss' => 'body { padding-left: 10px !important; font-size: 15px; }',
 					'useFileDialogs' => false,
+					'useLinkStat' => false,
 					'uploadImagesFromClipboard' => false,
+					'autoLink' => true,
 					'controlsMap' => array(
 						array('id' => 'Bold', 'compact' => true, 'sort' => 10),
 						array('id' => 'Italic', 'compact' => true, 'sort' => 20),
@@ -251,7 +474,7 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 			<table class="main-mail-form-fields-table">
 				<?
 				foreach ($arParams['FIELDS_EXT'] as $field)
-					$renderField($htmlFormId, $field, true);
+					$renderField($htmlFormId, $field, true, $arParams['VERSION']);
 				?>
 				<tr id="<?=sprintf('%s_fields_ext_footer', $htmlFormId) ?>">
 					<td class="main-mail-form-fields-footer-cell" colspan="2">
@@ -273,7 +496,7 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 		<div class="main-mail-form-border-bottom"></div>
 	<? endif ?>
 
-	<div class="main-mail-form-error" style="display: none; "></div>
+	<div class="main-mail-form-error"></div>
 	<div class="main-mail-form-footer-wrapper">
 		<div class="main-mail-form-footer">
 			<div class="main-mail-form-footer-buttons-wrapper">
@@ -304,14 +527,11 @@ $renderField = function($htmlFormId, $field, $isExt = false)
 
 	<input id="<?=htmlspecialcharsbx($htmlFormId) ?>_<?=htmlspecialcharsbx($arParams['EDITOR']['id']) ?>_value"
 		type="hidden" name="<?=htmlspecialcharsbx($arParams['EDITOR']['name']) ?>">
+	<div id="<?=sprintf('%s_dummy_footer', $htmlFormId) ?>" style="display: none; "></div>
 	<input type="submit" name="<?=sprintf('%s_submit', $htmlFormId) ?>" value="Y" style="display: none; ">
 </div>
 
 <script type="text/javascript">
-
-BX.message({
-	BXEdBbCode: '<?=\CUtil::jsEscape(getMessage('MAIN_MAIL_FORM_EDITOR_HTML_MODE_BTN_HINT')) ?>'
-});
 
 BX.ready(function()
 {
@@ -325,6 +545,7 @@ BX.ready(function()
 			'submitAjax' => !empty($arParams['SUBMIT_AJAX']),
 			'foldQuote'  => !empty($arParams['FOLD_QUOTE']),
 			'foldFiles'  => !empty($arParams['FOLD_FILES']),
+			'version'  => $arParams['VERSION']
 		)) ?>
 	);
 
@@ -332,5 +553,5 @@ BX.ready(function()
 		form.init();
 	<? endif ?>
 });
-	
+
 </script>

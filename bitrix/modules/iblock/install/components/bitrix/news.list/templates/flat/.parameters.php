@@ -118,7 +118,7 @@ if ($arCurrentValues["USE_SHARE"] == "Y")
 		"REFRESH"=> "Y",
 	);
 
-	if (strlen(trim($arCurrentValues["SHARE_TEMPLATE"])) <= 0)
+	if (trim($arCurrentValues["SHARE_TEMPLATE"]) == '')
 		$shareComponentTemplate = false;
 	else
 		$shareComponentTemplate = trim($arCurrentValues["SHARE_TEMPLATE"]);
@@ -162,7 +162,7 @@ $arThemesList = array(
 	'yellow' => GetMessage('TP_BND_THEME_YELLOW'),
 	'black' => GetMessage('TP_BND_THEME_BLACK')
 );
-$dir = trim(preg_replace("'[\\\\/]+'", "/", dirname(__FILE__)."/themes/"));
+$dir = trim(preg_replace("'[\\\\/]+'", "/", __DIR__."/themes/"));
 if (is_dir($dir))
 {
 	foreach ($arThemesList as $themeID => $themeName)

@@ -9,7 +9,10 @@ use Bitrix\B24Connector\Connection;
 /** @var array $arParams */
 /** @var array $arResult */
 
-CJSCore::Init(array('clipboard'));
+\Bitrix\Main\UI\Extension::load([
+	'ui.design-tokens',
+	'clipboard',
+]);
 ?>
 
 <?if(Connection::isExist()):?>
@@ -118,7 +121,7 @@ CJSCore::Init(array('clipboard'));
 										<div class="intranet-button-list-position-element">
 											<span class="intranet-button-list-position-inner-wrap">
 												<span class="intranet-button-list-position-text"><?=Loc::getMessage("B24C_BL_LOCATION")?>:</span>
-												<span class="intranet-button-list-position-text"><?=htmlspecialcharsbx(strtolower($item['LOCATION_DISPLAY']))?></span>
+												<span class="intranet-button-list-position-text"><?=htmlspecialcharsbx(mb_strtolower($item['LOCATION_DISPLAY']))?></span>
 											</span>
 										</div>
 									</div><!--intranet-button-list-url-container-->
@@ -196,6 +199,20 @@ CJSCore::Init(array('clipboard'));
 											</span>
 										</span>
 									</span>
+								</div>
+
+								<div class="intranet-button-list-site-restriction-container">
+									<div class="intranet-button-list-site-restriction-label"><?=Loc::getMessage('B24C_BL_SHOW_ON_SPECIFIED_SITES_ONLY');?></div>
+									<div class="intranet-button-list-site-restriction-saved"><?=Loc::getMessage('B24C_BL_SAVED_LABEL');?></div>
+									<select
+										class="intranet-button-list-site-restriction-list"
+										multiple
+										size="5"
+										<?=($arResult['PERM_CAN_EDIT']) ? '' : 'disabled';?>>
+										<?foreach ($arResult['SITES'] as $site):?>
+											<option value="<?=$site['LID'];?>" <?=in_array($site['LID'], $item['SITES']) ? 'selected' : '';?>><?=$site['DISPLAY_NAME'];?></option>
+										<?endforeach;?>
+									</select>
 								</div>
 
 							</div><!--intranet-button-list-widget-container intranet-button-list-widget-right-->

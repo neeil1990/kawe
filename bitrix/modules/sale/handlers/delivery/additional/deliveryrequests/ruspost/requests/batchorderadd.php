@@ -68,7 +68,7 @@ class BatchOrderAdd extends Base
 						}
 					}
 
-					if(strlen($message) > 0)
+					if($message <> '')
 						$shpResults[$internalId]->addError(new Error($message));
 				}
 			}
@@ -149,7 +149,7 @@ class BatchOrderAdd extends Base
 		/** @var  \Sale\Handlers\Delivery\Additional\DeliveryRequests\RusPost\Handler $deliveryRequest */
 		$deliveryRequest = $this->deliveryService->getDeliveryRequestHandler();
 		$orderCreateRequest = $deliveryRequest->getRequestObject('ORDER_CREATE');
-		$result = $orderCreateRequest->createBody($shipmentIds);
+		$result = $orderCreateRequest->createBody($shipmentIds, $additional);
 
 		if(!$result->isSuccess())
 			return $result;

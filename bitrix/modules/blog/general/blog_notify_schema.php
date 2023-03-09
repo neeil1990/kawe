@@ -52,6 +52,10 @@ class CBlogNotifySchema
 				"PUSH" => "Y",
 				"DISABLED" => Array(IM_NOTIFY_FEATURE_SITE, IM_NOTIFY_FEATURE_XMPP)
 			);
+			$ar["grat"] = Array(
+				"NAME" => GetMessage('BLG_NS_GRAT'),
+				"PUSH" => "Y"
+			);
 		}
 
 		if (IsModuleInstalled('socialnetwork'))
@@ -168,6 +172,11 @@ class CBlogNotifySchema
 				{
 					$perm = CBlogComment::getSocNetUserPerms($post["ID"], $post["AUTHOR_ID"]);
 				}
+			}
+
+			if ($perm == \Bitrix\Blog\Item\Permissions::DENY)
+			{
+				return Loc::getMessage('BLG_NS_IM_ANSWER_ERROR');
 			}
 
 			if (!\Bitrix\Blog\Item\Comment::checkDuplicate(array(

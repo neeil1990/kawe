@@ -1,13 +1,36 @@
-<?
+<?php
 /** @global CUser $USER */
 /** @global CMain $APPLICATION */
 /** @global CDatabase $DB */
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_vat')))
-	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+
+use Bitrix\Main\Loader;
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Catalog\Access\AccessController;
+use Bitrix\Catalog\Access\ActionDictionary;
+
+
+require_once($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/catalog/prolog.php');
+
+Loc::loadMessages(__FILE__);
+
+/** @global CAdminPage $adminPage */
+global $adminPage;
+/** @global CAdminSidePanelHelper $adminSidePanelHelper */
+global $adminSidePanelHelper;
+
+$publicMode = $adminPage->publicMode;
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+
 CModule::IncludeModule("catalog");
-$bReadOnly = !$USER->CanDoOperation('catalog_vat');
+
+$accessController = AccessController::getCurrent();
+if (!($accessController->check(ActionDictionary::ACTION_CATALOG_READ) || $accessController->check(ActionDictionary::ACTION_VAT_EDIT)))
+{
+	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
+
+$bReadOnly = !$accessController->check(ActionDictionary::ACTION_VAT_EDIT);
 
 if ($ex = $APPLICATION->GetException())
 {
@@ -20,29 +43,49 @@ if ($ex = $APPLICATION->GetException())
 	die();
 }
 
-IncludeModuleLangFile(__FILE__);
-
 $sTableID = "tbl_catalog_vat";
 
-$oSort = new CAdminSorting($sTableID, "C_SORT", "ASC");
-$lAdmin = new CAdminList($sTableID, $oSort);
+$oSort = new CAdminUiSorting($sTableID, 'C_SORT', 'ASC');
+$lAdmin = new CAdminUiList($sTableID, $oSort);
 
-$arFilterFields = array(
-	"filter",
-	"filter_id",
-	"filter_active",
-	"filter_name",
-	"filter_rate",
-);
+$filterFields = [
+	[
+		'id' => 'ID',
+		'name' => 'ID',
+		'filterable' => '',
+		'default' => true,
+	],
+	[
+		'id' => 'ACTIVE',
+		'name' => Loc::getMessage('CVAT_FILTER_ACTIVE'),
+		'type' => 'list',
+		'items' => [
+			'Y' => Loc::getMessage('CVAT_YES'),
+			'N' => Loc::getMessage('CVAT_NO'),
+		],
+		'filterable' => '',
+	],
+	[
+		'id' => 'NAME',
+		'name' => Loc::getMessage('CVAT_FILTER_NAME'),
+		'filterable' => '%',
+		'quickSearch' => '%',
+	],
+	[
+		'id' => 'RATE',
+		'name' => Loc::getMessage('CVAT_FILTER_RATE'),
+		'filterable' => '',
+	],
+	[
+		'id' => 'XML_ID',
+		'name' => Loc::getMessage('CVAT_FILTER_XML_ID'),
+		'filterable' => '',
+	],
+];
 
-$lAdmin->InitFilter($arFilterFields);
+$arFilter = [];
 
-$arFilter = array();
-
-if (strlen($filter_id) > 0) $arFilter["ID"] = $filter_id;
-if (strlen($filter_active) > 0) $arFilter["ACTIVE"] = $filter_active;
-if (strlen($filter_name) > 0) $arFilter["%NAME"] = $filter_name;
-if (strlen($filter_rate) > 0) $arFilter["RATE"] = $filter_rate;
+$lAdmin->AddFilter($filterFields, $arFilter);
 
 if ($lAdmin->EditAction() && !$bReadOnly)
 {
@@ -51,15 +94,21 @@ if ($lAdmin->EditAction() && !$bReadOnly)
 		$ID = (int)$ID;
 
 		if ($ID <= 0 || !$lAdmin->IsUpdated($ID))
+		{
 			continue;
+		}
 
 		$DB->StartTransaction();
 		if (!CCatalogVat::Update($ID, $arFields))
 		{
 			if ($ex = $APPLICATION->GetException())
+			{
 				$lAdmin->AddUpdateError($ex->GetString(), $ID);
+			}
 			else
-				$lAdmin->AddUpdateError(str_replace("#ID#", $ID, GetMessage("ERROR_UPDATE_VAT")), $ID);
+			{
+				$lAdmin->AddUpdateError(str_replace("#ID#", $ID, Loc::getMessage("ERROR_UPDATE_VAT")), $ID);
+			}
 
 			$DB->Rollback();
 		}
@@ -70,27 +119,65 @@ if ($lAdmin->EditAction() && !$bReadOnly)
 	}
 }
 
+global $by, $order;
+if (!isset($by))
+{
+	$by = 'C_SORT';
+}
+if (!isset($order))
+{
+	$order = 'asc';
+}
+$by = strtoupper($by);
+$order = strtoupper($order);
+switch ($by)
+{
+	case 'ID':
+		$vatListOrder = [
+			'ID' => $order,
+		];
+		break;
+	case 'RATE':
+		$vatListOrder = [
+			'EXCLUDE_VAT' => ($order === 'DESC' ? 'ASC' : 'DESC'),
+			'RATE' => $order,
+			'ID' => 'ASC',
+		];
+		break;
+	default:
+		$vatListOrder = [
+			$by => $order,
+			'ID' => 'ASC'
+		];
+		break;
+}
+
 if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 {
 	if ($_REQUEST['action_target']=='selected')
 	{
-		$arID = array();
+		$arID = [];
 		$dbResultList = CCatalogVat::GetListEx(
-			array($by => $order),
+			$vatListOrder,
 			$arFilter,
 			false,
 			false,
-			array('ID')
+			['ID']
 		);
 
 		while ($arResult = $dbResultList->Fetch())
+		{
 			$arID[] = $arResult['ID'];
+		}
+		unset($dbResultList);
 	}
 
 	foreach ($arID as $ID)
 	{
-		if (strlen($ID) <= 0)
+		if ($ID == '')
+		{
 			continue;
+		}
 
 		switch ($_REQUEST['action'])
 		{
@@ -101,9 +188,13 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 					$DB->Rollback();
 
 					if ($ex = $APPLICATION->GetException())
+					{
 						$lAdmin->AddGroupError($ex->GetString(), $ID);
+					}
 					else
-						$lAdmin->AddGroupError(str_replace("#ID#", $ID, GetMessage("ERROR_DELETE_VAT")), $ID);
+					{
+						$lAdmin->AddGroupError(str_replace("#ID#", $ID, Loc::getMessage("ERROR_DELETE_VAT")), $ID);
+					}
 				}
 				else
 				{
@@ -112,194 +203,221 @@ if (($arID = $lAdmin->GroupAction()) && !$bReadOnly)
 				break;
 			case "activate":
 			case "deactivate":
-				$arFields = array(
+				$arFields = [
 					"ACTIVE" => (($_REQUEST['action'] == "activate") ? "Y" : "N")
-				);
+				];
 				if (!CCatalogVat::Update($ID, $arFields))
 				{
 					if ($ex = $APPLICATION->GetException())
+					{
 						$lAdmin->AddGroupError($ex->GetString(), $ID);
+					}
 					else
-						$lAdmin->AddGroupError(str_replace("#ID#", $ID, GetMessage("ERROR_UPDATE_VAT")), $ID);
+					{
+						$lAdmin->AddGroupError(str_replace("#ID#", $ID, Loc::getMessage("ERROR_UPDATE_VAT")), $ID);
+					}
 				}
 				break;
 		}
 	}
+	if ($lAdmin->hasGroupErrors())
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($lAdmin->getGroupErrors());
+	}
+	else
+	{
+		$adminSidePanelHelper->sendSuccessResponse();
+	}
 }
 
-$lAdmin->AddHeaders(array(
-	array("id"=>"ID", "content"=>"ID", "sort"=>"ID", "default"=>true),
-	array("id"=>"C_SORT", "content"=>GetMessage("CVAT_SORT"), "sort"=>"C_SORT", "default"=>true),
-	array("id"=>"ACTIVE", "content"=>GetMessage("CVAT_ACTIVE"), "sort"=>"ACTIVE", "default"=>true),
-	array("id"=>"NAME", "content"=>GetMessage("CVAT_NAME"), "sort"=>"NAME", "default"=>true),
-	array("id"=>"RATE", "content"=>GetMessage("CVAT_RATE"), "sort"=>"RATE", "default"=>true),
-));
+$headers = [];
+$headers[] = [
+	'id' => 'ID',
+	'content' => 'ID',
+	'sort' => 'ID',
+	'default'=>true,
+];
+$headers[] = [
+	'id' => 'C_SORT',
+	'content' => Loc::getMessage('CVAT_SORT'),
+	'sort' => 'C_SORT',
+	'default' => true,
+];
+$headers[] = [
+	'id' => 'ACTIVE',
+	'content' => Loc::getMessage('CVAT_ACTIVE'),
+	'sort' => 'ACTIVE',
+	'default' => true,
+];
+$headers[] = [
+	'id' => 'NAME',
+	'content' => Loc::getMessage('CVAT_NAME'),
+	'sort' => 'NAME',
+	'default' => true,
+];
+$headers[] = [
+	'id' => 'RATE',
+	'content' => Loc::getMessage('CVAT_RATE'),
+	'sort' => 'RATE',
+	'default' => true,
+];
+$headers[] = [
+	'id' => 'XML_ID',
+	'content' => Loc::getMessage('CVAT_XML_ID'),
+	'sort' => 'XML_ID',
+	'default' => false,
+];
+$lAdmin->AddHeaders($headers);
+unset($headers);
 
 $arSelectFields = $lAdmin->GetVisibleHeaderColumns();
 if (!in_array('ID', $arSelectFields))
+{
 	$arSelectFields[] = 'ID';
-
-$arSelectFields = array_values($arSelectFields);
+}
+$arSelectFields[] = 'EXCLUDE_VAT';
+$arSelectFields[] = 'ACTIVE';
+$arSelectFields = array_values(array_unique($arSelectFields));
 
 $arNavParams = (isset($_REQUEST["mode"]) && 'excel' == $_REQUEST["mode"]
 	? false
-	: array("nPageSize" => CAdminResult::GetNavSize($sTableID))
+	: ["nPageSize" => CAdminUiResult::GetNavSize($sTableID)]
 );
 
 $dbResultList = CCatalogVat::GetListEx(
-	array($by => $order),
+	$vatListOrder,
 	$arFilter,
 	false,
 	$arNavParams,
 	$arSelectFields
 );
 
-$dbResultList = new CAdminResult($dbResultList, $sTableID);
+$dbResultList = new CAdminUiResult($dbResultList, $sTableID);
 $dbResultList->NavStart();
 
-$lAdmin->NavText($dbResultList->GetNavPrint(GetMessage("CVAT_NAV")));
+$lAdmin->SetNavigationParams($dbResultList, array("BASE_LINK" => $selfFolderUrl."cat_vat_admin.php"));
 
 while ($arVAT = $dbResultList->Fetch())
 {
+	$editUrl = $selfFolderUrl."cat_vat_edit.php?ID=".$arVAT["ID"]."&lang=".LANGUAGE_ID;
+	$editUrl = $adminSidePanelHelper->editUrlToPublicPage($editUrl);
 	$arVAT['ID'] = (int)$arVAT['ID'];
-	$row =& $lAdmin->AddRow($arVAT['ID'], $arVAT);
+	$row =& $lAdmin->AddRow($arVAT['ID'], $arVAT, $editUrl);
 
 	$row->AddField("ID", $arVAT['ID']);
+
+	$excludeVat = $arVAT['EXCLUDE_VAT'] === 'Y';
 
 	if ($bReadOnly)
 	{
 		$row->AddCheckField("ACTIVE", false);
 		$row->AddInputField("NAME", false);
 		$row->AddViewField("C_SORT", false);
+		$row->AddViewField('XML_ID', false);
 	}
 	else
 	{
 		$row->AddCheckField("ACTIVE");
-		$row->AddInputField("NAME", array("size" => 30));
-		$row->AddInputField("C_SORT", array("size" => 5));
-		$row->AddInputField("RATE", array("size" => 5));
+		$row->AddInputField("NAME", ["size" => 30]);
+		$row->AddInputField("C_SORT", ["size" => 5]);
+		if (!$excludeVat)
+		{
+			$row->AddInputField("RATE", ["size" => 5]);
+		}
+		$row->AddInputField(
+			'XML_ID',
+			[
+				'size' => 50,
+			]
+		);
 	}
 
-	$row->AddViewField("RATE", doubleval($arVAT['RATE'])." %");
+	if (!$excludeVat)
+	{
+		$row->AddViewField("RATE", htmlspecialcharsbx($arVAT['RATE'] . " %"));
+	}
+	else
+	{
+		$row->AddViewField('RATE', htmlspecialcharsbx(Loc::getMessage('CVAT_EXCLUDE_VAT')));
+	}
 
-	$arActions = array();
-	$arActions[] = array(
+	$arActions = [];
+	$arActions[] = [
 		"ICON" => "edit",
-		"TEXT" => GetMessage("CVAT_EDIT_ALT"),
-		"ACTION" => $lAdmin->ActionRedirect("/bitrix/admin/cat_vat_edit.php?ID=".$arVAT['ID']."&lang=".LANGUAGE_ID."&".GetFilterParams("filter_").""),
-		"DEFAULT" => true
-	);
+		"TEXT" => $bReadOnly ? Loc::getMessage('CVAT_VIEW_ALT') : Loc::getMessage('CVAT_EDIT_ALT'),
+		"LINK" => $editUrl,
+		"DEFAULT" => true,
+	];
 
 	if (!$bReadOnly)
 	{
-		$arActions[] = array("SEPARATOR" => true);
-		$arActions[] = array(
+		if ($arVAT['ACTIVE'] === 'N')
+		{
+			$arActions[] = [
+				'ICON' => 'activate',
+				'TEXT' => Loc::getMessage('CVAT_VAT_ACTIVATE'),
+				'ACTION' => $lAdmin->ActionDoGroup($arVAT['ID'], 'activate')
+			];
+		}
+		else
+		{
+			$arActions[] = [
+				'ICON' => 'deactivate',
+				'TEXT' => Loc::getMessage('CVAT_VAT_DEACTIVATE'),
+				'ACTION' => $lAdmin->ActionDoGroup($arVAT['ID'], 'deactivate')
+			];
+		}
+	}
+
+	if (!$bReadOnly)
+	{
+		$arActions[] = ["SEPARATOR" => true];
+		$arActions[] = [
 			"ICON" => "delete",
-			"TEXT" => GetMessage("CVAT_DELETE_ALT"),
-			"ACTION" => "if(confirm('".GetMessageJS('CVAT_DELETE_CONF')."')) ".$lAdmin->ActionDoGroup($arVAT['ID'], "delete")
-		);
+			"TEXT" => Loc::getMessage("CVAT_DELETE_ALT"),
+			"ACTION" => "if(confirm('"
+				. CUtil::JSEscape(Loc::getMessage('CVAT_DELETE_CONF'))
+				. "')) "
+				. $lAdmin->ActionDoGroup($arVAT['ID'], 'delete')
+		];
 	}
 
 	$row->AddActions($arActions);
 }
 
-$lAdmin->AddFooter(
-	array(
-		array(
-			"title" => GetMessage("MAIN_ADMIN_LIST_SELECTED"),
-			"value" => $dbResultList->SelectedRowsCount()
-		),
-		array(
-			"counter" => true,
-			"title" => GetMessage("MAIN_ADMIN_LIST_CHECKED"),
-			"value" => "0"
-		),
-	)
-);
-
 if (!$bReadOnly)
 {
-	$lAdmin->AddGroupActionTable(
-		array(
-			"delete" => GetMessage("MAIN_ADMIN_LIST_DELETE"),
-			"activate" => GetMessage("MAIN_ADMIN_LIST_ACTIVATE"),
-			"deactivate" => GetMessage("MAIN_ADMIN_LIST_DEACTIVATE"),
-		)
-	);
+	$lAdmin->AddGroupActionTable([
+		'edit' => true,
+		'delete' => true,
+		"activate" => Loc::getMessage("MAIN_ADMIN_LIST_ACTIVATE"),
+		"deactivate" => Loc::getMessage("MAIN_ADMIN_LIST_DEACTIVATE"),
+	]);
 }
 
 if (!$bReadOnly)
 {
-	$aContext = array(
-		array(
-			"TEXT" => GetMessage("CVAT_ADD_NEW"),
+	$addUrl = $selfFolderUrl."cat_vat_edit.php?lang=".LANGUAGE_ID;
+	$addUrl = $adminSidePanelHelper->editUrlToPublicPage($addUrl);
+	$aContext = [
+		[
+			"TEXT" => Loc::getMessage("CVAT_ADD_NEW"),
 			"ICON" => "btn_new",
-			"LINK" => "/bitrix/admin/cat_vat_edit.php?lang=".LANGUAGE_ID,
-			"TITLE" => GetMessage("CVAT_ADD_NEW_ALT")
-		),
-	);
+			"LINK" => $addUrl,
+			"TITLE" => Loc::getMessage("CVAT_ADD_NEW_ALT"),
+		],
+	];
+	$lAdmin->setContextSettings(["pagePath" => $selfFolderUrl."cat_vat_admin.php"]);
 	$lAdmin->AddAdminContextMenu($aContext);
 }
 
 $lAdmin->CheckListMode();
 
-$APPLICATION->SetTitle(GetMessage("CVAT_PAGE_TITLE"));
+$APPLICATION->SetTitle(Loc::getMessage("CVAT_PAGE_TITLE"));
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-?>
-<form name="find_form" method="GET" action="<?echo $APPLICATION->GetCurPage()?>?">
-<?
-$oFilter = new CAdminFilter(
-	$sTableID."_filter",
-	array(
-		GetMessage("CVAT_ACTIVE"),
-		GetMessage("CVAT_NAME"),
-		GetMessage("CVAT_RATE")
-	)
-);
 
-$oFilter->Begin();
-?>
-	<tr>
-		<td>ID:</td>
-		<td>
-			<input type="text" name="filter_id" size="5" value="<?=htmlspecialcharsbx($filter_id)?>">
-		</td>
-	</tr>
-	<tr>
-		<td><?= GetMessage("CVAT_FILTER_ACTIVE") ?>:</td>
-		<td>
-			<select name="filter_active">
-				<option value=""><?=htmlspecialcharsbx("(".GetMessage("CVAT_ALL").")") ?></option>
-				<option value="Y"<?if ($filter_active=="Y") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("CVAT_YES")) ?></option>
-				<option value="N"<?if ($filter_active=="N") echo " selected"?>><?=htmlspecialcharsbx(GetMessage("CVAT_NO")) ?></option>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td><?= GetMessage("CVAT_FILTER_NAME") ?>:</td>
-		<td>
-			<input type="text" name="filter_name" size="30" value="<?=htmlspecialcharsbx($filter_name)?>">&nbsp;<?=ShowFilterLogicHelp()?>
-		</td>
-	</tr>
-	<tr>
-		<td><?= GetMessage("CVAT_FILTER_RATE") ?>:</td>
-		<td>
-			<input type="text" name="filter_rate" size="30" value="<?=htmlspecialcharsbx($filter_rate)?>">%
-		</td>
-	</tr>
-<?
-$oFilter->Buttons(
-	array(
-		"table_id" => $sTableID,
-		"url" => $APPLICATION->GetCurPage(),
-		"form" => "find_form"
-	)
-);
-$oFilter->End();
-?>
-</form>
-<?
+$lAdmin->DisplayFilter($filterFields);
 $lAdmin->DisplayList();
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

@@ -12,7 +12,7 @@ if($ex = $APPLICATION->GetException())
 else
 	echo CAdminMessage::ShowNote(GetMessage("MOD_INST_OK"));
 
-if(strlen($_REQUEST["public_dir"])>0) :
+if($_REQUEST["public_dir"] <> '') :
 ?>
 <p><?=GetMessage("MOD_DEMO_DIR")?></p>
 <table border="0" cellspacing="0" cellpadding="0" class="internal">
@@ -21,13 +21,13 @@ if(strlen($_REQUEST["public_dir"])>0) :
 		<td align="center"><b><?=GetMessage("MOD_DEMO_LINK")?></b></td>
 	</tr>
 	<?
-	$sites = CSite::GetList($by, $order, Array("ACTIVE"=>"Y"));
+	$sites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 	while($site = $sites->Fetch())
 	{
 		?>
 		<tr>
 			<td>[<?=htmlspecialcharsEx($site["ID"])?>] <?=htmlspecialcharsEx($site["NAME"])?></td>
-			<td><a href="<?=htmlspecialcharsBx((strlen($site["SERVER_NAME"])>0? "http://".$site["SERVER_NAME"]: "").$site["DIR"].$public_dir."/index.php")?>"><?=htmlspecialcharsEx($site["DIR"].$public_dir."/index.php")?></a></td>
+			<td><a href="<?=htmlspecialcharsBx(($site["SERVER_NAME"] <> ''? "http://".$site["SERVER_NAME"]: "").$site["DIR"].$public_dir."/index.php")?>"><?=htmlspecialcharsEx($site["DIR"].$public_dir."/index.php")?></a></td>
 		</tr>
 		<?
 	}

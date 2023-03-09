@@ -21,6 +21,8 @@ $selectorId = $arResult['SELECTOR_ID'];
 $contentClass = 'ies-content';
 $contentClass .= $arResult['MULTIPLE'] == 'Y' ? ' ies-content-multiple' : '';
 $contentClass .= $arResult['POPUP'] == 'Y' ? ' ies-content-hide' : '';
+
+\Bitrix\Main\UI\Extension::load(['ui.design-tokens']);
 ?>
 
 <?if($arResult['PANEL_SELECTED_VALUES'] == 'Y'):?>
@@ -156,7 +158,9 @@ $contentClass .= $arResult['POPUP'] == 'Y' ? ' ies-content-hide' : '';
 			currentElements: <?=\Bitrix\Main\Web\Json::encode($arResult['CURRENT_ELEMENTS'])?>,
 			lastElements: <?=\Bitrix\Main\Web\Json::encode($arResult['LAST_ELEMENTS'])?>,
 			inputName: '<?=$arResult['INPUT_NAME']?>',
-			onlyRead: '<?=$arResult['ONLY_READ']?>'
+			onlyRead: '<?=$arResult['ONLY_READ']?>',
+			admin: '<?=$arResult['ADMIN_SECTION']; ?>',
+			templateUrl: '<?=CUtil::JSEscape($arResult['TEMPLATE_URL'])?>'
 		});
 		BX.message({
 

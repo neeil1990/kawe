@@ -18,7 +18,7 @@ if(!isset($arParams["CACHE_TIME"]))
 	$arParams["CACHE_TIME"] = 300;
 
 $arParams["IBLOCK_TYPE"] = trim($arParams["IBLOCK_TYPE"]);
-if(strlen($arParams["IBLOCK_TYPE"])<=0)
+if($arParams["IBLOCK_TYPE"] == '')
 	$arParams["IBLOCK_TYPE"] = "news";
 if($arParams["IBLOCK_TYPE"]=="-")
 	$arParams["IBLOCK_TYPE"] = "";
@@ -36,12 +36,12 @@ foreach($arParams["FIELD_CODE"] as $key=>$val)
 		unset($arParams["FIELD_CODE"][$key]);
 
 $arParams["SORT_BY1"] = trim($arParams["SORT_BY1"]);
-if(strlen($arParams["SORT_BY1"])<=0)
+if($arParams["SORT_BY1"] == '')
 	$arParams["SORT_BY1"] = "ACTIVE_FROM";
 if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER1"]))
 	$arParams["SORT_ORDER1"]="DESC";
 
-if(strlen($arParams["SORT_BY2"])<=0)
+if($arParams["SORT_BY2"] == '')
 	$arParams["SORT_BY2"] = "SORT";
 if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER2"]))
 	$arParams["SORT_ORDER2"]="ASC";
@@ -53,7 +53,7 @@ if($arParams["NEWS_COUNT"]<=0)
 $arParams["DETAIL_URL"]=trim($arParams["DETAIL_URL"]);
 
 $arParams["ACTIVE_DATE_FORMAT"] = trim($arParams["ACTIVE_DATE_FORMAT"]);
-if(strlen($arParams["ACTIVE_DATE_FORMAT"])<=0)
+if($arParams["ACTIVE_DATE_FORMAT"] == '')
 	$arParams["ACTIVE_DATE_FORMAT"] = $DB->DateFormatToPHP(CSite::GetDateFormat("SHORT"));
 
 if($this->startResultCache(false, ($arParams["CACHE_GROUPS"]==="N"? false: $USER->GetGroups())))
@@ -74,6 +74,7 @@ if($this->startResultCache(false, ($arParams["CACHE_GROUPS"]==="N"? false: $USER
 	$arFilter = array (
 		"IBLOCK_TYPE" => $arParams["IBLOCK_TYPE"],
 		"IBLOCK_ID"=> $arParams["IBLOCKS"],
+		"IBLOCK_LID" => SITE_ID,
 		"ACTIVE" => "Y",
 		"ACTIVE_DATE" => "Y",
 		"CHECK_PERMISSIONS" => "Y",
@@ -100,24 +101,30 @@ if($this->startResultCache(false, ($arParams["CACHE_GROUPS"]==="N"? false: $USER
 		$arItem["EDIT_LINK"] = $arButtons["edit"]["edit_element"]["ACTION_URL"];
 		$arItem["DELETE_LINK"] = $arButtons["edit"]["delete_element"]["ACTION_URL"];
 
-		if(strlen($arItem["ACTIVE_FROM"])>0)
+		if($arItem["ACTIVE_FROM"] <> '')
 			$arItem["DISPLAY_ACTIVE_FROM"] = CIBlockFormatProperties::DateFormat($arParams["ACTIVE_DATE_FORMAT"], MakeTimeStamp($arItem["ACTIVE_FROM"], CSite::GetDateFormat()));
 		else
 			$arItem["DISPLAY_ACTIVE_FROM"] = "";
 
-		$ipropValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
-		$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
+		Iblock\InheritedProperty\ElementValues::queue($arItem["IBLOCK_ID"], $arItem["ID"]);
 
+		$arResult["ITEMS"][]=$arItem;
+		$arResult["LAST_ITEM_IBLOCK_ID"]=$arItem["IBLOCK_ID"];
+	}
+
+	foreach ($arResult["ITEMS"] as &$arItem)
+	{
+		$ipropValues = new Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
+		$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
 		Iblock\Component\Tools::getFieldImageData(
 			$arItem,
 			array('PREVIEW_PICTURE', 'DETAIL_PICTURE'),
 			Iblock\Component\Tools::IPROPERTY_ENTITY_ELEMENT,
 			'IPROPERTY_VALUES'
 		);
-
-		$arResult["ITEMS"][]=$arItem;
-		$arResult["LAST_ITEM_IBLOCK_ID"]=$arItem["IBLOCK_ID"];
 	}
+	unset($arItem);
+
 	$this->setResultCacheKeys(array(
 		"LAST_ITEM_IBLOCK_ID",
 	));

@@ -39,7 +39,6 @@
 
 ?>
 <script>
-<!--
 function BXBlogTabShow(id, type)
 {
 	if(type == 'post')
@@ -78,7 +77,6 @@ function BXBlogTabShow(id, type)
 	}
 	
 }
-//-->
 </script>
 <div class="blog-mainpage-side-left">
 <div class="blog-tab-container">
@@ -198,7 +196,7 @@ function BXBlogTabShow(id, type)
 		?>
 	</div>
 	<?
-	if(strlen($arResult["PATH_TO_HISTORY"]) <= 0)
+	if($arResult["PATH_TO_HISTORY"] == '')
 		$arResult["PATH_TO_HISTORY"] = htmlspecialcharsbx($APPLICATION->GetCurPage()."?".$arResult["ALIASES"]["page"]."=history");
 	?>
 	<noindex>
@@ -397,7 +395,7 @@ if(IsModuleInstalled("search")):
 	<?
 	//if((!is_array($arParams["GROUP_ID"]) && IntVal($arParams["GROUP_ID"]) > 0) || (is_array($arParams["GROUP_ID"]) && count($arParams["GROUP_ID"]) == 1))
 	//{
-		if(strlen($arResult["PATH_TO_GROUP"]) <= 0)
+		if($arResult["PATH_TO_GROUP"] == '')
 			$arResult["PATH_TO_GROUP"] = htmlspecialcharsbx($APPLICATION->GetCurPage()."?".$arResult["ALIASES"]["page"]."=group&".$arResult["ALIASES"]["group_id"]."=#group_id#");
 		?>
 		

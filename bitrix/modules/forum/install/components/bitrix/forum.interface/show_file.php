@@ -13,7 +13,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true || !CModule::Includ
  */
 
 $MESS = array();
-$path = str_replace(array("\\", "//"), "/", dirname(__FILE__)."/lang/".LANGUAGE_ID."/show_file.php");
+$path = str_replace(array("\\", "//"), "/", __DIR__."/lang/".LANGUAGE_ID."/show_file.php");
 include_once($path);
 $MESS1 =& $MESS;
 $GLOBALS["MESS"] = $MESS1 + $GLOBALS["MESS"];
@@ -129,13 +129,13 @@ elseif (intval($arResult["FILE"]["MESSAGE_ID"]) > 0)
 	{
 		$arParams["PERMISSION"] = CForumNew::GetUserPermission($arResult["MESSAGE"]["FORUM_ID"], $USER->GetUserGroupArray());
 
-		if ($arParams["PERMISSION"] < "E" && (intVal($arResult["TOPIC"]["SOCNET_GROUP_ID"]) > 0 ||
-			intVal($arResult["TOPIC"]["OWNER_ID"]) > 0) && CModule::IncludeModule("socialnetwork"))
+		if ($arParams["PERMISSION"] < "E" && (intval($arResult["TOPIC"]["SOCNET_GROUP_ID"]) > 0 ||
+			intval($arResult["TOPIC"]["OWNER_ID"]) > 0) && CModule::IncludeModule("socialnetwork"))
 		{
 			$sPermission = $arParams["PERMISSION"];
 			$user_id = $USER->GetID();
-			$group_id = intVal($arResult["TOPIC"]["SOCNET_GROUP_ID"]);
-			$owner_id = intVal($arResult["TOPIC"]["OWNER_ID"]);
+			$group_id = intval($arResult["TOPIC"]["SOCNET_GROUP_ID"]);
+			$owner_id = intval($arResult["TOPIC"]["OWNER_ID"]);
 
 			if ($group_id):
 
@@ -161,8 +161,8 @@ elseif (intval($arResult["FILE"]["MESSAGE_ID"]) > 0)
 				$arForumSites = CForumNew::GetSites($arResult["FORUM"]["ID"]);
 				if (count($arForumSites) > 0)
 				{
-					list($key, $val) = each($arForumSites);
-					if (strlen($key) > 0)
+					$key = key($arForumSites);
+					if ($key <> '')
 						$site_id_tmp = $key;
 					else
 						$site_id_tmp = false;

@@ -106,6 +106,11 @@ abstract class Node
 		return $this->nodeName;
 	}
 
+	public function setNodeName($a)
+	{
+		$this->nodeName = $a;
+	}
+
 	public function getNodeValue()
 	{
 		return $this->nodeValue;
@@ -250,7 +255,7 @@ abstract class Node
 		return false;
 	}
 
-	/*
+	/**
 	 * Adds the node newChild to the end of the list of children of this node.
 	 * If the newChild is already in the tree, it is first removed.
 	 * */
@@ -379,16 +384,17 @@ abstract class Node
 		$this->getOwnerDocument()->getParser()->parse($html, $this);
 	}
 
-	/*
+	/**
 	 * @param string $queryString
 	 * @return Node[]
 	 * */
+
 	public function querySelectorAll($queryString)
 	{
 		return QueryEngine::getQuerySelectorEngine()->query($queryString, $this);
 	}
 
-	/*
+	/**
 	 * @param string $queryString
 	 * @return Node|null
 	 * */

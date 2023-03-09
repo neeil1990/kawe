@@ -118,7 +118,7 @@ class OrderInfo
 				{
 					$number = str_replace("'", "", htmlspecialcharsbx($number));
 
-					if(strlen($phone) > 0)
+					if($phone <> '')
 						$phone .= ', ';
 
 					$phone .= '<a href="javascript:void(0)" onclick="BX.Sale.Admin.OrderEditPage.desktopMakeCall(\''.$number.'\');">'.
@@ -154,7 +154,7 @@ class OrderInfo
 				$params = $eventResult->getParameters();
 
 				if(!empty($params) && is_array($params))
-					$customData = $params;
+					$customData = array_merge($customData, $params);
 			}
 		}
 		///
@@ -162,30 +162,32 @@ class OrderInfo
 		$result = '
 			<div class="adm-bus-orderinfoblock adm-detail-tabs-block-pin" id="sale-order-edit-block-order-info">
 				<div class="adm-bus-orderinfoblock-container">
-				<div class="adm-bus-orderinfoblock-title">'.
-				Loc::getMessage("SALE_ORDER_INFO", array(
+				<div class="adm-bus-orderinfoblock-title">
+					<div class="adm-bus-orderinfoblock-title-text">'.Loc::getMessage("SALE_ORDER_INFO", array(
 					"#ID#" => $order->getId(),
-					"#NUM#" => strlen($order->getField("ACCOUNT_NUMBER")) > 0 ? $order->getField("ACCOUNT_NUMBER") : $order->getId(),
+					"#NUM#" => $order->getField("ACCOUNT_NUMBER") <> '' ? $order->getField("ACCOUNT_NUMBER") : $order->getId(),
 					"#DATE#" => $order->getDateInsert()->toString())
-				)." [".$order->getSiteId()."]".
-				'<div class="adm-bus-orderinfoblock-status success" id="order_info_order_status_name">'.$order->getField('STATUS_ID').'</div> <!-- TODO -->
+				)." [".$order->getSiteId()."]".'</div>
+					<div class="adm-bus-orderinfoblock-status success" id="order_info_order_status_name">'.$order->getField('STATUS_ID').'</div> <!-- TODO -->
 				</div>
+				'.static::getOrderInfoBlock($order).'
 				<div class="adm-bus-orderinfoblock-content">
 					<div class="adm-bus-orderinfoblock-content-block-customer">
 						<ul class="adm-bus-orderinfoblock-content-customer-info">
 							<li>
 								<span class="adm-bus-orderinfoblock-content-customer-info-param">'.Loc::getMessage("SALE_ORDER_INFO_FIO").':</span>
+								<span class="adm-bus-orderinfoblock-content-customer-info-separator"></span>
 								<span class="adm-bus-orderinfoblock-content-customer-info-value" id="order_info_buyer_name">'.$name.'</span>
 							</li>
 							<li>
 								<span class="adm-bus-orderinfoblock-content-customer-info-param">E-Mail:</span>
+								<span class="adm-bus-orderinfoblock-content-customer-info-separator"></span>
 								<span class="adm-bus-orderinfoblock-content-customer-info-value"  id="order_info_buyer_email">'.$email.'</span>
 							</li>
 							<li>
 								<span class="adm-bus-orderinfoblock-content-customer-info-param">'.Loc::getMessage("SALE_ORDER_INFO_PHONE").':</span>
-								<span class="adm-bus-orderinfoblock-content-customer-info-value" id="order_info_buyer_phone">
-									'.$phone.'									
-								</span>
+								<span class="adm-bus-orderinfoblock-content-customer-info-separator"></span>
+								<span class="adm-bus-orderinfoblock-content-customer-info-value" id="order_info_buyer_phone">'.$phone.'</span>
 							</li>';
 
 		if(!empty($customData))
@@ -201,6 +203,7 @@ class OrderInfo
 				$result .='
 					<li>
 						<span class="adm-bus-orderinfoblock-content-customer-info-param">'.$custom['TITLE'].'</span>
+						<span class="adm-bus-orderinfoblock-content-customer-info-separator"></span>
 						<span class="adm-bus-orderinfoblock-content-customer-info-value"'.(!empty($custom['ID']) ? ' id="'.$custom['ID'].'"' : '' ).'>'.$custom['VALUE'].'</span>
 					</li>';
 			}
@@ -260,7 +263,7 @@ class OrderInfo
 			$result .= 'title="'.htmlspecialcharsbx($payment["NAME"]).'"'.
 				'><span></span></li></a>';
 
-			if(strlen($updatersContent) > 0)
+			if($updatersContent <> '')
 				$updatersContent .=",\n";
 
 			$updatersContent .= "\tPAYMENT_PAID_".$payment["ID"].": function(paid) { BX.Sale.Admin.OrderInfo.setIconLamp('payment', '".$payment["ID"]."', (paid == 'Y' ? 'green' : 'red')); }";
@@ -282,7 +285,7 @@ class OrderInfo
 			$result .= 'title="'.htmlspecialcharsbx($shipment["NAME"]).'"'.
 				'><span></span></li></a>';
 
-			if(strlen($updatersContent) > 0)
+			if($updatersContent <> '')
 				$updatersContent .=",\n";
 
 			$updatersContent .= "\tSHIPMENT_STATUS_".$shipment["ID"].": function(shipmentStatus) { BX.Sale.Admin.OrderInfo.setIconLamp('shipment', '".$shipment["ID"]."', (shipmentStatus == 'DF' ? 'green' : 'red')); }";
@@ -307,7 +310,7 @@ class OrderInfo
 				</script>';
 		}
 
-		if(strlen($updatersContent) > 0)
+		if($updatersContent <> '')
 		{
 			$result .= '
 					<script type="text/javascript">
@@ -320,5 +323,10 @@ class OrderInfo
 
 		}
 		return $result;
+	}
+	
+	protected static function getOrderInfoBlock(Order $order)
+	{
+		return '';
 	}
 }

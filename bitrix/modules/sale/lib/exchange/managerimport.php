@@ -10,15 +10,10 @@ use Bitrix\Sale\Exchange\OneC\ImportCriterionBase;
 
 final class ManagerImport extends ManagerBase
 {
-	private static $instance = null;
-	/** @var ISettings $settings */
-	protected $settings = null;
 	/** @var ICollision $collision */
 	protected $collision = null;
 	/** @var ICriterion $criterion */
 	protected $criterion = null;
-	/** @var LoggerDiag $logger */
-	protected $logger = null;
 
 	/**
 	 * @return string
@@ -29,78 +24,31 @@ final class ManagerImport extends ManagerBase
 	}
 
 	/**
-	 * @return static
+	 * @param ImportBase $entity
 	 */
-	private static function getInstance()
+	static public function configure(ImportBase $entity)
 	{
-		if(self::$instance === null)
-		{
-			self::$instance = new static();
-		}
-		return self::$instance;
-	}
+		$config = static::getImportByType($entity->getOwnerTypeId());
 
-	/**
-	 * @param $typeId
-	 * @return ImportBase
-	 */
-	static public function create($typeId)
-	{
-		$config = static::getImportByType($typeId);
-
-		$import = Entity\EntityImportFactory::create($typeId);
-
-		$import->loadSettings($config->settings);
-		$import->loadCollision($config->collision);
-		$import->loadCriterion($config->criterion);
-		$import->loadLogger($config->logger);
-
-		return $import;
-	}
-
-	/**
-	 * Get import by Type ID.
-	 * @param $typeId
-	 * @return null|static
-	 * @throws ArgumentOutOfRangeException
-	 */
-	static private function getImportByType($typeId)
-	{
-		if(!is_int($typeId))
-		{
-			$typeId = (int)$typeId;
-		}
-
-		if(!EntityType::IsDefined($typeId))
-		{
-			throw new ArgumentOutOfRangeException('Is not defined', EntityType::FIRST, EntityType::LAST);
-		}
-
-		$import = static::getInstance();
-		return isset($import[$typeId]) ? $import[$typeId] : null;
+		$entity->loadSettings($config->settings);
+		$entity->loadCollision($config->collision);
+		$entity->loadCriterion($config->criterion);
+		$entity->loadLogger($config->logger);
 	}
 
 	/**
 	 * Add instance of this manager to collection
 	 * @param $typeId
-	 * @param ISettings $settings
+	 * @param ISettingsImport $settings
 	 * @param ICollision $collision
 	 * @param ICriterion $criterion
 	 * @return mixed
 	 * @throws ArgumentOutOfRangeException
 	 * @internal
 	 */
-	static public function registerInstance($typeId, ISettings $settings, ICollision $collision = null, ICriterion $criterion = null)
+	static public function registerInstance($typeId, ISettingsImport $settings, ICollision $collision = null, ICriterion $criterion = null)
 	{
-		if(!is_int($typeId))
-		{
-			$typeId = (int)$typeId;
-		}
-
-		if(!EntityType::IsDefined($typeId))
-		{
-			throw new ArgumentOutOfRangeException('Is not defined', EntityType::FIRST, EntityType::LAST);
-		}
+		static::IsDefinedTypeId($typeId);
 
 		if(self::$instance[$typeId] === null)
 		{
@@ -117,20 +65,12 @@ final class ManagerImport extends ManagerBase
 
 	/**
 	 * @param $typeId
-	 * @return ISettings
+	 * @return ISettingsImport
 	 * @throws ArgumentOutOfRangeException
 	 */
 	static public function getSettingsByType($typeId)
 	{
-		if(!is_int($typeId))
-		{
-			$typeId = (int)$typeId;
-		}
-
-		if(!EntityType::IsDefined($typeId))
-		{
-			throw new ArgumentOutOfRangeException('Is not defined', EntityType::FIRST, EntityType::LAST);
-		}
+		static::IsDefinedTypeId($typeId);
 
 		$config = static::getImportByType($typeId);
 

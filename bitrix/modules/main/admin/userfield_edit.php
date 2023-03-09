@@ -11,6 +11,7 @@
  * @global CMain $APPLICATION
  * @global CUserTypeManager $USER_FIELD_MANAGER
  */
+use Bitrix\Main;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 define("HELP_FILE", "settings/userfield_edit.php");
@@ -20,6 +21,12 @@ IncludeModuleLangFile(__FILE__);
 $ID = intval($_REQUEST["ID"]);
 $back_url = $_REQUEST["back_url"];
 $list_url = $_REQUEST["list_url"];
+
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+if ($adminSidePanelHelper->isPublicFrame())
+{
+	$back_url = $adminSidePanelHelper->setDefaultQueryParams($back_url);
+}
 
 $RIGHTS = $USER_FIELD_MANAGER->GetRights(false, $ID);
 if($RIGHTS < "W")
@@ -63,6 +70,8 @@ $bVarsFromForm = false;
 
 if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] != "" || $_POST["apply"] != "") && ($RIGHTS >= "W") && check_bitrix_sessid())
 {
+	$adminSidePanelHelper->decodeUriComponent();
+
 	$arFields = array(
 		"ENTITY_ID" => $_REQUEST["ENTITY_ID"],
 		"FIELD_NAME" => $_REQUEST["FIELD_NAME"],
@@ -115,17 +124,41 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && ($_POST["save"] != "" || $_POST["appl
 
 	if($res)
 	{
-		if($_POST["apply"] != "")
-			LocalRedirect("/bitrix/admin/userfield_edit.php?ID=".$ID."&lang=".LANG."&back_url=".urlencode($back_url)."&".$tabControl->ActiveTabParam());
-		elseif($back_url)
-			LocalRedirect($back_url);
+		if ($adminSidePanelHelper->isAjaxRequest())
+		{
+			$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $ID));
+		}
 		else
-			LocalRedirect("/bitrix/admin/userfield_admin.php?lang=".LANG);
+		{
+			if ($_POST["apply"] != "")
+			{
+				$applyUrl = $selfFolderUrl."userfield_edit.php?ID=".$ID."&lang=".LANG."&back_url=".
+					urlencode($back_url)."&".$tabControl->ActiveTabParam();
+				$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+				LocalRedirect($applyUrl);
+			}
+			elseif ($back_url)
+			{
+				$back_url = $adminSidePanelHelper->editUrlToPublicPage($back_url);
+				$adminSidePanelHelper->localRedirect($back_url);
+				LocalRedirect($back_url);
+			}
+			else
+			{
+				$redirectUrl = $selfFolderUrl."userfield_admin.php?lang=".LANG;
+				$redirectUrl = $adminSidePanelHelper->editUrlToPublicPage($redirectUrl);
+				$adminSidePanelHelper->localRedirect($redirectUrl);
+				LocalRedirect($redirectUrl);
+			}
+		}
 	}
 	else
 	{
 		if($e = $APPLICATION->GetException())
+		{
 			$message = new CAdminMessage(GetMessage("USER_TYPE_SAVE_ERROR"), $e);
+			$adminSidePanelHelper->sendJsonErrorResponse($e->GetString());
+		}
 		$bVarsFromForm = true;
 	}
 
@@ -184,23 +217,39 @@ else
 	$IS_SEARCHABLE = htmlspecialcharsbx($arUserField["IS_SEARCHABLE"]);
 }
 
+$arUserTypes = $USER_FIELD_MANAGER->GetUserType();
+Main\Type\Collection::sortByColumn($arUserTypes, 'DESCRIPTION', '', null, true);
+$arUserType = $USER_FIELD_MANAGER->GetUserType($USER_TYPE_ID);
+if(!$arUserType)
+{
+	$arUserType = reset($arUserTypes);
+}
+/** @var Main\UserField\Types\BaseType $userTypeClass */
+$userTypeClass = $arUserType['CLASS_NAME'];
+if (!(is_a($userTypeClass, Main\UserField\Types\BaseType::class, true)))
+{
+	$userTypeClass = Main\UserField\Types\BaseType::class;
+}
+
 $APPLICATION->SetTitle(($ID>0? GetMessage("USER_TYPE_EDIT_TITLE", array("#ID#"=>$ID)) : GetMessage("USER_TYPE_ADD_TITLE")));
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
 // validate list_url
 if (!empty($list_url))
 {
-	$list_url = substr($list_url, 0, 1) === '/' ? $list_url : '/'.$list_url;
+	$list_url = mb_substr($list_url, 0, 1) === '/' ? $list_url : '/'.$list_url;
 }
 
-$aMenu = array(
-	array(
+$aMenu = array();
+if (!$adminSidePanelHelper->isPublicFrame())
+{
+	$aMenu[] = array(
 		"TEXT"=>GetMessage("USER_TYPE_LIST"),
 		"TITLE"=>GetMessage("USER_TYPE_LIST_TITLE"),
 		"LINK"=>!empty($list_url)? $list_url : "userfield_admin.php?lang=".LANG,
 		"ICON"=>"btn_list",
-	)
-);
+	);
+}
 if($ID>0)
 {
 	$aMenu[] = array("SEPARATOR"=>"Y");
@@ -292,7 +341,11 @@ BX.ready(function(){
 });
 //-->
 </script>
-<form method="POST" Action="<?echo $APPLICATION->GetCurPage()."?lang=".urlencode(LANG)?>" ENCTYPE="multipart/form-data" name="post_form">
+<?
+$formAction = $APPLICATION->GetCurPage();
+$formAction = $adminSidePanelHelper->setDefaultQueryParams($formAction);
+?>
+<form method="POST" action="<?=$formAction?>" ENCTYPE="multipart/form-data" name="post_form">
 <?
 $tabControl->Begin();
 ?>
@@ -311,17 +364,15 @@ $tabControl->BeginNextTab();
 			<?
 			if($ID > 0)
 			{
-				$arUserType = $USER_FIELD_MANAGER->GetUserType($USER_TYPE_ID);
 				echo htmlspecialcharsbx($arUserType["DESCRIPTION"]);
 			}
 			else
 			{
-				$arUserTypes = $USER_FIELD_MANAGER->GetUserType();
 				$arr = array("reference"=>array(), "reference_id"=>array());
-				foreach($arUserTypes as $arUserType)
+				foreach($arUserTypes as $userType)
 				{
-					$arr["reference"][] = $arUserType["DESCRIPTION"];
-					$arr["reference_id"][] = $arUserType["USER_TYPE_ID"];
+					$arr["reference"][] = $userType["DESCRIPTION"];
+					$arr["reference_id"][] = $userType["USER_TYPE_ID"];
 				}
 				echo SelectBoxFromArray("USER_TYPE_ID", $arr, $USER_TYPE_ID, "", 'OnChange="'.htmlspecialcharsbx('window.location=\''.CUtil::JSEscape($APPLICATION->GetCurPageParam("", array("USER_TYPE_ID")).'&back_url='.urlencode($back_url).'&list_url='.urlencode($list_url).'&ENTITY_ID='.$ENTITY_ID.'&USER_TYPE_ID=').'\' + this.value').'"');
 			}
@@ -335,7 +386,7 @@ $tabControl->BeginNextTab();
 				<?=$ENTITY_ID?>
 				<input type="hidden" name="ENTITY_ID" value="<?=$ENTITY_ID?>">
 			<?else:?>
-				<input type="text" name="ENTITY_ID" value="<?=$ENTITY_ID?>" maxlength="20">
+				<input type="text" name="ENTITY_ID" value="<?=$ENTITY_ID?>" maxlength="50">
 			<?endif?>
 		</td>
 	</tr>
@@ -345,7 +396,7 @@ $tabControl->BeginNextTab();
 			<?if($ID>0):?>
 				<?=$FIELD_NAME?>
 			<?else:?>
-				<input type="text" name="FIELD_NAME" value="<?=$FIELD_NAME?>" maxlength="20">
+				<input type="text" name="FIELD_NAME" value="<?=$FIELD_NAME?>" maxlength="50">
 			<?endif?>
 		</td>
 	</tr>
@@ -357,6 +408,7 @@ $tabControl->BeginNextTab();
 		<td><?=GetMessage("USERTYPE_SORT")?>:</td>
 		<td><input type="text" name="SORT" value="<?=$SORT?>"></td>
 	</tr>
+	<?php if ($userTypeClass::isMultiplicitySupported()):?>
 	<tr>
 		<td><?=GetMessage("USERTYPE_MULTIPLE")?>:</td>
 		<td>
@@ -367,10 +419,13 @@ $tabControl->BeginNextTab();
 			<?endif?>
 		</td>
 	</tr>
+	<?php endif;?>
+	<?php if ($userTypeClass::isMandatorySupported()):?>
 	<tr>
 		<td><?=GetMessage("USERTYPE_MANDATORY")?>:</td>
 		<td><input type="checkbox" name="MANDATORY" value="Y"<?if($MANDATORY == "Y") echo " checked"?> ></td>
 	</tr>
+	<?php endif;?>
 	<tr>
 		<td><?=GetMessage("USERTYPE_SHOW_FILTER")?>:</td>
 		<td><?
@@ -409,9 +464,6 @@ $tabControl->BeginNextTab();
 	<?if($ID > 0):
 		echo $USER_FIELD_MANAGER->GetSettingsHTML($arUserField, $bVarsFromForm);
 	else:
-		$arUserType = $USER_FIELD_MANAGER->GetUserType($USER_TYPE_ID);
-		if(!$arUserType)
-			$arUserType = array_shift($arUserTypes);
 		echo $USER_FIELD_MANAGER->GetSettingsHTML($arUserType["USER_TYPE_ID"], $bVarsFromForm);
 	endif;?>
 	<tr class="heading">
@@ -429,7 +481,7 @@ $tabControl->BeginNextTab();
 					<td align="center" width="200"><?echo GetMessage("USER_TYPE_HELP_MESSAGE");?></td>
 				</tr>
 				<?
-				$rsLanguage = CLanguage::GetList($by, $order, array());
+				$rsLanguage = CLanguage::GetList();
 				while($arLanguage = $rsLanguage->Fetch()):
 					$htmlLID = htmlspecialcharsbx($arLanguage["LID"]);
 				?>
@@ -531,9 +583,8 @@ endif;
 <?
 $tabControl->Buttons(
 	array(
-		"disabled"=>$RIGHTS<"W",
-		"back_url"=>!empty($back_url) ? $back_url : "userfield_admin.php?lang=".LANG,
-
+		"disabled" => ($RIGHTS < "W"),
+		"back_url" => !empty($back_url) ? $back_url : "userfield_admin.php?lang=".LANG
 	)
 );
 ?>

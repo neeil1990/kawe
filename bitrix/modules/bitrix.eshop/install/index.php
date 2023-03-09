@@ -1,8 +1,8 @@
-<?
-global $MESS;
-$strPath2Lang = str_replace("\\", "/", __FILE__);
-$strPath2Lang = substr($strPath2Lang, 0, strlen($strPath2Lang)-strlen("/install/index.php"));
-include(GetLangFileName($strPath2Lang."/lang/", "/install/index.php"));
+<?php
+
+use Bitrix\Main\Localization\Loc;
+Loc::loadMessages(__FILE__);
+
 
 Class bitrix_eshop extends CModule
 {
@@ -14,28 +14,24 @@ Class bitrix_eshop extends CModule
 	var $MODULE_CSS;
 	var $MODULE_GROUP_RIGHTS = "Y";
 
-	function bitrix_eshop()
+	function __construct()
 	{
 		$arModuleVersion = array();
 
-		$path = str_replace("\\", "/", __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen("/index.php"));
-		include($path."/version.php");
+		include(__DIR__.'/version.php');
 
 		$this->MODULE_VERSION = $arModuleVersion["VERSION"];
 		$this->MODULE_VERSION_DATE = $arModuleVersion["VERSION_DATE"];
 
-		$this->MODULE_NAME = GetMessage("SCOM_INSTALL_NAME");
-		$this->MODULE_DESCRIPTION = GetMessage("SCOM_INSTALL_DESCRIPTION");
-		$this->PARTNER_NAME = GetMessage("SPER_PARTNER");
-		$this->PARTNER_URI = GetMessage("PARTNER_URI");
+		$this->MODULE_NAME = Loc::getMessage("SCOM_INSTALL_NAME");
+		$this->MODULE_DESCRIPTION = Loc::getMessage("SCOM_INSTALL_DESCRIPTION");
+		$this->PARTNER_NAME = Loc::getMessage("SPER_PARTNER");
+		$this->PARTNER_URI = Loc::getMessage("PARTNER_URI");
 	}
 
 
 	function InstallDB($install_wizard = true)
 	{
-		global $DB, $DBType, $APPLICATION;
-
 		RegisterModule("bitrix.eshop");
 		RegisterModuleDependences("main", "OnBeforeProlog", "bitrix.eshop", "CEShop", "ShowPanel");
 
@@ -44,8 +40,6 @@ Class bitrix_eshop extends CModule
 
 	function UnInstallDB($arParams = Array())
 	{
-		global $DB, $DBType, $APPLICATION;
-
 		UnRegisterModule("bitrix.eshop");
 		UnRegisterModuleDependences("main", "OnBeforeProlog", "bitrix.eshop", "CEShop", "ShowPanel");
 
@@ -64,10 +58,11 @@ Class bitrix_eshop extends CModule
 
 	function InstallFiles()
 	{
+		CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/bitrix.eshop/install/wizards/bitrix/eshop", $_SERVER["DOCUMENT_ROOT"]."/bitrix/wizards/bitrix/eshop", true, true);
 		CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/bitrix.eshop/install/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
 		CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/bitrix.eshop/install/wizards/bitrix/eshop.mobile", $_SERVER["DOCUMENT_ROOT"]."/bitrix/wizards/bitrix/eshop.mobile", true, true);
 		CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/bitrix.eshop/install/images",  $_SERVER["DOCUMENT_ROOT"]."/bitrix/images/bitrix.eshop", true, true);
-	
+
 		return true;
 	}
 
@@ -77,7 +72,9 @@ Class bitrix_eshop extends CModule
 
 	function UnInstallFiles()
 	{
+		DeleteDirFilesEx("/bitrix/wizards/bitrix/eshop");
 		DeleteDirFilesEx("/bitrix/images/bitrix.eshop/");//images
+
 		return true;
 	}
 

@@ -24,7 +24,7 @@ class ShortNumberFormatter
 	public static function format(PhoneNumber $phoneNumber)
 	{
 		$rawNumber = $phoneNumber->getNationalNumber();
-		$template = static::$templates[strlen($rawNumber)];
+		$template = static::$templates[mb_strlen($rawNumber)];
 		if(!$template)
 		{
 			return $rawNumber;
@@ -33,11 +33,11 @@ class ShortNumberFormatter
 		$pattern = preg_replace("/[^x]/", "", $template);
 		$pattern = str_replace("x", "(\\d)", $pattern);
 		$pattern = "/" . $pattern . "/";
+		$i = 0;
 		$format = preg_replace_callback(
 			"/x/",
-			function ()
+			function () use (&$i)
 			{
-				static $i = 0;
 				return "$" . ++$i;
 			},
 			$template
@@ -58,7 +58,7 @@ class ShortNumberFormatter
 	 */
 	public static function isApplicable(PhoneNumber $phoneNumber)
 	{
-		if($phoneNumber->isValid())
+		if($phoneNumber->isValid() || $phoneNumber->hasPlus())
 			return false;
 
 		$rawNumber = $phoneNumber->getNationalNumber();

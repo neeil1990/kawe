@@ -139,6 +139,11 @@
 			return !!node && BX.hasClass(node, this.parent.settings.classClearSearchValueButton);
 		},
 
+		getClearButton: function()
+		{
+			return this.getContainer().querySelector("." + this.parent.settings.classClearSearchValueButton);
+		},
+
 		isSearchButton: function(node)
 		{
 			return !!node && BX.hasClass(node, this.parent.settings.classSearchButton);
@@ -195,22 +200,34 @@
 			var Preset = Filter.getPreset();
 			var currentPresetId = Preset.getCurrentPresetId();
 			var isResetToDefaultMode = Filter.getParam('RESET_TO_DEFAULT_MODE');
+			var isValueRequiredModeMail = Filter.getParam('VALUE_REQUIRED');
 			var isPinned = Preset.isPinned(currentPresetId);
 			var squares = this.getSquares();
 
 			if (squares.length === 1)
 			{
-				if ((isResetToDefaultMode && isPinned) || !isResetToDefaultMode)
+				if (isValueRequiredModeMail && isPinned)
 				{
-					var resetWithoutSearch = true;
-					this.lastPromise = Filter.resetFilter(resetWithoutSearch);
-					Filter.closePopup();
+					this.parent.showPopup();
+					this.adjustPlaceholder();
+					this.parent.getPreset().deactivateAllPresets();
+				}
+				else
+				{
+					if ((isResetToDefaultMode && isPinned) || !isResetToDefaultMode)
+					{
+						var resetWithoutSearch = true;
+						this.lastPromise = Filter.resetFilter(resetWithoutSearch);
+						Filter.closePopup();
+					}
 				}
 
 				if (isResetToDefaultMode && !isPinned)
 				{
 					this.lastPromise = Filter.getPreset().applyPinnedPreset();
 				}
+
+
 			}
 
 			if (squares.length > 1)
@@ -231,14 +248,28 @@
 			var Filter = this.parent;
 			var Preset = Filter.getPreset();
 			var isResetToDefaultMode = Filter.getParam('RESET_TO_DEFAULT_MODE');
+			var isValueRequiredModeMail = Filter.getParam('VALUE_REQUIRED');
+			var squareData;
 
 			if (isResetToDefaultMode && this.getSquares().length === 1)
 			{
-				this.lastPromise = Filter.getPreset().applyPinnedPreset();
+				if (isValueRequiredModeMail)
+				{
+					squareData = this.getSquareData(square);
+					Filter.clearControls(squareData);
+
+					this.parent.showPopup();
+					this.adjustPlaceholder();
+					this.parent.getPreset().deactivateAllPresets();
+				}
+				else
+				{
+					this.lastPromise = Filter.getPreset().applyPinnedPreset();
+				}
 			}
 			else
 			{
-				var squareData = this.getSquareData(square);
+				squareData = this.getSquareData(square);
 				Filter.clearControls(squareData);
 				Filter.closePopup();
 
@@ -313,28 +344,75 @@
 
 			if (this.isClearButton(event.target))
 			{
-				if (!Filter.getParam('VALUE_REQUIRED_MODE'))
+				if (!Filter.getParam('VALUE_REQUIRED'))
 				{
-					if (Filter.getParam('RESET_TO_DEFAULT_MODE'))
+					if (!Filter.getParam('VALUE_REQUIRED_MODE'))
 					{
-						this.clearInput();
-						this.lastPromise = Filter.getPreset().applyPinnedPreset();
+						if (Filter.getParam('RESET_TO_DEFAULT_MODE'))
+						{
+							this.clearInput();
+							this.lastPromise = Filter.getPreset().applyPinnedPreset();
+						}
+						else
+						{
+							Filter.resetFilter();
+						}
+
+						Filter.closePopup();
+						this.adjustFocus();
 					}
 					else
 					{
-						Filter.resetFilter();
+						this.removeSquares();
+						Filter.showPopup();
+						this.adjustPlaceholder();
+						this.hideClearButton();
+						Filter.getPreset().deactivateAllPresets();
 					}
-
-					Filter.closePopup();
-					this.adjustFocus();
 				}
 				else
 				{
-					this.removeSquares();
-					Filter.showPopup();
-					this.adjustPlaceholder();
-					this.hideClearButton();
-					Filter.getPreset().deactivateAllPresets();
+					var isPinned = Filter.getPreset().isPinned(
+						Filter.getPreset().getCurrentPresetId()
+					);
+
+					if (isPinned || Filter.getPreset().getCurrentPresetId() === 'tmp_filter')
+					{
+						var presetData = Filter.getPreset().getPreset(
+							Filter.getPreset().getCurrentPresetId()
+						);
+
+						if (presetData.ADDITIONAL.length)
+						{
+							presetData.ADDITIONAL = [];
+							this.lastPromise = Filter.getPreset().applyPreset(Filter.getPreset().getCurrentPresetId());
+							this.apply();
+						}
+						else
+						{
+							this.removeSquares();
+							Filter.showPopup();
+							this.adjustPlaceholder();
+							this.hideClearButton();
+							Filter.getPreset().deactivateAllPresets();
+						}
+					}
+					else
+					{
+						if (Filter.getParam('RESET_TO_DEFAULT_MODE'))
+						{
+							this.lastPromise = Filter.getPreset().applyPinnedPreset();
+						}
+						else
+						{
+							Filter.resetFilter();
+						}
+
+						Filter.closePopup();
+						this.adjustFocus();
+					}
+
+					this.clearInput();
 				}
 			}
 
@@ -366,11 +444,25 @@
 
 					if (!(searchLength && start === 0 && end === searchLength))
 					{
-						Filter.closePopup();
-
-						if (Filter.getParam('VALUE_REQUIRED_MODE'))
+						if (Filter.getParam('VALUE_REQUIRED'))
 						{
-							Filter.restoreRemovedPreset();
+							if (!this.getSquares().length)
+							{
+								this.lastPromise = Filter.getPreset().applyPinnedPreset();
+							}
+							else
+							{
+								Filter.closePopup();
+							}
+						}
+						else
+						{
+							Filter.closePopup();
+
+							if (Filter.getParam('VALUE_REQUIRED_MODE'))
+							{
+								Filter.restoreRemovedPreset();
+							}
 						}
 					}
 				}
@@ -384,7 +476,26 @@
 
 			if (utils.isKey(event, 'enter'))
 			{
-				this.apply();
+				if (parent.getParam('VALUE_REQUIRED'))
+				{
+					if (!this.getSquares().length)
+					{
+						this.parent.getPreset().applyPinnedPreset();
+					}
+					else
+					{
+						this.apply();
+						this.firstInit = false;
+						this.lastSearchString = this.getSearchString();
+					}
+				}
+				else
+				{
+					this.apply();
+					this.firstInit = false;
+					this.lastSearchString = this.getSearchString();
+				}
+
 				parent.closePopup();
 			}
 
@@ -398,7 +509,19 @@
 			if (utils.isKey(event, 'upArrow'))
 			{
 				parent.closePopup();
-				parent.getParam('VALUE_REQUIRED_MODE') && this.parent.restoreRemovedPreset();
+
+				if (parent.getParam('VALUE_REQUIRED_MODE'))
+				{
+					this.parent.restoreRemovedPreset();
+				}
+
+				if (parent.getParam('VALUE_REQUIRED'))
+				{
+					if (!this.getSquares().length)
+					{
+						this.parent.getPreset().applyPinnedPreset();
+					}
+				}
 			}
 
 			if (utils.isKey(event, 'a') && event.metaKey || utils.isKey(event, 'a') && event.ctrlKey)
@@ -410,16 +533,50 @@
 			{
 				clearTimeout(this.timeout);
 
-				if (this.parent.getParam('RESET_TO_DEFAULT_MODE'))
+				if (this.parent.getParam('VALUE_REQUIRED'))
 				{
-					this.lastPromise = this.parent.getPreset().applyPinnedPreset();
+					var isPinned = this.parent.getPreset().isPinned(
+						this.parent.getPreset().getCurrentPresetId()
+					);
+
+					if (isPinned)
+					{
+						this.removeSquares();
+						this.parent.showPopup();
+						this.adjustPlaceholder();
+						this.hideClearButton();
+						this.parent.getPreset().deactivateAllPresets();
+					}
+					else
+					{
+						if (this.parent.getParam('RESET_TO_DEFAULT_MODE'))
+						{
+							this.lastPromise = this.parent.getPreset().applyPinnedPreset();
+						}
+						else
+						{
+							this.parent.resetFilter();
+						}
+
+						this.parent.closePopup();
+						this.adjustFocus();
+					}
+
+					this.clearInput();
 				}
 				else
 				{
-					this.lastPromise = this.parent.resetFilter();
-				}
+					if (this.parent.getParam('RESET_TO_DEFAULT_MODE'))
+					{
+						this.lastPromise = this.parent.getPreset().applyPinnedPreset();
+					}
+					else
+					{
+						this.lastPromise = this.parent.resetFilter();
+					}
 
-				this.parent.closePopup()
+					this.parent.closePopup();
+				}
 			}
 
 			if (utils.isKey(event, 'backspace') && this.isSelectionStart())
@@ -449,7 +606,18 @@
 
 		adjustPlaceholder: function()
 		{
-			this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER' + (this.parent.getParam("DISABLE_SEARCH") || !this.parent.settings.get('SEARCH') ? '' : '_DEFAULT')));
+			if (this.parent.getParam("LIMITS_ENABLED"))
+			{
+				this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER_LIMITS_EXCEEDED'));
+			}
+			else if (this.parent.getParam("DISABLE_SEARCH") || !this.parent.settings.get('SEARCH'))
+			{
+				this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER'));
+			}
+			else
+			{
+				this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER_DEFAULT'));
+			}
 		},
 
 		isResolvedRequest: function()
@@ -465,7 +633,7 @@
 		{
 			if (this.isResolvedRequest())
 			{
-				this.lastPromise = this.parent.applyFilter(null, true);
+				this.lastPromise = this.parent._onFindButtonClick();
 			}
 
 			return this.lastPromise;
@@ -779,19 +947,20 @@
 
 				if (squaresResult && BX.type.isArray(squaresResult.squaresData) && squaresResult.squaresData.length || (presetData.ID !== 'default_filter' && presetData.ID !== 'tmp_filter'))
 				{
-					this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER_WITH_FILTER'));
+					if (this.parent.getParam("LIMITS_ENABLED"))
+					{
+						this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER_LIMITS_EXCEEDED'));
+					}
+					else
+					{
+						this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER_WITH_FILTER'));
+					}
+
 					this.showClearButton();
 				}
 				else
 				{
-					if (this.parent.getParam("DISABLE_SEARCH") || !this.parent.settings.get('SEARCH'))
-					{
-						this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER'));
-					}
-					else
-					{
-						this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER_DEFAULT'));
-					}
+					this.adjustPlaceholder();
 				}
 
 				if (BX.type.isNotEmptyString(this.parent.getSearch().getInput().value))
@@ -805,6 +974,10 @@
 		{
 			var value, tmpValues, title, control;
 			var result = [];
+
+			fields = fields.filter(function(current) {
+				return !!current;
+			});
 
 			fields.map(function(current) {
 				value = null;
@@ -913,7 +1086,7 @@
 					}
 
 					case this.parent.types.SELECT : {
-						if (BX.type.isPlainObject(current.VALUE) && current.VALUE.VALUE)
+						if ((BX.type.isPlainObject(current.VALUE) && current.VALUE.VALUE) || current.STRICT)
 						{
 							value = current.LABEL + ': ' + current.VALUE.NAME;
 						}
@@ -1001,7 +1174,8 @@
 						break;
 					}
 
-					case this.parent.types.CUSTOM_ENTITY : {
+					case this.parent.types.CUSTOM_ENTITY :
+					case this.parent.types.DEST_SELECTOR : {
 						if (current.MULTIPLE)
 						{
 							var label = !!current.VALUES._label ? current.VALUES._label : [];
@@ -1087,14 +1261,7 @@
 			{
 				BX.remove(preset);
 
-				if (this.parent.getParam("DISABLE_SEARCH") || !this.parent.settings.get('SEARCH'))
-				{
-					this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER'));
-				}
-				else
-				{
-					this.setInputPlaceholder(this.parent.getParam('MAIN_UI_FILTER__PLACEHOLDER_DEFAULT'));
-				}
+				this.adjustPlaceholder();
 			}
 
 			this.hideClearButton();

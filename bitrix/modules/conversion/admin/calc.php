@@ -35,7 +35,8 @@ $rateName = $_GET['rate'];
 
 if (! $rateType = $rateTypes[$rateName])
 {
-	list ($rateName, $rateType) = each($rateTypes);
+	$rateName = key($rateTypes);
+	$rateType = current($rateTypes);
 }
 
 // SITES
@@ -59,7 +60,8 @@ $site = $_GET['site'] ?: $userOptions['site'];
 
 if (! $siteName = $sites[$site])
 {
-	list ($site, $siteName) = each($sites);
+	$site = key($sites);
+	$siteName = current($sites);
 }
 
 // FILTER
@@ -160,11 +162,11 @@ Bitrix\Conversion\AdminHelpers\renderFilter($filter);
 
 						foreach ($sites as $id => $name)
 						{
-							$menuItems[$name] = array_merge($filter, array('site' => $id));
+							$menuItems[sprintf('%s (%s)', $name, $id)] = array_merge($filter, array('site' => $id));
 						}
 
 						Bitrix\Conversion\AdminHelpers\renderScale(array(
-							'SITE_NAME'  => $siteName,
+							'SITE_NAME'  => sprintf('%s (%s)', $siteName, $site),
 							'SITE_MENU'  => $menuItems,
 							'CONVERSION' => $conversion,
 							'SCALE'      => $rateType['SCALE'],

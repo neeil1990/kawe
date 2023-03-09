@@ -101,7 +101,7 @@ abstract class Tree extends Entity\DataManager
 
 		foreach (static::getEntity()->getFields() as $field)
 		{
-			if($field->getName() == 'PARENT_ID' && strlen($data['PARENT_ID']))
+			if($field->getName() == 'PARENT_ID' && mb_strlen($data['PARENT_ID']))
 			{
 				//it cant be parent for itself
 				if(intval($primary['ID']) == intval($data['PARENT_ID']))
@@ -155,7 +155,7 @@ abstract class Tree extends Entity\DataManager
 		$rebalance = !isset($additional['REBALANCE']) || $additional['REBALANCE'] !== false;
 		$node = self::getNodeInfo($primary);
 
-		if(isset($data['PARENT_ID']) && !strlen($data['PARENT_ID']))
+		if(isset($data['PARENT_ID']) && !mb_strlen($data['PARENT_ID']))
 			$data['PARENT_ID'] = 0;
 
 		$updResult = parent::update($primary, $data);
@@ -248,6 +248,19 @@ abstract class Tree extends Entity\DataManager
 		));
 
 		return $query->getQuery();
+	}
+
+	public static function checkIntegrity()
+	{
+		return !self::getList([
+			'select' => ['ID'],
+			'filter' => [
+				'LOGIC' => 'OR',
+				['LEFT_MARGIN' => false],
+				['RIGHT_MARGIN' => false]
+			],
+			'limit' => 1
+		])->fetch();
 	}
 
 	public static function checkNodeIsParentOfNodeById($primary, $childPrimary, $behaviour = array('CHECK_DIRECT' => false))
@@ -1084,7 +1097,15 @@ abstract class Tree extends Entity\DataManager
 		// left margin MAY be equal to zero, right margin MAY NOT
 		if(!is_numeric($node['LEFT_MARGIN']) || (int) $node['LEFT_MARGIN'] < 0 || !intval($node['RIGHT_MARGIN']) || !intval($node['ID']))
 		{
-			throw new Tree\NodeIncorrectException(false, array('INFO' => array('ID' => $node['ID'])));
+			throw new Tree\NodeIncorrectException(
+				false,
+				array(
+					'INFO' => array(
+						'ID' => $node['ID'],
+						'CODE' => $node['CODE'],
+						'LEFT_MARGIN' => $node['LEFT_MARGIN'],
+						'RIGHT_MARGIN' => $node['RIGHT_MARGIN']
+			)));
 		}
 	}
 

@@ -12,7 +12,7 @@ span.fields.address .multiple { padding-right: 15px; }
 	height: 7px;
 }
 
-.uf-address-search-input { width: 300px; }
+.uf-address-search-input { width: 300px; margin-right: 20px; }
 
 .uf-search-result-list-item {
 }
@@ -45,52 +45,6 @@ span.fields.address .multiple { padding-right: 15px; }
 	display: block;
 	min-width: 200px !important;
 	cursor: pointer;
-}
-
-.uf-address-search-input-remove {
-	position: absolute;
-	top: 50%;
-	right: -20px;
-	width: 20px;
-	height: 20px;
-	opacity: .3;
-	cursor: pointer;
-	transition: opacity 220ms linear;
-	-webkit-transform: translateY(-50%);
-	-moz-transform: translateY(-50%);
-	-ms-transform: translateY(-50%);
-	-o-transform: translateY(-50%);
-	transform: translateY(-50%);
-}
-
-.uf-address-search-input-remove:hover { opacity: .7 !important; }
-
-.uf-address-search-input-remove:after,
-.uf-address-search-input-remove:before {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	display: block;
-	width: 10px;
-	height: 2px;
-	background: #333;
-	content: '';
-}
-
-.uf-address-search-input-remove:before {
-	-webkit-transform: translateY(-50%) translateX(-50%) rotate(45deg);
-	-moz-transform: translateY(-50%) translateX(-50%) rotate(45deg);
-	-ms-transform: translateY(-50%) translateX(-50%) rotate(45deg);
-	-o-transform: translateY(-50%) translateX(-50%) rotate(45deg);
-	transform: translateY(-50%) translateX(-50%) rotate(45deg);
-}
-
-.uf-address-search-input-remove:after {
-	-webkit-transform: translateY(-50%) translateX(-50%) rotate(-45deg);
-	-moz-transform: translateY(-50%) translateX(-50%) rotate(-45deg);
-	-ms-transform: translateY(-50%) translateX(-50%) rotate(-45deg);
-	-o-transform: translateY(-50%) translateX(-50%) rotate(-45deg);
-	transform: translateY(-50%) translateX(-50%) rotate(-45deg);
 }
 
 /**/

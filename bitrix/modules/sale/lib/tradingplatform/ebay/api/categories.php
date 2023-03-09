@@ -24,7 +24,7 @@ class Categories extends Entity
 
 		$categoriesXml = $this->apiCaller->sendRequest("GetCategories", $data);
 
-		if(strtolower(SITE_CHARSET) != 'utf-8')
+		if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 			$categoriesXml = Encoding::convertEncoding($categoriesXml, 'UTF-8', SITE_CHARSET);
 
 		$result = Xml2Array::convert($categoriesXml);
@@ -70,8 +70,10 @@ class Categories extends Entity
 				else
 					$result = CategoryTable::add($fields);
 
-				if($result > 0)
+				if($result->isSuccess())
+				{
 					$refreshedCount++;
+				}
 			}
 		}
 
@@ -162,7 +164,7 @@ class Categories extends Entity
 					$fields["VALUE"] = $values;
 				}
 
-				if(strtolower(SITE_CHARSET) != 'utf-8')
+				if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 					$fields = \Bitrix\Main\Text\Encoding::convertEncodingArray($fields, 'UTF-8', SITE_CHARSET);
 
 				$res = CategoryVariationTable::getList(array(
@@ -178,8 +180,10 @@ class Categories extends Entity
 				else
 					$result = CategoryVariationTable::add($fields);
 
-				if($result > 0)
+				if($result->isSuccess())
+				{
 					$refreshedCount++;
+				}
 			}
 		}
 

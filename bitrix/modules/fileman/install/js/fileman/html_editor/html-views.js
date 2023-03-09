@@ -821,7 +821,7 @@ var focusWithoutScrolling = function(element)
 
 		BX.bind(element, "keydown", BX.proxy(this.KeyDown, this));
 
-		// Workaround for chrome bug with bugus scrollint to the top of the page (mantis:91555, mantis:93629)
+		// Workaround for chrome bug with bugus scrolling to the top of the page (mantis:91555, mantis:93629)
 		if (BX.browser.IsChrome())
 		{
 			BX.bind(window, "scroll", BX.proxy(function(e)
@@ -867,6 +867,11 @@ var focusWithoutScrolling = function(element)
 
 	BXEditorIframeView.prototype.KeyDown = function(e)
 	{
+		var
+			_this = this,
+			keyCode = e.keyCode,
+			KEY_CODES = this.editor.KEY_CODES;
+
 		this.SetFocusedFlag(true);
 		this.editor.iframeKeyDownPreventDefault = false;
 
@@ -878,9 +883,6 @@ var focusWithoutScrolling = function(element)
 		}
 
 		var
-			_this = this,
-			keyCode = e.keyCode,
-			KEY_CODES = this.editor.KEY_CODES,
 			command = this.editor.SHORTCUTS[keyCode],
 			selectedNode = this.editor.selection.GetSelectedNode(true),
 			range = this.editor.selection.GetRange(),
@@ -1709,7 +1711,9 @@ var focusWithoutScrolling = function(element)
 			}
 
 			if (this.editor.iframeView.pasteHandlerTimeout)
+			{
 				clearTimeout(this.editor.iframeView.pasteHandlerTimeout);
+			}
 
 			this.pasteHandlerTimeout = setTimeout(function()
 			{
@@ -1751,7 +1755,7 @@ var focusWithoutScrolling = function(element)
 				{
 					window.scrollTo(originalScrollLeft, originalScrollTop);
 				}
-			}, 10);
+			}, 0);
 		}
 	};
 
@@ -2109,7 +2113,6 @@ var focusWithoutScrolling = function(element)
 					{
 						// INVISIBLE_CURSOR
 						value = value.replace(/\u2060/ig, '<span id="bx-cursor-node"> </span>');
-
 						this.iframeView.SetValue(value, bParseHtml);
 					}
 				}
@@ -2193,9 +2196,6 @@ var focusWithoutScrolling = function(element)
 
 			BX.addCustomEvent(this.editor, "OnTextareaBlur", BX.delegate(this.StopSync, this));
 			BX.addCustomEvent(this.editor, "OnIframeBlur", BX.delegate(this.StopSync, this));
-
-			//BX.addCustomEvent(this.editor, "OnIframeMouseDown", BX.proxy(this.OnIframeMousedown, this));
-			//this.On('OnSetViewAfter');
 		},
 
 		StartSync: function(delay)
@@ -2233,19 +2233,11 @@ var focusWithoutScrolling = function(element)
 
 		OnIframeMousedown: function(e, target, bxTag)
 		{
-			//var caret = this.editor.iframeView.document.createTextNode(this.INVISIBLE_CURSOR);
-			//this.editor.selection.InsertNode(caret);
-//			target.setAttribute('data-svd', "svd");
-//			var _this = this;
-//			setTimeout(function(){
-//				_this.textareaView.SelectText('data-svd="svd"');
-//			}, 1000);
 		},
 
 		IsFocusedOnTextarea: function()
 		{
-			var view = this.editor.currentViewName;
-			return view === "code" || view === "split" && this.GetSplitMode() === "code";
+			return this.editor.currentViewName === "code" || this.editor.currentViewName === "split" && this.GetSplitMode() === "code";
 		}
 	}
 

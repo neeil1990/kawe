@@ -14,13 +14,15 @@
 }
 
 .main-user-consent-request-popup-cont {
-	min-height: 290px; /* loader magic */
+	min-height: 290px;
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	margin: 0 auto;
 	padding: 20px;
 	min-width: 320px;
+	width: 100%;
+	max-width: 600px;
 	background: #fff;
 	text-align: center;
 	-webkit-transform: translate(-50%, -50%);
@@ -33,10 +35,14 @@
 }
 
 .main-user-consent-request-popup-header {
-	margin: 0 0 30px 0;
-	font: normal 18px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	margin: 0 0 10px 0;
+	font: normal 18px var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	color: #000;
 	text-align: left;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 260px;
 }
 
 .main-user-consent-request-popup-textarea-block {
@@ -64,7 +70,7 @@
 	padding: 0 18px;
 	border: none;
 	border-radius: 2px;
-	font: normal 12px/39px "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font: normal 12px/39px var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	color: #535c69;
 	outline: none;
 	vertical-align: middle;
@@ -97,16 +103,27 @@
 }
 
 .main-user-consent-request-popup-text {
-	padding: 5px 10px;
-	width: 100%;
-	height: 130px;
 	border: 1px solid #999;
-	background: #fff;
-	box-sizing: border-box;
-	outline: none;
-	-moz-appearance: none;
+	overflow: auto;
+	padding: 8px;
+	text-align: left;
+	color: rgb(84, 84, 84);
 }
 
+.main-user-consent-request-popup-link {
+	height: 130px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+.main-user-consent-request-popup-link a {
+	display: block;
+	margin: 20px 0 0 0;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-width: 260px;
+}
 
 /** LOADER **/
 .main-user-consent-request-loader {
@@ -153,6 +170,15 @@
 	stroke-linecap: round;
 }
 
+.main-user-consent-request-announce{
+	color: #333;
+	font-size:13px;
+	line-height: 15px;
+}
+.main-user-consent-request-announce-link{
+	cursor: pointer;
+}
+
 @keyframes rotate {
 	100% {
 		transform: rotate(360deg);
@@ -161,6 +187,32 @@
 
 @-webkit-keyframes rotate {
 	100% {
-		transform: rotate(360deg);
+		-webkit-transform: rotate(360deg);
+	}
+}
+
+@media (min-width: 1000px) {
+
+	.main-user-consent-request-popup-cont {
+		min-height: 400px;
+		min-width: 640px;
+	}
+
+	.main-user-consent-request-popup-header {
+		max-width: 590px;
+	}
+
+	.main-user-consent-request-popup-text,
+	.main-user-consent-request-popup-link {
+		height: 240px;
+	}
+	.main-user-consent-request-popup-link a {
+		max-width: 200px;
+	}
+}
+
+@media (max-width: 768px) {
+	.main-user-consent-request-popup-cont {
+		height: 100%;
 	}
 }

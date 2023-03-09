@@ -12,7 +12,7 @@ require_once($_SERVER["DOCUMENT_ROOT"].'/bitrix/modules/main/include/prolog_befo
 
 Loader::includeModule('sale');
 
-require_once(dirname(__FILE__).'/class.php');
+require_once(__DIR__.'/class.php');
 
 CUtil::JSPostUnescape();
 
@@ -25,8 +25,11 @@ $result = CBitrixSaleLocationReindexComponent::doAjaxStuff(array(
 	'INITIAL_TIME' => $initialTime
 ));
 
+$APPLICATION->restartBuffer();
+
 header('Content-Type: application/x-javascript; charset='.LANG_CHARSET);
-print(CUtil::PhpToJSObject(array(
+
+die(CUtil::PhpToJSObject(array(
 	'result' => empty($result['ERRORS']),
 	'errors' => $result['ERRORS'],
 	'data' => $result['DATA']

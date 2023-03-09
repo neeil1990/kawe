@@ -64,7 +64,7 @@ class CBXArchive
 	public static function DetectTypeByFilename($filename)
 	{
 		$arFormats = self::GetAvailableFormats();
-		$filename = ToLower($filename);
+		$filename = mb_strtolower($filename);
 
 		foreach ($arFormats as $type => $data)
 		{
@@ -119,7 +119,7 @@ class CBXArchive
 	public static function IsArchive($strFilename)
 	{
 		$result = false;
-		$strFileExt = ToLower(GetFileExtension($strFilename));
+		$strFileExt = mb_strtolower(GetFileExtension($strFilename));
 		$arFormats = self::GetAvailableFormats();
 
 		foreach ($arFormats as $type => $data)
@@ -153,7 +153,7 @@ class CBXArchive
 		{
 			if ($USER->CanDoFileOperation('fm_view_file', array(SITE_ID,$path)) &&
 			($USER->CanDoOperation('edit_php') || $USER->CanDoFileOperation('fm_lpa', array(SITE_ID, $path)) ||
-			!(HasScriptExtension($path) || substr(GetFileName($path), 0, 1) == ".")))
+			!(HasScriptExtension($path) || mb_substr(GetFileName($path), 0, 1) == ".")))
 			{
 				$result = true;
 			}

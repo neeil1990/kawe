@@ -34,7 +34,8 @@ $rateName = $_GET['rate'] ?: $userOptions['rate'];
 
 if (! $rateType = $rateTypes[$rateName])
 {
-	list ($rateName, $rateType) = each($rateTypes);
+	$rateName = key($rateTypes);
+	$rateType = current($rateTypes);
 }
 
 // SITES
@@ -58,7 +59,8 @@ $site = $_GET['site'] ?: $userOptions['site'];
 
 if (! $siteName = $sites[$site])
 {
-	list ($site, $siteName) = each($sites);
+	$site = key($sites);
+	$siteName = current($sites);
 }
 
 // ATTRIBUTES
@@ -72,7 +74,8 @@ $attributeName = $_GET['split']; // different split in $userOptions from summary
 
 if (! $attributeType = $attributeTypes[$attributeName])
 {
-	list ($attributeName, $attributeType) = each($attributeTypes);
+	$attributeName = key($attributeTypes);
+	$attributeType = current($attributeTypes);
 }
 
 $attributeGroupTypes = AttributeGroupManager::getTypes();
@@ -219,10 +222,10 @@ Bitrix\Conversion\AdminHelpers\renderFilter($filter);
 
 					foreach ($sites as $id => $name)
 					{
-						$menuItems[$name] = array_merge($filter, array('site' => $id));
+						$menuItems[sprintf('%s (%s)', $name, $id)] = array_merge($filter, array('site' => $id));
 					}
 
-					Bitrix\Conversion\AdminHelpers\renderSite($siteName, $menuItems);
+					Bitrix\Conversion\AdminHelpers\renderSite(sprintf('%s (%s)', $siteName, $site), $menuItems);
 
 					?>
 					<div class="adm-profit-title"><?=Loc::getMessage('CONVERSION_DETAILED_FILTER_SPLIT').': '.($attributeType['NAME'] ?: $attributeName)?></div>

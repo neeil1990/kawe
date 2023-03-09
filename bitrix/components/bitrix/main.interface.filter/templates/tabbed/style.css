@@ -21,7 +21,8 @@
 	color:#535c69;
 	cursor:pointer;
 	font-size:12px;
-	font-family: "OpenSans-Bold", Helvetica, Arial, sans-serif;
+	font-family: var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-bold, 700);
 	height: 41px;
 	line-height: 41px;
 	margin-left:8px;
@@ -54,9 +55,6 @@
 }
 
 .bx-filter-main-table {border-spacing:0; width:670px !important;}
-
-.bx-ie8 .bx-filter-main-table,
-.bx-ie9 .bx-filter-main-table {border-spacing:0; width:800px;}
 
 .bx-filter-main-table-cell {padding:0;}
 
@@ -150,7 +148,7 @@
 	color: #535c69;
 	display:inline-block;
 	font-size: 14px;
-	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-family: var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	line-height:15px;
 	height: 36px;
 	text-shadow:0 1px #fff;
@@ -321,8 +319,6 @@
 	width:190px;
 }
 
-.bx-ie8 .bx-workarea .bx-filter-box-sizing .bx-input-wrap { width: 150px; }
-
 .bx-calendar-separate {
 	background-color:#87919c;
 	-webkit-box-shadow:0 1px 0 0 rgba(255,255,255,0.5);
@@ -389,10 +385,6 @@
 
 .bx-filter-setting {margin-right: 7px;}
 
-.bx-ie8 .bx-filter-add-button,
-.bx-ie8 .bx-filter-item-delete,
-.bx-ie8 .bx-filter-setting {border:1px solid #8b999d;}
-
 .bx-filter-item-delete {
 	margin: 2px 0 0 12px;
 }
@@ -445,8 +437,6 @@
 .bx-filter-main-table label + br {display:block; }
 .bx-chrome .bx-filter-main-table label + br { margin-top:5px;}
 .bx-filter-main-table label.bx-designed-checkbox-label + br {display:none;}
-
-.bx-ie8 .bx-filter-main-table input[type="checkbox"] {margin-left:12px;}
 
 .bx-filter-text-search {margin:6px 0 0 12px;}
 
@@ -535,10 +525,6 @@
 	opacity: 1;
 }
 
-.bx-ie8 .bx-filter-tabs-block-underlay { display: none; }
-.bx-ie8 .bx-filter-folded .bx-filter-tabs-block-underlay { display: block; }
-
-
 .bx-filter-wrap .bx-btn,
 .bx-filter-wrap input[type="button"],
 .bx-filter-wrap input[type="reset"],
@@ -550,8 +536,8 @@
 	color: #535c69;
 	cursor:pointer;
 	display:inline-block;
-	font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
-	font-weight:bold;
+	font-family:var(--ui-font-family-primary, var(--ui-font-family-helvetica));
+	font-weight:var(--ui-font-weight-bold);
 	font-size:12px;
 	height: 40px;
 	line-height: 38px;
@@ -614,7 +600,7 @@
 	border-radius:4px;
 	border:none;
 	color: #535c69;
-	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-family: var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	font-size: 14px;
 	margin:0;
 	outline:none;

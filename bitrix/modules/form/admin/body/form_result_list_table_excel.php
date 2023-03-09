@@ -13,14 +13,13 @@
 		<?
 		CForm::GetResultAnswerArray($WEB_FORM_ID, $arrColumns, $arrAnswers, $arrAnswersSID, array("IN_EXCEL_TABLE" => "Y"));
 		$colspan = 5;
-		reset($arrColumns);
-		while (list($key, $arrCol) = each($arrColumns)) :
+		foreach ($arrColumns as $key => $arrCol) :
 
 			if (!is_array($arrNOT_SHOW_TABLE) || !in_array($arrCol["SID"],$arrNOT_SHOW_TABLE)):
 
 			if (($arrCol["ADDITIONAL"]=="Y" && $SHOW_ADDITIONAL=="Y") || $arrCol["ADDITIONAL"]!="Y") :
 				$colspan++;
-				if (strlen($arrCol["RESULTS_TABLE_TITLE"])<=0)
+				if ($arrCol["RESULTS_TABLE_TITLE"] == '')
 				{
 					$title = ($arrCol["TITLE_TYPE"]=="html") ? strip_tags($arrCol["TITLE"]) : htmlspecialcharsbx($arrCol["TITLE"]);
 				}
@@ -37,14 +36,14 @@
 
 			endif;
 
-		endwhile;
+		endforeach;
 		?>
 	</tr>
 	<?
 	$j=0;
 	while ($result->NavNext(true, "f_")) :
 		$j++;
-		$arrRESULT_PERMISSION = CFormResult::GetPermissions($f_ID, $v);
+		$arrRESULT_PERMISSION = CFormResult::GetPermissions($f_ID);
 	?>
 	<tr valign="top">
 		<td class="number0" nowrap><?=$f_ID?></td>
@@ -54,6 +53,7 @@
 		<td><?
 			if ($f_USER_ID>0) :
 				$rsUser = CUser::GetByID($f_USER_ID);
+				ClearVars("u_");
 				$rsUser->ExtractFields("u_");
 				$f_LOGIN = $u_LOGIN;
 				$f_USER_NAME = $u_NAME." ".$u_LAST_NAME;
@@ -69,8 +69,7 @@
 		<?endif;?>
 		<?endif;?>
 		<?
-		reset($arrColumns);
-		while (list($FIELD_ID,$arrC) = each($arrColumns)):
+		foreach ($arrColumns as $FIELD_ID => $arrC):
 
 			if (!is_array($arrNOT_SHOW_TABLE) || !in_array($arrC["SID"],$arrNOT_SHOW_TABLE)):
 
@@ -79,24 +78,23 @@
 		<td valign="top" align="left" nowrap><?
 			$arrAnswer = $arrAnswers[$f_ID][$FIELD_ID];
 			if (!is_array($arrAnswer)) $arrAnswer = array();
-			reset($arrAnswer);
 			$count = count($arrAnswer);
 			$i = 0;
-			while (list($key,$arrA) = each($arrAnswer)):
+			foreach ($arrAnswer as $key => $arrA):
 				$i++;
-						if (strlen(trim($arrA["USER_TEXT"]))>0)
+						if (trim($arrA["USER_TEXT"]) <> '')
 						{
 							if (intval($arrA["USER_FILE_ID"])<=0)
 								echo htmlspecialcharsbx($arrA["USER_TEXT"])."<br>";
 						}
 
-						if (strlen(trim($arrA["ANSWER_TEXT"]))>0)
+						if (trim($arrA["ANSWER_TEXT"]) <> '')
 						{
 							$answer = "[".htmlspecialcharsbx($arrA["ANSWER_TEXT"])."]";
-							if (strlen(trim($arrA["ANSWER_VALUE"]))>0 && $SHOW_ANSWER_VALUE=="Y") $answer .= "&nbsp;"; else $answer .= "<br>";
+							if (trim($arrA["ANSWER_VALUE"]) <> '' && $SHOW_ANSWER_VALUE=="Y") $answer .= "&nbsp;"; else $answer .= "<br>";
 							echo $answer;
 						}
-						if (strlen(trim($arrA["ANSWER_VALUE"]))>0 && $SHOW_ANSWER_VALUE=="Y")
+						if (trim($arrA["ANSWER_VALUE"]) <> '' && $SHOW_ANSWER_VALUE=="Y")
 							echo "(".htmlspecialcharsbx($arrA["ANSWER_VALUE"]).")<br>";
 
 						if (intval($arrA["USER_FILE_ID"])>0)
@@ -114,12 +112,12 @@
 
 							echo GetMessage("FORM_SIZE").$arFile["FILE_SIZE"]."<br>";
 						}
-			endwhile;
+			endforeach;
 			?></td>
 		<?
 			endif;
 			endif;
-		endwhile;
+		endforeach;
 		?>
 	</tr>
 	<?

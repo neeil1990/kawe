@@ -17,17 +17,22 @@ if($arParams['USE_PLAYLIST_AS_SOURCES'] === 'Y' && is_array($arParams['TRACKS'])
 {
 	foreach($arParams['TRACKS'] as $key => $source)
 	{
-		?>
-		<source src="<?=htmlspecialcharsbx($source['src']);?>" type="<?=htmlspecialcharsbx($source['type']);?>"<?
-		if($key == count($arParams['TRACKS']) - 1)
+		if($source['type'] == 'video/quicktime')
 		{
-			?> onerror="BX.onCustomEvent(this, 'MobilePlayer:onError', [this.parentNode, this.src]);"<?
+			$source['type'] = 'video/mp4';
 		}
-		?>><?
+		?>
+		<source src="<?=htmlspecialcharsbx($source['src']);?>" type="<?=htmlspecialcharsbx($source['type']);?>"
+        onerror="BX.onCustomEvent(this, 'MobilePlayer:onError', [this.parentNode, this.src]);">
+		<?
 	}
 }
 else
 {
+	if($arParams['TYPE'] == 'video/quicktime')
+	{
+		$arParams['TYPE'] = 'video/mp4';
+	}
 	?>
 	<source src="<?=htmlspecialcharsbx($arParams['PATH']);?>" type="<?=htmlspecialcharsbx($arParams['TYPE']);?>"
     onerror="BX.onCustomEvent(this, 'MobilePlayer:onError', [this.parentNode, this.src]);"

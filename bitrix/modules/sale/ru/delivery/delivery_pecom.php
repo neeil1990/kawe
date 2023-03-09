@@ -36,7 +36,7 @@ class CDeliveryPecom
 	public static $PAYER_SHOP = "1";
 	public static $PAYER_BUYER = "2";
 
-	function Init()
+	public static function Init()
 	{
 		return array(
 			/* Basic description */
@@ -85,7 +85,7 @@ class CDeliveryPecom
 		);
 	}
 
-	function getExtraInfoParams($arOrder, $arConfig, $profileId, $siteId)
+	public static function getExtraInfoParams($arOrder, $arConfig, $profileId, $siteId)
 	{
 		$result = array();
 
@@ -109,15 +109,15 @@ class CDeliveryPecom
 
 		return $result;
 	}
-	
-	function getConfig($siteId = false)
+
+	public static function getConfig($siteId = false)
 	{
 		$shopLocationId = CSaleHelper::getShopLocationId($siteId);
 		$arShopLocation = CSaleHelper::getLocationByIdHitCached($shopLocationId);
 
-		$locString = strlen($arShopLocation["COUNTRY_NAME_LANG"]) > 0 ? $arShopLocation["COUNTRY_NAME_LANG"] : "";
-		$locString .= (strlen($arShopLocation["REGION_NAME_LANG"]) > 0 ? (strlen($locString) > 0 ? ", " : "").$arShopLocation["REGION_NAME_LANG"] : "");
-		$locString .= (strlen($arShopLocation["CITY_NAME_LANG"]) > 0 ? (strlen($locString) > 0 ? ", " : "").$arShopLocation["CITY_NAME_LANG"] : "");
+		$locString = $arShopLocation["COUNTRY_NAME_LANG"] <> '' ? $arShopLocation["COUNTRY_NAME_LANG"] : "";
+		$locString .= ($arShopLocation["REGION_NAME_LANG"] <> '' ? ($locString <> '' ? ", " : "").$arShopLocation["REGION_NAME_LANG"] : "");
+		$locString .= ($arShopLocation["CITY_NAME_LANG"] <> '' ? ($locString <> '' ? ", " : "").$arShopLocation["CITY_NAME_LANG"] : "");
 
 		$locDelivery = Adapter::mapLocation($shopLocationId);
 
@@ -354,18 +354,18 @@ class CDeliveryPecom
 		return $arConfig;
 	}
 
-	function getSettings($strSettings)
+	public static function getSettings($strSettings)
 	{
-		return unserialize($strSettings);
+		return unserialize($strSettings, ['allowed_classes' => false]);
 	}
 
-	function setSettings($arSettings)
+	public static function setSettings($arSettings)
 	{
 		unset($arSettings["CITY"]);
 
 		foreach ($arSettings as $key => $value)
 		{
-			if (strlen($value) > 0)
+			if ($value <> '')
 				$arSettings[$key] = $value;
 			else
 				unset($arSettings[$key]);
@@ -374,7 +374,7 @@ class CDeliveryPecom
 		return serialize($arSettings);
 	}
 
-	function getFeatures($arConfig)
+	public static function getFeatures($arConfig)
 	{
 		$arResult = array();
 
@@ -418,7 +418,7 @@ class CDeliveryPecom
 		return $arResult;
 	}
 
-	function calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
+	public static function calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
 	{
 		$ttl = 604800; //week
 		$cacheId = "SaleDeliveryPecomCalc_".$profile."_".md5(serialize($arConfig))."_".md5(serialize($arOrder));
@@ -438,7 +438,7 @@ class CDeliveryPecom
 		return $result;
 	}
 
-	function compability($arOrder, $arConfig)
+	public static function compability($arOrder, $arConfig)
 	{
 		$ttl = 604800;
 		$cacheId = "SaleDeliveryPecomCompability".$arConfig["CITY_DELIVERY"]["VALUE"].$arOrder["LOCATION_TO"];
@@ -613,7 +613,7 @@ class CDeliveryPecom
 		);
 	}
 
-	public function getAdminMessage()
+	public static function getAdminMessage()
 	{
 		$result = array();
 		$message = '';
@@ -642,7 +642,7 @@ class CDeliveryPecom
 			unset($_SESSION['PECOM_LOCATIONS_MAP_ERRORS']);
 		}
 
-		if(strlen($message) > 0)
+		if($message <> '')
 		{
 			$result = array(
 				'MESSAGE' => $message,
@@ -753,7 +753,7 @@ class CDeliveryPecom
 		return $result[$shipmentId];
 	}
 
-	public function processAdditionalInfoShipmentEdit(Shipment $shipment, array $requestData)
+	public static function processAdditionalInfoShipmentEdit(Shipment $shipment, array $requestData)
 	{
 		if(empty($requestData['REQUEST_SELF']) || $requestData['REQUEST_SELF'] != 'Y')
 			return null;

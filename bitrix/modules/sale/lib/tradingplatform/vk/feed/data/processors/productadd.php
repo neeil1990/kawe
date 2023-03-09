@@ -6,6 +6,7 @@ use Bitrix\Main\SystemException;
 use Bitrix\Sale\TradingPlatform\TimeIsOverException;
 use Bitrix\Sale\TradingPlatform\Vk;
 use Bitrix\Sale\TradingPlatform\Timer;
+use Bitrix\Sale\TradingPlatform\Vk\Api\PhotoUploader;
 
 /**
  * Class ProductAdd - Processor for adding product to VK
@@ -17,7 +18,7 @@ class ProductAdd extends DataProcessor
 	private static $albumsMapped;
 	private static $apiHelper;
 	private static $isAgressive;
-	
+
 	/**
 	 * Main export process method. Adding products in VK
 	 *
@@ -28,12 +29,11 @@ class ProductAdd extends DataProcessor
 	 * @throws TimeIsOverException
 	 * @throws Vk\ExecuteException
 	 */
-	public function process($data, Timer $timer = NULL)
+	public function process($data, Timer $timer = null)
 	{
 //		logger use always, but rich log need only if set this option
 		$logger = new Vk\Logger($this->exportId);
-		$richLog = self::$vk->getRichLog($this->exportId);
-		
+
 		if (count($data) > Vk\Vk::MAX_EXECUTION_ITEMS)
 		{
 			$data = array_slice($data, 0, Vk\Vk::MAX_ALBUMS);
@@ -59,7 +59,7 @@ class ProductAdd extends DataProcessor
 		$vkExportedData = new Vk\VkExportedData($this->exportId, 'PRODUCTS');
 		$productsFromVk = $vkExportedData->getData();
 		$data = Vk\Map::checkMappingMatches($data, $productsFromVk, $this->exportId, 'PRODUCTS', self::$isAgressive);
-		
+
 		try
 		{
 //			check MAIN PHOTO and delete items. NO photo = NO product!
@@ -76,10 +76,20 @@ class ProductAdd extends DataProcessor
 //			todo: need a photo mapping check before upload.
 			if (!empty($data))
 			{
-				if ($richLog)
-					$logger->addLog("Upload main photo");
-				
-				$mainPhotoSaveResults = self::$apiHelper->uploadPhotos($data, $this->vkGroupId, 'PRODUCT_MAIN_PHOTO', $timer);
+				$logger->addLog("Upload main photo");
+				$photoUploader = new PhotoUploader($this->exportId, PhotoUploader::TYPE_PRODUCT_MAIN_PHOTO, $timer);
+				$mainPhotoSaveResults = $photoUploader->upload($data);
+
+//				photos UPLOAD may be FAILED on VK side. SKIP product
+				if(array_key_exists('errors', $mainPhotoSaveResults))
+				{
+					foreach($mainPhotoSaveResults['errors'] as $errorId)
+					{
+						unset($data[$errorId]);
+					}
+					unset($mainPhotoSaveResults['errors']);
+				}
+
 				$data = Vk\Api\ApiHelper::addResultToData($data, $mainPhotoSaveResults, "BX_ID");
 			}
 
@@ -87,19 +97,35 @@ class ProductAdd extends DataProcessor
 //			UPLOAD photoS
 			foreach ($data as &$product)
 			{
+//				todo: if fail load photo - just log
 				if ($product["PHOTOS"])
 				{
-					if ($richLog)
-						$logger->addLog("Upload product photos");
-					$productPhotosSaveResults = self::$apiHelper->uploadPhotos($product["PHOTOS"], $this->vkGroupId, 'PRODUCT_PHOTOS', $timer);
-					$product["PHOTOS"] = Vk\Api\ApiHelper::addResultToData($product["PHOTOS"], $productPhotosSaveResults, "PHOTO_BX_ID");
+//					if error in some photo - just skip them
+					$logger->addLog("Upload product photos");
+					$photoUploader = new PhotoUploader($this->exportId, PhotoUploader::TYPE_PRODUCT_PHOTOS, $timer);
+					$photosSaveResults = $photoUploader->upload($product["PHOTOS"]);
+
+//					photos UPLOAD may be FAILED on VK side. SKIP photo
+					if(array_key_exists('errors', $photosSaveResults))
+					{
+						foreach($photosSaveResults['errors'] as $errorId)
+						{
+							unset($product["PHOTOS"][$errorId]);
+						}
+						unset($photosSaveResults['errors']);
+					}
+
+					$product["PHOTOS"] = Vk\Api\ApiHelper::addResultToData(
+						$product["PHOTOS"],
+						$photosSaveResults,
+						"PHOTO_BX_ID"
+					);
 				}
 			}
 			unset($product);
 
 //			ADD or EDIT products
-			if ($richLog)
-				$logger->addLog("Add or edit products", $data);
+			$logger->addLog("Add or edit products", $data);
 			$productsData = Vk\Api\ApiHelper::prepareProductsDataToVk($data);
 			$productsAddEditResults = $this->executer->executeMarketProductAddEdit(array(
 				"owner_id" => $this->vkGroupId,
@@ -126,14 +152,14 @@ class ProductAdd extends DataProcessor
 //			adding to ALBUMS
 			$productsToAlbums = array();
 			$sectionsList = new Vk\SectionsList($this->exportId);
-			
+
 //			product may have multisections - find all them
 			$productsIds = array_keys($data);
 			$productsMultiSections = $sectionsList->getMultiSectionsToProduct($productsIds);
-			
-			foreach($productsMultiSections as $productId => $product)
+
+			foreach ($productsMultiSections as $productId => $product)
 			{
-				foreach($product as $sectionId)
+				foreach ($product as $sectionId)
 				{
 //					find album to adding current product
 					$toAlbumSectionId = $sectionsList->getToAlbumBySection($sectionId);
@@ -146,22 +172,23 @@ class ProductAdd extends DataProcessor
 							"VK_ID" => $data[$productId]["VK_ID"],
 							"ALBUM_VK_ID" => self::$albumsMapped[$toAlbumSectionId]["ALBUM_VK_ID"],
 						);
+
+						if (count($productsToAlbums) === Vk\Vk::MAX_EXECUTION_ITEMS)
+						{
+							$this->addProductsToAlbums($logger, $productsToAlbums);
+							$productsToAlbums = [];
+						}
 					}
 				}
 			}
-			
-			if ($richLog)
-				$logger->addLog("Add products to albums", $productsToAlbums);
-			$this->executer->executeMarketProductAddToAlbums(array(
-				"owner_id" => $this->vkGroupId,
-				"data" => $productsToAlbums,
-				"count" => count($productsToAlbums),
-			));
+			$this->addProductsToAlbums($logger, $productsToAlbums);
 
 //			WRITE successful results TO MAP
 //			we don't need use timer in last operation	. Timer will be checked in feed cycle.
 			if (!empty($dataToMapping))
+			{
 				Vk\Map::addProductMapping($dataToMapping, $this->exportId);
+			}
 			unset($dataToMapping, $product);
 
 
@@ -172,22 +199,31 @@ class ProductAdd extends DataProcessor
 				$dataToCache = Vk\Api\ApiHelper::changeArrayMainKey($dataToCache, 'VK_ID');
 				$vkExportedData->addData($dataToCache);
 			}
-			
-			if ($richLog)
-				$logger->addLog("Finish product add chunk");
+
+			$logger->addLog("Finish product add chunk");
 
 //			check timer before next step, because not-agressive export can be run very long time
-			if ($timer !== NULL && !$timer->check())
+			if ($timer !== null && !$timer->check())
+			{
 				throw new TimeIsOverException();
+			}
 		}
-		
+
 		catch (TimeIsOverException $e)
 		{
 			throw new TimeIsOverException("Timelimit for export is over", $startPosition);
 		}
-		
+
 		return true;
 	}
-	
-	
+
+	private function addProductsToAlbums($logger, $productsToAlbums): void
+	{
+		$logger->addLog("Add products to albums", $productsToAlbums);
+		$this->executer->executeMarketProductAddToAlbums(array(
+			"owner_id" => $this->vkGroupId,
+			"data" => $productsToAlbums,
+			"count" => count($productsToAlbums),
+		));
+	}
 }

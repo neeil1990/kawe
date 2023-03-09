@@ -25,7 +25,7 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 {
 	const ID_BLOCK_LEN = 			90;
 	const HUGE_TAIL_LEN = 			30;
-	const PAGE_SIZE = 				10;
+	const PAGE_SIZE = 				100;
 	const LOCATION_ENTITY_NAME = 	'\Bitrix\Sale\Location\LocationTable';
 
 	protected $entityClass = false;
@@ -36,6 +36,9 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 	
 	private $locationsFromRequest = false;
 	private $groupsFromRequest = false;
+
+	protected $locationFlag = '';
+	protected $groupFlag = '';
 
 	/**
 	 * Function checks and prepares all the parameters passed. Everything about $arParam modification is here.
@@ -202,8 +205,10 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 		// get locations to display
 		if($this->locationsFromRequest !== false) // get from request when form save fails or smth
 			$res = self::getEntityListByListOfPrimary(self::LOCATION_ENTITY_NAME, $this->locationsFromRequest, $parameters, $linkFld);
-		elseif(strlen($this->arParams['ENTITY_PRIMARY'])) // get from database, if entity exists
+		elseif(mb_strlen($this->arParams['ENTITY_PRIMARY'])) // get from database, if entity exists
+		{
 			$res = $class::getConnectedLocations($this->arParams['ENTITY_PRIMARY'], $parameters);
+		}
 
 		if($res !== false)
 		{
@@ -285,8 +290,10 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 
 			if($this->groupsFromRequest !== false)
 				$res = self::getEntityListByListOfPrimary('Bitrix\Sale\Location\GroupTable', $this->groupsFromRequest, $parameters, $linkFld);
-			elseif(strlen($this->arParams['ENTITY_PRIMARY']))
+			elseif(mb_strlen($this->arParams['ENTITY_PRIMARY']))
+			{
 				$res = $class::getConnectedGroups($this->arParams['ENTITY_PRIMARY'], $parameters);
+			}
 
 			if($res !== false)
 			{
@@ -320,6 +327,7 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 		else
 		{
 			$this->entityClass = $this->arParams['LINK_ENTITY_NAME'].'Table';
+
 			if(!class_exists($this->entityClass, true))
 			{
 				$this->errors['FATAL'][] = Loc::getMessage('SALE_SLSS_LINK_ENTITY_CLASS_UNKNOWN');
@@ -348,12 +356,16 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 			$this->useCodes = $class::getUseCodes();
 		}
 
-		// selected in request
-		if(is_array($this->arParams['SELECTED_IN_REQUEST']['L']))
-			$this->locationsFromRequest = $this->normalizeList($this->arParams['SELECTED_IN_REQUEST']['L'], !$this->useCodes);
+		$entityClass = $this->entityClass;
+		$this->locationFlag = $entityClass::DB_LOCATION_FLAG;
+		$this->groupFlag = $entityClass::DB_GROUP_FLAG;
 
-		if(is_array($this->arParams['SELECTED_IN_REQUEST']['G']))
-			$this->groupsFromRequest = $this->normalizeList($this->arParams['SELECTED_IN_REQUEST']['G'], !$this->useCodes);
+		// selected in request
+		if(is_array($this->arParams['SELECTED_IN_REQUEST'][$entityClass::DB_LOCATION_FLAG]))
+			$this->locationsFromRequest = $this->normalizeList($this->arParams['SELECTED_IN_REQUEST'][$entityClass::DB_LOCATION_FLAG], !$this->useCodes);
+
+		if(is_array($this->arParams['SELECTED_IN_REQUEST'][$entityClass::DB_GROUP_FLAG]))
+			$this->groupsFromRequest = $this->normalizeList($this->arParams['SELECTED_IN_REQUEST'][$entityClass::DB_GROUP_FLAG], !$this->useCodes);
 
 		return $result;
 	}
@@ -376,6 +388,9 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 
 		$this->arResult['USE_GROUPS'] = $this->useGroups;
 		$this->arResult['USE_CODES'] = $this->useCodes;
+
+		$this->arResult['DB_LOCATION_FLAG'] = $this->locationFlag;
+		$this->arResult['DB_GROUP_FLAG'] = $this->groupFlag;
 	}
 
 	protected static function processSearchRequestV2GetFinderBehaviour()
@@ -422,7 +437,7 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 							'DISPLAY' => 'NAME.NAME'
 						),
 						'filter' => array(
-							'=NAME.LANGUAGE_ID' => strlen($parameters['filter']['=NAME.LANGUAGE_ID']) ? $parameters['filter']['=NAME.LANGUAGE_ID'] : LANGUAGE_ID
+							'=NAME.LANGUAGE_ID' => $parameters['filter']['=NAME.LANGUAGE_ID'] <> ''? $parameters['filter']['=NAME.LANGUAGE_ID'] : LANGUAGE_ID
 						)
 					));
 
@@ -484,7 +499,7 @@ class CBitrixLocationSelectorSystemComponent extends CBitrixLocationSelectorSear
 			}
 			else
 			{
-				if(!strlen($list[$i]))
+				if($list[$i] == '')
 					unset($list[$i]);
 			}
 		}

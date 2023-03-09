@@ -1,17 +1,34 @@
-<?
+<?php
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 /** @var array $arCurrentValues */
-use Bitrix\Main\Loader;
-use Bitrix\Iblock;
-use Bitrix\Currency;
+use Bitrix\Main\Config\Option,
+	Bitrix\Main\ModuleManager,
+	Bitrix\Main\Loader,
+	Bitrix\Iblock,
+	Bitrix\Catalog,
+	Bitrix\Currency;
 
 if (!Loader::includeModule('iblock'))
 	return;
 $catalogIncluded = Loader::includeModule('catalog');
+
+$usePropertyFeatures = Iblock\Model\PropertyFeature::isEnabledFeatures();
+
 $iblockExists = (!empty($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] > 0);
 
 $arIBlockType = CIBlockParameters::GetIBlockTypes();
 
+$offersIblock = array();
+if ($catalogIncluded)
+{
+	$iterator = Catalog\CatalogIblockTable::getList(array(
+		'select' => array('IBLOCK_ID'),
+		'filter' => array('!=PRODUCT_IBLOCK_ID' => 0)
+	));
+	while ($row = $iterator->fetch())
+		$offersIblock[$row['IBLOCK_ID']] = true;
+	unset($row, $iterator);
+}
 $arIBlock = array();
 $iblockFilter = (
 	!empty($arCurrentValues['IBLOCK_TYPE'])
@@ -20,8 +37,14 @@ $iblockFilter = (
 );
 $rsIBlock = CIBlock::GetList(array('SORT' => 'ASC'), $iblockFilter);
 while ($arr = $rsIBlock->Fetch())
-	$arIBlock[$arr['ID']] = '['.$arr['ID'].'] '.$arr['NAME'];
-unset($arr, $rsIBlock, $iblockFilter);
+{
+	$id = (int)$arr['ID'];
+	if (isset($offersIblock[$id]))
+		continue;
+	$arIBlock[$id] = '['.$id.'] '.$arr['NAME'];
+}
+unset($id, $arr, $rsIBlock, $iblockFilter);
+unset($offersIblock);
 
 $arProperty = array();
 $arProperty_LS = array();
@@ -276,6 +299,12 @@ $arComponentParameters = array(
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => "N"
 		),
+		'ALLOW_SEO_DATA' => array(
+			'PARENT' => 'ADDITIONAL_SETTINGS',
+			'NAME' => GetMessage('CP_BCE_ALLOW_SEO_DATA'),
+			'TYPE' => 'CHECKBOX',
+			'DEFAULT' => 'N',
+		),
 		"SET_TITLE" => array(),
 		"SET_CANONICAL_URL" => array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
@@ -348,6 +377,12 @@ $arComponentParameters = array(
 			"NAME" => GetMessage("CP_BCE_STRICT_SECTION_CHECK"),
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => "N",
+		),
+		"ADDITIONAL_FILTER_NAME" => array(
+			'PARENT' => 'DATA_SOURCE',
+			'NAME' => GetMessage('CP_BCE_ADDITIONAL_FILTER_NAME'),
+			'TYPE' => 'STRING',
+			'DEFAULT' => 'elementFilter',
 		),
 		"ADD_SECTIONS_CHAIN" => array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
@@ -458,6 +493,12 @@ $arComponentParameters = array(
 			"NAME" => GetMessage("IBLOCK_BASKET_URL"),
 			"TYPE" => "STRING",
 			"DEFAULT" => "/personal/basket.php",
+		),
+		"SHOW_SKU_DESCRIPTION" => array(
+			"PARENT" => "ADDITIONAL_SETTINGS",
+			"NAME" => GetMessage("IBLOCK_SHOW_SKU_DESCRIPTION"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "N",
 		),
 		"ACTION_VARIABLE" => array(
 			"PARENT" => "ACTION_SETTINGS",
@@ -610,8 +651,33 @@ $arComponentParameters = array(
 		)
 	),
 );
+if (
+	ModuleManager::isModuleInstalled('bitrix24')
+	|| (isset($arCurrentValues['LANDING_MODE']) && $arCurrentValues['LANDING_MODE'] === 'Y')
+)
+{
+	unset($arComponentParameters['PARAMETERS']['SET_TITLE']);
+	unset($arComponentParameters['PARAMETERS']['SET_BROWSER_TITLE']);
+	unset($arComponentParameters['PARAMETERS']['BROWSER_TITLE']);
+	unset($arComponentParameters['PARAMETERS']['SET_META_KEYWORDS']);
+	unset($arComponentParameters['PARAMETERS']['META_KEYWORDS']);
+	unset($arComponentParameters['PARAMETERS']['SET_META_DESCRIPTION']);
+	unset($arComponentParameters['PARAMETERS']['META_DESCRIPTION']);
+}
+else
+{
+	unset($arComponentParameters['PARAMETERS']['ALLOW_SEO_DATA']);
+}
 
-if ($arCurrentValues["SEF_MODE"] == "Y")
+if ($usePropertyFeatures)
+{
+	unset($arComponentParameters["PARAMETERS"]["PROPERTY_CODE"]);
+	unset($arComponentParameters["PARAMETERS"]["OFFERS_PROPERTY_CODE"]);
+	if (isset($arComponentParameters["PARAMETERS"]["PRODUCT_PROPERTIES"]))
+		unset($arComponentParameters["PARAMETERS"]["PRODUCT_PROPERTIES"]);
+}
+
+if (isset($arCurrentValues["SEF_MODE"]) && $arCurrentValues["SEF_MODE"] === "Y")
 {
 	$arComponentParameters["PARAMETERS"]["SECTION_CODE_PATH"] = array(
 		"NAME" => GetMessage("CP_BCE_SECTION_CODE_PATH"),
@@ -653,12 +719,20 @@ if ($catalogIncluded)
 		);
 	}
 
+	$hiddenParam = 'N';
+	if (
+		(isset($arCurrentValues['COMPATIBLE_MODE']) && $arCurrentValues['COMPATIBLE_MODE'] === 'N')
+		|| (Option::get('catalog', 'enable_viewed_products') === 'N')
+	)
+	{
+		$hiddenParam = 'Y';
+	}
 	$arComponentParameters['PARAMETERS']['SET_VIEWED_IN_COMPONENT'] = array(
 		"PARENT" => "EXTENDED_SETTINGS",
 		"NAME" => GetMessage('CP_BCE_SET_VIEWED_IN_COMPONENT'),
 		"TYPE" => "CHECKBOX",
 		"DEFAULT" => "N",
-		"HIDDEN" => (isset($arCurrentValues['COMPATIBLE_MODE']) && $arCurrentValues['COMPATIBLE_MODE'] === 'N' ? 'Y' : 'N')
+		"HIDDEN" => $hiddenParam
 	);
 }
 
@@ -670,7 +744,8 @@ if (isset($arCurrentValues['COMPATIBLE_MODE']) && $arCurrentValues['COMPATIBLE_M
 if (empty($offers))
 {
 	unset($arComponentParameters["PARAMETERS"]["OFFERS_FIELD_CODE"]);
-	unset($arComponentParameters["PARAMETERS"]["OFFERS_PROPERTY_CODE"]);
+	if (isset($arComponentParameters["PARAMETERS"]["OFFERS_PROPERTY_CODE"]))
+		unset($arComponentParameters["PARAMETERS"]["OFFERS_PROPERTY_CODE"]);
 	unset($arComponentParameters["PARAMETERS"]["OFFERS_SORT_FIELD"]);
 	unset($arComponentParameters["PARAMETERS"]["OFFERS_SORT_ORDER"]);
 	unset($arComponentParameters["PARAMETERS"]["OFFERS_SORT_FIELD2"]);
@@ -678,15 +753,18 @@ if (empty($offers))
 }
 else
 {
-	$arComponentParameters["PARAMETERS"]["OFFERS_CART_PROPERTIES"] = array(
-		"PARENT" => "BASKET",
-		"NAME" => GetMessage("CP_BCE_OFFERS_CART_PROPERTIES"),
-		"TYPE" => "LIST",
-		"MULTIPLE" => "Y",
-		"VALUES" => $arProperty_OffersWithoutFile,
-		"SIZE" => (count($arProperty_OffersWithoutFile) > 5 ? 8 : 3),
-		"HIDDEN" => (isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] == 'N' ? 'Y' : 'N')
-	);
+	if (!$usePropertyFeatures)
+	{
+		$arComponentParameters["PARAMETERS"]["OFFERS_CART_PROPERTIES"] = array(
+			"PARENT" => "BASKET",
+			"NAME" => GetMessage("CP_BCE_OFFERS_CART_PROPERTIES"),
+			"TYPE" => "LIST",
+			"MULTIPLE" => "Y",
+			"VALUES" => $arProperty_OffersWithoutFile,
+			"SIZE" => (count($arProperty_OffersWithoutFile) > 5 ? 8 : 3),
+			"HIDDEN" => (isset($arCurrentValues['ADD_PROPERTIES_TO_BASKET']) && $arCurrentValues['ADD_PROPERTIES_TO_BASKET'] == 'N' ? 'Y' : 'N')
+		);
+	}
 }
 
 if (isset($arCurrentValues['DISPLAY_COMPARE']) && $arCurrentValues['DISPLAY_COMPARE'] == 'Y')
@@ -707,8 +785,20 @@ if(!\Bitrix\Main\ModuleManager::isModuleInstalled("sale"))
 }
 else
 {
-	$useGiftsDetail = $arCurrentValues["USE_GIFTS_DETAIL"] === null && $arComponentParameters['PARAMETERS']['USE_GIFTS_DETAIL']['DEFAULT'] == 'Y' || $arCurrentValues["USE_GIFTS_DETAIL"] == "Y";
-	$useGiftsMainPrSectionList = $arCurrentValues["USE_GIFTS_MAIN_PR_SECTION_LIST"] === null && $arComponentParameters['PARAMETERS']['USE_GIFTS_MAIN_PR_SECTION_LIST']['DEFAULT'] == 'Y' || $arCurrentValues["USE_GIFTS_MAIN_PR_SECTION_LIST"] == "Y";
+	$useGiftsDetail =
+		(
+			!isset($arCurrentValues["USE_GIFTS_DETAIL"])
+			&& $arComponentParameters['PARAMETERS']['USE_GIFTS_DETAIL']['DEFAULT'] === 'Y'
+		)
+		|| $arCurrentValues["USE_GIFTS_DETAIL"] === "Y"
+	;
+	$useGiftsMainPrSectionList =
+		(
+			!isset($arCurrentValues["USE_GIFTS_MAIN_PR_SECTION_LIST"])
+			&& $arComponentParameters['PARAMETERS']['USE_GIFTS_MAIN_PR_SECTION_LIST']['DEFAULT'] === 'Y'
+		)
+		|| $arCurrentValues["USE_GIFTS_MAIN_PR_SECTION_LIST"] === "Y"
+	;
 	if($useGiftsDetail || $useGiftsMainPrSectionList)
 	{
 		if($useGiftsDetail)

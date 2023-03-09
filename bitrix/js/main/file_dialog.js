@@ -172,6 +172,12 @@ BXFileDialog.prototype =
 		this.UnsetEventHandlers();
 		if (window.fd_site_list && window.fd_site_list.PopupHide)
 			window.fd_site_list.PopupHide();
+
+		if (oBXDialogTree.curSelectedItem)
+		{
+			oBXDialogTree.UnHighlightElement(oBXDialogTree.curSelectedItem.oTitle);
+		}
+		oBXDialogTree.curSelectedItem = null;
 	},
 
 	GetRequestUrl: function(site, sessid)

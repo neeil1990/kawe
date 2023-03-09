@@ -105,7 +105,7 @@ if(isset($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 
 			if($res = $catMapRes->fetch())
 			{
-				$catVarEntId = TradingPlatform\Ebay\MapHelper::getCategoryVariationEntityId($iblockId, $res['VALUE_EXTERNAL']);
+				$catVarEntId = TradingPlatform\Ebay\MapHelper::getCategoryVariationEntityId($iBlockId, $res['VALUE_EXTERNAL']);
 				TradingPlatform\MapTable::deleteByMapEntityId($catVarEntId);
 				TradingPlatform\MapTable::delete($res['ID']);
 			}
@@ -119,7 +119,7 @@ if(isset($arResult["ERROR"]) <= 0 && $USER->IsAdmin() && check_bitrix_sessid())
 }
 else
 {
-	if(strlen($arResult["ERROR"]) <= 0)
+	if($arResult["ERROR"] == '')
 		$arResult["ERROR"] = "Access denied";
 }
 
@@ -128,7 +128,7 @@ if(isset($arResult["ERROR"]))
 else
 	$arResult["RESULT"] = "OK";
 
-if(strtolower(SITE_CHARSET) != 'utf-8')
+if(mb_strtolower(SITE_CHARSET) != 'utf-8')
 	$arResult = $APPLICATION->ConvertCharsetArray($arResult, SITE_CHARSET, 'utf-8');
 
 header('Content-Type: application/json');

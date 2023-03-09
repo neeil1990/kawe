@@ -1,7 +1,8 @@
 <?php
 namespace Bitrix\Iblock;
 
-use Bitrix\Main\Entity;
+use Bitrix\Main;
+use Bitrix\Main\ORM;
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
@@ -20,8 +21,21 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Iblock
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Type_Query query()
+ * @method static EO_Type_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Type_Result getById($id)
+ * @method static EO_Type_Result getList(array $parameters = array())
+ * @method static EO_Type_Entity getEntity()
+ * @method static \Bitrix\Iblock\EO_Type createObject($setDefaultValues = true)
+ * @method static \Bitrix\Iblock\EO_Type_Collection createCollection()
+ * @method static \Bitrix\Iblock\EO_Type wakeUpObject($row)
+ * @method static \Bitrix\Iblock\EO_Type_Collection wakeUpCollection($rows)
  */
-class TypeTable extends Entity\DataManager
+class TypeTable extends ORM\Data\DataManager
 {
 	/**
 	 * Returns DB table name for entity
@@ -82,11 +96,12 @@ class TypeTable extends Entity\DataManager
 	 * Returns validators for ID field.
 	 *
 	 * @return array
+	 * @noinspection PhpUnused
 	 */
 	public static function validateId()
 	{
 		return array(
-			new Entity\Validator\Length(null, 50),
+			new ORM\Fields\Validators\LengthValidator(null, 50),
 		);
 	}
 
@@ -94,11 +109,12 @@ class TypeTable extends Entity\DataManager
 	 * Returns validators for EDIT_FILE_BEFORE field.
 	 *
 	 * @return array
+	 * @noinspection PhpUnused
 	 */
 	public static function validateEditFileBefore()
 	{
 		return array(
-			new Entity\Validator\Length(null, 255),
+			new ORM\Fields\Validators\LengthValidator(null, 255),
 		);
 	}
 
@@ -106,11 +122,12 @@ class TypeTable extends Entity\DataManager
 	 * Returns validators for EDIT_FILE_AFTER field.
 	 *
 	 * @return array
+	 * @noinspection PhpUnused
 	 */
 	public static function validateEditFileAfter()
 	{
 		return array(
-			new Entity\Validator\Length(null, 255),
+			new ORM\Fields\Validators\LengthValidator(null, 255),
 		);
 	}
 
@@ -118,12 +135,14 @@ class TypeTable extends Entity\DataManager
 	 * Deletes information blocks of given type
 	 * and language messages from TypeLanguageTable
 	 *
-	 * @param \Bitrix\Main\Entity\Event $event Contains information about iblock type being deleted.
+	 * @param ORM\Event $event Contains information about iblock type being deleted.
 	 *
-	 * @return \Bitrix\Main\Entity\EventResult
+	 * @return void
 	 */
-	public static function onDelete(\Bitrix\Main\Entity\Event $event)
+	public static function onDelete(ORM\Event $event)
 	{
+		//TODO: need refactoring
+
 		$id = $event->getParameter("id");
 
 		//Delete information blocks
@@ -139,13 +158,25 @@ class TypeTable extends Entity\DataManager
 			$iblockDeleteResult = IblockTable::delete($iblock["ID"]);
 			if (!$iblockDeleteResult->isSuccess())
 			{
-				return $iblockDeleteResult;
+				break;
 			}
 		}
+		unset($iblock);
+		unset($iblockList);
 
 		//Delete language messages
+		/** @noinspection PhpUnusedLocalVariableInspection */
 		$result = TypeLanguageTable::deleteByIblockTypeId($id["ID"]);
+	}
 
-		return $result;
+	public static function cleanCache(): void
+	{
+		parent::cleanCache();
+
+		$application = Main\Application::getInstance();
+		$managedCache = $application->getManagedCache();
+		$managedCache->cleanDir(self::getTableName());
+		unset($managedCache);
+		unset($application);
 	}
 }

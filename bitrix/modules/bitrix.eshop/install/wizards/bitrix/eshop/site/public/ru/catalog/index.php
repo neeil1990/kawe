@@ -1,7 +1,8 @@
 <?
+define("HIDE_SIDEBAR", true);
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 ?>
-<?$APPLICATION->IncludeComponent("bitrix:catalog", "", array(
+<?$APPLICATION->IncludeComponent("bitrix:catalog", "bootstrap_v4", array(
 	"IBLOCK_TYPE" => "catalog",
 	"IBLOCK_ID" => "#CATALOG_IBLOCK_ID#",
 	"TEMPLATE_THEME" => "site",
@@ -31,34 +32,6 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 	"USE_FILTER" => "Y",
 	"FILTER_NAME" => "",
 	"FILTER_VIEW_MODE" => "VERTICAL",
-	"FILTER_FIELD_CODE" => array(
-		0 => "",
-		1 => "",
-	),
-	"FILTER_PROPERTY_CODE" => array(
-		0 => "",
-		1 => "",
-	),
-	"FILTER_PRICE_CODE" => array(
-		0 => "BASE",
-	),
-	"FILTER_OFFERS_FIELD_CODE" => array(
-		0 => "PREVIEW_PICTURE",
-		1 => "DETAIL_PICTURE",
-		2 => "",
-	),
-	"FILTER_OFFERS_PROPERTY_CODE" => array(
-		0 => "",
-		1 => "",
-	),
-	"USE_REVIEW" => "Y",
-	"MESSAGES_PER_PAGE" => "10",
-	"USE_CAPTCHA" => "Y",
-	"REVIEW_AJAX_POST" => "Y",
-	"PATH_TO_SMILE" => "/bitrix/images/forum/smile/",
-	"FORUM_ID" => "11",
-	"URL_TEMPLATES_READ" => "",
-	"SHOW_LINK_TO_FORUM" => "Y",
 	"USE_COMPARE" => "N",
 	"PRICE_CODE" => array(
 		0 => "BASE",
@@ -155,7 +128,9 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 	"PAGER_DESC_NUMBERING_CACHE_TIME" => "36000000",
 	"PAGER_SHOW_ALL" => "N",
 	"ADD_PICT_PROP" => "MORE_PHOTO",
-	"LABEL_PROP" => "NEWPRODUCT",
+	"LABEL_PROP" => array(
+		0 => "NEWPRODUCT",
+	),
 	"PRODUCT_DISPLAY_MODE" => "Y",
 	"OFFER_ADD_PICT_PROP" => "MORE_PHOTO",
 	"OFFER_TREE_PROPS" => array(
@@ -190,6 +165,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 	"MIN_AMOUNT" => "10",
 	"DETAIL_BRAND_USE" => "Y",
 	"DETAIL_BRAND_PROP_CODE" => "BRAND_REF",
+	"COMPATIBLE_MODE" => "N",
 	"SIDEBAR_SECTION_SHOW" => "Y",
 	"SIDEBAR_DETAIL_SHOW" => "Y",
 	"SIDEBAR_PATH" => "#SITE_DIR#catalog/sidebar.php",

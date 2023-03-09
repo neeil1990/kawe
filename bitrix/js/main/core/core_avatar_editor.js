@@ -458,6 +458,19 @@
 					}
 					if (this.params["name"])
 						result.name = this.params["name"];
+
+					if (result.type === 'image/png'
+						&& (result.name || '').substr(-4, 4).toLowerCase() !== '.png')
+					{
+						var name = (result.name || 'image');
+
+						if (name.lastIndexOf('.') > 0
+							&& BX.UploaderUtils.isImageExt(name.substr(name.lastIndexOf('.') + 1).toLowerCase()))
+						{
+							result.name = name.substr(0, name.lastIndexOf('.'));
+						}
+						result.name = result.name + '.png';
+					}
 				}
 				return result;
 			}
@@ -556,13 +569,22 @@
 				onAfterPopupShow : BX.delegate(this.onAfterPopupShow, this),
 				onPopupClose : BX.delegate(this.onPopupClose, this)
 			};
-			if (webRTC === null && BX["webrtc"])
-				webRTC = new BX.webrtc();
 			params = (BX.type.isPlainObject(params) ? params : {});
 			this.params = { enableCamera : params["enableCamera"] !== false };
+
 			this.limitations = []; // TODO make control to work with file limits
 		};
 		d.prototype = {
+			isCameraEnabled : function() {
+				var res = false;
+				if (this.params.enableCamera === true)
+				{
+					if (webRTC === null && BX["webrtc"])
+						webRTC = new BX.webrtc();
+					res = ((window.location.protocol.indexOf("https") === 0) && webRTC && webRTC.enabled);
+				}
+				return res;
+			},
 			getLimitText : function() {
 				// TODO make text interface for limits
 				return '';
@@ -633,7 +655,7 @@
 					'</div>',
 				'</div>'
 				].join(''));
-				if (this.params.enableCamera && (window.location.protocol.indexOf("https") === 0) && webRTC && webRTC.enabled)
+				if (this.isCameraEnabled())
 				{
 					headers.push(
 						'<span class="main-file-input-tab-button-item main-file-input-tab-button-active" data-bx-role="tab-camera">' + BX.message("JS_AVATAR_EDITOR_CAMERA") + '</span>'
@@ -812,14 +834,14 @@
 					n.innerHTML = textMessage;
 				}, this));
 
-				var n = BX.findChild(node, {attribute : { "data-bx-role"  : "canvas-button" } }, true);
-				if (n)
+				var n1 = BX.findChild(node, {attribute : { "data-bx-role"  : "canvas-button" } }, true);
+				if (n1)
 				{
-					BX.bind(n, "click", BX.proxy(function() { if (this.canvas.canvasIsSet === true){ this.tabs.show('canvas'); } }, this));
-					BX.addCustomEvent(this.canvas, "onChangeCanvas", BX.proxy(function(){ BX.addClass(n, "active") }, this));
-					BX.addCustomEvent(this.canvas, "onResetCanvas", BX.proxy(function(){ BX.removeClass(n, "active") }, this));
+					BX.bind(n1, "click", function() { if (this.canvas.canvasIsSet === true) { this.tabs.show('canvas'); } }.bind(this));
+					BX.addCustomEvent(this.canvas, "onChangeCanvas", function() { BX.addClass(n1, "active"); }.bind(this));
+					BX.addCustomEvent(this.canvas, "onResetCanvas", function() { BX.removeClass(n1, "active"); }.bind(this));
 				}
-				n = BX.findChild(node, {attribute : { "data-bx-role"  : "try-again-button" } }, true);
+				var n = BX.findChild(node, {attribute : { "data-bx-role"  : "try-again-button" } }, true);
 				if (n)
 				{
 					BX.bind(n, "click", BX.proxy(function(){
@@ -954,7 +976,7 @@
 				}
 				BX.onCustomEvent(this, "onEditorHasBeenShown", [this]);
 			},
-			show : function() {
+			show : function(activeTab) {
 				if (this.popup === null)
 				{
 					var editorNode = BX.create("DIV", {
@@ -993,6 +1015,15 @@
 				{
 					BX.onCustomEvent(this, "onEditorHasBeenShown", [this]);
 				}
+				if (activeTab === 'camera' || activeTab === 'file')
+				{
+					var f = BX.proxy(function(){ this.tabs.show(activeTab); }, this);
+					if (this.popup.isShown())
+						f();
+					else
+						BX.addCustomEvent(this, "onEditorHasBeenShown", f);
+				}
+
 				this.popup.show();
 				this.popup.adjustPosition();
 			},

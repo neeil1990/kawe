@@ -23,7 +23,7 @@ $arResult["FOR_INTRANET"] = true;
 
 $arServices = $oAuthManager->GetActiveAuthServices($arResult);
 $arResult["AUTH_SERVICES"] = $arServices;
-
+$arResult["DB_SOCSERV_USER"] = [];
 //***************************************
 //Checking the input parameters.
 //***************************************
@@ -69,19 +69,21 @@ $arResult["ALLOW_DELETE_ID"] = array();
 $arResult["SEND_MY_ACTIVITY"] = '';
 $arResult["PostToShow"]["SPERM"] = array();
 $twitNum = 100;
-$dbSocservUser = CSocServAuthDB::GetList(array("PERSONAL_PHOTO" => "DESC"), array('USER_ID' => $userID, "!EXTERNAL_AUTH_ID" => 'Bitrix24OAuth'));
+
+$dbSocservUser = \Bitrix\Socialservices\UserTable::getList([
+	'filter' => [
+		'=USER_ID' => $userID,
+		"!EXTERNAL_AUTH_ID" => 'Bitrix24OAuth'
+	]
+]);
+
 //***************************************
 //Obtain data on the related user account.
 //***************************************
-while($arUser = $dbSocservUser->Fetch())
+while($arUser = $dbSocservUser->fetch())
 {
-	if(!array_key_exists($arUser["EXTERNAL_AUTH_ID"], $arServices))
-	{
-		continue;
-	}
-
 	if($arUser["EXTERNAL_AUTH_ID"] == 'Twitter')
-		$arResult["PostToShow"]["SPERM"] = unserialize($arUser["PERMISSIONS"]);
+		$arResult["PostToShow"]["SPERM"] = unserialize($arUser["PERMISSIONS"], ['allowed_classes' => false]);
 	if($arUser["NAME"] != '' && $arUser["LAST_NAME"] != '')
 		$userName = $arUser["NAME"]." ".$arUser["LAST_NAME"];
 	elseif ($arUser["NAME"] != '')
@@ -114,6 +116,11 @@ while($arUser = $dbSocservUser->Fetch())
 
 	}
 
+	if(!array_key_exists($arUser["EXTERNAL_AUTH_ID"], $arServices))
+	{
+		continue;
+	}
+
 	foreach($arResult["AUTH_SERVICES"] as $key => $value)
 	{
 		if($key == $arUser["EXTERNAL_AUTH_ID"])
@@ -131,7 +138,7 @@ while($arUser = $dbSocservUser->Fetch())
 		"VIEW_NAME" => htmlspecialcharsbx($userName),
 		"PERSONAL_LINK" => htmlspecialcharsbx($arUser["PERSONAL_WWW"]),
 		"PERSONAL_PHOTO" => intval($arUser["PERSONAL_PHOTO"]),
-		"PERMISSIONS" => unserialize($arUser["PERMISSIONS"]),
+		"PERMISSIONS" => unserialize($arUser["PERMISSIONS"], ['allowed_classes' => false]),
 	);
 
 	if($arUser["CAN_DELETE"] != 'N' && $arParams["ALLOW_DELETE"] != 'N')
@@ -188,7 +195,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && $_REQUEST["action"] == "delete" && is
 		$backurl = $arResult['BACKURL'];
 		if($componentTemplate == 'twitpost')
 		{
-			$backurl .= (strpos($arResult['BACKURL'], '?') > 0 ? "&" : "?")."current_fieldset=SOCSERV";
+			$backurl .= (mb_strpos($arResult['BACKURL'], '?') > 0 ? "&" : "?")."current_fieldset=SOCSERV";
 		}
 	}
 	else

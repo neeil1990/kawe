@@ -1,13 +1,15 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
+
 $GLOBALS["BLOG_CANDIDATE"] = Array();
 
 class CAllBlogCandidate
 {
 	/*************** ADD, UPDATE, DELETE *****************/
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
-		if ((is_set($arFields, "BLOG_ID") || $ACTION=="ADD") && IntVal($arFields["BLOG_ID"]) <= 0)
+		if ((is_set($arFields, "BLOG_ID") || $ACTION=="ADD") && intval($arFields["BLOG_ID"]) <= 0)
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("BLG_GC_EMPTY_BLOG_ID"), "EMPTY_BLOG_ID");
 			return false;
@@ -22,7 +24,7 @@ class CAllBlogCandidate
 			}
 		}
 
-		if ((is_set($arFields, "USER_ID") || $ACTION=="ADD") && IntVal($arFields["USER_ID"]) <= 0)
+		if ((is_set($arFields, "USER_ID") || $ACTION=="ADD") && intval($arFields["USER_ID"]) <= 0)
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("BLG_GB_EMPTY_USER_ID"), "EMPTY_USER_ID");
 			return false;
@@ -40,11 +42,11 @@ class CAllBlogCandidate
 		return True;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		unset($GLOBALS["BLOG_CANDIDATE"]["BLOG_CANDIDATE_CACHE_".$ID]);
 
@@ -52,11 +54,11 @@ class CAllBlogCandidate
 	}
 
 	//*************** SELECT *********************/
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (isset($GLOBALS["BLOG_CANDIDATE"]["BLOG_CANDIDATE_CACHE_".$ID]) && is_array($GLOBALS["BLOG_CANDIDATE"]["BLOG_CANDIDATE_CACHE_".$ID]) && is_set($GLOBALS["BLOG_CANDIDATE"]["BLOG_CANDIDATE_CACHE_".$ID], "ID"))
 		{
@@ -78,6 +80,4 @@ class CAllBlogCandidate
 
 		return False;
 	}
-
 }
-?>

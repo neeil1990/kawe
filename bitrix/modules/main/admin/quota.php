@@ -5,18 +5,17 @@ if(!$USER->CanDoOperation('edit_other_settings'))
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
 
 $res = false;
-if (isset($_REQUEST["id"]) && strLen(trim($_REQUEST["id"])) > 0 && check_bitrix_sessid())
+if (isset($_REQUEST["id"]) && trim($_REQUEST["id"]) <> '' && check_bitrix_sessid())
 {
 	$quota = new CDiskQuota();
-	$_REQUEST["recount"] = ($_REQUEST["recount"] == "begin"? true : false);
-	if (strToLower($_REQUEST["id"]) == "db")
+	if (strtolower($_REQUEST["id"]) == "db")
 	{
-		$_SESSION["SESS_RECOUNT_DB"] = "Y";
-		$res = $quota->SetDBSize();
+		CDiskQuota::recalculateDb();
+		$res = CDiskQuota::SetDBSize();
 	}
 	else 
 	{
-		$res = $quota->Recount($_REQUEST["id"], $_REQUEST["recount"]);
+		$res = $quota->Recount($_REQUEST["id"],  ($_REQUEST["recount"] == "begin"));
 	}
 }
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_admin.php");
@@ -33,7 +32,7 @@ if($res !== false):
 <?else:?>
 	window.parent.window.result['<?=CUtil::JSEscape($_REQUEST["name"])?>'] = new Array();
 	window.parent.window.result['<?=CUtil::JSEscape($_REQUEST["name"])?>']['size'] = '<?=$res['size']?>';
-	window.parent.window.result['<?=CUtil::JSEscape($_REQUEST["name"])?>']['status'] = '<?=substr($res['status'], 0, 1)?>';
+	window.parent.window.result['<?=CUtil::JSEscape($_REQUEST["name"])?>']['status'] = '<?=mb_substr($res['status'], 0, 1)?>';
 	window.parent.window.result['<?=CUtil::JSEscape($_REQUEST["name"])?>']['time'] = '<?=date(CDatabase::DateFormatToPHP(CLang::GetDateFormat("FULL", LANG)), $res["time"])?>';
 	
 	window.parent.window.result['stop'] = <?=(($res["status"] == "continue") ? "false" : "true");?>;

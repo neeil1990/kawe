@@ -65,7 +65,7 @@ $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if(!isset($arFilter["USER_ID"]))
 {
 	if ($saleModulePermissions == "D")
-		$arFilter["USER_ID"] = IntVal($USER->GetID());
+		$arFilter["USER_ID"] = intval($USER->GetID());
 	elseif ($saleModulePermissions != "W")
 	{
 		$arFilter["STATUS_PERMS_GROUP_ID"] = $GLOBALS["USER"]->GetUserGroupArray();
@@ -183,13 +183,14 @@ while ($arOrderItem = $dbOrderList->GetNext())
 	else
 		$arOrderItem["ADD_ORDER_STEP"] = 'step1';
 
-	$arOrderItem["ORDER_DETAIL_LINK"] = $arResult["ORDER_DETAIL_PATH"]."?id=".urlencode(urlencode($arOrderItem["ACCOUNT_NUMBER"]));
+	$arOrderItem["ORDER_DETAIL_LINK"] = $arResult["ORDER_DETAIL_PATH"]."?id=".(int)$arOrderItem["ID"];
 	$arOrderItem["DATE_UPDATE"] = CSaleMobileOrderUtils::getDateTime($arOrderItem["DATE_UPDATE"]);
 	$arOrderItem["PRICE_DELIVERY"] = SaleFormatCurrency($arOrderItem["PRICE_DELIVERY"], $arOrderItem["CURRENCY"]);
 	$arOrderItem["SUM_PAID"] = SaleFormatCurrency($arOrderItem["SUM_PAID"], $arOrderItem["CURRENCY"]);
-	$arOrderItem["PS_SUM"] = SaleFormatCurrency($arOrderItemr["PS_SUM"], $arOrderItem["CURRENCY"]);
+	$arOrderItem["PS_SUM"] = SaleFormatCurrency($arOrderItem["PS_SUM"], $arOrderItem["CURRENCY"]);
 	$arOrderItem["TAX_VALUE"] = SaleFormatCurrency($arOrderItem["TAX_VALUE"], $arOrderItem["CURRENCY"]);
 	$arOrderItem["DATE_INSERT"] = CSaleMobileOrderUtils::getDateTime($arOrderItem["DATE_INSERT"]);
+	$arOrderItem["DATE_INSERT_SHORT"] = CSaleMobileOrderUtils::getDate($arOrderItem["DATE_INSERT"]);
 	$arOrderItem["TMPL_DELIVERY_ALLOWED"] = $arOrderItem["ALLOW_DELIVERY"] == 'Y' ? 'allowed' : 'notallowed';
 	$arOrderItem["ADD_ALLOW_DELIVERY_PHRASE"] = $arOrderItem["ALLOW_DELIVERY"] == 'Y' ? GetMessage("SMOL_ALLOWED") : GetMessage("SMOL_DISALLOWED");
 	$arOrderItem["ADD_ALLOW_PAYED_PHRASE"] = $arOrderItem["PAYED"] == 'Y' ? GetMessage("SMOB_PAYED") : GetMessage("SMOB_NOT_PAYED");
@@ -270,7 +271,7 @@ $arResult["CURRENT_PAGE"] = $APPLICATION->GetCurPage();
 $arResult['AJAX_URL'] = $componentPath."/ajax.php";
 
 $sitesCount = 0;
-$rsSites = CSite::GetList($by = "sort", $order = "asc", Array());
+$rsSites = CSite::GetList();
 while($arSite = $rsSites->GetNext())
 	if(COption::GetOptionString("sale", "SHOP_SITE_".$arSite["ID"], ""))
 		$sitesCount++;

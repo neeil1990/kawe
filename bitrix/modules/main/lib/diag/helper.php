@@ -4,7 +4,7 @@ namespace Bitrix\Main\Diag;
 class Helper
 {
 	/**
-	 * Returns current Unix timestamp with microseconds.
+	 * Returns current unix timestamp with microseconds.
 	 *
 	 * @return float
 	 */
@@ -35,18 +35,7 @@ class Helper
 			$options = ~DEBUG_BACKTRACE_PROVIDE_OBJECT;
 		}
 
-		if (PHP_VERSION_ID < 50306)
-		{
-			$trace = debug_backtrace($options & DEBUG_BACKTRACE_PROVIDE_OBJECT);
-		}
-		elseif (PHP_VERSION_ID < 50400)
-		{
-			$trace = debug_backtrace($options);
-		}
-		else
-		{
-			$trace = debug_backtrace($options, ($limit > 0? $limit + 1: 0));
-		}
+		$trace = debug_backtrace($options, ($limit > 0? $limit + $skip : 0));
 
 		if ($limit > 0)
 		{

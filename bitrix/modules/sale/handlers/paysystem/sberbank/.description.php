@@ -1,11 +1,30 @@
 <?php
-
-use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Loader,
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Sale\PaySystem;
 
 Loc::loadMessages(__FILE__);
 
+$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_TRUE;
+
+$licensePrefix = Loader::includeModule('bitrix24') ? \CBitrix24::getLicensePrefix() : "";
+$portalZone = Loader::includeModule('intranet') ? CIntranetUtils::getPortalZone() : "";
+
+if (Loader::includeModule("bitrix24"))
+{
+	if ($licensePrefix !== 'ru')
+	{
+		$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+	}
+}
+elseif (Loader::includeModule('intranet') && $portalZone !== 'ru')
+{
+	$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+}
+
 $data = array(
 	'NAME' => Loc::getMessage('SALE_HPS_SBERBANK_TITLE'),
+	'IS_AVAILABLE' => $isAvailable,
 	'CODES' => array(
 		"SELLER_COMPANY_NAME" => array(
 			"NAME" => Loc::getMessage('SALE_HPS_SBERBANK_COMPANY_NAME_DESC'),

@@ -2,10 +2,14 @@
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 /** @var array $arCurrentValues */
 /** @global CUserTypeManager $USER_FIELD_MANAGER */
+use Bitrix\Main\Loader;
+
 global $USER_FIELD_MANAGER;
 
-if(!\Bitrix\Main\Loader::includeModule("iblock"))
+if(!Loader::includeModule("iblock"))
 	return;
+
+$catalogIncluded = Loader::includeModule("catalog");
 
 $arIBlockType = CIBlockParameters::GetIBlockTypes();
 
@@ -20,6 +24,26 @@ foreach($arUserFields as $FIELD_NAME=>$arUserField)
 {
 	$arUserField['LIST_COLUMN_LABEL'] = (string)$arUserField['LIST_COLUMN_LABEL'];
 	$arProperty_UF[$FIELD_NAME] = $arUserField['LIST_COLUMN_LABEL'] ? '['.$FIELD_NAME.']'.$arUserField['LIST_COLUMN_LABEL'] : $FIELD_NAME;
+}
+
+$isProducts = false;
+if ($catalogIncluded && (!empty($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] > 0))
+{
+	$catalog = CCatalogSku::GetInfoByIBlock($arCurrentValues['IBLOCK_ID']);
+	$isProducts = (!empty($catalog));
+	unset($catalog);
+}
+
+$countFilterList = array(
+	"CNT_ALL" => GetMessage("CP_BCSL_COUNT_ELEMENTS_ALL")
+);
+$countFilterList["CNT_ACTIVE"] = ($isProducts
+	? GetMessage("CP_BCSL_COUNT_PRODUCTS_ACTIVE")
+	: GetMessage("CP_BCSL_COUNT_ELEMENTS_ACTIVE")
+);
+if ($isProducts)
+{
+	$countFilterList["CNT_AVAILABLE"] = GetMessage("CP_BCSL_COUNT_PRODUCTS_AVAILABLE");
 }
 
 $arComponentParameters = array(
@@ -65,6 +89,29 @@ $arComponentParameters = array(
 			"NAME" => GetMessage("CP_BCSL_COUNT_ELEMENTS"),
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => 'Y',
+			"REFRESH" => "Y"
+		),
+		"COUNT_ELEMENTS_FILTER" => array(
+			"PARENT" => "DATA_SOURCE",
+			"NAME" => GetMessage("CP_BCSL_COUNT_ELEMENTS_FILTER"),
+			"TYPE" => "LIST",
+			"VALUES" => $countFilterList,
+			"DEFAULT" => "CNT_ACTIVE",
+			"HIDDEN" => (isset($arCurrentValues['COUNT_ELEMENTS']) && $arCurrentValues['COUNT_ELEMENTS'] == 'N' ? 'Y' : 'N')
+		),
+		"ADDITIONAL_COUNT_ELEMENTS_FILTER" => array(
+			"PARENT" => "DATA_SOURCE",
+			"NAME" => GetMessage("CP_BCSL_ADDITIONAL_COUNT_ELEMENTS_FILTER"),
+			"TYPE" => "STRING",
+			"DEFAULT" => "additionalCountFilter",
+			"HIDDEN" => (isset($arCurrentValues['COUNT_ELEMENTS']) && $arCurrentValues['COUNT_ELEMENTS'] == 'N' ? 'Y' : 'N'),
+		),
+		"HIDE_SECTIONS_WITH_ZERO_COUNT_ELEMENTS" => array(
+			"PARENT" => "DATA_SOURCE",
+			"NAME" => GetMessage("CP_BCSL_HIDE_SECTIONS_WITH_ZERO_COUNT_ELEMENTS"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "N",
+			"HIDDEN" => (isset($arCurrentValues['COUNT_ELEMENTS']) && $arCurrentValues['COUNT_ELEMENTS'] == 'N' ? 'Y' : 'N'),
 		),
 		"TOP_DEPTH" => array(
 			"PARENT" => "DATA_SOURCE",
@@ -85,6 +132,12 @@ $arComponentParameters = array(
 			"ADDITIONAL_VALUES" => "Y",
 			"VALUES" => $arProperty_UF,
 		),
+		"FILTER_NAME" => array(
+			"PARENT" => "DATA_SOURCE",
+			"NAME" => GetMessage('CP_BCSL_FILTER_NAME_IN'),
+			"TYPE" => "STRING",
+			"DEFAULT" => "sectionsFilter",
+		),
 		"ADD_SECTIONS_CHAIN" => Array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 			"NAME" => GetMessage("CP_BCSL_ADD_SECTIONS_CHAIN"),
@@ -98,6 +151,11 @@ $arComponentParameters = array(
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => "Y",
 		),
+		"CACHE_FILTER" => array(
+			"PARENT" => "CACHE_SETTINGS",
+			"NAME" => GetMessage("CP_BCSL_CACHE_FILTER"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "N",
+		),
 	),
 );
-?>

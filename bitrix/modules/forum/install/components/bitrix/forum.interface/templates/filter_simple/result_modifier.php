@@ -1,11 +1,10 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
-$arParams["SHOW_STRINGS"] = (intVal($arParams["SHOW_STRINGS"]) > 0 ? $arParams["SHOW_STRINGS"] : 2);
+$arParams["SHOW_STRINGS"] = (intval($arParams["SHOW_STRINGS"]) > 0 ? $arParams["SHOW_STRINGS"] : 2);
 $arResult["SHOW_FILTER"] = array();
 if ($GLOBALS["USER"]->IsAuthorized())
 {
-	require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/".strToLower($GLOBALS["DB"]->type)."/favorites.php");
 	$res = CUserOptions::GetOption("forum", "Filter", "");
-	$res = (CheckSerializedData($res) ? @unserialize($res) : array());
+	$res = (CheckSerializedData($res) ? @unserialize($res, ["allowed_classes" => false]) : array());
 
 	if (is_array($res))
 		$arResult["SHOW_FILTER"] = $res;

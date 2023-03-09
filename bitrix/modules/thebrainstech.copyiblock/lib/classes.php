@@ -45,22 +45,22 @@ class TheBrains {
                     array(
                         "TEXT" => GetMessage('THEBRAINSE_COPYIBLOCK_MODULE_LIB_COPY'),
                         "TITLE" => GetMessage('THEBRAINSE_COPYIBLOCK_MODULE_LIB_COPY'),
-                        "ACTION" => self::htmlspecialchars("javascript:(new BX.CDialog({
+                        "ACTION" => "javascript:(new BX.CDialog({
 					content_url: '" . $APPLICATION->GetCurPageParam("", array("mode", "table_id")) . "',
 					width: 500,
-					height: 180,
+					head: '<div style=\"text-align: center;\"><a href=\"https://nbrains.ru/\" target=\"_blank\"><img src=\"https://nbrains.ru/bitrix/templates/nbrains/images/logo-default-95x80.png\" width=\"50\"></a></div>',
+					height: 260,
 					resizable: false,
 					draggable: true,
 					content: '<h3 style=\"text-align: center\">". GetMessage('THEBRAINSE_COPYIBLOCK_MODULE_LIB_COPY') ." ID : ". $_REQUEST['ID'] ." ". $name ."</h3>"
-					."<form style=\"text-align: center\" action=\"\" name=\"\">"
-                    .$select_ib_wath_copy.""
-					."<input type=\"hidden\" name=\"the_brains_copy_action\" value=\"copy\">"
-					."<input type=\"hidden\" name=\"ID\" value=\"". $_REQUEST['ID'] ."\">"
-					."<h3 style=\"text-align: center\">".GetMessage('THEBRAINSE_COPYIBLOCK_MODULE_LIB_COPY_TYPE_IB')."</h3>"
-                    .$select_ib_type.""
-					."</form>',
-					buttons: [BX.CDialog.btnSave, BX.CDialog.btnCancel]
-				})).Show()"),
+                            ."<form style=\"text-align: center\" action=\"\" name=\"\">"
+                            .$select_ib_wath_copy.""
+                            ."<input type=\"hidden\" name=\"the_brains_copy_action\" value=\"copy\">"
+                            ."<input type=\"hidden\" name=\"ID\" value=\"". $_REQUEST['ID'] ."\">"
+                            ."<h3 style=\"text-align: center\">".GetMessage('THEBRAINSE_COPYIBLOCK_MODULE_LIB_COPY_TYPE_IB')."</h3>"
+                            .$select_ib_type.""
+                            ."</form>',
+					buttons: [BX.CDialog.btnSave, BX.CDialog.btnCancel]})).Show()",
                         "ICON" => "copy",
                     )
                 ),
@@ -90,13 +90,16 @@ class TheBrains {
                 $ib = new CIBlock;
                 $arFields = CIBlock::GetArrayByID($IBLOCK_ID);
                 $arFields["GROUP_ID"] = CIBlock::GetGroupPermissions($IBLOCK_ID);
-                $arFields["NAME"] = $arFields["NAME"]."_new";
+                $arFields["NAME"] = $arFields["NAME"]."NEW";
+                $arFields["CODE"] = $arFields["CODE"]."NEW";
+                $arFields["API_CODE"] = $arFields["API_CODE"]."NEW";
                 unset($arFields["ID"]);
                 if($_REQUEST["TYPE"]!="empty")
                     $arFields["IBLOCK_TYPE_ID"]=$_REQUEST["TYPE"];
                 $ID = $ib->Add($arFields);
-                if(intval($ID)<=0)
-                    $bError = true;
+                if(intval($ID) <= 0)
+                    $bError[] = $ib->LAST_ERROR;
+
                 if($_REQUEST["ID"]!="empty")
                     $iblock_prop=intval($_REQUEST["ID"]);
                 else
@@ -123,9 +126,10 @@ class TheBrains {
                         if(!is_array($v))$prop_fields[$k]=trim($v);
                         if($k{0}=='~') unset($prop_fields[$k]);
                     }
+
                     $PropID = $ibp->Add($prop_fields);
-                    if(intval($PropID)<=0)
-                        $bError = true;
+                    if(intval($PropID) <= 0)
+                        $bError[] = $ibp->LAST_ERROR;
                 }
 
                 if($_REQUEST["W_COPY"] == 'SE' OR $_REQUEST["W_COPY"] == 'EL') {
@@ -169,12 +173,12 @@ class TheBrains {
                     }
                 }
 
-                if(!$bError && $IBLOCK_ID>0)
+                if(!$bError && $IBLOCK_ID > 0)
                     echo '<div style="text-align:center;"><p style="font-size: 16px">'. GetMessage('THEBRAINSE_COPYIBLOCK_MODULE_LIB_COPY_END') .'</p><a style="font-size: 20px" href="iblock_edit.php?type='.$arFields['IBLOCK_TYPE_ID'].'&lang='.LANG.'&ID='.$ID.'&admin=Y">'. GetMessage('THEBRAINSE_COPYIBLOCK_MODULE_LIB_GO_TO_IB') .'</a></div>';
                 else
-                    echo $bError;
+                    echo implode('<br/>', $bError);
             }
-              die();
+            die();
         }
     }
 
@@ -197,21 +201,13 @@ class TheBrains {
                 "SORT"           => $arFields['SORT'],
                 "NAME"           => $arFields['NAME'],
                 "CODE"           => $arFields['CODE'],
-                "ACTIVE"         => "Y",            // àêòèâåí
+                "ACTIVE"         => "Y",            // Ð°ÐºÑ‚Ð¸Ð²ÐµÐ½
                 "PREVIEW_TEXT"   => $arFields['PREVIEW_TEXT'],
                 "DETAIL_TEXT"    => $arFields['DETAIL_TEXT']
             );
-           $PRODUCT_ID = $el->Add($arLoadProductArray);
+            $PRODUCT_ID = $el->Add($arLoadProductArray);
 
         }
-
     }
-
-    public static function htmlspecialchars($string, $flags=ENT_COMPAT)
-    {
-        return $string;
-    }
-
-
 
 }

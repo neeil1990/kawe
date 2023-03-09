@@ -17,6 +17,8 @@
  * @param CBitrixComponent $this
  */
 
+use Bitrix\Main\Security\Random;
+
 if(!defined("B_PROLOG_INCLUDED")||B_PROLOG_INCLUDED!==true)
 	die();
 
@@ -45,20 +47,27 @@ if(!is_array($arParams["REQUIRED_FIELDS"]))
 if (COption::GetOptionString("main", "new_user_registration", "N") == "N")
 	$APPLICATION->AuthForm(array());
 
-$arResult["EMAIL_REQUIRED"] = (COption::GetOptionString("main", "new_user_email_required", "Y") <> "N");
+$arResult["PHONE_REGISTRATION"] = (COption::GetOptionString("main", "new_user_phone_auth", "N") == "Y");
+$arResult["PHONE_REQUIRED"] = ($arResult["PHONE_REGISTRATION"] && COption::GetOptionString("main", "new_user_phone_required", "N") == "Y");
+$arResult["EMAIL_REGISTRATION"] = (COption::GetOptionString("main", "new_user_email_auth", "Y") <> "N");
+$arResult["EMAIL_REQUIRED"] = ($arResult["EMAIL_REGISTRATION"] && COption::GetOptionString("main", "new_user_email_required", "Y") <> "N");
 $arResult["USE_EMAIL_CONFIRMATION"] = (COption::GetOptionString("main", "new_user_registration_email_confirmation", "N") == "Y" && $arResult["EMAIL_REQUIRED"]? "Y" : "N");
+$arResult["PHONE_CODE_RESEND_INTERVAL"] = CUser::PHONE_CODE_RESEND_INTERVAL;
 
 // apply core fields to user defined
 $arDefaultFields = array(
 	"LOGIN",
-	"PASSWORD",
-	"CONFIRM_PASSWORD",
 );
-
 if($arResult["EMAIL_REQUIRED"])
 {
 	$arDefaultFields[] = "EMAIL";
 }
+if($arResult["PHONE_REQUIRED"])
+{
+	$arDefaultFields[] = "PHONE_NUMBER";
+}
+$arDefaultFields[] = "PASSWORD";
+$arDefaultFields[] = "CONFIRM_PASSWORD";
 
 $def_group = COption::GetOptionString("main", "new_user_registration_def_group", "");
 if($def_group <> "")
@@ -75,10 +84,11 @@ $arResult["USE_CAPTCHA"] = COption::GetOptionString("main", "captcha_registratio
 // start values
 $arResult["VALUES"] = array();
 $arResult["ERRORS"] = array();
+$arResult["SHOW_SMS_FIELD"] = false;
 $register_done = false;
 
 // register user
-if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_REQUEST["register_submit_button"]) && !$USER->IsAuthorized())
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["register_submit_button"] <> '' && !$USER->IsAuthorized())
 {
 	if(COption::GetOptionString('main', 'use_encrypted_auth', 'N') == 'Y')
 	{
@@ -122,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_REQUEST["register_submit_bu
 	if (!$USER_FIELD_MANAGER->CheckFields("USER", 0, $arResult["VALUES"]))
 	{
 		$e = $APPLICATION->GetException();
-		$arResult["ERRORS"][] = substr($e->GetString(), 0, -4); //cutting "<br>"
+		$arResult["ERRORS"][] = mb_substr($e->GetString(), 0, -4); //cutting "<br>"
 		$APPLICATION->ResetException();
 	}
 
@@ -144,14 +154,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_REQUEST["register_submit_bu
 			CEventLog::Log("SECURITY", "USER_REGISTER_FAIL", "main", false, implode("<br>", $arError));
 		}
 	}
-	else // if there;s no any errors - create user
+	else // if there's no any errors - create user
 	{
-		$bConfirmReq = (COption::GetOptionString("main", "new_user_registration_email_confirmation", "N") == "Y" && $arResult["EMAIL_REQUIRED"]);
+		$arResult['VALUES']["GROUP_ID"] = array();
+		$def_group = COption::GetOptionString("main", "new_user_registration_def_group", "");
+		if($def_group != "")
+			$arResult['VALUES']["GROUP_ID"] = explode(",", $def_group);
 
-		$arResult['VALUES']["CHECKWORD"] = md5(CMain::GetServerUniqID().uniqid());
+		$bConfirmReq = ($arResult["USE_EMAIL_CONFIRMATION"] === "Y");
+		$active = ($bConfirmReq || $arResult["PHONE_REQUIRED"]? "N": "Y");
+
+		$arResult['VALUES']["CHECKWORD"] = Random::getString(32);
 		$arResult['VALUES']["~CHECKWORD_TIME"] = $DB->CurrentTimeFunction();
-		$arResult['VALUES']["ACTIVE"] = $bConfirmReq? "N": "Y";
-		$arResult['VALUES']["CONFIRM_CODE"] = $bConfirmReq? randString(8): "";
+		$arResult['VALUES']["ACTIVE"] = $active;
+		$arResult['VALUES']["CONFIRM_CODE"] = ($bConfirmReq ? Random::getString(8) : "");
 		$arResult['VALUES']["LID"] = SITE_ID;
 		$arResult['VALUES']["LANGUAGE_ID"] = LANGUAGE_ID;
 
@@ -160,10 +176,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_REQUEST["register_submit_bu
 		
 		if($arResult["VALUES"]["AUTO_TIME_ZONE"] <> "Y" && $arResult["VALUES"]["AUTO_TIME_ZONE"] <> "N")
 			$arResult["VALUES"]["AUTO_TIME_ZONE"] = "";
-
-		$def_group = COption::GetOptionString("main", "new_user_registration_def_group", "");
-		if($def_group != "")
-			$arResult['VALUES']["GROUP_ID"] = explode(",", $def_group);
 
 		$bOk = true;
 
@@ -189,13 +201,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_REQUEST["register_submit_bu
 
 		if (intval($ID) > 0)
 		{
-			$register_done = true;
-
-			// authorize user
-			if ($arParams["AUTH"] == "Y" && $arResult["VALUES"]["ACTIVE"] == "Y")
+			if($arResult["PHONE_REGISTRATION"] == true && $arResult['VALUES']["PHONE_NUMBER"] <> '')
 			{
-				if (!$arAuthResult = $USER->Login($arResult["VALUES"]["LOGIN"], $arResult["VALUES"]["PASSWORD"]))
-					$arResult["ERRORS"][] = $arAuthResult;
+				//added the phone number for the user, now sending a confirmation SMS
+				list($code, $phoneNumber) = CUser::GeneratePhoneCode($ID);
+
+				$sms = new \Bitrix\Main\Sms\Event(
+					"SMS_USER_CONFIRM_NUMBER",
+					[
+						"USER_PHONE" => $phoneNumber,
+						"CODE" => $code,
+					]
+				);
+				$smsResult = $sms->send(true);
+
+				if(!$smsResult->isSuccess())
+				{
+					$arResult["ERRORS"] = array_merge($arResult["ERRORS"], $smsResult->getErrorMessages());
+				}
+
+				$arResult["SHOW_SMS_FIELD"] = true;
+				$arResult["SIGNED_DATA"] = \Bitrix\Main\Controller\PhoneAuth::signData(['phoneNumber' => $phoneNumber]);
+			}
+			else
+			{
+				$register_done = true;
+
+				// authorize user
+				if ($arParams["AUTH"] == "Y" && $arResult["VALUES"]["ACTIVE"] == "Y")
+				{
+					if (!$arAuthResult = $USER->Login($arResult["VALUES"]["LOGIN"], $arResult["VALUES"]["PASSWORD"]))
+						$arResult["ERRORS"][] = $arAuthResult;
+				}
 			}
 
 			$arResult['VALUES']["USER_ID"] = $ID;
@@ -231,6 +268,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_REQUEST["register_submit_bu
 	}
 }
 
+// verify phone code
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["code_submit_button"] <> '' && !$USER->IsAuthorized())
+{
+	if($_REQUEST["SIGNED_DATA"] <> '')
+	{
+		if(($params = \Bitrix\Main\Controller\PhoneAuth::extractData($_REQUEST["SIGNED_DATA"])) !== false)
+		{
+			if(($userId = CUser::VerifyPhoneCode($params['phoneNumber'], $_REQUEST["SMS_CODE"])))
+			{
+				$register_done = true;
+
+				if($arResult["PHONE_REQUIRED"])
+				{
+					//the user was added as inactive, now phone number is confirmed, activate them
+					$user = new CUser();
+					$user->Update($userId, ["ACTIVE" => "Y"]);
+				}
+
+				// authorize user
+				if ($arParams["AUTH"] == "Y")
+				{
+					//here should be login
+					$USER->Authorize($userId);
+				}
+			}
+			else
+			{
+				$arResult["ERRORS"][] = GetMessage("main_register_error_sms");
+				$arResult["SHOW_SMS_FIELD"] = true;
+				$arResult["SMS_CODE"] = $_REQUEST["SMS_CODE"];
+				$arResult["SIGNED_DATA"] = $_REQUEST["SIGNED_DATA"];
+			}
+		}
+	}
+}
 // if user is registered - redirect him to backurl or to success_page; currently added users too
 if($register_done)
 {
@@ -271,7 +343,7 @@ if (is_array($arUserFields) && count($arUserFields) > 0)
 		if (!in_array($FIELD_NAME, $arParams["USER_PROPERTY"]) && $arUserField["MANDATORY"] != "Y")
 			continue;
 
-		$arUserField["EDIT_FORM_LABEL"] = strLen($arUserField["EDIT_FORM_LABEL"]) > 0 ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
+		$arUserField["EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"] <> '' ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
 		$arUserField["EDIT_FORM_LABEL"] = htmlspecialcharsEx($arUserField["EDIT_FORM_LABEL"]);
 		$arUserField["~EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"];
 		$arResult["USER_PROPERTIES"]["DATA"][$FIELD_NAME] = $arUserField;

@@ -1,5 +1,6 @@
-<?
-global $DB, $APPLICATION, $MESS, $DBType;
+<?php
+
+global $DB, $APPLICATION, $MESS;
 
 \Bitrix\Main\Loader::registerAutoLoadClasses(
 	"seo",
@@ -9,6 +10,7 @@ global $DB, $APPLICATION, $MESS, $DBType;
 		'CSeoPageChecker' => 'classes/general/seo_page_checker.php'
 	)
 );
+
 
 if (!defined('SEO_COUNTERS_DEFAULT'))
 {
@@ -23,7 +25,7 @@ if (!defined('SEO_COUNTERS_DEFAULT'))
 	{
 		define(
 			'SEO_COUNTERS_DEFAULT',
-			'<a href="http://www.whats-my-pagerank.com" target="_blank"><img src = "http://www.whats-my-pagerank.com/pagerank2.php" alt="PR Checker" border="0" /></a>'
+			''
 		);
 	}
 }
@@ -32,7 +34,7 @@ IncludeModuleLangFile(__FILE__);
 
 class CSeoEventHandlers
 {
-	function SeoOnPanelCreate()
+	public static function SeoOnPanelCreate()
 	{
 		global $APPLICATION, $USER;
 
@@ -68,7 +70,7 @@ class CSeoEventHandlers
 
 		$prop_code = ToUpper(COption::GetOptionString('seo', 'property_window_title', 'title'));
 
-		if (is_array($APPLICATION->arPagePropertiesChanger[$prop_code]))
+		if (isset($APPLICATION->arPagePropertiesChanger[$prop_code]) && is_array($APPLICATION->arPagePropertiesChanger[$prop_code]))
 		{
 			if (isset($APPLICATION->arPagePropertiesChanger[$prop_code]['PUBLIC_EDIT_LINK']))
 				$encWinTitleChangerLink = urlencode(base64_encode($APPLICATION->arPagePropertiesChanger[$prop_code]['PUBLIC_EDIT_LINK']));
@@ -77,7 +79,7 @@ class CSeoEventHandlers
 		}
 
 		$encTitle = urlencode(base64_encode($APPLICATION->sDocTitle));
-		$encWinTitle = urlencode(base64_encode($APPLICATION->arPageProperties[$prop_code]));
+		$encWinTitle = urlencode(base64_encode($APPLICATION->arPageProperties[$prop_code] ?? ''));
 
 		$APPLICATION->AddPanelButton(array(
 			"HREF"=> 'javascript:'.$APPLICATION->GetPopupLink(
@@ -197,7 +199,6 @@ class CSeoEventHandlers
 			);
 
 			originalTextWnd.Show();
-			originalTextWnd.Get().style.zIndex = 3010;
 
 			document.forms.seo_original_text_form.original_text.value = content;
 			BX('seo_original_text_form_form').style.display = 'block';
@@ -211,7 +212,6 @@ class CSeoEventHandlers
 		else
 		{
 			originalTextWnd.Show();
-			originalTextWnd.Get().style.zIndex = 3010;
 			originalTextBtn.btn.disabled = true;
 		}
 	};
@@ -343,7 +343,6 @@ class CSeoEventHandlers
 				);
 
 				originalTextWnd.Show();
-				originalTextWnd.Get().style.zIndex = 3010;
 
 				document.forms.seo_original_text_form.original_text.value = content;
 				BX('seo_original_text_form_form').style.display = 'block';
@@ -357,7 +356,6 @@ class CSeoEventHandlers
 			else
 			{
 				originalTextWnd.Show();
-				originalTextWnd.Get().style.zIndex = 3010;
 				originalTextBtn.btn.disabled = true;
 			}
 		};
@@ -394,4 +392,3 @@ class CSeoEventHandlers
 		}
 	}
 }
-?>

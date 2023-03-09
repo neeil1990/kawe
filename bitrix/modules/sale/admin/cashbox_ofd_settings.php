@@ -23,8 +23,8 @@ namespace Bitrix\Sale\Cashbox\AdminPage\OfdSettings
 	if (isset($cashbox))
 	{
 		/** @var Cashbox\Ofd $handler */
-		$handler = $cashbox['OFD'];
-		$cashboxSettings = $cashbox['OFD_SETTINGS'];
+		$handler = $cashbox['OFD'] ?? '';
+		$cashboxSettings = $cashbox['OFD_SETTINGS'] ?? [];
 		if (class_exists($handler))
 		{
 			$settings = $handler::getSettings();
@@ -40,7 +40,14 @@ namespace Bitrix\Sale\Cashbox\AdminPage\OfdSettings
 						if (isset($cashboxSettings[$group][$code]))
 							$value = $cashboxSettings[$group][$code];
 
-						$result .= '<td width="45%" class="adm-detail-content-cell-l">'.$item['LABEL'].':</td><td width="55%" valign="top" class="adm-detail-content-cell-r">'.Input\Manager::getEditHtml('OFD_SETTINGS['.$group.']['.$code.']', $item, $value).'</td></tr>';
+						$className = 'adm-detail-content-cell-l';
+
+						if (isset($item['REQUIRED']) && $item['REQUIRED'] === 'Y')
+						{
+							$className .= ' adm-required-field';
+						}
+
+						$result .= '<td width="45%" class="'.$className.'">'.$item['LABEL'].':</td><td width="55%" valign="top" class="adm-detail-content-cell-r">'.Input\Manager::getEditHtml('OFD_SETTINGS['.$group.']['.$code.']', $item, $value).'</td></tr>';
 					}
 				}
 			}

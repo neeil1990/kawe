@@ -4,6 +4,7 @@ namespace Bitrix\Forum\Comments;
 
 use \Bitrix\Forum\Internals\Error\ErrorCollection;
 use \Bitrix\Forum\Internals\Error\Error;
+use \Bitrix\Forum;
 use Bitrix\Main\Localization\Loc;
 use \Bitrix\Main\ArgumentTypeException;
 use \Bitrix\Main\ArgumentException;
@@ -31,11 +32,20 @@ abstract class BaseObject
 	/** @var  ErrorCollection */
 	protected $errorCollection;
 
-	public function __construct($forumId, $entity, $userId = 0)
+	public function __construct($forumId, $entity, $userId = null)
 	{
 		global $USER;
 		$this->errorCollection = new ErrorCollection();
-		$this->setUser($userId ?: $USER->getId());
+		if (is_null($userId))
+		{
+			$userId = ($USER instanceof \CUser ? $USER->getId() : 0);
+		}
+		else
+		{
+			$userId = intval($userId);
+		}
+		$this->setUser($userId);
+
 		$this->setForum($forumId);
 		$this->setEntity($entity);
 		$this->setTopic();
@@ -67,7 +77,7 @@ abstract class BaseObject
 		{
 			$protoEntity = Entity::getEntityByType("default");
 			if (!array_key_exists('xml_id', $id) || empty($id["xml_id"]))
-				$id['xml_id'] = strtoupper($id["type"]."_".$id['id']);
+				$id['xml_id'] = mb_strtoupper($id["type"]."_".$id['id']);
 		}
 		elseif (!array_key_exists('xml_id', $id) || empty($id["xml_id"]))
 			$id['xml_id'] = $protoEntity["xmlIdPrefix"]."_".$id['id'];
@@ -110,7 +120,7 @@ abstract class BaseObject
 		$event = new Event("forum", "OnCommentTopicAdd", array($this->getEntity()->getType(), $this->getEntity()->getId(), $post, &$topic));
 		$event->send();
 
-		if (strlen($topic["AUTHOR_NAME"]) <= 0)
+		if ($topic["AUTHOR_NAME"] == '')
 			$topic["AUTHOR_NAME"] = ($topic["AUTHOR_ID"] <= 0 ? Loc::getMessage("FORUM_USER_SYSTEM") : self::getUserName($topic["AUTHOR_ID"]));
 
 		$topic = array_merge($topic, array(
@@ -197,7 +207,7 @@ abstract class BaseObject
 		if (!$this->checkForumId($id))
 			throw new ArgumentTypeException(Loc::getMessage("FORUM_CM_FORUM_IS_WRONG"), self::ERROR_PARAMS_FORUM_ID);
 
-		$this->forum = \CForumNew::getByIDEx($id, SITE_ID);
+		$this->forum = Forum\ForumTable::getMainData($id, SITE_ID);
 
 		if (!$this->forum)
 			throw new ArgumentException(Loc::getMessage("FORUM_CM_FORUM_IS_LOST"), self::ERROR_PARAMS_FORUM_ID);
@@ -245,6 +255,21 @@ abstract class BaseObject
 	public function getUser()
 	{
 		return $this->user;
+	}
+
+	public function getUserUnreadMessageId()
+	{
+		return $this->user->getUnreadMessageId($this->getTopic() ? $this->getTopic()["ID"] : 0);
+	}
+
+	public function setUserAsRead()
+	{
+		$this->user->readTopic($this->getTopic() ? $this->getTopic()["ID"] : 0);
+	}
+
+	public function setUserLocation()
+	{
+		$this->user->setLocation($this->forum["ID"], $this->getTopic() ? $this->getTopic()["ID"] : 0);
 	}
 
 	/**

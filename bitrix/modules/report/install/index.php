@@ -13,13 +13,11 @@ Class report extends CModule
 	var $MODULE_CSS;
 	var $errors;
 
-	function report()
+	public function __construct()
 	{
 		$arModuleVersion = array();
 
-		$path = str_replace("\\", "/", __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen("/index.php"));
-		include($path."/version.php");
+		include(__DIR__.'/version.php');
 
 		if (is_array($arModuleVersion) && array_key_exists("VERSION", $arModuleVersion))
 		{
@@ -38,13 +36,13 @@ Class report extends CModule
 
 	function InstallDB($arParams = array())
 	{
-		global $DB, $DBType, $APPLICATION;
+		global $DB, $APPLICATION;
 		$this->errors = false;
 
 		// Database tables creation
 		if(!$DB->Query("SELECT 'x' FROM b_report WHERE 1=0", true))
 		{
-			$this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/report/install/db/".ToLower($DB->type)."/install.sql");
+			$this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/report/install/db/mysql/install.sql");
 		}
 
 		if($this->errors !== false)
@@ -56,17 +54,26 @@ Class report extends CModule
 		RegisterModule("report");
 		RegisterModuleDependences('report', 'OnReportDelete', 'report', '\Bitrix\Report\Sharing', 'OnReportDelete');
 
+		// visual reports
+		$eventManager = \Bitrix\Main\EventManager::getInstance();
+		$eventManager->registerEventHandler('report', 'onReportCategoryCollect', 'report', '\Bitrix\Report\VisualConstructor\EventHandler', 'onCategoriesCollect');
+		$eventManager->registerEventHandler('report', 'onReportsCollect', 'report', '\Bitrix\Report\VisualConstructor\EventHandler', 'onReportsCollect');
+		$eventManager->registerEventHandler('report', 'onReportViewCollect', 'report', '\Bitrix\Report\VisualConstructor\EventHandler', 'onViewsCollect');
+		$eventManager->registerEventHandler('report', 'onWidgetCollect', 'report', '\Bitrix\Report\VisualConstructor\EventHandler', 'onWidgetCollect');
+
 		return true;
 	}
 
 	function UnInstallDB($arParams = array())
 	{
-		global $DB, $DBType, $APPLICATION;
+		global $DB, $APPLICATION;
 		$this->errors = false;
+
+
 
 		if(!array_key_exists("savedata", $arParams) || $arParams["savedata"] != "Y")
 		{
-			$this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/report/install/db/".ToLower($DB->type)."/uninstall.sql");
+			$this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/report/install/db/mysql/uninstall.sql");
 		}
 
 		UnRegisterModuleDependences('report', 'OnReportDelete', 'report', '\Bitrix\Report\Sharing', 'OnReportDelete');
@@ -137,7 +144,7 @@ Class report extends CModule
 	function DoUninstall()
 	{
 		global $DB, $DOCUMENT_ROOT, $APPLICATION, $step;
-		$step = IntVal($step);
+		$step = intval($step);
 		if($step < 2)
 		{
 			$APPLICATION->IncludeAdminFile(GetMessage("REPORT_UNINSTALL_TITLE"), $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/report/install/unstep1.php");

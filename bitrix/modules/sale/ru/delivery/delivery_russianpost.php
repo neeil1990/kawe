@@ -52,7 +52,7 @@ define(
 
 class CDeliveryRUSSIANPOST
 {
-	function Init()
+	public static function Init()
 	{
 		if (\Bitrix\Main\Loader::includeModule('currency') && $arCurrency = CCurrency::GetByID('RUR'))
 		{
@@ -106,7 +106,7 @@ class CDeliveryRUSSIANPOST
 		);
 	}
 
-	function GetConfig()
+	public static function GetConfig()
 	{
 		$arConfig = array(
 			"CONFIG_GROUPS" => array(
@@ -135,14 +135,14 @@ class CDeliveryRUSSIANPOST
 		return $arConfig;
 	}
 
-	function GetSettings($strSettings)
+	public static function GetSettings($strSettings)
 	{
 		return array(
 			"category" => intval($strSettings)
 		);
 	}
 
-	function SetSettings($arSettings)
+	public static function SetSettings($arSettings)
 	{
 		if(!isset($arSettings["category"]))
 			$arSettings["category"] = DELIVERY_RUSSIANPOST_CATEGORY_DEFAULT;
@@ -150,7 +150,7 @@ class CDeliveryRUSSIANPOST
 		return intval($arSettings["category"]);
 	}
 
-	function __GetLocation($location, $bGetZIP = false)
+	public static function __GetLocation($location, $bGetZIP = false)
 	{
 		$arLocation = CSaleHelper::getLocationByIdHitCached($location);
 
@@ -172,7 +172,7 @@ class CDeliveryRUSSIANPOST
 		return $arLocation;
 	}
 
-	function __GetCountry($arLocation)
+	public static function __GetCountry($arLocation)
 	{
 		static $arRUSSIANPOSTCountryList;
 
@@ -198,7 +198,7 @@ class CDeliveryRUSSIANPOST
 		}
 	}
 
-	function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
+	public static function Calculate($profile, $arConfig, $arOrder, $STEP, $TEMP = false)
 	{
 		if ($STEP >= 3)
 		{
@@ -224,7 +224,7 @@ class CDeliveryRUSSIANPOST
 		}
 
 		$zip = COption::GetOptionString('sale', 'location_zip');
-		if (strlen($zip) > 0)
+		if ($zip <> '')
 			$arLocationFrom["ZIP"] = array(0 => $zip);
 
 		if ($arLocationTo["IS_RUSSIAN"] == 'Y' && count($arLocationTo["ZIP"]) <= 0)
@@ -324,25 +324,27 @@ class CDeliveryRUSSIANPOST
 
 		CDeliveryRUSSIANPOST::__Write2Log($data);
 
-		if (strstr($data, DELIVERY_RUSSIANPOST_VALUE_CAPTHA_STRING))
+		if(mb_strstr($data, DELIVERY_RUSSIANPOST_VALUE_CAPTHA_STRING))
 		{
 			$cResult = preg_match(
-					DELIVERY_RUSSIANPOST_CAPTHA_REGEXP,
-					$data,
-					$matches
+				DELIVERY_RUSSIANPOST_CAPTHA_REGEXP,
+				$data,
+				$matches
 			);
 
 			$arCode = array();
-			$arCode["key"] = IntVal($matches[1]);
+			$arCode["key"] = intval($matches[1]);
 
 			$res = self::sendRequestData($arCode, DELIVERY_RUSSIANPOST_SERVER_METHOD_CAPTHA);
 
-			if (!$res->isSuccess())
+			if(!$res->isSuccess())
 			{
 				$errors = "";
 
 				foreach($res->getErrorMessages() as $message)
+				{
 					$errors .= $message."\n";
+				}
 
 				CDeliveryRUSSIANPOST::__Write2Log($errors);
 
@@ -353,7 +355,7 @@ class CDeliveryRUSSIANPOST
 			}
 		}
 
-		if (strstr($data, DELIVERY_RUSSIANPOST_VALUE_CHECK_STRING))
+		if(mb_strstr($data, DELIVERY_RUSSIANPOST_VALUE_CHECK_STRING))
 		{
 			$bResult = preg_match(
 				DELIVERY_RUSSIANPOST_VALUE_CHECK_REGEXP_RUS,
@@ -362,7 +364,7 @@ class CDeliveryRUSSIANPOST
 			);
 
 			// both regexps must be checked! it's not only for russian and non-russian
-			if (/*$arLocationTo["IS_RUSSIAN"] == "Y" && */!$bResult)
+			if(/*$arLocationTo["IS_RUSSIAN"] == "Y" && */ !$bResult)
 			{
 				$bResult = preg_match(
 					DELIVERY_RUSSIANPOST_VALUE_CHECK_REGEXP,
@@ -371,7 +373,7 @@ class CDeliveryRUSSIANPOST
 				);
 			}
 
-			if ($bResult)
+			if($bResult)
 			{
 				$obCache->StartDataCache();
 
@@ -386,8 +388,10 @@ class CDeliveryRUSSIANPOST
 				);
 
 				// only these delivery types have insurance tax of 3% or 4% from price
-				if (in_array($arConfig["category"]["VALUE"], array(26, 16, 36)))
+				if(in_array($arConfig["category"]["VALUE"], array(26, 16, 36)))
+				{
 					$result += $arOrder["PRICE"] * DELIVERY_RUSSIANPOST_PRICE_TARIFF_1;
+				}
 
 				return array(
 					"RESULT" => "OK",
@@ -403,13 +407,15 @@ class CDeliveryRUSSIANPOST
 			}
 		}
 		else
+		{
 			return array(
 				"RESULT" => "ERROR",
 				"TEXT" => GetMessage('SALE_DH_RUSSIANPOST_ERROR_RESPONSE'),
 			);
+		}
 	}
 
-	function Compability($arOrder, $arConfig)
+	public static function Compability($arOrder, $arConfig)
 	{
 		$arLocationFrom = CSaleHelper::getLocationByIdHitCached($arOrder["LOCATION_FROM"]);
 
@@ -438,7 +444,7 @@ class CDeliveryRUSSIANPOST
 		}
 	}
 
-	function __IsRussian($arLocation)
+	public static function __IsRussian($arLocation)
 	{
 		return
 			(ToUpper($arLocation["COUNTRY_NAME_ORIG"]) == "РОССИЯ"
@@ -457,11 +463,11 @@ class CDeliveryRUSSIANPOST
 		);
 	}
 
-	function __Write2Log($data)
+	public static function __Write2Log($data)
 	{
 		if (defined('DELIVERY_RUSSIANPOST_WRITE_LOG') && DELIVERY_RUSSIANPOST_WRITE_LOG === 1)
 		{
-			$fp = fopen(dirname(__FILE__)."/russianpost.log", "a");
+			$fp = fopen(__DIR__."/russianpost.log", "a");
 			fwrite($fp, "\r\n==========================================\r\n");
 			fwrite($fp, $data);
 			fclose($fp);
@@ -515,7 +521,7 @@ class CDeliveryRUSSIANPOST
 		return $result;
 	}
 
-	public function getAdminMessage()
+	public static function getAdminMessage()
 	{
 		return array(
 			'MESSAGE' => GetMessage(

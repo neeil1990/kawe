@@ -3,7 +3,8 @@ use Bitrix\Main,
 	Bitrix\Main\Loader,
 	Bitrix\Iblock\Component\Element,
 	Bitrix\Main\Localization\Loc,
-	Bitrix\Catalog;
+	Bitrix\Catalog,
+	Bitrix\Sale\Internals\FacebookConversion;
 
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
 
@@ -51,6 +52,12 @@ class CatalogElementComponent extends Element
 			\CJSCore::Init(array('popup'));
 		}
 
+		$params['ADDITIONAL_FILTER_NAME'] = trim($params['ADDITIONAL_FILTER_NAME'] ?? '');
+		if (!preg_match(self::PARAM_TITLE_MASK, $params['ADDITIONAL_FILTER_NAME']))
+		{
+			$params['ADDITIONAL_FILTER_NAME'] = '';
+		}
+
 		return $params;
 	}
 
@@ -64,7 +71,11 @@ class CatalogElementComponent extends Element
 	{
 		parent::initAdditionalCacheKeys($resultCacheKeys);
 
-		if ($this->useCatalog)
+		if (
+			$this->useCatalog
+			&& !empty($this->storage['CATALOGS'][$this->arParams['IBLOCK_ID']])
+			&& is_array($this->storage['CATALOGS'][$this->arParams['IBLOCK_ID']])
+		)
 		{
 			$element =& $this->elements[0];
 
@@ -223,6 +234,7 @@ class CatalogElementComponent extends Element
 						'MODULE' => 'catalog',
 						'LID' => $this->getSiteId()
 					);
+					/** @noinspection PhpDeprecationInspection */
 					\CSaleViewedProduct::Add($fields);
 				}
 
@@ -239,6 +251,7 @@ class CatalogElementComponent extends Element
 						'LID' => $this->getSiteId(),
 						'IBLOCK_ID' => $this->arResult['IBLOCK_ID']
 					);
+					/** @noinspection PhpDeprecationInspection */
 					\CSaleViewedProduct::Add($fields);
 				}
 
@@ -249,12 +262,15 @@ class CatalogElementComponent extends Element
 			{
 				if (Loader::includeModule('catalog') && Loader::includeModule('sale'))
 				{
-					Catalog\CatalogViewedProductTable::refresh(
-						$this->arResult['VIEWED_PRODUCT']['OFFER_ID'],
-						\CSaleBasket::GetBasketUserID(),
-						$this->getSiteId(),
-						$this->arResult['VIEWED_PRODUCT']['PRODUCT_ID']
-					);
+					if ((string)Main\Config\Option::get('catalog', 'enable_viewed_products') !== 'N')
+					{
+						Catalog\CatalogViewedProductTable::refresh(
+							$this->arResult['VIEWED_PRODUCT']['OFFER_ID'],
+							\CSaleBasket::GetBasketUserID(),
+							$this->getSiteId(),
+							$this->arResult['VIEWED_PRODUCT']['PRODUCT_ID']
+						);
+					}
 				}
 			}
 		}
@@ -272,5 +288,24 @@ class CatalogElementComponent extends Element
 		{
 			Main\Analytics\Counter::sendData('ct', $this->arResult['counterData']);
 		}
+	}
+
+	protected function getFilter()
+	{
+		$result = parent::getFilter();
+		$elementFilter = $this->arParams['ADDITIONAL_FILTER_NAME'];
+		if (
+			$elementFilter !== ''
+			&& !empty($GLOBALS[$elementFilter])
+			&& is_array($GLOBALS[$elementFilter])
+		)
+		{
+			$result = array_merge(
+				$GLOBALS[$elementFilter],
+				$result
+			);
+		}
+
+		return $result;
 	}
 }

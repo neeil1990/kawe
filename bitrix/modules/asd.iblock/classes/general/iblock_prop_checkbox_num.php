@@ -1,9 +1,9 @@
 <?php
 IncludeModuleLangFile(__FILE__);
 
-define ('ASD_UT_CHECKBOX_NUM', 'SASDCheckboxNum');
-define ('ASD_UT_CHECKBOX_VAL_NUM_FALSE', 0);
-define ('ASD_UT_CHECKBOX_VAL_NUM_TRUE', 1);
+const ASD_UT_CHECKBOX_NUM = 'SASDCheckboxNum';
+const ASD_UT_CHECKBOX_VAL_NUM_FALSE = 0;
+const ASD_UT_CHECKBOX_VAL_NUM_TRUE = 1;
 
 class CASDiblockPropCheckboxNum {
 	public static function GetUserTypeDescription() {
@@ -21,6 +21,7 @@ class CASDiblockPropCheckboxNum {
 			'GetPublicFilterHTML' => array(__CLASS__, 'GetPublicFilterHTML'),
 			'GetSettingsHTML' => array(__CLASS__,'GetSettingsHTML'),
 			'PrepareSettings' => array(__CLASS__,'PrepareSettings'),
+			'GetUIFilterProperty' => array(__CLASS__, 'GetUIFilterProperty')
 		);
 	}
 
@@ -43,7 +44,7 @@ class CASDiblockPropCheckboxNum {
 		return $value;
 	}
 
-	public static function GetSettingsHTML($arFields,$strHTMLControlName, &$arPropertyFields) {
+	public static function GetSettingsHTML($arFields, $strHTMLControlName, &$arPropertyFields) {
 		$arPropertyFields = array(
 			'HIDE' => array('ROW_COUNT', 'COL_COUNT', 'MULTIPLE_CNT', 'WITH_DESCRIPTION'),
 			'USER_TYPE_SETTINGS_TITLE' => GetMessage('ASD_UT_CHECKBOX_NUM_SETTING_TITLE'),
@@ -66,7 +67,8 @@ class CASDiblockPropCheckboxNum {
 		return $strResult;
 	}
 
-	public static function GetPropertyFieldHtml($arProperty, $arValue, $strHTMLControlName) {
+	public static function GetPropertyFieldHtml($arProperty, $arValue, $strHTMLControlName)
+	{
 		if ($arValue['VALUE'] === null || $arValue['VALUE'] === false || $arValue['VALUE'] === '') {
 			$newID = (!isset($_REQUEST['ID']) || (int)$_REQUEST['ID'] <= 0 || (isset($_REQUEST['action']) && $_REQUEST['action'] == 'copy'));
 			if ($newID) {
@@ -81,8 +83,17 @@ class CASDiblockPropCheckboxNum {
 			$arValue['VALUE'] = ASD_UT_CHECKBOX_VAL_NUM_FALSE;
 		}
 
-		$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_NUM_FALSE.'" />'.
-					'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_NUM_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_NUM_TRUE ? 'checked="checked"' : '').'/>';
+		if (
+			isset($strHTMLControlName['MODE'])
+			&& $strHTMLControlName['MODE'] == 'iblock_element_admin'
+			&& CASDiblockVersion::isIblockNewGridv18()
+			&& strncmp($strHTMLControlName['FORM_NAME'], 'form_tbl_iblock_sub_element', 27) !== 0
+		) {
+			$strResult = '<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_NUM_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_NUM_TRUE ? 'checked="checked"' : '').'/>';
+		} else {
+			$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_NUM_FALSE.'" />'.
+				'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_NUM_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_NUM_TRUE ? 'checked="checked"' : '').'/>';
+		}
 		return $strResult;
 	}
 
@@ -120,6 +131,7 @@ class CASDiblockPropCheckboxNum {
 
 	public static function GetPublicViewHTML($arProperty, $arValue, $strHTMLControlName) {
 		$arSettings = static::PrepareSettings($arProperty);
+		$arValue['VALUE'] = CIBlock::NumberFormat($arValue['VALUE']);
 		if ('|'.$arValue['VALUE'] != '|'.(int)$arValue['VALUE']) {
 			return GetMessage('ASD_UT_CHECKBOX_NUM_VALUE_ABSENT');
 		}
@@ -139,8 +151,12 @@ class CASDiblockPropCheckboxNum {
 			$arValue['VALUE'] = ASD_UT_CHECKBOX_VAL_NUM_FALSE;
 		}
 
-		$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_NUM_FALSE.'" />'.
-			'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_NUM_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_NUM_TRUE ? 'checked="checked"' : '').'/>';
+		if (CASDiblockVersion::isIblockNewGridv18()) {
+			$strResult = '<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_NUM_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_NUM_TRUE ? 'checked="checked"' : '').'/>';
+		} else {
+			$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_NUM_FALSE.'" />'.
+				'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_NUM_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_NUM_TRUE ? 'checked="checked"' : '').'/>';
+		}
 		return $strResult;
 	}
 
@@ -189,7 +205,22 @@ class CASDiblockPropCheckboxNum {
 		);
 	}
 
-	protected function GetDefaultListValues() {
+	public static function GetUIFilterProperty($arProperty, $strHTMLControlName, &$fields)
+	{
+		$settings = static::PrepareSettings($arProperty);
+		if (empty($settings['VIEW'])) {
+			return;
+		}
+		$fields['type'] = 'list';
+		$fields['items'] = array();
+		$fields['items'][''] = GetMessage('ASD_UT_CHECKBOX_NUM_VALUE_EMPTY_NEW_STYLE');
+		foreach ($settings['VIEW'] as $index => $value) {
+			$fields['items'][$index] = $value;
+		}
+		unset($index, $value, $settings);
+	}
+
+	protected static function GetDefaultListValues() {
 		return array(
 			ASD_UT_CHECKBOX_VAL_NUM_FALSE => GetMessage('ASD_UT_CHECKBOX_NUM_VALUE_N'),
 			ASD_UT_CHECKBOX_VAL_NUM_TRUE => GetMessage('ASD_UT_CHECKBOX_NUM_VALUE_Y')

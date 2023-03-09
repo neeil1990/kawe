@@ -7,7 +7,7 @@ if ($arParams['SHOW_ORDER_PAGE'] !== 'Y')
 	LocalRedirect($arParams['SEF_FOLDER']);
 }	
 
-if (strlen($arParams["MAIN_CHAIN_NAME"]) > 0)
+if ($arParams["MAIN_CHAIN_NAME"] <> '')
 {
 	$APPLICATION->AddChainItem(htmlspecialcharsbx($arParams["MAIN_CHAIN_NAME"]), $arResult['SEF_FOLDER']);
 }
@@ -35,6 +35,7 @@ $APPLICATION->IncludeComponent(
 		"CACHE_TYPE" => $arParams["CACHE_TYPE"],
 		"CACHE_TIME" => $arParams["CACHE_TIME"],
 		"CACHE_GROUPS" => $arParams["CACHE_GROUPS"],
+		"DISALLOW_CANCEL" => $arParams["ORDER_DISALLOW_CANCEL"],
 		"DEFAULT_SORT" => $arParams["ORDER_DEFAULT_SORT"],
 		"RESTRICT_CHANGE_PAYSYSTEM" => $arParams["ORDER_RESTRICT_CHANGE_PAYSYSTEM"],
 		"REFRESH_PRICES" => $arParams["ORDER_REFRESH_PRICES"],

@@ -2,6 +2,7 @@
 
 use Bitrix\Main;
 use Bitrix\Sale\Cashbox;
+use Bitrix\Sale\Cashbox\Logger;
 use Bitrix\Sale\Cashbox\ReportManager;
 
 define('NOT_CHECK_PERMISSIONS', true);
@@ -32,8 +33,7 @@ if ($hash)
 
 if ($accessDenied)
 {
-	if (Cashbox\Manager::DEBUG_MODE === true)
-		Cashbox\Internals\CashboxErrLogTable::add(array('MESSAGE' => '403 Forbidden', 'DATE_INSERT' => new Main\Type\DateTime()));
+	Logger::addDebugInfo("403 Forbidden");
 
 	CHTTP::SetStatus("403 Forbidden");
 	$APPLICATION->FinalActions();
@@ -47,30 +47,51 @@ $json = file_get_contents('php://input');
 
 if ($json)
 {
-	if (Cashbox\Manager::DEBUG_MODE === true)
-		Cashbox\Internals\CashboxErrLogTable::add(array('MESSAGE' => $json, 'DATE_INSERT' => new Main\Type\DateTime()));
+	Logger::addDebugInfo($json);
 
 	$data = Main\Web\Json::decode($json);
 }
 
 if (isset($data['kkm']) && count($data['kkm']) > 0)
 {
-	$processedCheckIds = Cashbox\CashboxBitrix::applyPrintResult($data);
+	if (isset($data['api_version']) && (string)$data['api_version'] === '3')
+	{
+		/** @var Cashbox\CashboxBitrixV3 $cashboxHandler */
+		$cashboxHandler = Cashbox\CashboxBitrixV3::class;
+	}
+	elseif (isset($data['api_version']) && (string)$data['api_version'] === '2')
+	{
+		/** @var Cashbox\CashboxBitrix $cashboxHandler */
+		$cashboxHandler = Cashbox\CashboxBitrixV2::class;
+	}
+	else
+	{
+		/** @var Cashbox\CashboxBitrix $cashboxHandler */
+		$cashboxHandler = Cashbox\CashboxBitrix::class;
+	}
+
+	$processedCheckIds = $cashboxHandler::applyPrintResult($data);
 	if ($processedCheckIds)
 	{
 		$result->ack = $processedCheckIds;
 	}
 	else
 	{
-		$cashboxList = Cashbox\CashboxBitrix::getCashboxList($data);
+		$cashboxList = $cashboxHandler::getCashboxList($data);
 		foreach ($cashboxList as $item)
-			Cashbox\Manager::saveCashbox($item);
+		{
+			$cashboxHandler::saveCashbox($item);
+		}
 
 		$enabledCashbox = array();
 		foreach ($cashboxList as $item)
 		{
-			if ($item['ENABLED'] === 'Y'  && $item['ACTIVE'] === 'Y')
+			if ($item['PRESENTLY_ENABLED'] === 'Y'
+				&& $item['ACTIVE'] === 'Y'
+			)
+			{
 				$enabledCashbox[$item['ID']] = $item;
+			}
 		}
 
 		if ($enabledCashbox)
@@ -129,16 +150,14 @@ if (isset($data['kkm']) && count($data['kkm']) > 0)
 		}
 		else
 		{
-			if (Cashbox\Manager::DEBUG_MODE === true)
-				Cashbox\Internals\CashboxErrLogTable::add(array('MESSAGE' => 'enabled cashbox was not found', 'DATE_INSERT' => new Main\Type\DateTime()));
+			Logger::addDebugInfo("enabled cashbox was not found");
 			$error = true;
 		}
 	}
 }
 else
 {
-	if (Cashbox\Manager::DEBUG_MODE === true)
-		Cashbox\Internals\CashboxErrLogTable::add(array('MESSAGE' => 'empty kkm list', 'DATE_INSERT' => new Main\Type\DateTime()));
+	Logger::addDebugInfo("empty kkm list");
 	$error = true;
 }
 

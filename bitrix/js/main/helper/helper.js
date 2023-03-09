@@ -51,7 +51,10 @@ BX.Helper =
 
 		BX.bind(window, 'message', BX.proxy(function(event)
 		{
-			if(!!event.origin && event.origin.indexOf('bitrix') === -1)
+			var eventOrigin = event.origin || '';
+			var frameOrigin = new URL(this.frameOpenUrl).origin;
+
+			if(eventOrigin !== frameOrigin)
 			{
 				return;
 			}
@@ -68,6 +71,7 @@ BX.Helper =
 
 			if(event.data.action === "SetCounter")
 			{
+				BX.Helper.setNotification(event.data.num);
 				BX.Helper.showNotification(event.data.num);
 			}
 
@@ -83,11 +87,11 @@ BX.Helper =
 
 			if(event.data.action === "getMenuStructure")
 			{
-				if (typeof BX.Bitrix24.LeftMenuClass === "object")
+				if (BX.getClass("BX.Intranet.LeftMenu"))
 				{
-					if (typeof BX.Bitrix24.LeftMenuClass.getStructureForHelper === "function")
+					if (typeof BX.Intranet.LeftMenu.getStructureForHelper === "function")
 					{
-						var structure = BX.Bitrix24.LeftMenuClass.getStructureForHelper();
+						var structure = BX.Intranet.LeftMenu.getStructureForHelper();
 						this.frameNode.contentWindow.postMessage({action: 'throwMenu', menu: structure}, '*');
 					}
 				}
@@ -118,11 +122,16 @@ BX.Helper =
 		}
 	},
 
-	show: function(additionalParam)
+	show: function(additionalParam, sliderOptions)
 	{
 		if (this.isOpen())
 		{
 			return;
+		}
+
+		if (!BX.Type.isPlainObject(sliderOptions))
+		{
+			sliderOptions = {};
 		}
 
 		var url = this.frameOpenUrl + ((this.frameOpenUrl.indexOf("?") < 0) ? "?" : "&") +
@@ -141,6 +150,7 @@ BX.Helper =
 			}.bind(this),
 			width: 860,
 			cacheable: false,
+			zIndex: sliderOptions.zIndex || null,
 			events: {
 				onCloseComplete: function() {
 					BX.Helper.close();
@@ -162,7 +172,12 @@ BX.Helper =
 
 	close: function()
 	{
-		BX.SidePanel.Instance.close();
+		var slider = this.getSlider();
+		if (slider)
+		{
+			slider.close();
+		}
+
 		if (this.isAdmin === 'N')
 		{
 			if (this.openBtn)
@@ -171,7 +186,6 @@ BX.Helper =
 			}
 			this.getFrame().classList.remove("helper-panel-iframe-show");
 		}
-
 	},
 
 	getContent: function()
@@ -228,7 +242,7 @@ BX.Helper =
 			attrs:{className:'bx-help-popup-loader'},
 			children : [BX.create('div', {
 				attrs:{className:'bx-help-popup-loader-text'},
-				text : BX.message("HELPER_LOADER")
+				text : BX.message("MAIN_HELPER_LOADER")
 			})]
 		});
 
@@ -268,6 +282,11 @@ BX.Helper =
 
 	showNotification : function(num)
 	{
+		if (!this.notifyBlock)
+		{
+			return;
+		}
+
 		if (!isNaN(parseFloat(num)) && isFinite(num) && num > 0)
 		{
 			var numBlock = '<div class="help-cl-count"><span class="help-cl-count-digit">' + (num > 99 ? '99+' : num) + '</span></div>';
@@ -277,8 +296,6 @@ BX.Helper =
 			numBlock = "";
 		}
 		this.notifyBlock.innerHTML = numBlock;
-
-		this.setNotification(num);
 		this.notifyNum = num;
 	},
 
@@ -334,6 +351,7 @@ BX.Helper =
 			{
 				if (!isNaN(res.num))
 				{
+					this.setNotification(res.num);
 					this.showNotification(res.num);
 
 					if (res.id)

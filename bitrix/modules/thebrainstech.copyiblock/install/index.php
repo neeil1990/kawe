@@ -27,8 +27,23 @@ class thebrainstech_copyiblock extends CModule {
 
     }
 
+    function InstallFiles()
+    {
+        CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/thebrainstech.copyiblock/install/admin",
+            $_SERVER["DOCUMENT_ROOT"]."/bitrix/admin/thebrainstech.copyiblock", true, true);
+
+        return true;
+    }
+
+    function UnInstallFiles()
+    {
+        DeleteDirFilesEx("/bitrix/admin/thebrainstech.copyiblock");
+        return true;
+    }
+
     function DoInstall(){
         global $APPLICATION;
+        $this->InstallFiles();
         RegisterModule($this->MODULE_ID);
         RegisterModuleDependences('main', 'OnAdminContextMenuShow', 'thebrainstech.copyiblock', 'TheBrains','showBtn');
         RegisterModuleDependences('main', 'OnAdminContextMenuShow', 'thebrainstech.copyiblock', 'TheBrains', 'actionBtn');
@@ -37,6 +52,7 @@ class thebrainstech_copyiblock extends CModule {
 
     function DoUninstall(){
         global $APPLICATION;
+        $this->UnInstallFiles();
         UnRegisterModule($this->MODULE_ID);
         UnRegisterModuleDependences('main', 'OnAdminContextMenuShow', 'thebrainstech.copyiblock', 'TheBrains','showBtn');
         UnRegisterModuleDependences('main', 'OnAdminContextMenuShow', 'thebrainstech.copyiblock', 'TheBrains', 'actionBtn');

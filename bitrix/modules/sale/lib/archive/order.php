@@ -8,7 +8,7 @@ class Order extends Sale\Order
 {
 	protected $discountResult = array();
 	protected $dateArchived = null;
-	protected $archiveVersion = Manager::SALE_ARCHIVE_VERSION;
+	protected $archiveVersion = null;
 
 	/**
 	 * Restrict recalculation discounts
@@ -22,15 +22,11 @@ class Order extends Sale\Order
 	}
 
 	/**
-	 * @param array $fields
-	 * @return Order
+	 * @return string
 	 */
-	protected static function createOrderObject(array $fields = array())
+	public static function getRegistryType()
 	{
-		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ARCHIVE_ORDER);
-		$orderClassName = $registry->getOrderClassName();
-
-		return new $orderClassName($fields);
+		return Sale\Registry::REGISTRY_TYPE_ARCHIVE_ORDER;
 	}
 
 	/**

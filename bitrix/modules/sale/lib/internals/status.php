@@ -12,6 +12,22 @@ use	Bitrix\Main,
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class StatusTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Status_Query query()
+ * @method static EO_Status_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Status_Result getById($id)
+ * @method static EO_Status_Result getList(array $parameters = array())
+ * @method static EO_Status_Entity getEntity()
+ * @method static \Bitrix\Sale\Internals\EO_Status createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Internals\EO_Status_Collection createCollection()
+ * @method static \Bitrix\Sale\Internals\EO_Status wakeUpObject($row)
+ * @method static \Bitrix\Sale\Internals\EO_Status_Collection wakeUpCollection($rows)
+ */
 class StatusTable extends Main\Entity\DataManager
 {
 	public static function getFilePath()
@@ -59,10 +75,19 @@ class StatusTable extends Main\Entity\DataManager
 			)),
 
 			new Main\Entity\StringField('COLOR', array(
-				'default_value' => 'Y',
 				'title'         => Loc::getMessage('B_SALE_STATUS_COLOR'),
 			)),
 
+			new Main\Entity\StringField('XML_ID', array(
+				'title' => Loc::getMessage('B_SALE_STATUS_XML_ID'),
+			)),
+
+			new Main\ORM\Fields\Relations\Reference(
+				'STATUS_LANG',
+				StatusLangTable::class,
+				Main\ORM\Query\Join::on('this.ID', 'ref.STATUS_ID'),
+				array('join_type' => 'left')
+			)
 		);
 	}
 
@@ -110,5 +135,13 @@ class StatusTable extends Main\Entity\DataManager
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function generateXmlId()
+	{
+		return uniqid('bx_');
 	}
 }

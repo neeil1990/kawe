@@ -12,30 +12,30 @@ if ($_REQUEST["pay_this_order"] == "Y")
 	$bCanProcess = True;
 
 	$INPUT_CARD_NUM = Trim($_REQUEST["ccard_num"]);
-	if (!isset($INPUT_CARD_NUM) || strlen($INPUT_CARD_NUM) <= 0)
+	if (!isset($INPUT_CARD_NUM) || $INPUT_CARD_NUM == '')
 		$strErrorMessage .= GetMessage("AN_CC_NUM")." ";
 
 	$INPUT_CARD_NUM = preg_replace("/[\D]+/", "", $INPUT_CARD_NUM);
-	if (strlen($INPUT_CARD_NUM) <= 0)
+	if ($INPUT_CARD_NUM == '')
 		$strErrorMessage .= GetMessage("AN_CC_NUM")." ";
 
-	$INPUT_CARD_EXP_MONTH = IntVal($_REQUEST["ccard_date1"]);
+	$INPUT_CARD_EXP_MONTH = intval($_REQUEST["ccard_date1"]);
 	if ($INPUT_CARD_EXP_MONTH < 1 || $INPUT_CARD_EXP_MONTH > 12)
 		$strErrorMessage .= GetMessage("AN_CC_MONTH")." ";
-	elseif (strlen($INPUT_CARD_EXP_MONTH) < 2)
+	elseif (mb_strlen($INPUT_CARD_EXP_MONTH) < 2)
 		$INPUT_CARD_EXP_MONTH = "0".$INPUT_CARD_EXP_MONTH;
 
-	$INPUT_CARD_EXP_YEAR = IntVal($_REQUEST["ccard_date2"]);
+	$INPUT_CARD_EXP_YEAR = intval($_REQUEST["ccard_date2"]);
 	if ($INPUT_CARD_EXP_YEAR < $year)
 		$strErrorMessage .= GetMessage("AN_CC_YEAR")." ";
 
 	$INPUT_CARD_CODE = Trim($_REQUEST["ccard_code"]);
 
-	if (strlen($strErrorMessage) > 0)
+	if ($strErrorMessage <> '')
 		$bCanProcess = False;
 }
 
-$ORDER_ID = IntVal($GLOBALS["SALE_INPUT_PARAMS"]["ORDER"]["ID"]);
+$ORDER_ID = intval($GLOBALS["SALE_INPUT_PARAMS"]["ORDER"]["ID"]);
 
 if ($bCanProcess)
 {
@@ -109,9 +109,9 @@ if ($bCanProcess)
 	$mass = explode("|,|", "|,".$strResult);
 
 	$strHashValue = CSalePaySystemAction::GetParamValue("HASH_VALUE");
-	if (strlen($strHashValue)>0)
+	if ($strHashValue <> '')
 	{
-		if (md5($strHashValue.(CSalePaySystemAction::GetParamValue("PS_LOGIN")).$mass[7].sprintf("%.2f",$GLOBALS["SALE_INPUT_PARAMS"]["ORDER"]["SHOULD_PAY"])) != strtolower($mass[38]))
+		if (md5($strHashValue.(CSalePaySystemAction::GetParamValue("PS_LOGIN")).$mass[7].sprintf("%.2f", $GLOBALS["SALE_INPUT_PARAMS"]["ORDER"]["SHOULD_PAY"])) != mb_strtolower($mass[38]))
 		{
 			$mass = array();
 			$mass[1] = 3;
@@ -121,14 +121,14 @@ if ($bCanProcess)
 		}
 	}
 
-	$strPS_STATUS = ((IntVal($mass[1])==1) ? "Y" : "N");
+	$strPS_STATUS = ((intval($mass[1])==1) ? "Y" : "N");
 	$strPS_STATUS_CODE = $mass[3];
 	if ($strPS_STATUS=="Y")
 		$strPS_STATUS_DESCRIPTION = "Approval Code: ".$mass[5].(!empty($mass[7]) ? "; Transaction ID: ".$mass[7] : "");
 	else
 	{
-		$strPS_STATUS_DESCRIPTION = (IntVal($mass[1])==2 ? "Declined" : "Error").": ".$mass[4]." (Reason Code ".$mass[3]." / Sub ".$mass[2].")";
-		$strErrorMessage .= (IntVal($mass[1])==2 ? "Transaction was declined" : "Error while processing transaction").": ".$mass[4]." (".$mass[3]."/".$mass[2].")";
+		$strPS_STATUS_DESCRIPTION = (intval($mass[1])==2 ? "Declined" : "Error").": ".$mass[4]." (Reason Code ".$mass[3]." / Sub ".$mass[2].")";
+		$strErrorMessage .= (intval($mass[1])==2 ? "Transaction was declined" : "Error while processing transaction").": ".$mass[4]." (".$mass[3]."/".$mass[2].")";
 	}
 
 	$strPS_STATUS_MESSAGE = "";
@@ -164,73 +164,65 @@ if ($bCanProcess)
 
 	CSaleOrder::Update($ORDER_ID, $arFields);
 
-	if (strlen($strErrorMessage)<=0)
+	if ($strErrorMessage == '')
 		$bSuccessProcess = True;
 }
 
 if ($bSuccessProcess)
 {
-	?><p><font class="oktext"><?=GetMessage("AN_SUCC")?></font></p><?
+	?><div class="alert alert-success" role="alert"><?=GetMessage("AN_SUCC")?></div><?
 }
 else
 {
-	if (strlen($strErrorMessage)>0)
+	if ($strErrorMessage <> '')
 	{
-		?><p><font class="errortext"><?= $strErrorMessage ?></font></p><?
+		?><div class="alert alert-danger" role="alert"><?= $strErrorMessage ?></div><?
 	}
 	?>
-	<table border="0" cellspacing="0" cellpadding="1" width="100%"><tr><td class="tableborder">
-	<table border="0" cellpadding="3" cellspacing="0" width="100%">
 		<form action="" method="post">
-		<tr>
-			<td align="right" class="tablebody">
-				<font class="tablebodytext">
-				<?=GetMessage("AN_CC")?>
-				</font>
-			</td>
-			<td class="tablebody"><input type="text" class="inputtext" name="ccard_num" size="30" value="<?= htmlspecialcharsbx($_REQUEST["ccard_num"]) ?>"></td>
-		</tr>
-		<tr>
-			<td align="right" class="tablebody">
-				<font class="tablebodytext">
-				<?=GetMessage("AN_CC_DATE")?>
-				</font>
-			</td>
-			<td class="tablebody">
-				<select name="ccard_date1" class="inputselect">
-					<?for ($i = 1; $i <= 12; $i++):?>
-						<option value="<?= $i ?>"<?= (($i==$_REQUEST["ccard_date1"]) ? "selected" : "") ?>><?= $i ?></option>
-					<?endfor;?>
-				</select>
-				/
-				<select name="ccard_date2" class="inputselect">
-					<?for ($i = $year; $i <= $year+5; $i++):?>
-						<option value="<?= $i ?>"<?= (($i==$_REQUEST["ccard_date2"]) ? "selected" : "") ?>><?= $i ?></option>
-					<?endfor;?>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td align="right" class="tablebody">
-				<font class="tablebodytext">
-				<?=GetMessage("AN_CC_CVV2")?>
-				</font>
-			</td>
-			<td class="tablebody"><input type="text" class="inputtext" name="ccard_code" size="5" value="<?= htmlspecialcharsbx($_REQUEST["ccard_code"]) ?>"></td>
-		</tr>
-		<tr>
-			<td align="center" class="tablebody" colspan="2">
-				<font class="tablebodytext">
-				<input type="hidden" name="CurrentStep" value="<?= IntVal($GLOBALS["CurrentStep"]) ?>">
-				<input type="hidden" name="ORDER_ID" value="<?= $ORDER_ID ?>">
-				<input type="hidden" name="pay_this_order" value="Y">
-				<input type="submit" value="<?=GetMessage("AN_CC_BUTTON")?>" class="inputbutton">
-				</font>
-			</td>
-		</tr>
+			<div class="form-group row">
+				<label for="ccardNumber" class="col-sm-6 col-form-label text-sm-right"><?=GetMessage("AN_CC")?></label>
+				<div class="col-sm-6">
+					<input type="text" id="ccardNumber" name="ccard_num" size="30" value="<?= htmlspecialcharsbx($_REQUEST["ccard_num"]) ?>" class="form-control inputtext">
+				</div>
+			</div>
+
+			<div class="form-group row">
+				<label for="ccardDate1" class="col-sm-6 col-form-label text-sm-right"><?=GetMessage("AN_CC_DATE")?></label>
+				<div class="col-auto">
+					<select name="ccard_date1" class="inputselect form-control" id="ccardDate1">
+						<?for ($i = 1; $i <= 12; $i++):?>
+							<option value="<?= $i ?>"<?= (($i==$_REQUEST["ccard_date1"]) ? "selected" : "") ?>><?= $i ?></option>
+						<?endfor;?>
+					</select>
+				</div>
+				<div class="col-auto col-form-label">/</div>
+				<div class="col-auto">
+					<select name="ccard_date2" class="inputselect form-control">
+						<?for ($i = $year; $i <= $year+5; $i++):?>
+							<option value="<?= $i ?>"<?= (($i==$_REQUEST["ccard_date2"]) ? "selected" : "") ?>><?= $i ?></option>
+						<?endfor;?>
+					</select>
+				</div>
+			</div>
+
+			<div class="form-group row">
+				<label for="ccardCode" class="col-sm-6 col-form-label text-sm-right"><?=GetMessage("AN_CC_CVV2")?></label>
+				<div class="col-auto">
+					<input type="text" id="ccardCode" name="ccard_code" size="5" value="<?= htmlspecialcharsbx($_REQUEST["ccard_code"]) ?>" class="inputtext form-control">
+				</div>
+			</div>
+
+			<div class="form-group row">
+				<div class="col-sm-6 col-form-label text-sm-right"></div>
+				<div class="col-auto">
+					<input type="hidden" name="CurrentStep" value="<?= intval($GLOBALS["CurrentStep"]) ?>">
+					<input type="hidden" name="ORDER_ID" value="<?= $ORDER_ID ?>">
+					<input type="hidden" name="pay_this_order" value="Y">
+					<input type="submit" value="<?=GetMessage("AN_CC_BUTTON")?>" class="inputbutton btn btn-primary">
+				</div>
+			</div>
 		</form>
-	</table>
-	</td></tr></table>
 	<?
 }
 ?>

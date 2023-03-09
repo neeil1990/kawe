@@ -6,6 +6,7 @@ Loc::loadMessages(__FILE__);
 $data = array(
 	'NAME' => Loc::getMessage('SALE_HPS_YANDEX_INVOICE'),
 	'SORT' => 500,
+	'IS_AVAILABLE' => \Bitrix\Sale\PaySystem\Manager::HANDLER_AVAILABLE_FALSE,
 	'CODES' => array(
 		"YANDEX_INVOICE_SHOP_ID" => array(
 			"NAME" => Loc::getMessage("SALE_HPS_YANDEX_INVOICE_SHOP_ID"),
@@ -53,6 +54,10 @@ $data = array(
 			"INPUT" => array(
 				'TYPE' => 'Y/N'
 			),
+			'DEFAULT' => array(
+				"PROVIDER_KEY" => "INPUT",
+				"PROVIDER_VALUE" => "Y",
+			)
 		),
 		"PS_IS_TEST" => array(
 			"NAME" => Loc::getMessage("SALE_HPS_YANDEX_INVOICE_IS_TEST"),

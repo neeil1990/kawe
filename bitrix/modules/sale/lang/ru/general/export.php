@@ -135,6 +135,10 @@ $MESS["SALE_EXPORT_STORIES"] = "Склады";
 $MESS["SALE_EXPORT_STORY"] = "Склад";
 $MESS["SALE_EXPORT_KOEF"] = "Коэффициент";
 $MESS["SALE_EXPORT_UNIT"] = "Единица";
+$MESS["SALE_EXPORT_MARKING_CODE_GROUP"] = "ГруппаМаркировки";
+$MESS["SALE_EXPORT_MARKING_MARKINGS"] = "Маркировки";
+$MESS["SALE_EXPORT_MARKING_MARKING"] = "Маркировка";
+$MESS["SALE_EXPORT_MARKING_BARCODE"] = "Штрихкод";
 $MESS["SALE_EXPORT_VERSION"] = "НомерВерсии";
 $MESS["SALE_EXPORT_ID_1C"] = "Номер1С";
 $MESS["SALE_EXPORT_OKPO_CODE"] = "КодПоОКПО";
@@ -163,4 +167,6 @@ $MESS["SALE_EXPORT_PROP_VALUES"] = "ЗначенияСвойств";
 $MESS["SALE_EXPORT_PROP_VALUE"] = "ЗначенияСвойства";
 $MESS["SALE_EXPORT_CASHBOX_CHECKS"] = "ИнформацияОЧеках";
 $MESS["SALE_EXPORT_CASHBOX_CHECK"] = "ИнформацияОЧеке";
+$MESS["SALE_EXPORT_AGENT"] = "Контрагент";
+$MESS["SALE_EXPORT_XML_ID"] = "Ид";
 ?>

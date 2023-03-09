@@ -14,12 +14,12 @@ $compositeStub = (isset($arResult['COMPOSITE_STUB']) && $arResult['COMPOSITE_STU
 			$name = trim($USER->GetFullName());
 			if (! $name)
 				$name = trim($USER->GetLogin());
-			if (strlen($name) > 15)
-				$name = substr($name, 0, 12).'...';
+			if (mb_strlen($name) > 15)
+				$name = mb_substr($name, 0, 12).'...';
 			?>
 			<a href="<?=$arParams['PATH_TO_PROFILE']?>"><?=htmlspecialcharsbx($name)?></a>
 			&nbsp;
-			<a href="?logout=yes"><?=GetMessage('TSB1_LOGOUT')?></a>
+			<a href="?logout=yes&<?=bitrix_sessid_get()?>"><?=GetMessage('TSB1_LOGOUT')?></a>
 		<?else:
 			$arParamsToDelete = array(
 				"login",
@@ -33,7 +33,8 @@ $compositeStub = (isset($arResult['COMPOSITE_STUB']) && $arResult['COMPOSITE_STU
 				"confirm_user_id",
 				"logout_butt",
 				"auth_service_id",
-				"clear_cache"
+				"clear_cache",
+				"backurl",
 			);
 
 			$currentUrl = urlencode($APPLICATION->GetCurPageParam("", $arParamsToDelete));
@@ -45,10 +46,27 @@ $compositeStub = (isset($arResult['COMPOSITE_STUB']) && $arResult['COMPOSITE_STU
 			{
 				$currentUrl = '#CURRENT_URL#';
 			}
+			
+			$pathToAuthorize = $arParams['PATH_TO_AUTHORIZE'];
+			$pathToAuthorize .= (mb_stripos($pathToAuthorize, '?') === false ? '?' : '&');
+			$pathToAuthorize .= 'login=yes&backurl='.$currentUrl;
 			?>
-			<a href="<?=$arParams['PATH_TO_AUTHORIZE']?>?login=yes&backurl=<?=$currentUrl; ?>"><?=GetMessage('TSB1_LOGIN')?></a>
-			&nbsp;
-			<a href="<?=$arParams['PATH_TO_REGISTER']?>?register=yes&backurl=<?=$currentUrl; ?>"><?=GetMessage('TSB1_REGISTER')?></a>
+			<a href="<?=$pathToAuthorize?>">
+				<?=GetMessage('TSB1_LOGIN')?>
+			</a>
+			<?
+			if ($arParams['SHOW_REGISTRATION'] === 'Y')
+			{
+				$pathToRegister = $arParams['PATH_TO_REGISTER'];
+				$pathToRegister .= (mb_stripos($pathToRegister, '?') === false ? '?' : '&');
+				$pathToRegister .= 'register=yes&backurl='.$currentUrl;
+				?>
+				<a href="<?=$pathToRegister?>">
+					<?=GetMessage('TSB1_REGISTER')?>
+				</a>
+				<?
+			}
+			?>
 		<?endif?>
 	</div>
 <?endif?>
@@ -58,23 +76,25 @@ $compositeStub = (isset($arResult['COMPOSITE_STUB']) && $arResult['COMPOSITE_STU
 			?><i class="fa fa-shopping-cart"></i>
 			<a href="<?= $arParams['PATH_TO_BASKET'] ?>"><?= GetMessage('TSB1_CART') ?></a><?
 		}
+
 		if (!$compositeStub)
 		{
 			if ($arParams['SHOW_NUM_PRODUCTS'] == 'Y' && ($arResult['NUM_PRODUCTS'] > 0 || $arParams['SHOW_EMPTY_VALUES'] == 'Y'))
 			{
-				echo $arResult['NUM_PRODUCTS'].' '.$arResult['PRODUCT(S)'];
+				echo $arResult['BASKET_COUNT_DESCRIPTION'];
+
+				if ($arParams['SHOW_TOTAL_PRICE'] == 'Y')
+				{
+					?>
+					<br <? if ($arParams['POSITION_FIXED'] == 'Y'): ?>class="hidden-xs"<? endif; ?>/>
+					<span>
+						<?=GetMessage('TSB1_TOTAL_PRICE')?> <strong><?=$arResult['TOTAL_PRICE']?></strong>
+					</span>
+					<?
+				}
 			}
-			if ($arParams['SHOW_TOTAL_PRICE'] == 'Y'):?>
-			<br <? if ($arParams['POSITION_FIXED'] == 'Y'): ?>class="hidden-xs"<?endif ?>/>
-			<span>
-				<?= GetMessage('TSB1_TOTAL_PRICE') ?>
-				<? if ($arResult['NUM_PRODUCTS'] > 0 || $arParams['SHOW_EMPTY_VALUES'] == 'Y'):?>
-					<strong><?= $arResult['TOTAL_PRICE'] ?></strong>
-				<?endif ?>
-			</span>
-			<?endif;?>
-			<?
 		}
+
 		if ($arParams['SHOW_PERSONAL_LINK'] == 'Y'):?>
 			<div style="padding-top: 4px;">
 			<span class="icon_info"></span>

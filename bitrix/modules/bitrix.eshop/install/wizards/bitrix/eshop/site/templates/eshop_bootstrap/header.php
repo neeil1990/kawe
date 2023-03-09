@@ -9,7 +9,7 @@ $theme = COption::GetOptionString("main", "wizard_eshop_bootstrap_theme_id", "bl
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, width=device-width">
-	<link rel="shortcut icon" type="image/x-icon" href="<?=SITE_DIR?>favicon.ico" />
+	<link rel="shortcut icon" type="image/x-icon" href="<?=htmlspecialcharsbx(SITE_DIR)?>favicon.ico" />
 	<?$APPLICATION->ShowHead();?>
 	<?
 	$APPLICATION->SetAdditionalCSS(SITE_TEMPLATE_PATH."/colors.css", true);
@@ -18,7 +18,7 @@ $theme = COption::GetOptionString("main", "wizard_eshop_bootstrap_theme_id", "bl
 	?>
 	<title><?$APPLICATION->ShowTitle()?></title>
 </head>
-<body class="bx-background-image bx-theme-<?=$theme?>" <?=$APPLICATION->ShowProperty("backgroundImage")?>>
+<body class="bx-background-image bx-theme-<?=$theme?>" <?$APPLICATION->ShowProperty("backgroundImage");?>>
 <div id="panel"><?$APPLICATION->ShowPanel();?></div>
 <?$APPLICATION->IncludeComponent("bitrix:eshop.banner", "", array());?>
 <div class="bx-wrapper" id="bx_eshop_wrap">
@@ -27,10 +27,10 @@ $theme = COption::GetOptionString("main", "wizard_eshop_bootstrap_theme_id", "bl
 			<div class="row">
 				<div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">
 					<div class="bx-logo">
-						<a class="bx-logo-block hidden-xs" href="<?=SITE_DIR?>">
+						<a class="bx-logo-block hidden-xs" href="<?=htmlspecialcharsbx(SITE_DIR)?>">
 							<?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/company_logo.php"), false);?>
 						</a>
-						<a class="bx-logo-block hidden-lg hidden-md hidden-sm text-center" href="<?=SITE_DIR?>">
+						<a class="bx-logo-block hidden-lg hidden-md hidden-sm text-center" href="<?=htmlspecialcharsbx(SITE_DIR)?>">
 							<?$APPLICATION->IncludeComponent("bitrix:main.include", "", array("AREA_FILE_SHOW" => "file", "PATH" => SITE_DIR."include/company_logo_mobile.php"), false);?>
 						</a>
 					</div>
@@ -122,7 +122,10 @@ $theme = COption::GetOptionString("main", "wizard_eshop_bootstrap_theme_id", "bl
 			</div>
 			<?endif?>
 
-			<?if ($curPage != SITE_DIR."index.php"):?>
+			<?
+			if ($curPage != SITE_DIR."index.php")
+			{
+			?>
 			<div class="row">
 				<div class="col-lg-12" id="navigation">
 					<?$APPLICATION->IncludeComponent("bitrix:breadcrumb", "", array(
@@ -135,13 +138,26 @@ $theme = COption::GetOptionString("main", "wizard_eshop_bootstrap_theme_id", "bl
 					);?>
 				</div>
 			</div>
-			<h1 class="bx-title dbg_title" id="pagetitle"><?=$APPLICATION->ShowTitle(false);?></h1>
-			<?endif?>
+			<h1 class="bx-title dbg_title" id="pagetitle"><?$APPLICATION->ShowTitle(false);?></h1>
+			<?
+			}
+			else
+			{
+			?>
+			<h1 style="display: none"><?$APPLICATION->ShowTitle()?></h1>
+			<?
+			}
+			?>
 		</div>
 	</header>
 
 	<div class="workarea">
 		<div class="container bx-content-seection">
 			<div class="row">
-			<?$needSidebar = preg_match("~^".SITE_DIR."(catalog|personal\/cart|personal\/order\/make)/~", $curPage);?>
-				<div class="bx-content <?=($needSidebar ? "col-xs-12" : "col-md-9 col-sm-8")?>">
+			<?
+			$hideSidebar =
+				defined("HIDE_SIDEBAR") && HIDE_SIDEBAR == true
+				|| preg_match("~^".SITE_DIR."(catalog|personal\\/cart|personal\\/order\\/make)/~", $curPage)
+			? true : false;
+			?>
+				<div class="bx-content <?=($hideSidebar ? "col-xs-12" : "col-md-9 col-sm-8")?>">

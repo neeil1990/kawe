@@ -1,6 +1,9 @@
 <?
 include_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/virtual_file.php");
 
+/**
+ * @deprecated Use \Bitrix\Main\IO
+ */
 interface IBXVirtualIO
 {
 	function CombinePath();
@@ -25,6 +28,9 @@ interface IBXVirtualIO
 	function ClearCache();
 }
 
+/**
+ * @deprecated Use \Bitrix\Main\IO
+ */
 interface IBXGetErrors
 {
 	function GetErrors();
@@ -32,9 +38,9 @@ interface IBXGetErrors
 
 /**
  * Proxy class for file IO. Provides a set of methods to retrieve resources from a file system.
+ * @deprecated Use \Bitrix\Main\IO
  */
-class CBXVirtualIo
-	implements IBXVirtualIO, IBXGetErrors
+class CBXVirtualIo implements IBXVirtualIO, IBXGetErrors
 {
 	private static $instance;
 	private $io;
@@ -127,7 +133,7 @@ class CBXVirtualIo
 		return $this->io->GetPhysicalName($path);
 	}
 
-	function GetLogicalName($path)
+	public function GetLogicalName($path)
 	{
 		return $this->io->GetLogicalName($path);
 	}
@@ -284,7 +290,7 @@ class CBXVirtualIo
 	 *
 	 * @return void
 	 */
-	function ClearCache()
+	public function ClearCache()
 	{
 		$this->io->ClearCache();
 	}
@@ -310,4 +316,3 @@ class CBXVirtualIo
 		return $this->io->GetErrors();
 	}
 }
-?>

@@ -1,6 +1,9 @@
 <?
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
+use Bitrix\Currency,
+	Bitrix\Sale;
+
 if(!CModule::IncludeModule("sale") || !CModule::IncludeModule("currency"))
 	return false;
 
@@ -8,13 +11,13 @@ global $USER;
 
 $saleModulePermissions = $GLOBALS["APPLICATION"]->GetGroupRight("sale");
 
-if (intval($arGadgetParams["ITEMS_COUNT"]) <= 0 || intval($arGadgetParams["ITEMS_COUNT"]) > 40)
+if (!isset($arGadgetParams) || !isset($arGadgetParams["ITEMS_COUNT"]) || intval($arGadgetParams["ITEMS_COUNT"]) <= 0 || intval($arGadgetParams["ITEMS_COUNT"]) > 40)
 	$arGadgetParams["ITEMS_COUNT"] = 10;
 
-if (strlen($arGadgetParams["SITE_ID"]) > 0)
+if (isset($arGadgetParams["SITE_ID"]) && $arGadgetParams["SITE_ID"] <> '')
 {
-	$arGadgetParams["SITE_CURRENCY"] = CSaleLang::GetLangCurrency($arGadgetParams["SITE_ID"]);
-	if (strlen($arGadgetParams["TITLE_STD"]) <= 0)
+	$arGadgetParams["SITE_CURRENCY"] = Sale\Internals\SiteCurrencyTable::getSiteCurrency($arGadgetParams["SITE_ID"]);
+	if ($arGadgetParams["TITLE_STD"] == '')
 	{
 		$rsSites = CSite::GetByID($arGadgetParams["SITE_ID"]);
 		if ($arSite = $rsSites->GetNext())
@@ -22,7 +25,9 @@ if (strlen($arGadgetParams["SITE_ID"]) > 0)
 	}
 }
 else
-	$arGadgetParams["SITE_CURRENCY"] = CCurrency::GetBaseCurrency();
+{
+	$arGadgetParams["SITE_CURRENCY"] = Currency\CurrencyManager::getBaseCurrency();
+}
 
 $arGadgetParams["RND_STRING"] = randString(8);
 
@@ -71,7 +76,7 @@ if ($saleModulePermissions != "W")
 }
 else
 {
-	if (strlen($arGadgetParams["SITE_ID"]) > 0)
+	if (isset($arGadgetParams["SITE_ID"]) && $arGadgetParams["SITE_ID"] <> '')
 	{
 		$arFilterLID = array("=LID" => $arGadgetParams["SITE_ID"]);
 	}
@@ -205,7 +210,7 @@ foreach($arDatePeriods as $key => $arPeriod)
 		$arOrderStats[$key]["PRICE_".$status_code] = 0;
 	}
 	$obCache = new CPHPCache;
-	$cache_id = $key."_".md5(serialize($arPeriod))."_".md5(serialize($arFilterLID))."_".md5(serialize($arFilterPerms))."_".md5(serialize($arGadgetParams["ORDERS_STATUS_1"]));
+	$cache_id = $key."_".md5(serialize($arPeriod))."_".md5(serialize($arFilterLID))."_".md5(serialize($arFilterPerms))."_".md5(serialize($arGadgetParams["ORDERS_STATUS_1"] ?? []));
 	if($obCache->InitCache($arPeriod["CACHE_TIME"], $cache_id, "/"))
 	{
 		$vars = $obCache->GetVars();
@@ -220,11 +225,12 @@ foreach($arDatePeriods as $key => $arPeriod)
 		foreach($arStatus1 as $status_code => $arStatus)
 		{
 			if (
-				!is_array($arGadgetParams["ORDERS_STATUS_1"])
+				!isset($arGadgetParams["ORDERS_STATUS_1"])
+				|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 				|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 			)
 			{
-				if (array_key_exists("Y_FIELD", $arStatus) && strlen($arStatus["Y_FIELD"]) > 0)
+				if (array_key_exists("Y_FIELD", $arStatus) && $arStatus["Y_FIELD"] <> '')
 					$arFilterYField = array("=".$arStatus["Y_FIELD"] => "Y");
 				else
 					$arFilterYField = array();
@@ -392,7 +398,8 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 								<th>&nbsp;</th><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -403,7 +410,8 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 								<td><?=GetMessage("GD_ORDERS_TODAY")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -416,14 +424,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_today."&filter_allow_delivery_to=".$date_today;
 
-										?><td align="center"><a <?if (intval($arOrderStats["TODAY"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["TODAY"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"]));?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["TODAY"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["TODAY"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["TODAY"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										);?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["TODAY"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_YESTERDAY")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -436,14 +449,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_yesterday."&filter_date_allow_delivery_to=".$date_yesterday;
 
-										?><td align="center"><a <?if (intval($arOrderStats["YESTERDAY"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["YESTERDAY"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"])); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["YESTERDAY"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["YESTERDAY"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["YESTERDAY"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["YESTERDAY"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_BEFOREYESTERDAY")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -456,14 +474,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_beforeyesterday."&filter_date_allow_delivery_to=".$date_beforeyesterday;
 
-										?><td align="center"><a <?if (intval($arOrderStats["BEFORE_YESTERDAY"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["BEFORE_YESTERDAY"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"]));?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["BEFORE_YESTERDAY"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["BEFORE_YESTERDAY"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["BEFORE_YESTERDAY"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										);?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["BEFORE_YESTERDAY"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_THISWEEK")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -476,14 +499,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_this_week1."&filter_date_allow_delivery_to=".$date_this_week2;
 
-										?><td align="center"><a <?if (intval($arOrderStats["THIS_WEEK"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["THIS_WEEK"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"])); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["THIS_WEEK"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["THIS_WEEK"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["THIS_WEEK"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["THIS_WEEK"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_LASTWEEK")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -496,14 +524,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_last_week1."&filter_date_allow_delivery_to=".$date_last_week2;
 
-										?><td align="center"><a <?if (intval($arOrderStats["LAST_WEEK"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["LAST_WEEK"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"])); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["LAST_WEEK"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["LAST_WEEK"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["LAST_WEEK"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["LAST_WEEK"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_BEFORELASTWEEK")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -516,14 +549,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_before_last_week1."&filter_date_allow_delivery_to=".$date_before_last_week2;
 
-										?><td align="center"><a <?if (intval($arOrderStats["BEFORE_LAST_WEEK"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["BEFORE_LAST_WEEK"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"])); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["BEFORE_LAST_WEEK"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["BEFORE_LAST_WEEK"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["BEFORE_LAST_WEEK"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["BEFORE_LAST_WEEK"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_THISMONTH")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -536,14 +574,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_this_month1."&filter_date_allow_delivery_to=".$date_this_month2;
 
-										?><td align="center"><a <?if (intval($arOrderStats["THIS_MONTH"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["THIS_MONTH"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"])); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["THIS_MONTH"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["THIS_MONTH"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["THIS_MONTH"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["THIS_MONTH"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_LASTMONTH")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -556,14 +599,19 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_last_month1."&filter_date_allow_delivery_to=".$date_last_month2;
 
-										?><td align="center"><a <?if (intval($arOrderStats["LAST_MONTH"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["LAST_MONTH"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"])); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["LAST_MONTH"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["LAST_MONTH"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["LAST_MONTH"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["LAST_MONTH"][$status_code])?></a></td><?
 									}
 							?></tr>
 							<tr>
 								<td><?=GetMessage("GD_ORDERS_BEFORELASTMONTH")?></td><?
 								foreach($arStatus1 as $status_code => $arStatus)
 									if (
-										!is_array($arGadgetParams["ORDERS_STATUS_1"])
+										!isset($arGadgetParams["ORDERS_STATUS_1"])
+										|| !is_array($arGadgetParams["ORDERS_STATUS_1"])
 										|| in_array($status_code, $arGadgetParams["ORDERS_STATUS_1"])
 									)
 									{
@@ -576,7 +624,11 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 										elseif ($status_code == "ALLOW_DELIVERY")
 											$strDateFilter = "filter_allow_delivery=Y&filter_date_allow_delivery_from=".$date_before_last_month1."&filter_date_allow_delivery_to=".$date_before_last_month2;
 
-										?><td align="center"><a <?if (intval($arOrderStats["BEFORE_LAST_MONTH"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <? echo htmlspecialcharsbx(CurrencyFormat($arOrderStats["BEFORE_LAST_MONTH"]["PRICE_".$status_code], $arGadgetParams["SITE_CURRENCY"])); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["BEFORE_LAST_MONTH"][$status_code])?></a></td><?
+										?><td align="center"><a <?if (intval($arOrderStats["BEFORE_LAST_MONTH"][$status_code]) > 0):?>title="<?=GetMessage("GD_ORDERS_ORDER_SUM")?>: <?=CCurrencyLang::CurrencyFormat(
+											$arOrderStats["BEFORE_LAST_MONTH"]["PRICE_".$status_code],
+											$arGadgetParams["SITE_CURRENCY"],
+											true
+										); ?>"<?endif;?> href="/bitrix/admin/sale_order.php?set_filter=Y&<?=$strDateFilter?>&lang=<?=LANGUAGE_ID?>"><?=intval($arOrderStats["BEFORE_LAST_MONTH"][$status_code])?></a></td><?
 									}
 							?></tr>
 						</tbody>
@@ -600,7 +652,7 @@ $tabControl = new CAdminViewTabControl("saleTabControl_".$arGadgetParams["RND_ST
 								{
 									?><tr>
 										<td align="left" style="vertical-align: top;"><a href="/bitrix/admin/sale_order_view.php?ID=<?=$arOrder["ID"]?>&lang=<?=LANGUAGE_ID?>"><?=GetMessage("GD_ORDERS_ORDER_1")?><?=$arOrder["ID"]?></a><br><?=$arOrder["DATE_INSERT"]?></td>
-										<td align="left" style="vertical-align: top;"><? echo htmlspecialcharsex(CurrencyFormat($arOrder["PRICE"], $arOrder["CURRENCY"])); ?></td>
+										<td align="left" style="vertical-align: top;"><?=CCurrencyLang::CurrencyFormat($arOrder["PRICE"], $arOrder["CURRENCY"], true); ?></td>
 										<td align="left" style="vertical-align: top;"><a href="/bitrix/admin/user_edit.php?ID=<?=$arOrder["USER_ID"]?>&lang=<?=LANGUAGE_ID?>"><?=htmlspecialcharsbx($arOrder["USER_NAME"])." ".htmlspecialcharsbx($arOrder["USER_LAST_NAME"])?></a></td>
 										<td align="center" style="vertical-align: top;"><?=($arOrder["PAYED"]=="Y"?GetMessage("GD_ORDERS_YES")."<br>".$arOrder["DATE_PAYED"]:GetMessage("GD_ORDERS_NO"))?></td>
 										<td align="center" style="vertical-align: top;"><?=($arOrder["CANCELED"]=="Y"?GetMessage("GD_ORDERS_YES")."<br>".$arOrder["DATE_CANCELED"]:GetMessage("GD_ORDERS_NO"))?></td>

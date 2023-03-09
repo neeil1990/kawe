@@ -1,16 +1,24 @@
 <?
 /** @global CMain $APPLICATION */
 /** @global CUser $USER */
+
 use Bitrix\Main;
 use Bitrix\Catalog;
+use Bitrix\Catalog\Access\AccessController;
+use Bitrix\Catalog\Access\ActionDictionary;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_discount')))
-	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+
 Main\Loader::includeModule("catalog");
 
-$readOnly = !$USER->CanDoOperation('catalog_discount');
+$accessController = AccessController::getCurrent();
+if (!($accessController->check(ActionDictionary::ACTION_CATALOG_READ) || $accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET)))
+{
+	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
+
+$readOnly = !$accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET);
 $boolShowCoupons = true;
 
 if ($ex = $APPLICATION->GetException())
@@ -26,7 +34,7 @@ $returnUrl = '';
 if (!empty($_REQUEST['return_url']))
 {
 	$currentUrl = $APPLICATION->GetCurPage();
-	if (strtolower(substr($_REQUEST['return_url'], strlen($currentUrl))) != strtolower($currentUrl))
+	if (mb_strtolower(mb_substr($_REQUEST['return_url'], mb_strlen($currentUrl))) != mb_strtolower($currentUrl))
 	{
 		$returnUrl = $_REQUEST['return_url'];
 	}
@@ -87,7 +95,7 @@ if (
 				$CONDITIONS = base64_decode($_POST['CONDITIONS']);
 				if (CheckSerializedData($CONDITIONS))
 				{
-					$CONDITIONS = unserialize($CONDITIONS);
+					$CONDITIONS = unserialize($CONDITIONS, ['allowed_classes' => false]);
 					$boolCond = true;
 				}
 				else
@@ -327,9 +335,7 @@ if (0 < $ID)
 				$strLangPath = $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/catalog/lang/';
 				$strDefLang = false;
 				$arLangList = array();
-				$by="def";
-				$order="desc";
-				$rsLangs = CLanguage::GetList($by, $order);
+				$rsLangs = CLanguage::GetList("def", "desc");
 				while ($arOneLang = $rsLangs->Fetch())
 				{
 					if (empty($strDefLang))
@@ -436,18 +442,14 @@ $context->Show();
 CAdminMessage::ShowMessage($errorMessage);
 
 $arSiteList = array();
-$by = 'sort';
-$order = 'asc';
-$rsSites = CSite::GetList($by, $order);
+$rsSites = CSite::GetList();
 while ($arSite = $rsSites->Fetch())
 {
 	$arSiteList[$arSite['LID']] = '('.$arSite['LID'].') '.$arSite['NAME'];
 }
 
 $arCurrencyList = array();
-$by2 = 'sort';
-$order2 = 'asc';
-$rsCurrencies = CCurrency::GetList($by2, $order2);
+$rsCurrencies = CCurrency::GetList('sort', 'asc');
 while ($arCurrency = $rsCurrencies->Fetch())
 {
 	$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];
@@ -527,15 +529,15 @@ $tabControl->BeginNextFormTab();
 	$tabControl->EndCustomField("VALUE_TYPE",
 		'<input type="hidden" name="VALUE_TYPE" value="'.htmlspecialcharsbx($arDiscount['VALUE_TYPE']).'">'
 	);
-	$tabControl->AddEditField("VALUE", GetMessage("DSC_VALUE").":", true, array('size' => 20, 'maxlength' => 20), roundEx($arDiscount['VALUE'], CATALOG_VALUE_PRECISION));
+	$tabControl->AddEditField("VALUE", GetMessage("DSC_VALUE").":", true, array('size' => 20, 'maxlength' => 20), htmlspecialcharsbx($arDiscount['VALUE']));
 	$tabControl->AddDropDownField("CURRENCY", GetMessage('DSC_CURRENCY').':', true, $arCurrencyList, $arDiscount['CURRENCY']);
 	$tabControl->BeginCustomField("MAX_DISCOUNT", GetMessage('DSC_MAX_SUM').":",false);
 	?><tr id="tr_MAX_DISCOUNT" style="display: <? echo 'P' == $arDiscount['VALUE_TYPE'] ? 'table-row' : 'none'; ?>;">
 		<td width="40%"><? echo $tabControl->GetCustomLabelHTML(); ?></td>
-		<td width="60%"><input id="ob_max_discount" type="text" name="MAX_DISCOUNT" size="20" maxlength="20" value="<?= roundEx($arDiscount['MAX_DISCOUNT'], CATALOG_VALUE_PRECISION) ?>"></td>
+		<td width="60%"><input id="ob_max_discount" type="text" name="MAX_DISCOUNT" size="20" maxlength="20" value="<?=htmlspecialcharsbx($arDiscount['MAX_DISCOUNT']); ?>"></td>
 	</tr><?
 	$tabControl->EndCustomField("MAX_DISCOUNT",
-		'<input type="hidden" name="MAX_DISCOUNT" value="'.roundEx($arDiscount['MAX_DISCOUNT'], CATALOG_VALUE_PRECISION).'">'
+		'<input type="hidden" name="MAX_DISCOUNT" value="'.htmlspecialcharsbx($arDiscount['MAX_DISCOUNT']).'">'
 	);
 	$tabControl->AddCheckBoxField("RENEWAL", GetMessage("DSC_RENEW").":", false, "Y", $arDiscount['RENEWAL']=="Y");
 	$tabControl->AddEditField("PRIORITY", GetMessage("BT_CAT_DISCOUNT_EDIT_FIELDS_PRIORITY").":", false, array("size" => 20, "maxlength" => 20), intval($arDiscount['PRIORITY']));
@@ -561,7 +563,7 @@ $tabControl->BeginNextFormTab();
 			{
 				if (CheckSerializedData($arDiscount['CONDITIONS']))
 				{
-					$arDiscount['CONDITIONS'] = unserialize($arDiscount['CONDITIONS']);
+					$arDiscount['CONDITIONS'] = unserialize($arDiscount['CONDITIONS'], ['allowed_classes' => false]);
 				}
 				else
 				{
@@ -676,7 +678,7 @@ $tabControl->BeginNextFormTab();
 	$TMP_ID = 0;
 	$intDiscountID = ((0 == $ID) || ($boolCopy) ? '-'.$TMP_ID : $ID);
 	$strSubTMP_ID = $TMP_ID;
-	$boolCouponsReadOnly = !$USER->CanDoOperation('catalog_discount');
+	$boolCouponsReadOnly = !$accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET);
 	$strSubElementAjaxPath = '/bitrix/admin/cat_subcoupons_admin.php?lang='.LANGUAGE_ID.'&find_discount_id='.$intDiscountID.'&TMP_ID='.urlencode($strSubTMP_ID);
 	if (0 < $intDiscountID && $boolShowCoupons && !$boolCopy)
 	{

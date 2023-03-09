@@ -9,7 +9,7 @@ use Bitrix\Main\Web;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
 
-$response = new \Bitrix\Main\HttpResponse(\Bitrix\Main\Application::getInstance()->getContext());
+$response = new \Bitrix\Main\HttpResponse();
 $response->addHeader("Content-Type", "application/json");
 
 global $USER;
@@ -130,6 +130,10 @@ foreach ($data as $key => $item)
 
 		case Actions::GRID_SET_PAGE_SIZE:
 			$options->setPageSize($item['pageSize']);
+			break;
+
+		case Actions::GRID_SET_STICKED_COLUMNS:
+			$options->setStickedColumns($item['stickedColumns']);
 			break;
 
 		default:

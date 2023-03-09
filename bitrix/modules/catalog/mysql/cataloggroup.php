@@ -33,9 +33,9 @@ class CCatalogGroup extends CAllCatalogGroup
 		return false;
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
-		global $DB, $CACHE_MANAGER, $stackCacheManager;
+		global $DB, $CACHE_MANAGER;
 
 		foreach(GetModuleEvents("catalog", "OnBeforeGroupAdd", true) as $arEvent)
 		{
@@ -43,25 +43,12 @@ class CCatalogGroup extends CAllCatalogGroup
 				return false;
 		}
 
-		if (!CCatalogGroup::CheckFields("ADD", $arFields, 0))
+		if (!static::CheckFields("ADD", $arFields, 0))
 			return false;
 
 		if ($arFields["BASE"] == "Y")
 		{
-			$strUpdate = "BASE = 'N', TIMESTAMP_X = ".$DB->GetNowFunction();
-			if (array_key_exists('MODIFIED_BY', $arFields))
-			{
-				$strUpdate .= ", MODIFIED_BY = ".$arFields["MODIFIED_BY"];
-			}
-			$strSql = "UPDATE b_catalog_group SET ".$strUpdate." WHERE BASE = 'Y'";
-			$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
-			self::$arBaseGroupCache = array();
-			if (defined('CATALOG_GLOBAL_VARS') && 'Y' == CATALOG_GLOBAL_VARS)
-			{
-				/** @global array $CATALOG_BASE_GROUP */
-				global $CATALOG_BASE_GROUP;
-				$CATALOG_BASE_GROUP = self::$arBaseGroupCache;
-			}
+			self::clearBaseGroupFlag(null, $arFields);
 		}
 
 		$arInsert = $DB->PrepareInsert("b_catalog_group", $arFields);
@@ -103,7 +90,8 @@ class CCatalogGroup extends CAllCatalogGroup
 			$CACHE_MANAGER->Clean("catalog_group_perms");
 		}
 
-		$stackCacheManager->Clear("catalog_discount");
+		Catalog\GroupTable::cleanCache();
+		Catalog\Model\Price::clearSettings();
 
 		foreach(GetModuleEvents("catalog", "OnGroupAdd", true) as $arEvent)
 		{
@@ -118,9 +106,9 @@ class CCatalogGroup extends CAllCatalogGroup
 		return $groupID;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
-		global $DB, $CACHE_MANAGER, $stackCacheManager;
+		global $DB, $CACHE_MANAGER;
 
 		$ID = (int)$ID;
 		if ($ID <= 0)
@@ -132,7 +120,7 @@ class CCatalogGroup extends CAllCatalogGroup
 				return false;
 		}
 
-		if (!CCatalogGroup::CheckFields("UPDATE", $arFields, $ID))
+		if (!static::CheckFields("UPDATE", $arFields, $ID))
 			return false;
 
 		$strUpdate = $DB->PrepareUpdate("b_catalog_group", $arFields);
@@ -140,20 +128,7 @@ class CCatalogGroup extends CAllCatalogGroup
 		{
 			if (isset($arFields["BASE"]) && $arFields["BASE"] == "Y")
 			{
-				$strBaseUpdate = "BASE = 'N', TIMESTAMP_X = ".$DB->GetNowFunction();
-				if (array_key_exists('MODIFIED_BY', $arFields))
-				{
-					$strBaseUpdate .= ", MODIFIED_BY = ".$arFields["MODIFIED_BY"];
-				}
-				$strSql = "UPDATE b_catalog_group SET ".$strBaseUpdate." WHERE ID != ".$ID." AND BASE = 'Y'";
-				$DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
-				self::$arBaseGroupCache = array();
-				if (defined('CATALOG_GLOBAL_VARS') && 'Y' == CATALOG_GLOBAL_VARS)
-				{
-					/** @global array $CATALOG_BASE_GROUP */
-					global $CATALOG_BASE_GROUP;
-					$CATALOG_BASE_GROUP = self::$arBaseGroupCache;
-				}
+				self::clearBaseGroupFlag($ID, $arFields);
 			}
 
 			$strSql = "UPDATE b_catalog_group SET ".$strUpdate." WHERE ID = ".$ID;
@@ -201,7 +176,8 @@ class CCatalogGroup extends CAllCatalogGroup
 			$CACHE_MANAGER->Clean("catalog_group_perms");
 		}
 
-		$stackCacheManager->Clear("catalog_discount");
+		Catalog\GroupTable::cleanCache();
+		Catalog\Model\Price::clearSettings();
 
 		foreach(GetModuleEvents("catalog", "OnGroupUpdate", true) as $arEvent)
 		{
@@ -211,15 +187,15 @@ class CCatalogGroup extends CAllCatalogGroup
 		return true;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
-		global $DB, $CACHE_MANAGER, $stackCacheManager, $APPLICATION;
+		global $DB, $CACHE_MANAGER, $APPLICATION;
 
 		$ID = (int)$ID;
 		if ($ID <= 0)
 			return false;
 
-		if ($res = CCatalogGroup::GetByID($ID))
+		if ($res = static::GetByID($ID))
 		{
 			if ($res["BASE"] != "Y")
 			{
@@ -240,12 +216,13 @@ class CCatalogGroup extends CAllCatalogGroup
 					$CACHE_MANAGER->Clean("catalog_group_perms");
 				}
 
-				$stackCacheManager->Clear("catalog_discount");
-
 				$DB->Query("DELETE FROM b_catalog_price WHERE CATALOG_GROUP_ID = ".$ID);
 				$DB->Query("DELETE FROM b_catalog_group2group WHERE CATALOG_GROUP_ID = ".$ID);
 				$DB->Query("DELETE FROM b_catalog_group_lang WHERE CATALOG_GROUP_ID = ".$ID);
 				Catalog\RoundingTable::deleteByPriceType($ID);
+				Catalog\GroupTable::cleanCache();
+				Catalog\Model\Price::clearSettings();
+
 				return $DB->Query("DELETE FROM b_catalog_group WHERE ID = ".$ID, true);
 			}
 			else
@@ -559,5 +536,35 @@ class CCatalogGroup extends CAllCatalogGroup
 			$strSql .= " ORDER BY ".$arSqls["ORDERBY"];
 
 		return $DB->Query($strSql, false, "File: ".__FILE__."<br>Line: ".__LINE__);
+	}
+
+	protected static function clearBaseGroupFlag(?int $id, array $fields): void
+	{
+		global $DB;
+
+		$data = [
+			'BASE' => 'N',
+			'~TIMESTAMP_X' => $DB->GetNowFunction(),
+		];
+		if (isset($fields['MODIFIED_BY']))
+		{
+			$data['MODIFIED_BY'] = $fields['MODIFIED_BY'];
+		}
+
+		$parsedData = $DB->PrepareUpdate('b_catalog_group', $data);
+
+		$query = 'UPDATE b_catalog_group SET '.$parsedData.' WHERE ';
+		$query .= $id !== null ? 'ID !='.$id.' and BASE = \'Y\'' : 'BASE = \'Y\'';
+		$DB->Query($query, false, "File: ".__FILE__."<br>Line: ".__LINE__);
+
+		Catalog\GroupTable::cleanCache();
+		Catalog\Model\Price::clearSettings();
+		self::$arBaseGroupCache = [];
+		if (defined('CATALOG_GLOBAL_VARS') && 'Y' == CATALOG_GLOBAL_VARS)
+		{
+			/** @global array $CATALOG_BASE_GROUP */
+			global $CATALOG_BASE_GROUP;
+			$CATALOG_BASE_GROUP = self::$arBaseGroupCache;
+		}
 	}
 }

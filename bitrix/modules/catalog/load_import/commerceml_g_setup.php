@@ -34,15 +34,15 @@ if ($STEP > 1)
 {
 	$DATA_FILE_NAME = "";
 
-	if (strlen($URL_FILE_1C) > 0 && file_exists($_SERVER["DOCUMENT_ROOT"].$URL_FILE_1C) && is_file($_SERVER["DOCUMENT_ROOT"].$URL_FILE_1C))
+	if ($URL_FILE_1C <> '' && file_exists($_SERVER["DOCUMENT_ROOT"].$URL_FILE_1C) && is_file($_SERVER["DOCUMENT_ROOT"].$URL_FILE_1C))
 		$DATA_FILE_NAME = $_SERVER["DOCUMENT_ROOT"].$URL_FILE_1C;
 
-	if (strlen($DATA_FILE_NAME) <= 0)
+	if ($DATA_FILE_NAME == '')
 	{
 		$arSetupErrors[] = GetMessage("CICML_ERROR_NO_DATAFILE");
 	}
 
-	if (strlen($IBLOCK_TYPE_ID) <= 0)
+	if ($IBLOCK_TYPE_ID == '')
 	{
 		$arSetupErrors[] = GetMessage("CICML_ERROR_NO_IBLOCKTYPE");
 	}
@@ -72,8 +72,14 @@ $context->Show();
 
 if (!empty($arSetupErrors))
 	ShowError(implode('<br />', $arSetupErrors));
+
+$actionParams = "";
+if ($adminSidePanelHelper->isSidePanel())
+{
+	$actionParams = "?IFRAME=Y&IFRAME_TYPE=SIDE_SLIDER";
+}
 ?>
-<form method="POST" action="<? echo $APPLICATION->GetCurPage(); ?>" ENCTYPE="multipart/form-data" name="dataload">
+<form method="POST" action="<? echo $APPLICATION->GetCurPage().$actionParams; ?>" ENCTYPE="multipart/form-data" name="dataload">
 <?
 $aTabs = array(
 	array("DIV" => "edit1", "TAB" => GetMessage("CAT_ADM_CML1_IMP_TAB1"), "ICON" => "store", "TITLE" => GetMessage("CAT_ADM_CML1_IMP_TAB1_TITLE")),

@@ -514,6 +514,21 @@ BXBlockEditorEditDialogColumn.prototype =
 		this.switchDefaultColumn(container);
 	},
 
+	hideAllColumns: function(container)
+	{
+		var columnList = this.getColumnList(container);
+		for(var i in columnList)
+		{
+			if (!columnList.hasOwnProperty(i))
+			{
+				continue;
+			}
+
+			var column = columnList[i];
+			column.style.display = 'none';
+		}
+	},
+
 	switchDefaultColumn: function(container)
 	{
 		var columnNumList = this.getColumnList(container);
@@ -525,6 +540,7 @@ BXBlockEditorEditDialogColumn.prototype =
 
 	onLoadSetting: function(eventParams)
 	{
+		this.hideAllColumns(eventParams.container.container);
 		this.switchDefaultColumn(eventParams.container.container);
 	},
 
@@ -619,15 +635,15 @@ BXBlockEditorSocial.prototype =
 		var href = this.getItemControl(item, 'href');
 		var name = this.getItemControl(item, 'name');
 
-		href.value = elementSelect.value;
-		name.value = elementSelect.options[elementSelect.selectedIndex].text;
+		href.value =  elementSelect.value;
+		name.value =  elementSelect.options[elementSelect.selectedIndex].text;
 	},
 
 	addItem: function(href, name)
 	{
 		var html = this.templateItem.innerHTML;
-		html = html.replace('#href#', href);
-		html = html.replace('#name#', name);
+		html = html.replace('#href#', BX.util.htmlspecialchars(href));
+		html = html.replace('#name#', BX.util.htmlspecialchars(name));
 
 		var div = BX.create('div', {
 			'attrs': {'data-bx-block-editor-social-item': 'item'},
@@ -1658,6 +1674,7 @@ function BXBlockEditorStatusManager(params)
 
 	BX.addCustomEvent(this.caller, 'onBlockCreateAfter', BX.delegate(this.setBlockStatusContent, this.caller));
 	BX.addCustomEvent(this.caller, 'onBlockMoveAfter', BX.delegate(this.setBlockStatusContent, this.caller));
+	BX.addCustomEvent(this.caller, 'onBlockRemoveAfter', BX.delegate(this.onBlockRemoveAfter, this));
 	BX.addCustomEvent(this.caller, 'onBlockClone', BX.delegate(this.setBlockStatusContent, this.caller));
 	BX.addCustomEvent(this.caller, 'onBlockEditEnd', BX.delegate(this.onBlockEditEnd, this.caller));
 }
@@ -1685,6 +1702,10 @@ BXBlockEditorStatusManager.prototype.setBlockStatusContent = function(block)
 {
 	block.node.setAttribute(this.CONST_ATTR_BLOCK_STATUS, 'content');
 };
+BXBlockEditorStatusManager.prototype.onBlockRemoveAfter = function(placeNode)
+{
+	this.onPlaceInitBlocksContent.call(this.caller, placeNode, true);
+};
 BXBlockEditorStatusManager.prototype.onBlockEditEnd = function(block, hasChanges)
 {
 	if(hasChanges)
@@ -1706,10 +1727,7 @@ BXBlockEditorStatusManager.prototype.onPlaceInitBlocksContent = function(placeNo
 	for(var i in blockNodeList)
 	{
 		var blockNode = blockNodeList[i];
-		if(!blockNode.hasAttribute(this.CONST_ATTR_BLOCK_STATUS))
-		{
-			blockNode.setAttribute(this.CONST_ATTR_BLOCK_STATUS, status);
-		}
+		blockNode.setAttribute(this.CONST_ATTR_BLOCK_STATUS, status);
 	}
 
 };

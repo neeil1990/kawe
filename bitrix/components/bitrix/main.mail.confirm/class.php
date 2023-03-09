@@ -1,6 +1,10 @@
 <?php
 
+use Bitrix\Main;
+use Bitrix\Main\Mail\Address;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Grid\MessageType;
+use Bitrix\Main\Config\Configuration;
 
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
 
@@ -21,131 +25,36 @@ class MainMailConfirmComponent extends CBitrixComponent
 			$this->includeComponentTemplate('confirm_code');
 			return;
 		}
+		$this->prepareActionUrl();
+		$this->prepareGridParams();
+		$this->preparePost();
 
 		$this->arParams['USER_FULL_NAME'] = static::getUserNameFormated();
 		$this->arParams['MAILBOXES'] = static::prepareMailboxes();
+		if(!empty($this->arParams['ADDITIONAL_SENDERS']))
+		{
+			$this->prepareAdditionalSenders();
+		}
+
+		$defaultMailConfiguration = Configuration::getValue("smtp");
+		$this->arParams['IS_SMTP_AVAILABLE'] = Main\ModuleManager::isModuleInstalled('bitrix24')
+			|| $defaultMailConfiguration['enabled'];
+
+		$this->arParams['IS_ADMIN'] = Main\Loader::includeModule('bitrix24')
+			? \CBitrix24::isPortalAdmin($USER->getId())
+			: $USER->isAdmin();
 
 		$this->includeComponentTemplate();
 
 		return $this->arParams['MAILBOXES'];
 	}
-
+	public function prepareActionUrl()
+	{
+		 $this->arParams['ACTION_URL'] = $this->getPath() . '/ajax.php';
+	}
 	public static function prepareMailboxes()
 	{
-		global $USER;
-
-		static $mailboxes;
-
-		if (!is_null($mailboxes))
-			return $mailboxes;
-
-		$mailboxes = array();
-
-		if (!is_object($USER) || !$USER->isAuthorized())
-			return $mailboxes;
-
-		if (\CModule::includeModule('mail'))
-		{
-			$res = \Bitrix\Mail\MailboxTable::getList(array(
-				'select' => array('NAME', 'LOGIN', 'USER_ID', 'OPTIONS'),
-				'filter' => array(
-					'=LID'    => SITE_ID,
-					'=ACTIVE' => 'Y',
-					array(
-						'LOGIC' => 'OR',
-						'=USER_ID' => $USER->getId(),
-						array(
-							'USER_ID'      => 0,
-							'=SERVER_TYPE' => 'imap',
-						),
-					),
-				),
-				'order' => array(
-					'USER_ID' => 'DESC',
-					'ID' => 'ASC',
-				),
-			));
-
-			while ($mailbox = $res->fetch())
-			{
-				$isUserMailbox = $mailbox['USER_ID'] > 0;
-				$isCrmTracker  = !empty($mailbox['OPTIONS']['flags']) && in_array('crm_connect', (array) $mailbox['OPTIONS']['flags']);
-
-				if (!$isUserMailbox && !$isCrmTracker)
-					continue;
-
-				$mailboxEmail = null;
-				if (check_email($mailbox['NAME'], true))
-					$mailboxEmail = strtolower($mailbox['NAME']);
-				else if(check_email($mailbox['LOGIN'], true))
-					$mailboxEmail = strtolower($mailbox['LOGIN']);
-
-				if (!empty($mailboxEmail))
-				{
-					$mailboxName = !$isUserMailbox && trim($mailbox['OPTIONS']['name'])
-						? trim($mailbox['OPTIONS']['name'])
-						: static::getUserNameFormated();
-
-					$key = hash('crc32b', strtolower($mailboxName).$mailboxEmail);
-					$mailboxes[$key] = array(
-						'name'  => $mailboxName,
-						'email' => $mailboxEmail,
-					);
-				}
-			}
-		}
-
-		// @TODO: query
-		$crmEmail = static::extractEmail(\COption::getOptionString('crm', 'mail', ''));
-		if (check_email($crmEmail, true))
-		{
-			$crmEmail = strtolower($crmEmail);
-			$mailboxes[hash('crc32b', $crmEmail)] = array(
-				'name'  => static::getUserNameFormated(),
-				'email' => $crmEmail,
-			);
-		}
-
-		$userEmail = $USER->getEmail();
-		if (check_email($userEmail, true))
-		{
-			$userEmail = strtolower($userEmail);
-			$mailboxes[hash('crc32b', $userEmail)] = array(
-				'name'  => static::getUserNameFormated(),
-				'email' => $userEmail,
-			);
-		}
-
-		$confirmed = (array) \CUserOptions::getOption('mail', 'confirmed_from_emails', null)
-			+ (array) \CUserOptions::getOption('mail', 'confirmed_from_emails', null, 0);
-		foreach ($confirmed as $item)
-		{
-			if (!is_array($item))
-				continue;
-
-			if (check_email($item['email'], true))
-			{
-				$item['name']  = trim($item['name']);
-				$item['email'] = strtolower($item['email']);
-				$key = hash('crc32b', strtolower($item['name']).$item['email']);
-				$mailboxes[$key] = array(
-					'name'  => $item['name'] ?: static::getUserNameFormated(),
-					'email' => $item['email'],
-				);
-			}
-		}
-
-		$mailboxes = array_values($mailboxes);
-
-		foreach ($mailboxes as $k => $item)
-		{
-			$mailboxes[$k]['formated'] = sprintf(
-				$item['name'] ? '%s <%s>' : '%s%s',
-				$item['name'], $item['email']
-			);
-		}
-
-		return $mailboxes;
+		return Main\Mail\Sender::prepareUserMailboxes();
 	}
 
 	public static function prepareMailboxesFormated()
@@ -197,5 +106,118 @@ class MainMailConfirmComponent extends CBitrixComponent
 
 		return $email;
 	}
+	protected function getGridColumns()
+	{
+		return array(
+			array(
+				"id" => "id",
+				"name" => "ID",
+				"sort" => "ID",
+				"default" => false
+			),
+			array(
+				"id" => "name",
+				"name" =>  Loc::getMessage('MAIN_MAIL_CONFIRM_UI_GRID_NAME_COLUMN'),
+				"sort" => "NAME",
+				"default" => true
+			),
+			array(
+				"id" => "email",
+				"name" => Loc::getMessage('MAIN_MAIL_CONFIRM_UI_GRID_EMAIL_COLUMN'),
+				"sort" => "NAME",
+				"default" => true
+			),
+
+		);
+	}
+	protected function prepareGridParams()
+	{
+		$this->arParams['GRID_ID'] = $this->arParams['GRID_ID']??'MAIN_MAIL_CONFIRM_GRID';
+		$this->arParams['COLUMNS'] = $this->arParams['COLUMNS']??$this->getGridColumns();;
+	}
+	protected function addMessage($type,$title,$message)
+	{
+		$this->arResult['MESSAGES'][] = [
+			'TYPE'=> $type,
+			'TITTLE'=> $title,
+			'TEXT' => $message
+		];
+	}
+	protected function preparePost()
+	{
+		global $USER;
+		if ($this->request->isPost() && check_bitrix_sessid())
+		{
+			$ids = $this->request->get('ID');
+			$action = $this->request->get('action_button_' . $this->arParams['GRID_ID']);
+
+			switch ($action)
+			{
+				case 'delete':
+					$isAdmin = Main\Loader::includeModule('bitrix24') ?
+						\CBitrix24::isPortalAdmin($USER->getId()) :
+						$USER->isAdmin();
+
+					$items = Main\Mail\Internal\SenderTable::getList(array(
+						'filter' => array(
+							'@ID' => $ids,
+						),
+					))->fetchAll();
+
+					if (empty($items))
+					{
+						return;
+					}
+
+					foreach ($items as $item)
+					{
+						if ($USER->getId() != $item['USER_ID'] && !($item['IS_PUBLIC'] && $isAdmin))
+						{
+							unset($this->arResult['DELETED']);
+							$this->addMessage(MessageType::ERROR,
+								Loc::getMessage('MAIN_MAIL_CONFIRM_POST_DELETE_ACCESS_ERROR_TITTLE'),
+								Loc::getMessage('MAIN_MAIL_CONFIRM_POST_DELETE_ACCESS_ERROR'));
+							return;
+						}
+						$this->arResult['DELETED'][] = $item['ID'];
+
+					}
+
+					Main\Mail\Sender::delete($this->arResult['DELETED']);
+					break;
+
+				default:
+					break;
+			}
+		}
+	}
+	protected function prepareAdditionalSenders()
+	{
+		if(is_iterable($this->arParams['ADDITIONAL_SENDERS']))
+		{
+			$address = new Address();
+			foreach ($this->arParams['ADDITIONAL_SENDERS'] as $sender)
+			{
+				if(is_string($sender['email']) && is_string($sender['name']) && isset($sender['id']))
+				{
+					$formated = $address->setEmail($sender['email'])
+							->setName($sender['name'])
+							->get();
+					if(!$formated)
+					{
+						continue;
+					}
+					$this->arParams['MAILBOXES'][] = array(
+						'email'=>$sender['email'],
+						'name'=>$sender['name'],
+						'formated'=>$formated,
+						'id'=>base64_encode($formated),
+						'can_delete'=>false,
+					);
+				}
+			}
+		}
+	}
+
 
 }

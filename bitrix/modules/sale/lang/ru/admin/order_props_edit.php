@@ -28,10 +28,6 @@ $MESS ['ERROR_ADD_PROP'] = "Ошибка добавления свойства";
 $MESS ['ERROR_ADD_VARIANT'] = "Ошибка добавления варианта перечисления";
 $MESS ['ERROR_EDIT_VARIANT'] = "Ошибка изменения варианта перечисления";
 
-$MESS ['ERROR_LOCATION4TAX_RELATION_NOT_ALLOWED'] = "Свойство, используемое как местоположение для налогов, не может иметь привязок к платежным системам и службам доставки.";
-$MESS ['ERROR_EMAIL_RELATION_NOT_ALLOWED'] = "Свойство, используемое как E-Mail, не может иметь привязок к платежным системам и службам доставки.";
-$MESS ['ERROR_PROFILE_NAME_RELATION_NOT_ALLOWED'] = "Свойство, используемое как название профиля, не может иметь привязок к платежным системам и службам доставки.";
-
 $MESS ['SALE_PERS_TYPE'] = "Тип плательщика";
 $MESS ['SALE_PROPS_GROUP'] = "Группы свойств";
 
@@ -39,11 +35,13 @@ $MESS ['SALE_PROPERTY_LINKING'] = "Привязка свойства";
 $MESS ['SALE_PROPERTY_LINKING_DESC'] = "Связь свойства с платежными системами и службами доставки";
 $MESS ['SALE_PROPERTY_PAYSYSTEM'] = "Платежные системы";
 $MESS ['SALE_PROPERTY_DELIVERY'] = "Службы доставки";
+$MESS ['SALE_PROPERTY_TP_LANDING'] = "Лендинги";
 $MESS ['SALE_PROPERTY_SELECT_ALL'] = "Все";
 
 $MESS ['SALE_VARIANTS_CODE'] = "Код";
 $MESS ['SALE_VARIANTS_NAME'] = "Название";
 $MESS ['SALE_VARIANTS_SORT'] = "Сорт.";
+$MESS ['SALE_VARIANTS_XML_ID'] = "Внешний код";
 $MESS ['SALE_VARIANTS_DESCR'] = "Описание";
 $MESS ['SALE_VARIANTS_DEL'] = "Удалить";
 $MESS ['SALE_VARIANTS_MORE'] = "Еще...";
@@ -61,6 +59,7 @@ $MESS ['SOPEN_4NEW_PROMT'] = "Выберите тип плательщика:";
 $MESS ['F_IS_FILTERED'] = "Доступно в фильтре по заказам";
 $MESS ['F_ACTIVE'] = "Активность";
 $MESS ['F_UTIL'] = "Служебное";
+$MESS ['F_XML_ID'] = "Внешний код";
 
 $MESS ['F_ANOTHER_LOCATION'] = "Альтернативное поле ввода местоположения";
 $MESS ['NULL_ANOTHER_LOCATION'] = "Выбрать";

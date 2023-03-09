@@ -4,13 +4,14 @@ namespace Bitrix\Main\UrlPreview;
 
 use Bitrix\Main\Context;
 use Bitrix\Main\Text\Encoding;
+use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\Web\HttpClient;
 use Bitrix\Main\Web\Uri;
 
 class HtmlDocument
 {
 	const MAX_IMAGES = 4;
-	const MAX_IMAGE_URL_LENGTH = 255;
+	const MAX_IMAGE_URL_LENGTH = 2000;
 
 	/** @var \Bitrix\Main\Web\Uri */
 	protected $uri;
@@ -28,7 +29,8 @@ class HtmlDocument
 		"TITLE" => null,
 		"DESCRIPTION" => null,
 		"IMAGE" => null,
-		"EMBED" => null
+		"EMBED" => null,
+		"DATE_EXPIRE" => null,
 	);
 
 	/** @var array  */
@@ -117,7 +119,7 @@ class HtmlDocument
 	 */
 	public function setTitle($title)
 	{
-		if(strlen($title) > 0)
+		if($title <> '')
 		{
 			$this->metadata['TITLE'] = $this->filterString($title);
 		}
@@ -139,7 +141,7 @@ class HtmlDocument
 	 */
 	public function setDescription($description)
 	{
-		if(strlen($description) > 0)
+		if($description <> '')
 		{
 			$this->metadata['DESCRIPTION'] = $this->filterString($description);
 		}
@@ -161,10 +163,10 @@ class HtmlDocument
 	 */
 	public function setImage($image)
 	{
-		if(strlen($image) > 0)
+		if($image <> '')
 		{
 			$imageUrl = $this->normalizeImageUrl($image);
-			if(!is_null($imageUrl) && $this->validateImage($imageUrl))
+			if(!is_null($imageUrl) && $this->validateImage($imageUrl, true))
 				$this->metadata['IMAGE'] = $imageUrl;
 		}
 	}
@@ -239,6 +241,29 @@ class HtmlDocument
 	}
 
 	/**
+	 * Sets Expire date for the metadata.
+	 *
+	 * @param DateTime $dateExpire
+	 */
+	public function setDateExpire(DateTime $dateExpire)
+	{
+		if (!isset($this->metadata['DATE_EXPIRE']) || $this->metadata['DATE_EXPIRE']->getTimestamp() > $dateExpire->getTimestamp())
+		{
+			$this->metadata['DATE_EXPIRE'] = $dateExpire;
+		}
+	}
+
+	/**
+	 * Returns expire date for the metadata.
+	 *
+	 * @return DateTime|null
+	 */
+	public function getDateExpire(): ?DateTime
+	{
+		return $this->metadata['DATE_EXPIRE'];
+	}
+
+	/**
 	 * Set HTML document encoding
 	 *
 	 * @param string $encoding Document's encoding.
@@ -255,7 +280,7 @@ class HtmlDocument
 	 */
 	public function getEncoding()
 	{
-		if(strlen($this->htmlEncoding) > 0)
+		if($this->htmlEncoding <> '')
 		{
 			return $this->htmlEncoding;
 		}
@@ -279,9 +304,9 @@ class HtmlDocument
 
 		foreach($this->metaElements as $metaElement)
 		{
-			if(isset($metaElement['http-equiv']) && strtolower($metaElement['http-equiv']) == 'content-type')
+			if(isset($metaElement['http-equiv']) && mb_strtolower($metaElement['http-equiv']) == 'content-type')
 			{
-				if(preg_match('/charset=([\w-]+)/', $metaElement['content'], $matches))
+				if(preg_match('/charset=([\w\-]+)/', $metaElement['content'], $matches))
 				{
 					$result = $matches[1];
 					break;
@@ -310,12 +335,12 @@ class HtmlDocument
 
 		foreach($elements[0] as $element)
 		{
-			preg_match_all('/(?:([\w-_]+)=([\'"])(.*?)\g{-2}\s*)/mis', $element, $matches);
+			preg_match_all('/(?:([\w\-_]+)=([\'"])(.*?)\g{-2}\s*)/mis', $element, $matches);
 
 			$elementAttributes = array();
 			foreach($matches[1] as $k => $attributeName)
 			{
-				$attributeName = strtolower($attributeName);
+				$attributeName = mb_strtolower($attributeName);
 				$attributeValue = $matches[3][$k];
 				$elementAttributes[$attributeName] = $attributeValue;
 			}
@@ -338,13 +363,13 @@ class HtmlDocument
 		{
 			$this->metaElements = $this->extractElementAttributes('meta');
 		}
-		$name = strtolower($name);
+		$name = mb_strtolower($name);
 
 		foreach ($this->metaElements as $metaElement)
 		{
-			if ((isset($metaElement['name']) && strtolower($metaElement['name']) === $name
-				|| isset($metaElement['property']) && strtolower($metaElement['property']) === $name)
-				&& strlen($metaElement['content']) > 0)
+			if ((isset($metaElement['name']) && mb_strtolower($metaElement['name']) === $name
+				|| isset($metaElement['property']) && mb_strtolower($metaElement['property']) === $name)
+				&& $metaElement['content'] <> '')
 			{
 				return $metaElement['content'];
 			}
@@ -365,13 +390,13 @@ class HtmlDocument
 		{
 			$this->linkElements = $this->extractElementAttributes('link');
 		}
-		$rel = strtolower($rel);
+		$rel = mb_strtolower($rel);
 
 		foreach ($this->linkElements as $linkElement)
 		{
 			if(isset($linkElement['rel'])
-				&& strtolower($linkElement['rel']) == $rel
-				&& strlen($linkElement['href']) > 0)
+				&& mb_strtolower($linkElement['rel']) == $rel
+				&& $linkElement['href'] <> '')
 			{
 				return $linkElement['href'];
 			}
@@ -403,7 +428,7 @@ class HtmlDocument
 	 */
 	protected function convertRelativeUriToAbsolute($uri)
 	{
-		if(strpos($uri, '//') === 0)
+		if(mb_strpos($uri, '//') === 0)
 			$uri = $this->uri->getScheme().":".$uri;
 
 		if(preg_match('#^https?://#', $uri))
@@ -419,7 +444,7 @@ class HtmlDocument
 		}
 		else if(isset($pars['path']))
 		{
-			if(substr($pars['path'], 0, 1) !== '/')
+			if(mb_substr($pars['path'], 0, 1) !== '/')
 			{
 				$pathPrefix = preg_replace('/^(.+?)([^\/]*)$/', '$1', $this->uri->getPath());
 				$pars['path'] = $pathPrefix.$pars['path'];
@@ -452,11 +477,13 @@ class HtmlDocument
 	 * @param string $url Image's URL.
 	 * @return string|null Absolute image's URL, or null if URL is incorrect or too long.
 	 */
-	protected function normalizeImageUrl($url)
+	protected function normalizeImageUrl($url): ?string
 	{
 		$url = $this->convertRelativeUriToAbsolute($url);
-		if(strlen($url) > self::MAX_IMAGE_URL_LENGTH)
+		if(mb_strlen($url) > self::MAX_IMAGE_URL_LENGTH)
+		{
 			$url = null;
+		}
 		return $url;
 	}
 
@@ -465,20 +492,24 @@ class HtmlDocument
 	 * @param string $url Absolute image's URL.
 	 * @return bool
 	 */
-	protected function validateImage($url)
+	protected function validateImage($url, $skipForPrivateIp = false)
 	{
 		$httpClient = new HttpClient();
 		$httpClient->setTimeout(5);
 		$httpClient->setStreamTimeout(5);
+		$httpClient->setPrivateIp(false);
 		$httpClient->setHeader('User-Agent', UrlPreview::USER_AGENT, true);
 		if(!$httpClient->query('GET', $url))
-			return false;
+		{
+			$errorCode = array_key_first($httpClient->getError());
+			return ($skipForPrivateIp && $errorCode === 'PRIVATE_IP');
+		}
 
 		if($httpClient->getStatus() !== 200)
 			return false;
 
-		$contentType = strtolower($httpClient->getHeaders()->getContentType());
-		if(strpos($contentType, 'image/') === 0)
+		$contentType = mb_strtolower($httpClient->getHeaders()->getContentType());
+		if(mb_strpos($contentType, 'image/') === 0)
 			return true;
 		else
 			return false;

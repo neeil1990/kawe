@@ -17,12 +17,12 @@ abstract class Connector
 	}
 
 	/**
-	 * @param Attach $attachedObject Attach.
+	 * @param \Bitrix\Vote\Attach $attachedObject Attach.
 	 * @return Connector
 	 * @throws ObjectNotFoundException
 	 * @throws SystemException
 	 */
-	final public static function buildFromAttachedObject(Attach $attachedObject)
+	final public static function buildFromAttachedObject(\Bitrix\Vote\Attach $attachedObject)
 	{
 		if(!Loader::includeModule($attachedObject->getModuleId()))
 		{
@@ -30,12 +30,13 @@ abstract class Connector
 		}
 		$className = str_replace('\\\\', '\\', $attachedObject->getEntityType());
 		/** @var \Bitrix\Vote\Attachment\Connector $connector */
+		if (!is_a($className, Connector::class, true))
+		{
+			throw new ObjectNotFoundException('Connector class should be instance of Bitrix\Vote\Attachment\Connector.');
+		}
+
 		$connector = new $className($attachedObject->getEntityId());
 
-		if(!$connector instanceof Connector)
-		{
-			throw new ObjectNotFoundException('Connector class should be instance of Connector.');
-		}
 		if($connector instanceof Storable)
 		{
 			$connector->setStorage($attachedObject->getStorage());

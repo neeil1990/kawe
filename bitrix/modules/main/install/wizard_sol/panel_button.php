@@ -12,7 +12,7 @@ IncludeModuleLangFile(__FILE__);
 
 class CWizardSolPanel
 {
-	function ShowPanel()
+	public static function ShowPanel()
 	{
 		global $USER, $APPLICATION;
 
@@ -21,9 +21,9 @@ class CWizardSolPanel
 
 		if($USER->IsAdmin())
 		{
-			if($_REQUEST['add_new_site_sol']=='sol' && check_bitrix_sessid())
+			if(isset($_REQUEST['add_new_site_sol']) && $_REQUEST['add_new_site_sol']=='sol' && check_bitrix_sessid())
 			{
-				$dbrSites = CSite::GetList($by, $ord);
+				$dbrSites = CSite::GetList();
 				$arSitesID = Array();
 				$arSitesPath = Array();
 				$siteCnt = 0;
@@ -32,8 +32,8 @@ class CWizardSolPanel
 					if($arSite["ACTIVE"]=="Y")
 						$siteCnt++;
 
-					$arSitesID[] = strtolower($arSite["ID"]);
-					$arSitesPath[] = strtolower($arSite["PATH"]);
+					$arSitesID[] = mb_strtolower($arSite["ID"]);
+					$arSitesPath[] = mb_strtolower($arSite["PATH"]);
 				}
 
 				$newSiteID = "";
@@ -109,7 +109,7 @@ class CWizardSolPanel
 				}
 			}
 
-			if($_REQUEST['delete_button_sol']=='sol' && check_bitrix_sessid())
+			if(isset($_REQUEST['delete_button_sol']) && $_REQUEST['delete_button_sol']=='sol' && check_bitrix_sessid())
 			{
 				UnRegisterModuleDependences('main', 'OnBeforeProlog', 'main', 'CWizardSolPanel', 'ShowPanel', '/modules/main/install/wizard_sol/panel_button.php');
 				LocalRedirect($APPLICATION->GetCurPage());
@@ -131,7 +131,7 @@ class CWizardSolPanel
 
 			$protocol = (CMain::IsHTTPS()? 'https://' : 'http://');
 			$arSites = array();	
-			$dbrSites = CSite::GetList($by, $ord, Array("ACTIVE"=>"Y"));
+			$dbrSites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 			while($arSite = $dbrSites->GetNext())
 			{
 				$url = $arSite["DIR"];

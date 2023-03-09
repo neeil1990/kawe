@@ -40,13 +40,13 @@ $aTabs[] = array("DIV" => "edit2", "TAB" => GetMessage("MAIN_TAB_RIGHTS"), "ICON
 
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 
-if($REQUEST_METHOD=="POST" && strlen($Update.$Apply.$RestoreDefaults)>0 && check_bitrix_sessid())
+if($REQUEST_METHOD=="POST" && $Update.$Apply.$RestoreDefaults <> '' && check_bitrix_sessid())
 {
-	if (strlen($RestoreDefaults) > 0)
+	if ($RestoreDefaults <> '')
 	{
 		COption::RemoveOption('seo');
 
-		$z = CGroup::GetList($v1="id",$v2="asc", array("ACTIVE" => "Y", "ADMIN" => "N"));
+		$z = CGroup::GetList("id", "asc", array("ACTIVE" => "Y", "ADMIN" => "N"));
 		while($zr = $z->Fetch())
 			$APPLICATION->DelGroupRight($module_id, array($zr["ID"]));
 
@@ -57,7 +57,7 @@ if($REQUEST_METHOD=="POST" && strlen($Update.$Apply.$RestoreDefaults)>0 && check
 				$arFilter['NAME'] .= '|Yandex';
 
 			$strSearchers = '';
-			$dbRes = CSearcher::GetList($by = 's_id', $order = 'asc', $arFilter, $is_filtered);
+			$dbRes = CSearcher::GetList('s_id', 'asc', $arFilter);
 			while ($arRes = $dbRes->Fetch())
 			{
 				$strSearchers .= ($strSearchers == '' ? '' : ',').$arRes['ID'];
@@ -85,11 +85,11 @@ if($REQUEST_METHOD=="POST" && strlen($Update.$Apply.$RestoreDefaults)>0 && check
 
 $arCurrentSearchers = array();
 $searchers = COption::GetOptionString('seo', 'searchers_list', '');
-if (strlen($searchers) > 0 && CModule::IncludeModule('statistic'))
+if ($searchers <> '' && CModule::IncludeModule('statistic'))
 {
 	$arSearchersList = explode(',', $searchers);
 
-	$dbRes = CSearcher::GetList($by = 's_name', $order = 'asc', array('ID' => implode('|', $arSearchersList)), $is_filtered);
+	$dbRes = CSearcher::GetList('s_name', 'asc', array('ID' => implode('|', $arSearchersList)));
 	while ($arRes = $dbRes->GetNext())
 	{
 		$arCurrentSearchers[$arRes['ID']] = $arRes['NAME'];
@@ -118,11 +118,11 @@ if($bShowYandexServices):
 <tr>
 	<td>
 <?
-		\Bitrix\Main\Localization\Loc::loadMessages(dirname(__FILE__).'/admin/seo_search.php');
-		\Bitrix\Main\Localization\Loc::loadMessages(dirname(__FILE__).'/admin/seo_adv.php');
+		\Bitrix\Main\Localization\Loc::loadMessages(__DIR__.'/admin/seo_search.php');
+		\Bitrix\Main\Localization\Loc::loadMessages(__DIR__.'/admin/seo_adv.php');
 
 		$engine = new \Bitrix\Seo\Engine\YandexDirect();
-		require_once(dirname(__FILE__)."/admin/tab/seo_search_yandex_direct_auth.php");
+		require_once(__DIR__."/admin/tab/seo_search_yandex_direct_auth.php");
 
 		if(\Bitrix\Seo\Service::isRegistered())
 		{

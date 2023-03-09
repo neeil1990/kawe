@@ -67,6 +67,12 @@ $arTemplateParameters['SHOW_RESTORE'] = array(
 	'TYPE' => 'CHECKBOX',
 	'DEFAULT' => 'Y'
 );
+$arTemplateParameters['EMPTY_BASKET_HINT_PATH'] = [
+	'PARENT' => 'ADDITIONAL_SETTINGS',
+	"NAME" => GetMessage('CP_SBB_EMPTY_BASKET_HINT_PATH'),
+	"TYPE" => "STRING",
+	"DEFAULT" => "/"
+];
 $arTemplateParameters['TEMPLATE_THEME'] = array(
 	'PARENT' => 'VISUAL',
 	'NAME' => GetMessage('CP_SBB_TPL_TEMPLATE_THEME'),
@@ -195,7 +201,7 @@ if (!empty($arCurrentValues['LABEL_PROP']))
 	);
 }
 
-if (\Bitrix\Main\Loader::includeModule('catalog'))
+if (Loader::includeModule('catalog') && !Iblock\Model\PropertyFeature::isEnabledFeatures())
 {
 	$arSKU = false;
 	$boolSKU = false;

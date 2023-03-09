@@ -5,14 +5,14 @@ namespace Bitrix\Sale\Exchange\Internals;
 
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Type\DateTime;
+use Bitrix\Sale\Exchange\Logger\Exchange;
+use Bitrix\Sale\Exchange\Logger\ProviderType;
 use Bitrix\Sale\Internals\Fields;
 
 class Logger
 {
 	/** @var  Fields */
 	protected $fields;
-
-	const INTERVAL_DAY_OPTION = "SALE_EXCHANGE_DEBUG_INTERVAL_DAY";
 
 	public function __construct()
 	{
@@ -46,15 +46,6 @@ class Logger
 	}
 
 	/**
-	 * @return int
-	 */
-	static public function getInterval()
-	{
-		$interval = Option::get('sale', static::INTERVAL_DAY_OPTION, 1);
-		return intval($interval)>0 ? $interval:1;
-	}
-
-	/**
 	 * @return \Bitrix\Main\Entity\AddResult|null
 	 */
 	public function save()
@@ -68,7 +59,7 @@ class Logger
 		$params['DESCRIPTION'] = $this->getField('DESCRIPTION');
 		$params['MESSAGE'] = $this->getField('MESSAGE');
 		$params['DIRECTION'] = $this->getField('DIRECTION');
-		$params['MARKED'] = $this->getField('MARKED');
+		$params['MARKED'] = $this->getField('MARKED') === 'Y' ? 'Y' : 'N';
 		$params['DATE_INSERT'] = new DateTime();
 
 		return static::log($params);
@@ -76,11 +67,12 @@ class Logger
 
 	/**
 	 * @param array $params
-	 * @return \Bitrix\Main\Entity\AddResult|null
+	 * @return \Bitrix\Main\ORM\Data\AddResult
+	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	static public function log(array $params)
 	{
-		$result = ExchangeLogTable::add($params);
+		$result = (new Exchange(ProviderType::ONEC_NAME))->add($params);
 		return $result;
 	}
 }

@@ -6,9 +6,10 @@ class CAllSearchTitle extends CDBResult
 	var $_arStemFunc;
 	var $minLength = 1;
 
-	function __construct()
+	function __construct($res = null)
 	{
 		$this->_arStemFunc = stemming_init(LANGUAGE_ID);
+		parent::__construct($res);
 	}
 
 	function Search($phrase = "", $nTopCount = 5, $arParams = array(), $bNotFilter = false, $order = "")
@@ -37,8 +38,6 @@ class CAllSearchTitle extends CDBResult
 						,sc.PARAM1
 						,sc.PARAM2
 						,sc.DATE_CHANGE
-						,L.DIR
-						,L.SERVER_NAME
 						,sc.URL as URL
 						,scsite.URL as SITE_URL
 						,scsite.SITE_ID
@@ -46,7 +45,6 @@ class CAllSearchTitle extends CDBResult
 					FROM
 						b_search_content sc
 						INNER JOIN b_search_content_site scsite ON sc.ID = scsite.SEARCH_CONTENT_ID
-						INNER JOIN b_lang L ON scsite.SITE_ID = L.LID
 					WHERE
 						sc.ID in (".implode(",", $arId).")
 						and scsite.SITE_ID = '".SITE_ID."'
@@ -54,7 +52,7 @@ class CAllSearchTitle extends CDBResult
 				";
 
 				$r = $DB->Query($DB->TopSql($strSql, $nTopCount + 1));
-				parent::CDBResult($r);
+				parent::__construct($r);
 				return true;
 			}
 		}
@@ -78,17 +76,34 @@ class CAllSearchTitle extends CDBResult
 
 	function Fetch()
 	{
+		static $arSite = array();
+
 		$r = parent::Fetch();
 
 		if ($r)
 		{
-			if (strlen($r["SITE_URL"]) > 0)
+			$site_id = $r["SITE_ID"];
+			if (!isset($arSite[$site_id]))
+			{
+				$rsSite = CSite::GetList('', '', array("ID" => $site_id));
+				$arSite[$site_id] = $rsSite->Fetch();
+			}
+			$r["DIR"] = $arSite[$site_id]["DIR"];
+			$r["SERVER_NAME"] = $arSite[$site_id]["SERVER_NAME"];
+
+			if ($r["SITE_URL"] <> '')
 				$r["URL"] = $r["SITE_URL"];
 
-			if (substr($r["URL"], 0, 1) == "=")
+			if (mb_substr($r["URL"], 0, 1) == "=")
 			{
 				foreach (GetModuleEvents("search", "OnSearchGetURL", true) as $arEvent)
-					$r["URL"] = ExecuteModuleEventEx($arEvent, array($r));
+				{
+					$newUrl = ExecuteModuleEventEx($arEvent, array($r));
+					if (isset($newUrl))
+					{
+						$r["URL"] = $newUrl;
+					}
+				}
 			}
 
 			$r["URL"] = str_replace(
@@ -118,9 +133,9 @@ class CAllSearchTitle extends CDBResult
 				{
 					for ($j = $c - 1; $j >= 0; $j--)
 					{
-						$prefix = substr($r["NAME"], 0, $arMatches[2][$j][1]);
-						$instr = substr($r["NAME"], $arMatches[2][$j][1], strlen($arMatches[2][$j][0]));
-						$suffix = substr($r["NAME"], $arMatches[2][$j][1] + strlen($arMatches[2][$j][0]));
+						$prefix = mb_substr($r["NAME"], 0, $arMatches[2][$j][1]);
+						$instr = mb_substr($r["NAME"], $arMatches[2][$j][1], mb_strlen($arMatches[2][$j][0]));
+						$suffix = mb_substr($r["NAME"], $arMatches[2][$j][1] + mb_strlen($arMatches[2][$j][0]));
 						$r["NAME"] = $prefix."<b>".$instr."</b>".$suffix;
 					}
 				}

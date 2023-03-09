@@ -29,7 +29,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Currency
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Currency_Query query()
+ * @method static EO_Currency_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Currency_Result getById($id)
+ * @method static EO_Currency_Result getList(array $parameters = array())
+ * @method static EO_Currency_Entity getEntity()
+ * @method static \Bitrix\Currency\EO_Currency createObject($setDefaultValues = true)
+ * @method static \Bitrix\Currency\EO_Currency_Collection createCollection()
+ * @method static \Bitrix\Currency\EO_Currency wakeUpObject($row)
+ * @method static \Bitrix\Currency\EO_Currency_Collection wakeUpCollection($rows)
+ */
 class CurrencyTable extends Main\Entity\DataManager
 {
 	/**
@@ -69,7 +82,7 @@ class CurrencyTable extends Main\Entity\DataManager
 			)),
 			'DATE_UPDATE' => new Main\Entity\DatetimeField('DATE_UPDATE', array(
 				'required' => true,
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('CURRENCY_ENTITY_DATE_UPDATE_FIELD')
 			)),
 			'NUMCODE' => new Main\Entity\StringField('NUMCODE', array(
@@ -85,6 +98,7 @@ class CurrencyTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('CURRENCY_ENTITY_CREATED_BY_FIELD')
 			)),
 			'DATE_CREATE' => new Main\Entity\DatetimeField('DATE_CREATE', array(
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('CURRENCY_ENTITY_DATE_CREATE_FIELD')
 			)),
 			'MODIFIED_BY' => new Main\Entity\IntegerField('MODIFIED_BY', array(

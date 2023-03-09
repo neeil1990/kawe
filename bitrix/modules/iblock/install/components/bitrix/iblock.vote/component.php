@@ -6,6 +6,8 @@
 if(!defined("B_PROLOG_INCLUDED") && isset($_REQUEST["AJAX_CALL"]) && $_REQUEST["AJAX_CALL"]=="Y")
 {
 	define('PUBLIC_AJAX_MODE', true);
+	define('NOT_CHECK_PERMISSIONS', true);
+
 	require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
 	/** @global CMain $APPLICATION */
 	global $APPLICATION;
@@ -86,6 +88,7 @@ $arParams = array(
 	"DISPLAY_AS_RATING" => $arParams["DISPLAY_AS_RATING"]=="vote_avg"? "vote_avg": "rating",
 	"READ_ONLY" => $arParams["READ_ONLY"],
 	"ELEMENT_CODE" => $arParams["ELEMENT_CODE"],
+	"~ELEMENT_CODE" => $arParams["~ELEMENT_CODE"],
 	"SHOW_RATING" => $arParams["SHOW_RATING"]=="Y"? "Y": "N",
 	"SET_STATUS_404" => $arParams["SET_STATUS_404"]=="Y"? "Y": "N",
 	"MESSAGE_404" => $arParams["MESSAGE_404"],
@@ -255,7 +258,7 @@ if($this->StartResultCache(false, array($USER->GetGroups(), $bVoted)))
 		$arResult["VOTE_NAMES"] = array();
 		foreach($arParams["VOTE_NAMES"] as $k=>$v)
 		{
-			if(strlen($v)>0)
+			if($v <> '')
 				$arResult["VOTE_NAMES"][]=htmlspecialcharsbx($v);
 			if(count($arResult["VOTE_NAMES"])>=$arParams["MAX_VOTE"])
 				break;

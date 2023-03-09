@@ -2,8 +2,9 @@
 
 namespace Bitrix\Currency;
 
+use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
-use \Bitrix\Main\Type\Collection;
+use Bitrix\Main\Type\Collection;
 
 Loc::loadMessages(__FILE__);
 
@@ -12,80 +13,272 @@ Loc::loadMessages(__FILE__);
  */
 final class CurrencyClassifier
 {
-	const SEPARATOR_COMMA = 'C';
+	public const SEPARATOR_EMPTY = 'N';
+	public const SEPARATOR_COMMA = 'C';
+	public const SEPARATOR_DOT = 'D';
+	public const SEPARATOR_SPACE = 'S';
+	public const SEPARATOR_NBSPACE = 'B';
 
-	private static $lastSortLanguage;
-	private static $separators = array();
-	private static $separatorsTypes = array();
+	public const DECIMAL_POINT_DOT = '.';
+	public const DECIMAL_POINT_COMMA = ',';
+
+	private const MODIFIER_ALL = 'ALL';
+
+	private static string $lastSortLanguage = '';
+	private static array $separators = [];
+	private static array $separatorsTypes = [];
+
+	private static ?bool $bitrix24Included = null;
+
+	/**
+	 * Returns currency description with language settings.
+	 *
+	 * @param string $currency Currency identifier.
+	 * @param array $languages Language id list.
+	 * @param string|null $b24Area Specific Bitrix24 parameter.
+	 * @return array|null
+	 */
+	public static function getCurrency(string $currency, array $languages, ?string $b24Area = null): ?array
+	{
+		$currency = CurrencyManager::checkCurrencyID($currency);
+		if (!$currency)
+		{
+			return null;
+		}
+		self::prepare($languages, '', $b24Area);
+
+		return self::$currencyClassifier[$currency] ?? null;
+	}
 
 	/**
 	 * Return classifier
 	 *
-	 * @param array $languageIds - Array of languages
-	 * @param string $baseLanguageId - Base language
+	 * @param array $languageIds Array of languages.
+	 * @param string $baseLanguageId Base language.
+	 * @param string|null $b24Area Specific Bitrix24 parameter.
 	 * @return array
 	 */
-	public static function get($languageIds, $baseLanguageId)
+	public static function get(array $languageIds, string $baseLanguageId, ?string $b24Area = null): array
 	{
-		self::prepare($languageIds, $baseLanguageId);
+		self::prepare($languageIds, $baseLanguageId, $b24Area);
+
 		return self::$currencyClassifier;
 	}
 
 	/**
 	 * Preparing of classifier
 	 *
-	 * @param array $languageIds - Array of languages
-	 * @param string $baseLanguageId - Base language
+	 * @param array $languageIds Array of languages.
+	 * @param string $baseLanguageId Base language.
+	 * @param string|null $b24Area Specific Bitrix24 parameter.
+	 * @return void
 	 */
-	private static function prepare($languageIds, $baseLanguageId)
+	private static function prepare(array $languageIds, string $baseLanguageId, ?string $b24Area): void
 	{
+		$languageList = [];
+		foreach ($languageIds as $language)
+		{
+			$languageList[$language] = strtoupper($language);
+		}
+		unset($language);
 		self::fillSeparatorsData();
-		self::fill($languageIds);
+		self::fill($languageList);
+		self::transform($b24Area, $languageList);
+		self::fillSeparatorDescription($languageList);
 		self::sort($baseLanguageId);
+		unset($languageList);
+	}
+
+	private static function transform(?string $b24Area, array $languageIds): void
+	{
+		if (self::$bitrix24Included === null)
+		{
+			self::$bitrix24Included = Loader::includeModule('bitrix24');
+		}
+		if (!self::$bitrix24Included)
+		{
+			return;
+		}
+		if ($b24Area === null || $b24Area === '')
+		{
+			$areaConfig = \CBitrix24::getCurrentAreaConfig();
+			if (!empty($areaConfig))
+			{
+				$b24Area = $areaConfig['ID'];
+			}
+			unset($areaConfig);
+		}
+		if ($b24Area === null || $b24Area === '')
+		{
+			return;
+		}
+		if (!isset(self::$areaConfig[$b24Area]))
+		{
+			return;
+		}
+		$keys = [
+			'DEC_POINT' => true,
+			'THOUSANDS_VARIANT' => true,
+			'DECIMALS' => true
+		];
+
+		$config = self::$areaConfig[$b24Area];
+		$replaceRow = [];
+		$template = null;
+		if (!empty($config[self::MODIFIER_ALL]))
+		{
+			$replaceRow = array_intersect_key($config[self::MODIFIER_ALL], $keys);
+			if (isset($config[self::MODIFIER_ALL]['TEMPLATE']))
+			{
+				$template = $config[self::MODIFIER_ALL]['TEMPLATE'];
+			}
+		}
+		foreach (array_keys(self::$currencyClassifier) as $currency)
+		{
+			$currencyRow = $replaceRow;
+			$currencyTemplate = $template;
+			if (!empty($config[$currency]))
+			{
+				$currencyRow = array_merge(
+					$currencyRow,
+					array_intersect_key($config[$currency], $keys)
+				);
+				if (isset($config[$currency]['TEMPLATE']))
+				{
+					$currencyTemplate = $config[$currency]['TEMPLATE'];
+				}
+			}
+
+			if (!empty($currencyRow))
+			{
+				self::$currencyClassifier[$currency]['DEFAULT'] = array_merge(
+					self::$currencyClassifier[$currency]['DEFAULT'],
+					$currencyRow
+				);
+			}
+			if ($currencyTemplate !== null)
+			{
+				self::$currencyClassifier[$currency]['DEFAULT']['FORMAT_STRING'] = str_replace(
+					'#CURRENCY#',
+					trim(str_replace(
+						'#VALUE#',
+						'',
+						self::$currencyClassifier[$currency]['DEFAULT']['FORMAT_STRING']
+					)),
+					$currencyTemplate
+				);
+			}
+			if (!empty($currencyRow) || $currencyTemplate !== null)
+			{
+				foreach ($languageIds as $language)
+				{
+					if (!empty($currencyRow))
+					{
+						self::$currencyClassifier[$currency][$language] = array_merge(
+							self::$currencyClassifier[$currency][$language],
+							$currencyRow
+						);
+					}
+					if ($currencyTemplate !== null)
+					{
+						self::$currencyClassifier[$currency][$language]['FORMAT_STRING'] = str_replace(
+							'#CURRENCY#',
+							trim(str_replace(
+								'#VALUE#',
+								'',
+								self::$currencyClassifier[$currency][$language]['FORMAT_STRING']
+							)),
+							$currencyTemplate
+						);
+					}
+				}
+			}
+		}
 	}
 
 	/**
 	 * Fill classifier with missing languages
 	 *
-	 * @param array $languageIds - Array of languages
+	 * @param array $languageIds - Array of languages.
 	 */
-	private static function fill($languageIds)
+	private static function fill(array $languageIds): void
 	{
-		foreach ($languageIds as $languageId)
+		foreach ($languageIds as $languageId => $upperLanguageId)
 		{
 			reset(self::$currencyClassifier);
 			$currentElement = current(self::$currencyClassifier);
-			$upperLanguageId = strtoupper($languageId);
-
 			if (isset($currentElement[$upperLanguageId]))
+			{
 				continue;
+			}
 
 			foreach (self::$currencyClassifier as $key => $value)
 			{
-				$currencyName = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_FULL_NAME', null, $languageId);
-				$formatString = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_FORMAT_STRING', null, $languageId);
-				$decimalPoint = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_DEC_POINT', null, $languageId);
-				$thousandsVariant = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_THOUSANDS_VARIANT', null, $languageId);
+				$currencyName = Loc::getMessage(
+					'CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_FULL_NAME',
+					null,
+					$languageId
+				);
+				$formatString = Loc::getMessage(
+					'CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_FORMAT_STRING',
+					null,
+					$languageId
+				);
+				$decimalPoint = Loc::getMessage(
+					'CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_DEC_POINT',
+					null,
+					$languageId
+				);
+				$thousandsVariant = Loc::getMessage(
+					'CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_THOUSANDS_VARIANT',
+					null,
+					$languageId
+				);
 				if (!isset(self::$separators[$thousandsVariant]))
+				{
 					$thousandsVariant = null;
-				$decimals = Loc::getMessage('CURRENCY_CLASSIFIER_'.$value['SYM_CODE'].'_DECIMALS', null, $languageId);
+				}
 
 				$defaultProperties = $value['DEFAULT'];
 
-				self::$currencyClassifier[$key][$upperLanguageId] = array(
-					'FULL_NAME' => !is_null($currencyName) ? $currencyName : $defaultProperties['FULL_NAME'],
-					'FORMAT_STRING' => !is_null($formatString) ? $formatString : $defaultProperties['FORMAT_STRING'],
-					'DEC_POINT' => !is_null($decimalPoint) ? $decimalPoint : $defaultProperties['DEC_POINT'],
-					'THOUSANDS_VARIANT' => !is_null($thousandsVariant) ? $thousandsVariant : $defaultProperties['THOUSANDS_VARIANT'],
-					'DECIMALS' => !is_null($decimals) ? $decimals : $defaultProperties['DECIMALS']
-				);
-
-				$addedThousandsVariant = self::$currencyClassifier[$key][$upperLanguageId]['THOUSANDS_VARIANT'];
-
-				self::$currencyClassifier[$key][$upperLanguageId]['THOUSANDS_SEP'] = self::$separators[$addedThousandsVariant];
-				self::$currencyClassifier[$key][$upperLanguageId]['THOUSANDS_SEP_DESCR'] = self::$separatorsTypes[$addedThousandsVariant];
+				self::$currencyClassifier[$key][$upperLanguageId] = [
+					'FULL_NAME' => $currencyName ??$defaultProperties['FULL_NAME'],
+					'FORMAT_STRING' => $formatString ?? $defaultProperties['FORMAT_STRING'],
+					'DEC_POINT' => $decimalPoint ?? $defaultProperties['DEC_POINT'],
+					'THOUSANDS_VARIANT' => $thousandsVariant ?? $defaultProperties['THOUSANDS_VARIANT'],
+					'DECIMALS' => $defaultProperties['DECIMALS'],
+				];
 			}
 		}
+	}
+
+	/**
+	 * Fill thousand separator description.
+	 *
+	 * @param array $languageIds
+	 * @return void
+	 */
+	private static function fillSeparatorDescription(array $languageIds): void
+	{
+		foreach (array_keys(self::$currencyClassifier) as $currency)
+		{
+			foreach ($languageIds as $upperLanguageId)
+			{
+				if (!isset(self::$currencyClassifier[$currency][$upperLanguageId]))
+				{
+					continue;
+				}
+				if (isset(self::$currencyClassifier[$currency][$upperLanguageId]['THOUSANDS_SEP']))
+				{
+					continue;
+				}
+
+				$variant = self::$currencyClassifier[$currency][$upperLanguageId]['THOUSANDS_VARIANT'];
+				self::$currencyClassifier[$currency][$upperLanguageId]['THOUSANDS_SEP'] = self::$separators[$variant];
+				self::$currencyClassifier[$currency][$upperLanguageId]['THOUSANDS_SEP_DESCR'] = self::$separatorsTypes[$variant];
+			}
+		}
+		unset($variant, $language, $upperLanguageId, $currency);
 	}
 
 	/**
@@ -93,12 +286,30 @@ final class CurrencyClassifier
 	 *
 	 * @param string $baseLanguageId - Base language
 	 */
-	private static function sort($baseLanguageId)
+	private static function sort(string $baseLanguageId): void
 	{
-		if (self::$lastSortLanguage == $baseLanguageId)
+		$baseLanguageId = mb_strtoupper(trim($baseLanguageId));
+		if ($baseLanguageId === '')
+		{
 			return;
+		}
+		if (self::$lastSortLanguage == $baseLanguageId)
+		{
+			return;
+		}
 
-		Collection::sortByColumn(self::$currencyClassifier, strtoupper($baseLanguageId));
+		Collection::sortByColumn(
+			self::$currencyClassifier,
+			$baseLanguageId,
+			[
+				$baseLanguageId => function($row)
+				{
+					return $row['FULL_NAME'];
+				}
+			],
+			null,
+			true
+		);
 
 		self::$lastSortLanguage = $baseLanguageId;
 	}
@@ -106,24 +317,180 @@ final class CurrencyClassifier
 	/**
 	 * Fill arrays with separators data
 	 */
-	private static function fillSeparatorsData()
+	private static function fillSeparatorsData(): void
 	{
 		if (empty(self::$separators))
+		{
 			self::$separators = \CCurrencyLang::GetSeparators();
+		}
 
 		if (empty(self::$separatorsTypes))
+		{
 			self::$separatorsTypes = \CCurrencyLang::GetSeparatorTypes(true);
+		}
 	}
 
-	private static $currencyClassifier = array(
+	private static array $areaConfig = [
+		'br' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_DOT,
+				'TEMPLATE' => '#CURRENCY# #VALUE#',
+			],
+		],
+		'de' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_DOT,
+				'TEMPLATE' => '#VALUE# #CURRENCY#',
+			],
+		],
+		'pl' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_SPACE,
+				'TEMPLATE' => '#VALUE# #CURRENCY#',
+			],
+		],
+		'vn' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_DOT,
+				'TEMPLATE' => '#VALUE# #CURRENCY#',
+			],
+		],
+		'sc' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_EMPTY,
+				'TEMPLATE' => '#CURRENCY# #VALUE#',
+			],
+			'CNY' => [
+				'TEMPLATE' => '&#165; #VALUE#',
+			],
+		],
+		'tc' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#CURRENCY##VALUE#',
+			],
+		],
+		'jp' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#VALUE##CURRENCY#',
+			],
+			'JPY' => [
+				'DECIMALS' => 0,
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#VALUE#&#20870;',
+			],
+		],
+		'it' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_DOT,
+				'TEMPLATE' => '#VALUE# #CURRENCY#',
+			],
+		],
+		'tr' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_DOT,
+				'TEMPLATE' => '#VALUE##CURRENCY#',
+			],
+		],
+		'fr' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_SPACE,
+				'TEMPLATE' => '#VALUE# #CURRENCY#',
+			],
+		],
+		'id' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_DOT,
+				'TEMPLATE' => '#CURRENCY# #VALUE#',
+			],
+			'IDR' => [
+				'TEMPLATE' => 'Rp. #VALUE#',
+			],
+		],
+		'ms' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#CURRENCY# #VALUE#',
+			],
+		],
+		'in' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#CURRENCY# #VALUE#',
+			],
+			'INR' => [
+				'TEMPLATE' => 'Rs. #VALUE#',
+			],
+		],
+		'hi' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#CURRENCY# #VALUE#',
+			],
+			'INR' => [
+				'TEMPLATE' => 'Rs. #VALUE#',
+			],
+		],
+		'uk' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#CURRENCY##VALUE#',
+			],
+		],
+		'mx' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#CURRENCY##VALUE#',
+			],
+			'USD' => [
+				'TEMPLATE' => 'USD#VALUE#',
+			],
+			'COP' => [
+				'TEMPLATE' => 'COP#VALUE#',
+			],
+		],
+		'co' => [
+			self::MODIFIER_ALL => [
+				'DEC_POINT' => self::DECIMAL_POINT_DOT,
+				'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+				'TEMPLATE' => '#CURRENCY##VALUE#',
+			],
+			'USD' => [
+				'TEMPLATE' => 'USD#VALUE#',
+			],
+			'MXN' => [
+				'TEMPLATE' => 'MXN#VALUE#',
+			],
+		],
+	];
+
+	private static array $currencyClassifier = array(
 		'ALL' =>
 			array(
 				'NUM_CODE' => '008',
 				'SYM_CODE' => 'ALL',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Lek',
-					'FORMAT_STRING' => 'L#VALUE# ',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => 'L#VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -135,7 +502,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Algerian Dinar',
 					'FORMAT_STRING' => 'DA#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -147,7 +514,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Argentine Peso',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -159,7 +526,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Australian Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -171,7 +538,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bahamian Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -183,7 +550,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bahraini Dinar',
 					'FORMAT_STRING' => 'BD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 3,
 				),
@@ -195,7 +562,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Taka',
 					'FORMAT_STRING' => '&#2547;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -207,7 +574,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Armenian Dram',
 					'FORMAT_STRING' => 'AMD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -219,7 +586,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Barbados Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -231,7 +598,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bermudian Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -243,7 +610,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Ngultrum',
 					'FORMAT_STRING' => 'Nu#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -255,7 +622,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Boliviano',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -267,7 +634,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Pula',
 					'FORMAT_STRING' => 'P#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -279,7 +646,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Belize Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -291,7 +658,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Solomon Islands Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -303,7 +670,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Brunei Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -315,7 +682,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Kyat',
 					'FORMAT_STRING' => 'K#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -327,7 +694,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Burundi Franc',
 					'FORMAT_STRING' => '&#8355;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -339,7 +706,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Riel',
 					'FORMAT_STRING' => '&#6107;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -351,7 +718,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Canadian Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -363,7 +730,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Cabo Verde Escudo',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -375,7 +742,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Cayman Islands Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -387,7 +754,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Sri Lanka Rupee',
 					'FORMAT_STRING' => '&#8360;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -399,7 +766,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Chilean Peso',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -411,7 +778,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Yuan Renminbi',
 					'FORMAT_STRING' => '&#165;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -423,7 +790,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Colombian Peso',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -435,7 +802,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Comorian Franc',
 					'FORMAT_STRING' => '&#8355;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -447,7 +814,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Costa Rican Coln',
 					'FORMAT_STRING' => '&#8353;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -459,7 +826,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Kuna',
 					'FORMAT_STRING' => 'Kn#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -471,7 +838,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Cuban Peso',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -483,7 +850,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Czech Koruna',
 					'FORMAT_STRING' => 'CZK#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -495,7 +862,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Danish Krone',
 					'FORMAT_STRING' => 'kr#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -507,7 +874,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Dominican Peso',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -519,7 +886,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'El Salvador Colon',
 					'FORMAT_STRING' => '&#8353;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -531,7 +898,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Ethiopian Birr',
 					'FORMAT_STRING' => 'Br#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -543,7 +910,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Nakfa',
 					'FORMAT_STRING' => 'Nfk#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -555,7 +922,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Falkland Islands Pound',
 					'FORMAT_STRING' => '&pound;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -567,7 +934,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Fiji Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -579,7 +946,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Djibouti Franc',
 					'FORMAT_STRING' => '&#8355;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -591,7 +958,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Dalasi',
 					'FORMAT_STRING' => 'D#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -603,7 +970,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Gibraltar Pound',
 					'FORMAT_STRING' => '&pound;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -615,7 +982,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Quetzal',
 					'FORMAT_STRING' => 'Q#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -627,7 +994,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Guinean Franc',
 					'FORMAT_STRING' => '&#8355;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -639,7 +1006,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Guyana Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -651,7 +1018,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Gourde',
 					'FORMAT_STRING' => 'G#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -663,7 +1030,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Lempira',
 					'FORMAT_STRING' => 'L#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -674,8 +1041,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'HKD',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Hong Kong Dollar',
-					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => 'HK$#VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -687,7 +1054,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Forint',
 					'FORMAT_STRING' => '&#402;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -699,7 +1066,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Iceland Krona',
 					'FORMAT_STRING' => 'kr#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -711,7 +1078,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Indian Rupee',
 					'FORMAT_STRING' => '&#8377;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -723,7 +1090,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Rupiah',
 					'FORMAT_STRING' => '&#8377;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -735,7 +1102,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Iranian Rial',
 					'FORMAT_STRING' => '&#65020;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -747,7 +1114,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Iraqi Dinar',
 					'FORMAT_STRING' => 'ID#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 3,
 				),
@@ -759,7 +1126,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'New Israeli Sheqel',
 					'FORMAT_STRING' => '&#8362;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -771,7 +1138,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Jamaican Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -783,7 +1150,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Yen',
 					'FORMAT_STRING' => '&#165;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -795,7 +1162,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Tenge',
 					'FORMAT_STRING' => '&#8376;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -807,7 +1174,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Jordanian Dinar',
 					'FORMAT_STRING' => 'JD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 3,
 				),
@@ -819,7 +1186,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Kenyan Shilling',
 					'FORMAT_STRING' => 'KShs#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -831,7 +1198,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'North Korean Won',
 					'FORMAT_STRING' => '&#8361;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -843,7 +1210,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Won',
 					'FORMAT_STRING' => '&#8361;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -855,7 +1222,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Kuwaiti Dinar',
 					'FORMAT_STRING' => 'KD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 3,
 				),
@@ -867,7 +1234,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Som',
 					'FORMAT_STRING' => 'c#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -879,7 +1246,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Lao Kip',
 					'FORMAT_STRING' => '&#8365;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -891,7 +1258,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Lebanese Pound',
 					'FORMAT_STRING' => 'LBP#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -903,7 +1270,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Loti',
 					'FORMAT_STRING' => 'M#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -915,7 +1282,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Liberian Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -927,7 +1294,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Libyan Dinar',
 					'FORMAT_STRING' => 'LD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 3,
 				),
@@ -939,7 +1306,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Pataca',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -951,7 +1318,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Malawi Kwacha',
 					'FORMAT_STRING' => 'MK#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -962,8 +1329,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'MYR',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Malaysian Ringgit',
-					'FORMAT_STRING' => 'RM#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => 'RM #VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -975,7 +1342,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Rufiyaa',
 					'FORMAT_STRING' => 'Rf#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -987,7 +1354,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Ouguiya',
 					'FORMAT_STRING' => 'UM#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -999,7 +1366,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Mauritius Rupee',
 					'FORMAT_STRING' => '&#8360;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1011,7 +1378,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Mexican Peso',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1023,7 +1390,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Tugrik',
 					'FORMAT_STRING' => '&#8376;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1035,7 +1402,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Moldovan Leu',
 					'FORMAT_STRING' => 'L#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1047,7 +1414,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Moroccan Dirham',
 					'FORMAT_STRING' => 'Dh#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1059,7 +1426,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Rial Omani',
 					'FORMAT_STRING' => '&#65020;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 3,
 				),
@@ -1071,7 +1438,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Namibia Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1083,7 +1450,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Nepalese Rupee',
 					'FORMAT_STRING' => '&#8360;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1095,7 +1462,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Netherlands Antillean Guilder',
 					'FORMAT_STRING' => '&#402;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1107,7 +1474,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Aruban Florin',
 					'FORMAT_STRING' => '&#402;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1119,7 +1486,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Vatu',
 					'FORMAT_STRING' => 'Vt#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1131,7 +1498,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'New Zealand Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1143,7 +1510,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Cordoba Oro',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1155,7 +1522,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Naira',
 					'FORMAT_STRING' => '&#8358;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1167,7 +1534,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Norwegian Krone',
 					'FORMAT_STRING' => 'kr#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1179,7 +1546,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Pakistan Rupee',
 					'FORMAT_STRING' => '&#8360;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1191,7 +1558,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Balboa',
 					'FORMAT_STRING' => 'B#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1203,7 +1570,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Kina',
 					'FORMAT_STRING' => 'K#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1215,7 +1582,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Guarani',
 					'FORMAT_STRING' => '&#8370;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1227,7 +1594,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Sol',
 					'FORMAT_STRING' => 'PEN#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1239,7 +1606,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Philippine Peso',
 					'FORMAT_STRING' => '&#8369;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1251,7 +1618,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Qatari Rial',
 					'FORMAT_STRING' => '&#65020;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1263,7 +1630,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Russian Ruble',
 					'FORMAT_STRING' => '&#8381;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1275,7 +1642,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Rwanda Franc',
 					'FORMAT_STRING' => '&#8355;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1287,7 +1654,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Saint Helena Pound',
 					'FORMAT_STRING' => '&pound;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1299,7 +1666,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Dobra',
 					'FORMAT_STRING' => 'Db#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1311,7 +1678,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Saudi Riyal',
 					'FORMAT_STRING' => '&#65020;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1323,7 +1690,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Seychelles Rupee',
 					'FORMAT_STRING' => '&#8360;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1335,7 +1702,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Leone',
 					'FORMAT_STRING' => 'Le#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1347,7 +1714,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Singapore Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1358,8 +1725,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'VND',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Dong',
-					'FORMAT_STRING' => '&#8363;#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => '#VALUE# &#8363;',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1371,7 +1738,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Somali Shilling',
 					'FORMAT_STRING' => 'So.#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1383,7 +1750,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Rand',
 					'FORMAT_STRING' => 'R#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1395,7 +1762,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'South Sudanese Pound',
 					'FORMAT_STRING' => 'SSP#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1407,7 +1774,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Lilangeni',
 					'FORMAT_STRING' => 'E#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1419,7 +1786,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Swedish Krona',
 					'FORMAT_STRING' => 'kr#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1431,7 +1798,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Swiss Franc',
 					'FORMAT_STRING' => '&#8355;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1443,7 +1810,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Syrian Pound',
 					'FORMAT_STRING' => 'SP#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1455,7 +1822,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Baht',
 					'FORMAT_STRING' => '&#3647;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1467,7 +1834,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Paanga',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1479,7 +1846,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Trinidad and Tobago Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1491,7 +1858,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'UAE Dirham',
 					'FORMAT_STRING' => 'Dh#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1503,7 +1870,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Tunisian Dinar',
 					'FORMAT_STRING' => 'TD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 3,
 				),
@@ -1515,7 +1882,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Uganda Shilling',
 					'FORMAT_STRING' => 'USh#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1527,7 +1894,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Denar',
 					'FORMAT_STRING' => 'MDen#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1539,7 +1906,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Egyptian Pound',
 					'FORMAT_STRING' => 'LE#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1551,7 +1918,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Pound Sterling',
 					'FORMAT_STRING' => '&pound;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1563,7 +1930,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Tanzanian Shilling',
 					'FORMAT_STRING' => 'TSh#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1575,7 +1942,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'US Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1587,7 +1954,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Peso Uruguayo',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1599,7 +1966,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Uzbekistan Sum',
 					'FORMAT_STRING' => 'UZS#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1611,7 +1978,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Tala',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1623,7 +1990,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Yemeni Rial',
 					'FORMAT_STRING' => '&#65020;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1634,8 +2001,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'TWD',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'New Taiwan Dollar',
-					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => 'NT$#VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1647,7 +2014,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Peso Convertible',
 					'FORMAT_STRING' => 'CUC#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1659,7 +2026,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Zimbabwe Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1671,7 +2038,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Belarusian Ruble',
 					'FORMAT_STRING' => 'Br#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1683,7 +2050,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Turkmenistan New Manat',
 					'FORMAT_STRING' => 'm#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1695,7 +2062,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Ghana Cedi',
 					'FORMAT_STRING' => '&#8373;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1707,7 +2074,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bolivar',
 					'FORMAT_STRING' => 'Bs#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1719,7 +2086,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Sudanese Pound',
 					'FORMAT_STRING' => '&pound;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1731,7 +2098,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Uruguay Peso en Unidades Indexadas (URUIURUI)',
 					'FORMAT_STRING' => 'UYI#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1743,7 +2110,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Serbian Dinar',
 					'FORMAT_STRING' => 'din.#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1755,7 +2122,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Mozambique Metical',
 					'FORMAT_STRING' => 'MT#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1767,7 +2134,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Azerbaijan Manat',
 					'FORMAT_STRING' => '&#8380;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1779,7 +2146,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Romanian Leu',
 					'FORMAT_STRING' => 'L#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1791,7 +2158,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'WIR Euro',
 					'FORMAT_STRING' => 'CHE#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1803,7 +2170,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'WIR Franc',
 					'FORMAT_STRING' => 'CHW#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1815,7 +2182,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Turkish Lira',
 					'FORMAT_STRING' => '&#8378;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1826,8 +2193,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'XAF',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'CFA Franc BEAC',
-					'FORMAT_STRING' => '&#8378;#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => '&#8355;#VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1839,7 +2206,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'East Caribbean Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1850,8 +2217,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'XOF',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'CFA Franc BCEAO',
-					'FORMAT_STRING' => '&#8378;#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => '&#8355;#VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1862,8 +2229,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'XPF',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'CFP Franc',
-					'FORMAT_STRING' => '&#8378;#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => '&#8355;#VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1875,7 +2242,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bond Markets Unit European Composite Unit (EURCO)',
 					'FORMAT_STRING' => 'XBA#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1887,7 +2254,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bond Markets Unit European Monetary Unit (E.M.U.-6)',
 					'FORMAT_STRING' => 'XBB#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1899,7 +2266,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bond Markets Unit European Unit of Account 9 (E.U.A.-9)',
 					'FORMAT_STRING' => 'XBC#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1911,7 +2278,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bond Markets Unit European Unit of Account 17 (E.U.A.-17)',
 					'FORMAT_STRING' => 'XBD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1923,7 +2290,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Gold',
 					'FORMAT_STRING' => 'XAU#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1935,7 +2302,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'SDR (Special Drawing Right)',
 					'FORMAT_STRING' => 'SDR#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -1947,7 +2314,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Silver',
 					'FORMAT_STRING' => 'XAG#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1959,7 +2326,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Platinum',
 					'FORMAT_STRING' => 'XPT#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1971,7 +2338,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Palladium',
 					'FORMAT_STRING' => 'XPD#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1983,7 +2350,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'ADB Unit of Account',
 					'FORMAT_STRING' => 'XUA#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -1995,7 +2362,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Zambian Kwacha',
 					'FORMAT_STRING' => 'K#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2007,7 +2374,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Surinam Dollar',
 					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2019,7 +2386,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Malagasy Ariary',
 					'FORMAT_STRING' => 'Ar.#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2031,7 +2398,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Unidad de Valor Real',
 					'FORMAT_STRING' => 'COU#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2043,7 +2410,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Afghani',
 					'FORMAT_STRING' => '&#1547;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2055,7 +2422,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Somoni',
 					'FORMAT_STRING' => 'c.#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2067,7 +2434,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Kwanza',
 					'FORMAT_STRING' => 'Kz#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2079,7 +2446,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Bulgarian Lev',
 					'FORMAT_STRING' => 'BGN#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2091,7 +2458,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Congolese Franc',
 					'FORMAT_STRING' => '&#8355;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2103,7 +2470,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Convertible Mark',
 					'FORMAT_STRING' => 'KM#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2115,7 +2482,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Euro',
 					'FORMAT_STRING' => '&euro;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2127,7 +2494,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Mexican Unidad de Inversion (UDI)',
 					'FORMAT_STRING' => 'MXV#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2139,7 +2506,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Hryvnia',
 					'FORMAT_STRING' => '&#8372;#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2150,8 +2517,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'GEL',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Lari',
-					'FORMAT_STRING' => '&#8372;#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => '&#8382;#VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2163,7 +2530,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Mvdol',
 					'FORMAT_STRING' => 'BOV#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2174,8 +2541,8 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'PLN',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Zloty',
-					'FORMAT_STRING' => 'PLN#VALUE#',
-					'DEC_POINT' => '.',
+					'FORMAT_STRING' => '#VALUE# z&#322;',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),
@@ -2186,9 +2553,9 @@ final class CurrencyClassifier
 				'SYM_CODE' => 'BRL',
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Brazilian Real',
-					'FORMAT_STRING' => '$#VALUE#',
-					'DEC_POINT' => '.',
-					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
+					'FORMAT_STRING' => 'R$ #VALUE#',
+					'DEC_POINT' => self::DECIMAL_POINT_COMMA,
+					'THOUSANDS_VARIANT' => self::SEPARATOR_DOT,
 					'DECIMALS' => 2,
 				),
 			),
@@ -2199,7 +2566,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Unidad de Fomento',
 					'FORMAT_STRING' => 'CLF#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 4,
 				),
@@ -2211,7 +2578,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'Sucre',
 					'FORMAT_STRING' => 'XSU#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 0,
 				),
@@ -2223,7 +2590,7 @@ final class CurrencyClassifier
 				'DEFAULT' => array(
 					'FULL_NAME' => 'US Dollar (Next day)',
 					'FORMAT_STRING' => 'USN#VALUE#',
-					'DEC_POINT' => '.',
+					'DEC_POINT' => self::DECIMAL_POINT_DOT,
 					'THOUSANDS_VARIANT' => self::SEPARATOR_COMMA,
 					'DECIMALS' => 2,
 				),

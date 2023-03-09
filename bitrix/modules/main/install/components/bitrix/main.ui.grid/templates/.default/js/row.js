@@ -118,6 +118,13 @@
 				{
 					cellValues.forEach(function(cellValue) {
 						values[cellValue.NAME] = cellValue.VALUE !== undefined ? cellValue.VALUE : "";
+
+						if (cellValue.hasOwnProperty("RAW_NAME") && cellValue.hasOwnProperty("RAW_VALUE"))
+						{
+							values[cellValue.NAME + "_custom"] = values[cellValue.NAME + "_custom"] || {};
+							values[cellValue.NAME + "_custom"][cellValue.RAW_NAME] =
+								values[cellValue.NAME + "_custom"][cellValue.RAW_NAME] || cellValue.RAW_VALUE;
+						}
 					});
 				}
 				else if (cellValues)
@@ -145,75 +152,11 @@
 				}
 				else if(BX.hasClass(editor, 'main-grid-editor-custom'))
 				{
-					result = [];
-					editor.querySelectorAll('input, select, checkbox, textarea').forEach(function(element) {
-						switch (element.tagName)
-						{
-							case "SELECT":
-								if (element.multiple)
-								{
-									var selectValues = [];
-									element.querySelectorAll('option').forEach(function(option) {
-										if (option.selected)
-										{
-											selectValues.push(option.value);
-										}
-									});
-									result.push({
-										'NAME': editor.getAttribute('data-name'),
-										'VALUE': selectValues
-									});
-								}
-								else
-								{
-									result.push({
-										'NAME': editor.getAttribute('data-name'),
-										'VALUE': element.value
-									});
-								}
-								break;
-							case 'INPUT':
-								switch(element.type.toUpperCase())
-								{
-									case 'CHECKBOX':
-										result.push({
-											'NAME': editor.getAttribute('data-name'),
-											'VALUE': element.checked ? element.value : ''
-										});
-										break;
-									case 'HIDDEN':
-										break;
-									default:
-										result.push({
-											'NAME': editor.getAttribute('data-name'),
-											'VALUE': element.value
-										});
-								}
-								break;
-							default:
-								result.push({
-									'NAME': editor.getAttribute('data-name'),
-									'VALUE': element.value
-								});
-						}
-					});
+					result = this.getCustomValue(editor);
 				}
 				else
 				{
-					if (editor.value)
-					{
-						result = {
-							'NAME': editor.getAttribute('name'),
-							'VALUE': editor.value
-						};
-					}
-					else
-					{
-						result = {
-							'NAME': editor.getAttribute('name'),
-							'VALUE': BX.data(editor, 'value')
-						};
-					}
+					result = this.getImageValue(editor);
 				}
 			}
 
@@ -281,6 +224,122 @@
 			return content;
 		},
 
+		getCustomValue: function(editor)
+		{
+			var map = new Map(), name = editor.getAttribute('data-name');
+			var inputs = [].slice.call(editor.querySelectorAll('input, select, checkbox, textarea'));
+			inputs.forEach(function(element) {
+
+				var resultObject = {
+					'NAME': name,
+					'RAW_NAME': element.name,
+					'RAW_VALUE': element.value,
+					'VALUE': element.value
+				};
+
+				switch (element.tagName)
+				{
+					case 'SELECT':
+						if (element.multiple)
+						{
+							var selectValues = [];
+							element.querySelectorAll('option').forEach(function(option) {
+								if (option.selected)
+								{
+									selectValues.push(option.value);
+								}
+							});
+							resultObject['RAW_VALUE'] = selectValues;
+							resultObject['VALUE'] = selectValues;
+							map.set(element.name, resultObject);
+						}
+						else
+						{
+							map.set(element.name, resultObject);
+						}
+						break;
+					case 'INPUT':
+						switch(element.type.toUpperCase())
+						{
+							case 'RADIO':
+								if (element.checked)
+								{
+									resultObject['RAW_VALUE'] = element.value;
+									resultObject['VALUE'] = element.value;
+									map.set(element.name, resultObject);
+								}
+								break;
+							case 'CHECKBOX':
+								resultObject['RAW_VALUE'] = element.checked ? element.value : '';
+								resultObject['VALUE'] = element.checked ? element.value : '';
+								map.set(element.name, resultObject);
+								break;
+							case 'FILE':
+								resultObject['RAW_VALUE'] = element.files[0];
+								resultObject['VALUE'] = element.files[0];
+								map.set(element.name, resultObject);
+								break;
+							default:
+								map.set(element.name, resultObject);
+						}
+						break;
+					default:
+						map.set(element.name, resultObject);
+				}
+			});
+
+			var result = [];
+			map.forEach(function(value) {
+				result.push(value);
+			});
+
+			return result;
+		},
+
+		getImageValue: function(editor)
+		{
+			var result = null;
+			if (BX.hasClass(editor, 'main-grid-image-editor'))
+			{
+				var input = editor.querySelector('.main-grid-image-editor-file-input');
+
+				if (input)
+				{
+					result = {
+						'NAME': input.name,
+						'VALUE': input.files[0]
+					};
+				}
+				else
+				{
+					var fakeInput = editor.querySelector('.main-grid-image-editor-fake-file-input');
+
+					if (fakeInput)
+					{
+						result = {
+							'NAME': fakeInput.name,
+							'VALUE': fakeInput.value
+						};
+					}
+				}
+			}
+			else if (editor.value)
+			{
+				result = {
+					'NAME': editor.getAttribute('name'),
+					'VALUE': editor.value
+				};
+			}
+			else
+			{
+				result = {
+					'NAME': editor.getAttribute('name'),
+					'VALUE': BX.data(editor, 'value')
+				};
+			}
+
+			return result;
+		},
 
 		/**
 		 * @param {HTMLTableCellElement} cell
@@ -403,9 +462,7 @@
 		 */
 		setParentId: function(id)
 		{
-			id = id.toString();
-			var dataset = this.getDataset();
-			dataset['parentId'] = id;
+			this.getDataset()['parentId'] = id;
 		},
 
 
@@ -583,7 +640,7 @@
 				}
 
 				BX.onCustomEvent(window, 'Grid::rowUpdated', [{id: id, data: data, grid: self.parent, response: this}]);
-				BX.onCustomEvent(window, 'Grid::updated', []);
+				BX.onCustomEvent(window, 'Grid::updated', [self.parent]);
 
 				if (BX.type.isFunction(callback))
 				{
@@ -632,7 +689,7 @@
 				}
 
 				BX.onCustomEvent(window, 'Grid::rowRemoved', [{id: id, data: data, grid: self.parent, response: this}]);
-				BX.onCustomEvent(window, 'Grid::updated', []);
+				BX.onCustomEvent(window, 'Grid::updated', [self.parent]);
 
 				if (BX.type.isFunction(callback))
 				{
@@ -722,22 +779,25 @@
 			var editObject, editor, height, contentContainer;
 
 			[].forEach.call(cells, function(current, index) {
-				try {
-					editObject = self.getCellEditDataByCellIndex(index);
-				} catch (err) {
-					throw new Error(err);
-				}
-
-				if (self.parent.getEditor().validateEditObject(editObject))
+				if (current.dataset.editable === 'true')
 				{
-					contentContainer = self.getContentContainer(current);
-					height = BX.height(contentContainer);
-					editor = self.parent.getEditor().getEditor(editObject, height);
+					try {
+						editObject = self.getCellEditDataByCellIndex(index);
+					} catch (err) {
+						throw new Error(err);
+					}
 
-					if (!self.getEditorContainer(current) && BX.type.isDomNode(editor))
+					if (self.parent.getEditor().validateEditObject(editObject))
 					{
-						current.appendChild(editor);
-						BX.hide(contentContainer);
+						contentContainer = self.getContentContainer(current);
+						height = BX.height(contentContainer);
+						editor = self.parent.getEditor().getEditor(editObject, height);
+
+						if (!self.getEditorContainer(current) && BX.type.isDomNode(editor))
+						{
+							current.appendChild(editor);
+							BX.hide(contentContainer);
+						}
 					}
 				}
 			});
@@ -868,12 +928,12 @@
 
 		showActionsMenu: function(event)
 		{
+			BX.fireEvent(document.body, 'click');
+
 			this.getActionsMenu().popupWindow.show();
 
 			if (event)
 			{
-				BX.fireEvent(document.body, 'click');
-
 				this.getActionsMenu().popupWindow.popupContainer.style.top = ((event.pageY - 25) + BX.PopupWindow.getOption("offsetTop")) + "px";
 				this.getActionsMenu().popupWindow.popupContainer.style.left = ((event.pageX + 20) + BX.PopupWindow.getOption("offsetLeft")) + "px";
 			}
@@ -960,7 +1020,7 @@
 		{
 			var checkbox;
 
-			if (!this.isEdit())
+			if (!this.isEdit() && !this.parent.getRows().hasEditable())
 			{
 				checkbox = this.getCheckbox();
 

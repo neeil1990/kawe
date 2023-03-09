@@ -38,9 +38,7 @@ if ($install_public == "Y" && !empty($public_dir))
 		}
 	}
 
-	$b = "sort";
-	$o = "asc";
-	$dbSites = CSite::GetList($b, $o, array("ACTIVE" => "Y"));
+	$dbSites = CSite::GetList('', '', array("ACTIVE" => "Y"));
 	while ($site = $dbSites->Fetch())
 	{
 		CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/install/public/".$site['LANGUAGE_ID'], $site['ABS_DOC_ROOT'].$site["DIR"].$public_dir, $bReWritePublicFiles, true);
@@ -104,7 +102,7 @@ if ($ex = $APPLICATION->GetException())
 	echo CAdminMessage::ShowMessage(array("TYPE" => "ERROR", "MESSAGE" => GetMessage("MOD_INST_ERR"), "HTML" => true, "DETAILS" => $ex->GetString()));
 }
 
-if (strlen($public_dir)>0) :
+if ($public_dir <> '') :
 ?>
 <p><?=GetMessage("MOD_DEMO_DIR")?></p>
 <table border="0" cellspacing="0" cellpadding="3">
@@ -113,13 +111,13 @@ if (strlen($public_dir)>0) :
 		<td align="center"><p><b><?=GetMessage("MOD_DEMO_LINK")?></b></p></td>
 	</tr>
 	<?
-	$sites = CSite::GetList($by, $order, Array("ACTIVE"=>"Y"));
+	$sites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 	while($site = $sites->Fetch())
 	{
 		?>
 		<tr>
 			<td width="0%"><p>[<?=htmlspecialcharsbx($site["ID"])?>] <?=htmlspecialcharsbx($site["NAME"])?></p></td>
-			<td width="0%"><p><a href="<?if(strlen($site["SERVER_NAME"])>0) echo "http://".htmlspecialcharsbx($site["SERVER_NAME"]);?><?=htmlspecialcharsbx($site["DIR"]).$public_dir?>/"><?=htmlspecialcharsbx($site["DIR"]).$public_dir?>/</a></p></td>
+			<td width="0%"><p><a href="<?if($site["SERVER_NAME"] <> '') echo "http://".htmlspecialcharsbx($site["SERVER_NAME"]);?><?=htmlspecialcharsbx($site["DIR"]).$public_dir?>/"><?=htmlspecialcharsbx($site["DIR"]).$public_dir?>/</a></p></td>
 		</tr>
 		<?
 	}

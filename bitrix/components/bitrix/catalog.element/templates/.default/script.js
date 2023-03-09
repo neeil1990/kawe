@@ -132,6 +132,9 @@
 			controls: []
 		};
 
+		this.quantityDelay = null;
+		this.quantityTimer = null;
+
 		this.obProduct = null;
 		this.obQuantity = null;
 		this.obQuantityUp = null;
@@ -151,6 +154,7 @@
 		this.obNotAvail = null;
 		this.obSubscribe = null;
 		this.obSkuProps = null;
+		this.obDescription = null;
 		this.obMainSkuProps = null;
 		this.obBigSlider = null;
 		this.obMeasure = null;
@@ -210,6 +214,7 @@
 				case 0: // no catalog
 				case 1: // product
 				case 2: // set
+				case 7: // service
 					this.initProductData();
 					break;
 				case 3: // sku
@@ -221,6 +226,10 @@
 
 			this.initBasketData();
 			this.initCompareData();
+
+			this.isFacebookConversionCustomizeProductEventEnabled =
+				this.params.IS_FACEBOOK_CONVERSION_CUSTOMIZE_PRODUCT_EVENT_ENABLED
+			;
 		}
 
 		if (this.errorCode === 0)
@@ -441,6 +450,11 @@
 				this.obMainSkuProps = BX(this.visual.DISPLAY_MAIN_PROP_DIV);
 			}
 
+			if (this.config.showSkuDescription === 'Y')
+			{
+				this.obDescription = BX(this.visual.DESCRIPTION_ID);
+			}
+
 			if (this.config.useCompare)
 			{
 				this.obCompare = BX(this.visual.COMPARE_LINK);
@@ -506,13 +520,22 @@
 
 				if (this.config.showQuantity)
 				{
+					var startEventName = this.isTouchDevice ? 'touchstart' : 'mousedown';
+					var endEventName = this.isTouchDevice ? 'touchend' : 'mouseup';
+
 					if (this.obQuantityUp)
 					{
+						BX.bind(this.obQuantityUp, startEventName, BX.proxy(this.startQuantityInterval, this));
+						BX.bind(this.obQuantityUp, endEventName, BX.proxy(this.clearQuantityInterval, this));
+						BX.bind(this.obQuantityUp, 'mouseout', BX.proxy(this.clearQuantityInterval, this));
 						BX.bind(this.obQuantityUp, 'click', BX.delegate(this.quantityUp, this));
 					}
 
 					if (this.obQuantityDown)
 					{
+						BX.bind(this.obQuantityDown, startEventName, BX.proxy(this.startQuantityInterval, this));
+						BX.bind(this.obQuantityDown, endEventName, BX.proxy(this.clearQuantityInterval, this));
+						BX.bind(this.obQuantityDown, 'mouseout', BX.proxy(this.clearQuantityInterval, this));
 						BX.bind(this.obQuantityDown, 'click', BX.delegate(this.quantityDown, this));
 					}
 
@@ -527,6 +550,7 @@
 					case 0: // no catalog
 					case 1: // product
 					case 2: // set
+					case 7: // service
 						if (this.product.useSlider)
 						{
 							this.product.slider = {
@@ -641,6 +665,8 @@
 			this.config.showMaxQuantity = this.params.CONFIG.SHOW_MAX_QUANTITY;
 			this.config.relativeQuantityFactor = parseInt(this.params.CONFIG.RELATIVE_QUANTITY_FACTOR);
 			this.config.usePriceRanges = this.params.CONFIG.USE_PRICE_COUNT;
+			this.config.showSkuDescription = this.params.CONFIG.SHOW_SKU_DESCRIPTION;
+			this.config.displayPreviewTextMode = this.params.CONFIG.DISPLAY_PREVIEW_TEXT_MODE;
 
 			if (this.params.CONFIG.MAIN_PICTURE_MODE)
 			{
@@ -690,19 +716,19 @@
 
 			if (this.params.PRODUCT && typeof this.params.PRODUCT === 'object')
 			{
+				if (this.config.showPrice)
+				{
+					this.currentPriceMode = this.params.PRODUCT.ITEM_PRICE_MODE;
+					this.currentPrices = this.params.PRODUCT.ITEM_PRICES;
+					this.currentPriceSelected = this.params.PRODUCT.ITEM_PRICE_SELECTED;
+					this.currentQuantityRanges = this.params.PRODUCT.ITEM_QUANTITY_RANGES;
+					this.currentQuantityRangeSelected = this.params.PRODUCT.ITEM_QUANTITY_RANGE_SELECTED;
+				}
+
 				if (this.config.showQuantity)
 				{
 					this.product.checkQuantity = this.params.PRODUCT.CHECK_QUANTITY;
 					this.product.isDblQuantity = this.params.PRODUCT.QUANTITY_FLOAT;
-
-					if (this.config.showPrice)
-					{
-						this.currentPriceMode = this.params.PRODUCT.ITEM_PRICE_MODE;
-						this.currentPrices = this.params.PRODUCT.ITEM_PRICES;
-						this.currentPriceSelected = this.params.PRODUCT.ITEM_PRICE_SELECTED;
-						this.currentQuantityRanges = this.params.PRODUCT.ITEM_QUANTITY_RANGES;
-						this.currentQuantityRangeSelected = this.params.PRODUCT.ITEM_QUANTITY_RANGE_SELECTED;
-					}
 
 					if (this.product.checkQuantity)
 					{
@@ -798,6 +824,10 @@
 					this.product.id = parseInt(this.params.PRODUCT.ID, 10);
 					this.product.name = this.params.PRODUCT.NAME;
 					this.product.category = this.params.PRODUCT.CATEGORY;
+					this.product.detailText = this.params.PRODUCT.DETAIL_TEXT;
+					this.product.detailTextType = this.params.PRODUCT.DETAIL_TEXT_TYPE;
+					this.product.previewText = this.params.PRODUCT.PREVIEW_TEXT;
+					this.product.previewTextType = this.params.PRODUCT.PREVIEW_TEXT_TYPE;
 				}
 			}
 			else
@@ -810,7 +840,11 @@
 		{
 			if (this.params.BASKET && typeof this.params.BASKET === 'object')
 			{
-				if (this.productType === 1 || this.productType === 2)
+				if (
+					this.productType === 1
+					|| this.productType === 2
+					|| this.productType === 7
+				)
 				{
 					this.basketData.useProps = this.params.BASKET.ADD_PROPS;
 					this.basketData.emptyProps = this.params.BASKET.EMPTY_PROPS;
@@ -929,6 +963,7 @@
 				case 0: //no catalog
 				case 1: //product
 				case 2: //set
+				case 7: // service
 					item = {
 						'id': this.product.id,
 						'name': this.product.name,
@@ -979,7 +1014,6 @@
 			{
 				case 'showDetail':
 					info = {
-						'event': 'showDetail',
 						'ecommerce': {
 							'currencyCode': this.currentPrices[this.currentPriceSelected] && this.currentPrices[this.currentPriceSelected].CURRENCY || '',
 							'detail': {
@@ -997,7 +1031,6 @@
 					break;
 				case 'addToCart':
 					info = {
-						'event': 'addToCart',
 						'ecommerce': {
 							'currencyCode': this.currentPrices[this.currentPriceSelected] && this.currentPrices[this.currentPriceSelected].CURRENCY || '',
 							'add': {
@@ -1774,6 +1807,27 @@
 			}
 		},
 
+		startQuantityInterval: function()
+		{
+			var target = BX.proxy_context;
+			var func = target.id === this.visual.QUANTITY_DOWN_ID
+				? BX.proxy(this.quantityDown, this)
+				: BX.proxy(this.quantityUp, this);
+
+			this.quantityDelay = setTimeout(
+				BX.delegate(function() {
+					this.quantityTimer = setInterval(func, 150);
+				}, this),
+				300
+			);
+		},
+
+		clearQuantityInterval: function()
+		{
+			clearTimeout(this.quantityDelay);
+			clearInterval(this.quantityTimer);
+		},
+
 		quantityUp: function()
 		{
 			var curValue = 0,
@@ -1866,17 +1920,15 @@
 
 						this.checkPriceRange(curValue);
 
+						intCount = Math.floor(
+							Math.round(curValue * this.precisionFactor / this.stepQuantity) / this.precisionFactor
+						) || 1;
+						curValue = (intCount <= 1 ? this.stepQuantity : intCount * this.stepQuantity);
+						curValue = Math.round(curValue * this.precisionFactor) / this.precisionFactor;
+
 						if (curValue < this.minQuantity)
 						{
 							curValue = this.minQuantity;
-						}
-						else
-						{
-							intCount = Math.round(
-									Math.round(curValue * this.precisionFactor / this.stepQuantity) / this.precisionFactor
-								) || 1;
-							curValue = (intCount <= 1 ? this.stepQuantity : intCount * this.stepQuantity);
-							curValue = Math.round(curValue * this.precisionFactor) / this.precisionFactor;
 						}
 
 						this.obQuantity.value = curValue;
@@ -1898,7 +1950,7 @@
 		quantitySet: function(index)
 		{
 			var strLimit, resetQuantity;
-			
+
 			var newOffer = this.offers[index],
 				oldOffer = this.offers[this.offerNum];
 
@@ -2124,6 +2176,22 @@
 
 						smallCardItem.style.display = '';
 					}
+				}
+
+				if (
+					this.isFacebookConversionCustomizeProductEventEnabled
+					&& BX.Type.isArrayFilled(this.offers)
+					&& BX.Type.isObject(this.offers[this.offerNum])
+				)
+				{
+					BX.ajax.runAction(
+						'sale.facebookconversion.customizeProduct',
+						{
+							data: {
+								offerId: this.offers[this.offerNum]['ID']
+							}
+						}
+					);
 				}
 			}
 		},
@@ -2517,6 +2585,11 @@
 					this.stopSlider();
 				}
 
+				if (this.obDescription && this.config.showSkuDescription === 'Y')
+				{
+					this.changeSkuDescription(index);
+				}
+
 				if (this.config.showSkuProps)
 				{
 					if (this.obSkuProps)
@@ -2561,7 +2634,46 @@
 				eventData = null;
 			}
 		},
+		changeSkuDescription: function(index)
+		{
+			var currentDetailText = '';
+			var currentPreviewText = '';
+			var currentDescription = '';
 
+			if (this.offers[index].DETAIL_TEXT !== '')
+			{
+				currentDetailText = this.offers[index].DETAIL_TEXT_TYPE === 'html' ? this.offers[index].DETAIL_TEXT : '<p>' + this.offers[index].DETAIL_TEXT + '</p>';
+			}
+			else if (this.product.detailText !== '')
+			{
+				currentDetailText = this.product.detailTextType === 'html' ? this.product.detailText : '<p>' + this.product.detailText + '</p>';
+			}
+
+			if (this.offers[index].PREVIEW_TEXT !== '')
+			{
+				currentPreviewText = this.offers[index].PREVIEW_TEXT_TYPE === 'html' ? this.offers[index].PREVIEW_TEXT : '<p>' + this.offers[index].PREVIEW_TEXT + '</p>';
+			}
+			else if (this.product.previewText !== '')
+			{
+				currentPreviewText = this.product.previewTextType === 'html' ? this.product.previewText : '<p>' + this.product.previewText + '</p>';
+			}
+
+			if (
+				currentPreviewText !== ''
+				&& (
+					this.config.displayPreviewTextMode === 'S'
+					|| (this.config.displayPreviewTextMode === 'E' && currentDetailText)
+				)
+			)
+			{
+				currentDescription += currentPreviewText;
+			}
+			if (currentDetailText !== '')
+			{
+				currentDescription += currentDetailText;
+			}
+			BX.adjust(this.obDescription, {html: currentDescription});
+		},
 		drawImages: function(images)
 		{
 			if (!this.node.imageContainer)
@@ -2944,6 +3056,7 @@
 					case 0: // no catalog
 					case 1: // product
 					case 2: // set
+					case 7: // service
 						compareLink = url.replace('#ID#', this.product.id.toString());
 						break;
 					case 3: // sku
@@ -3000,7 +3113,7 @@
 							style: {marginRight: '10px'}
 						}),
 						new BasketButton({
-							text: BX.message('BTN_MESSAGE_CLOSE_POPUP'),
+							text: BX.message('BTN_MESSAGE_DETAIL_CLOSE'),
 							events: {
 								click: BX.delegate(this.obPopupWin.close, this.obPopupWin)
 							}
@@ -3095,6 +3208,7 @@
 				case 0: // no catalog
 				case 1: // product
 				case 2: // set
+				case 7: // service
 					if (this.product.id == id)
 					{
 						this.setCompared(false);
@@ -3128,6 +3242,7 @@
 			{
 				case 1: // product
 				case 2: // set
+				case 7: // service
 					this.basketUrl = this.basketUrl.replace('#ID#', this.product.id.toString());
 					break;
 				case 3: // sku
@@ -3269,6 +3384,7 @@
 			{
 				case 1: // product
 				case 2: // set
+				case 7: // service
 					if (this.basketData.useProps && !this.basketData.emptyProps)
 					{
 						this.initPopupWindow();
@@ -3333,6 +3449,7 @@
 					{
 						case 1: // product
 						case 2: // set
+						case 7: // service
 							productPict = this.product.pict.SRC;
 							break;
 						case 3: // sku
@@ -3350,14 +3467,14 @@
 					{
 						popupButtons = [
 							new BasketButton({
-								text: BX.message('BTN_MESSAGE_BASKET_REDIRECT'),
+								text: BX.message('BTN_MESSAGE_DETAIL_BASKET_REDIRECT'),
 								events: {
 									click: BX.delegate(this.basketRedirect, this)
 								},
 								style: {marginRight: '10px'}
 							}),
 							new BasketButton({
-								text: BX.message('BTN_MESSAGE_CLOSE_POPUP'),
+								text: BX.message('BTN_MESSAGE_DETAIL_CLOSE_POPUP'),
 								events: {
 									click: BX.delegate(this.obPopupWin.close, this.obPopupWin)
 								}
@@ -3368,7 +3485,7 @@
 					{
 						popupButtons = [
 							new BasketButton({
-								text: BX.message('BTN_MESSAGE_BASKET_REDIRECT'),
+								text: BX.message('BTN_MESSAGE_DETAIL_BASKET_REDIRECT'),
 								events: {
 									click: BX.delegate(this.basketRedirect, this)
 								}
@@ -3429,6 +3546,7 @@
 				{
 					case 1:
 					case 2:
+					case 7: // service
 						this.viewedCounter.params.PRODUCT_ID = this.product.id;
 						this.viewedCounter.params.PARENT_ID = this.product.id;
 						break;

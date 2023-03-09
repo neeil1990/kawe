@@ -25,6 +25,8 @@ create table if not exists b_iblock
 	IBLOCK_TYPE_ID varchar(50) not null REFERENCES b_iblock_type(ID),
 	LID char(2) not null REFERENCES b_lang(LID),
 	CODE varchar(50) null,
+	API_CODE varchar(50) null,
+	REST_ON char(1) not null default 'N',
 	NAME varchar(255) not null,
 	ACTIVE char(1) not null DEFAULT 'Y',
 	SORT int(11) not null DEFAULT 500,
@@ -62,7 +64,8 @@ create table if not exists b_iblock
 	ELEMENTS_NAME varchar(100) null,
 	ELEMENT_NAME varchar(100) null,
 	PRIMARY KEY(ID),
-	INDEX ix_iblock (IBLOCK_TYPE_ID, LID, ACTIVE)
+	INDEX ix_iblock (IBLOCK_TYPE_ID, LID, ACTIVE),
+	UNIQUE INDEX ix_iblock_api_code (API_CODE)
 );
 
 create table if not exists b_iblock_site
@@ -123,6 +126,16 @@ create table if not exists b_iblock_property
 	index ix_iblock_property_2(CODE)
 );
 
+create table if not exists b_iblock_property_feature
+(
+	ID int not null auto_increment,
+	PROPERTY_ID int not null,
+	MODULE_ID varchar(50) not null,
+	FEATURE_ID varchar(100) not null,
+	IS_ENABLED char(1) not null default 'N',
+	PRIMARY KEY (ID),
+	unique index ix_iblock_property_feature (PROPERTY_ID, MODULE_ID, FEATURE_ID)
+);
 
 create table if not exists b_iblock_section
 (
@@ -152,9 +165,9 @@ create table if not exists b_iblock_section
 	PRIMARY KEY (ID),
 	INDEX ix_iblock_section_1 (IBLOCK_ID, IBLOCK_SECTION_ID),
 	INDEX ix_iblock_section_depth_level (IBLOCK_ID, DEPTH_LEVEL),
-	INDEX ix_iblock_section_left_margin (IBLOCK_ID, LEFT_MARGIN, RIGHT_MARGIN),
-	INDEX ix_iblock_section_right_margin (IBLOCK_ID, RIGHT_MARGIN, LEFT_MARGIN),
-	INDEX ix_iblock_section_code (IBLOCK_ID, CODE)
+	INDEX ix_iblock_section_code (IBLOCK_ID, CODE),
+	INDEX ix_iblock_section_left_margin2 (IBLOCK_ID, LEFT_MARGIN),
+	INDEX ix_iblock_section_right_margin2 (IBLOCK_ID, RIGHT_MARGIN)
 );
 
 create table if not exists b_iblock_section_property
@@ -227,7 +240,8 @@ create table if not exists b_iblock_element_property
 	INDEX ix_iblock_element_property_1(IBLOCK_ELEMENT_ID, IBLOCK_PROPERTY_ID),
 	INDEX ix_iblock_element_property_2(IBLOCK_PROPERTY_ID),
 	INDEX ix_iblock_element_prop_enum (VALUE_ENUM,IBLOCK_PROPERTY_ID),
-	INDEX ix_iblock_element_prop_num (VALUE_NUM,IBLOCK_PROPERTY_ID)
+	INDEX ix_iblock_element_prop_num (VALUE_NUM,IBLOCK_PROPERTY_ID),
+	INDEX ix_iblock_element_prop_val(VALUE(50), IBLOCK_PROPERTY_ID, IBLOCK_ELEMENT_ID)
 );
 
 create table if not exists b_iblock_property_enum

@@ -44,10 +44,26 @@ class EntityImportLoaderFactory
         {
             return new PaymentImportLoader();
         }
-        elseif($entityTypeID == EntityType::USER_PROFILE)
+        elseif($entityTypeID == EntityType::USER_PROFILE ||
+			$entityTypeID == EntityType::USER_PROFILE ||
+			$entityTypeID == EntityType::USER_PROFILE_CONTACT_COMPANY)
         {
             return new UserProfileImportLoader();
         }
+		elseif ($entityTypeID === EntityType::INVOICE)
+		{
+			return new InvoiceImportLoader();
+		}
+		elseif($entityTypeID === EntityType::INVOICE_SHIPMENT)
+		{
+			return new ShipmentInvoiceImportLoader();
+		}
+		elseif($entityTypeID === EntityType::INVOICE_PAYMENT_CASH ||
+			$entityTypeID === EntityType::INVOICE_PAYMENT_CASH_LESS ||
+			$entityTypeID === EntityType::INVOICE_PAYMENT_CARD_TRANSACTION)
+		{
+			return new PaymentInvoiceImportLoader();
+		}
         else
         {
             throw new Main\NotSupportedException("Entity type: '".EntityType::ResolveName($entityTypeID)."' is not supported in current context");

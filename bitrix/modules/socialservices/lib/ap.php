@@ -19,7 +19,20 @@ use Bitrix\Main;
  * </ul>
  *
  * @package Bitrix\Socialservices
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Ap_Query query()
+ * @method static EO_Ap_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Ap_Result getById($id)
+ * @method static EO_Ap_Result getList(array $parameters = array())
+ * @method static EO_Ap_Entity getEntity()
+ * @method static \Bitrix\Socialservices\EO_Ap createObject($setDefaultValues = true)
+ * @method static \Bitrix\Socialservices\EO_Ap_Collection createCollection()
+ * @method static \Bitrix\Socialservices\EO_Ap wakeUpObject($row)
+ * @method static \Bitrix\Socialservices\EO_Ap_Collection wakeUpCollection($rows)
+ */
 class ApTable extends Main\Entity\DataManager
 {
 	/**
@@ -94,7 +107,8 @@ class ApTable extends Main\Entity\DataManager
 	{
 		$dbRes = static::getList(array(
 			'order' => array('ID' => 'DESC'),
-			'limit' => 1
+			'limit' => 1,
+			'cache' => ['ttl' => 3600],
 		));
 
 		return $dbRes->fetch();

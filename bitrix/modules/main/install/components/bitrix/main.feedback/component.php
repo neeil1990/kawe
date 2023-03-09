@@ -31,14 +31,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["submit"] <> '' && (!isset($_P
 	{
 		if(empty($arParams["REQUIRED_FIELDS"]) || !in_array("NONE", $arParams["REQUIRED_FIELDS"]))
 		{
-			if((empty($arParams["REQUIRED_FIELDS"]) || in_array("NAME", $arParams["REQUIRED_FIELDS"])) && strlen($_POST["user_name"]) <= 1)
-				$arResult["ERROR_MESSAGE"][] = GetMessage("MF_REQ_NAME");		
-			if((empty($arParams["REQUIRED_FIELDS"]) || in_array("EMAIL", $arParams["REQUIRED_FIELDS"])) && strlen($_POST["user_email"]) <= 1)
+			if((empty($arParams["REQUIRED_FIELDS"]) || in_array("NAME", $arParams["REQUIRED_FIELDS"])) && mb_strlen($_POST["user_name"]) <= 1)
+				$arResult["ERROR_MESSAGE"][] = GetMessage("MF_REQ_NAME");
+			if((empty($arParams["REQUIRED_FIELDS"]) || in_array("EMAIL", $arParams["REQUIRED_FIELDS"])) && mb_strlen($_POST["user_email"]) <= 1)
 				$arResult["ERROR_MESSAGE"][] = GetMessage("MF_REQ_EMAIL");
-			if((empty($arParams["REQUIRED_FIELDS"]) || in_array("MESSAGE", $arParams["REQUIRED_FIELDS"])) && strlen($_POST["MESSAGE"]) <= 3)
+			if((empty($arParams["REQUIRED_FIELDS"]) || in_array("MESSAGE", $arParams["REQUIRED_FIELDS"])) && mb_strlen($_POST["MESSAGE"]) <= 3)
 				$arResult["ERROR_MESSAGE"][] = GetMessage("MF_REQ_MESSAGE");
 		}
-		if(strlen($_POST["user_email"]) > 1 && !check_email($_POST["user_email"]))
+		if(mb_strlen($_POST["user_email"]) > 1 && !check_email($_POST["user_email"]))
 			$arResult["ERROR_MESSAGE"][] = GetMessage("MF_EMAIL_NOT_VALID");
 		if($arParams["USE_CAPTCHA"] == "Y")
 		{
@@ -46,7 +46,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["submit"] <> '' && (!isset($_P
 			$captcha_word = $_POST["captcha_word"];
 			$cpt = new CCaptcha();
 			$captchaPass = COption::GetOptionString("main", "captcha_password", "");
-			if (strlen($captcha_word) > 0 && strlen($captcha_code) > 0)
+			if ($captcha_word <> '' && $captcha_code <> '')
 			{
 				if (!$cpt->CheckCodeCrypt($captcha_word, $captcha_code, $captchaPass))
 					$arResult["ERROR_MESSAGE"][] = GetMessage("MF_CAPTCHA_WRONG");
@@ -54,7 +54,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["submit"] <> '' && (!isset($_P
 			else
 				$arResult["ERROR_MESSAGE"][] = GetMessage("MF_CAPTHCA_EMPTY");
 
-		}			
+		}
 		if(empty($arResult["ERROR_MESSAGE"]))
 		{
 			$arFields = Array(
@@ -66,16 +66,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $_POST["submit"] <> '' && (!isset($_P
 			if(!empty($arParams["EVENT_MESSAGE_ID"]))
 			{
 				foreach($arParams["EVENT_MESSAGE_ID"] as $v)
-					if(IntVal($v) > 0)
-						CEvent::Send($arParams["EVENT_NAME"], SITE_ID, $arFields, "N", IntVal($v));
+					if(intval($v) > 0)
+						CEvent::Send($arParams["EVENT_NAME"], SITE_ID, $arFields, "N", intval($v));
 			}
 			else
 				CEvent::Send($arParams["EVENT_NAME"], SITE_ID, $arFields);
 			$_SESSION["MF_NAME"] = htmlspecialcharsbx($_POST["user_name"]);
 			$_SESSION["MF_EMAIL"] = htmlspecialcharsbx($_POST["user_email"]);
+			$event = new \Bitrix\Main\Event('main', 'onFeedbackFormSubmit', $arFields);
+			$event->send();
 			LocalRedirect($APPLICATION->GetCurPageParam("success=".$arResult["PARAMS_HASH"], Array("success")));
 		}
-		
+
 		$arResult["MESSAGE"] = htmlspecialcharsbx($_POST["MESSAGE"]);
 		$arResult["AUTHOR_NAME"] = htmlspecialcharsbx($_POST["user_name"]);
 		$arResult["AUTHOR_EMAIL"] = htmlspecialcharsbx($_POST["user_email"]);
@@ -97,9 +99,9 @@ if(empty($arResult["ERROR_MESSAGE"]))
 	}
 	else
 	{
-		if(strlen($_SESSION["MF_NAME"]) > 0)
+		if($_SESSION["MF_NAME"] <> '')
 			$arResult["AUTHOR_NAME"] = htmlspecialcharsbx($_SESSION["MF_NAME"]);
-		if(strlen($_SESSION["MF_EMAIL"]) > 0)
+		if($_SESSION["MF_EMAIL"] <> '')
 			$arResult["AUTHOR_EMAIL"] = htmlspecialcharsbx($_SESSION["MF_EMAIL"]);
 	}
 }

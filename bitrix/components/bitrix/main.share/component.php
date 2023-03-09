@@ -1,4 +1,7 @@
-<?
+<?php
+
+use Bitrix\Main\Web\Uri;
+
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
 if($this->InitComponentTemplate())
@@ -8,7 +11,7 @@ else
 
 if (
 	!array_key_exists("ALIGN", $arParams)
-	|| strlen(trim($arParams["ALIGN"])) <= 0
+	|| trim($arParams["ALIGN"]) == ''
 	|| !in_array($arParams["ALIGN"], array("left", "right"))
 )
 	$arParams["ALIGN"] = "left";
@@ -27,7 +30,7 @@ if ($handle = opendir($path2Handlers))
 		if ($file == "." || $file == "..")
 			continue;
 
-		if (is_file($path2Handlers.$file) && strtoupper(substr($file, strlen($file)-4))==".PHP")
+		if (is_file($path2Handlers.$file) && mb_strtoupper(mb_substr($file, mb_strlen($file) - 4)) == ".PHP")
 		{
 			$name = $title = $icon_url_template = $charset = "";
 			$sort = 0;
@@ -35,14 +38,14 @@ if ($handle = opendir($path2Handlers))
 
 			include($path2Handlers.$file);
 
-			if (strlen($name) > 0)
+			if ($name <> '')
 			{
 				$arHandlers[$name] = array(
 					"TITLE" => $title,
 					"ICON" => $icon_url_template,
 					"SORT" => intval($sort),
 				);
-				if (strlen($charset) > 0)
+				if ($charset <> '')
 					$arHandlers[$name]["CHARSET"] = $charset;
 				if ($charsBack)
 					$arHandlers[$name]["CHARSBACK"] = true;
@@ -64,7 +67,7 @@ if(!is_array($arParams["HANDLERS"]))
 }
 
 $arResult["BOOKMARKS"] = array();
-$arResult["PAGE_URL"] = CHTTP::URN2URI($arParams["PAGE_URL"]);
+$arResult["PAGE_URL"] = (new Uri($arParams["PAGE_URL"]))->toAbsolute()->getUri();
 $arResult["PAGE_TITLE"] = $arParams["PAGE_TITLE"];
 
 foreach ($arResult["HANDLERS_ALL"] as $name => $arHandler)
@@ -83,14 +86,14 @@ foreach ($arResult["HANDLERS_ALL"] as $name => $arHandler)
 			$arHandler["ICON"] = str_replace("#PAGE_TITLE#", CUtil::JSEscape($PageTitleBack), $arHandler["ICON"]);
 			$arHandler["ICON"] = str_replace("#PAGE_TITLE_ENCODED#", urlencode($PageTitleBack), $arHandler["ICON"]);
 			$arHandler["ICON"] = str_replace("#PAGE_TITLE_ORIG#", CUtil::addslashes($PageTitle), $arHandler["ICON"]);
-			$utfTitle = $APPLICATION->ConvertCharset($PageTitleBack, LANG_CHARSET, "UTF-8");
+			$utfTitle = \Bitrix\Main\Text\Encoding::convertEncoding($PageTitleBack, LANG_CHARSET, "UTF-8");
 			$arHandler["ICON"] = str_replace("#PAGE_TITLE_UTF_ENCODED#", urlencode($utfTitle), $arHandler["ICON"]);
 		}
 		else
 		{
 			$arHandler["ICON"] = str_replace("#PAGE_TITLE#", CUtil::addslashes($PageTitle), $arHandler["ICON"]);
 			$arHandler["ICON"] = str_replace("#PAGE_TITLE_ENCODED#", urlencode($PageTitle), $arHandler["ICON"]);
-			$utfTitle = $APPLICATION->ConvertCharset($PageTitle, LANG_CHARSET, "UTF-8");
+			$utfTitle = \Bitrix\Main\Text\Encoding::convertEncoding($PageTitle, LANG_CHARSET, "UTF-8");
 			$arHandler["ICON"] = str_replace("#PAGE_TITLE_UTF_ENCODED#", urlencode($utfTitle), $arHandler["ICON"]);
 		}
 

@@ -27,11 +27,11 @@ abstract class Base
 	protected $currency = "";
 	protected $operatingCurrency = "";
 
-	abstract public function getClassTitle();
+	abstract public static function getClassTitle();
 
 	public function __construct($id, array $initParams, $currency, $value = null, array $additionalParams = array())
 	{
-		if(strlen($id) <= 0)
+		if($id == '')
 			throw new ArgumentNullException('id');
 
 		$this->id = $id;
@@ -76,7 +76,7 @@ abstract class Base
 
 	public function getEditControl($prefix = "", $value = false)
 	{
-		if(strlen($prefix) > 0)
+		if($prefix <> '')
 			$name = $prefix;
 		else
 			$name = $this->id;
@@ -115,7 +115,7 @@ abstract class Base
 		if($result <= 0)
 			return $value;
 
-		if(strlen($this->currency) <= 0 || strlen($currency) <= 0)
+		if($this->currency == '' || $currency == '')
 			return $value;
 
 		if($this->currency == $currency)
@@ -199,6 +199,10 @@ abstract class Base
 		return $this->code;
 	}
 
+	public function getId()
+	{
+		return $this->id;
+	}
 
 	public function getCostShipment(Shipment $shipment = null)
 	{
@@ -223,5 +227,21 @@ abstract class Base
 	public function getPriceShipment(Shipment $shipment = null)
 	{
 		return $this->getPrice();
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getDisplayValue(): ?string
+	{
+		return is_null($this->value) ? null : (string)$this->value;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getInitial()
+	{
+		return $this->initial;
 	}
 }

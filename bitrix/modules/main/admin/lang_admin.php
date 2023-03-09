@@ -1,4 +1,5 @@
-<?
+<?php
+
 /**
  * Bitrix Framework
  * @package bitrix
@@ -13,7 +14,7 @@
  * @global CDatabase $DB
  */
 
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+require_once(__DIR__."/../include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "settings/lang_admin.php");
 
@@ -26,7 +27,7 @@ IncludeModuleLangFile(__FILE__);
 
 $sTableID = "tbl_language";
 
-$oSort = new CAdminSorting($sTableID, "C_SORT", "asc");
+$oSort = new CAdminSorting($sTableID, "sort", "asc");
 
 $lAdmin = new CAdminList($sTableID, $oSort);
 
@@ -52,14 +53,14 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 	if($_REQUEST['action_target']=='selected')
 	{
 		$arID = array();
-		$rsData = CLanguage::GetList($by, $order, array());
+		$rsData = CLanguage::GetList();
 		while($arRes = $rsData->Fetch())
 			$arID[] = $arRes['ID'];
 	}
 
 	foreach($arID as $ID)
 	{
-		if(strlen($ID)<=0)
+		if($ID == '')
 			continue;
 
 		switch($_REQUEST['action'])
@@ -87,6 +88,8 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 
 $APPLICATION->SetTitle(GetMessage("TITLE"));
 
+global $by, $order;
+
 $langs = CLanguage::GetList($by, $order, Array());
 $rsData = new CAdminResult($langs, $sTableID);
 $rsData->NavStart();
@@ -98,6 +101,7 @@ $lAdmin->AddHeaders(array(
 	array("id"=>"ACTIVE","content"=>GetMessage('ACTIVE'), "sort"=>"active", "default"=>true),
 	array("id"=>"SORT", "content"=>GetMessage('SORT'), "sort"=>"sort", "default"=>true),
 	array("id"=>"NAME", "content"=>GetMessage("NAME"), "sort"=>"name", "default"=>true),
+	array("id"=>"CODE", "content"=>GetMessage('lang_admin_code'), "sort"=>"code", "default"=>true),
 	array("id"=>"DEF", "content"=>GetMessage("DEF"), "sort"=>"def", "default"=>true),
 ));
 
@@ -108,6 +112,7 @@ while($arRes = $rsData->NavNext(true, "f_"))
 	$row->AddCheckField("ACTIVE");
 	$row->AddInputField("SORT");
 	$row->AddInputField("NAME");
+	$row->AddInputField("CODE");
 	$row->AddCheckField("DEF");
 	$arActions = Array();
 

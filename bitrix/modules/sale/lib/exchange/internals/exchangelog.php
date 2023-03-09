@@ -5,6 +5,22 @@ namespace Bitrix\Sale\Exchange\Internals;
 use Bitrix\Main;
 use Bitrix\Sale\Exchange\EntityType;
 
+/**
+ * Class ExchangeLogTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_ExchangeLog_Query query()
+ * @method static EO_ExchangeLog_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_ExchangeLog_Result getById($id)
+ * @method static EO_ExchangeLog_Result getList(array $parameters = array())
+ * @method static EO_ExchangeLog_Entity getEntity()
+ * @method static \Bitrix\Sale\Exchange\Internals\EO_ExchangeLog createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Exchange\Internals\EO_ExchangeLog_Collection createCollection()
+ * @method static \Bitrix\Sale\Exchange\Internals\EO_ExchangeLog wakeUpObject($row)
+ * @method static \Bitrix\Sale\Exchange\Internals\EO_ExchangeLog_Collection wakeUpCollection($rows)
+ */
 class ExchangeLogTable extends Main\Entity\DataManager
 {
 	public static function getTableName()
@@ -53,12 +69,15 @@ class ExchangeLogTable extends Main\Entity\DataManager
 			'DATE_INSERT' => array(
 				'data_type' => 'datetime',
 				'require' => true,
-				'default_value' => new Main\Type\DateTime()
+				'default_value' => function(){return new \Bitrix\Main\Type\DateTime();}
 			),
 			'DIRECTION' => array(
 				'data_type' => 'string',
 				'require' => true,
 				'values' => array('E', 'I')
+			),
+			'PROVIDER' => array(
+				'data_type' => 'string'
 			),
 		);
 	}
@@ -76,31 +95,33 @@ class ExchangeLogTable extends Main\Entity\DataManager
 	/**
 	 * Clears old logging data
 	 */
-	public static function deleteOldRecords($direction)
+	public static function deleteOldRecords($direction, $provider, $interval)
 	{
 		$tableName = static::getTableName();
 
-		if (strlen($direction)<= 0)
+		if ($direction == '')
 			throw new Main\ArgumentOutOfRangeException("$direction");
+		if ($provider == '')
+			throw new Main\ArgumentOutOfRangeException("$provider");
 
 		$r = ExchangeLogTable::getList(array(
 			'select' => array(
 				new Main\Entity\ExpressionField('MAX_DATE_INSERT', 'MAX(%s)', array('DATE_INSERT'))
 			),
 			'filter' => array(
-				'=DIRECTION'=>$direction
+				'=DIRECTION'=>$direction,
+				'=PROVIDER'=>$provider
 			)
 		));
 
 		if ($loggingRecord = $r->fetch())
 		{
-			if(strlen($loggingRecord['MAX_DATE_INSERT'])>0)
+			if($loggingRecord['MAX_DATE_INSERT'] <> '')
 			{
 				$maxDateInsert = $loggingRecord['MAX_DATE_INSERT'];
 				$date = new Main\Type\DateTime($maxDateInsert);
-				$interval = Logger::getInterval();
 				$connection = Main\Application::getConnection();
-				$connection->queryExecute("delete from {$tableName} where DATE_INSERT < DATE_SUB('{$date->format("Y-m-d")}', INTERVAL {$interval} DAY) and DIRECTION='{$direction}'");
+				$connection->queryExecute("delete from {$tableName} where DATE_INSERT < DATE_SUB('{$date->format("Y-m-d")}', INTERVAL {$interval} DAY) and DIRECTION='{$direction}' and PROVIDER='{$provider}'");
 			}
 		}
 	}

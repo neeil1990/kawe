@@ -1,8 +1,19 @@
 <?
+
+use Bitrix\Main\Loader;
+use Bitrix\Catalog\Access\AccessController;
+use Bitrix\Catalog\Access\ActionDictionary;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 
-if (!$USER->CanDoOperation('catalog_read') && !$USER->CanDoOperation('catalog_view'))
+Loader::includeModule('catalog');
+if (
+	!AccessController::getCurrent()->check(ActionDictionary::ACTION_CATALOG_READ)
+	&& !AccessController::getCurrent()->check(ActionDictionary::ACTION_CATALOG_VIEW)
+)
+{
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/include.php");
 
@@ -26,7 +37,7 @@ $oSort = new CAdminSorting($sTableID, "ID", "asc");
 
 $lAdmin = new CAdminList($sTableID, $oSort);
 
-$IBLOCK_ID = intval($IBLOCK_ID);
+$IBLOCK_ID = (int)($IBLOCK_ID ?? 0);
 
 $dbIBlock = CIBlock::GetByID($IBLOCK_ID);
 if (!($arIBlock = $dbIBlock->Fetch()))
@@ -66,7 +77,7 @@ if (!$bBadBlock)
 		"SHOW_NEW" => "Y"
 	);
 
-	if (intval($filter_section) < 0 || strlen($filter_section) <= 0)
+	if (intval($filter_section) < 0 || $filter_section == '')
 		unset($arFilter["SECTION_ID"]);
 	elseif ($filter_subsections=="Y")
 	{
@@ -85,8 +96,7 @@ if (!$bBadBlock)
 		array($by => $order),
 		$arFilter,
 		false,
-		array("nPageSize" => 20),
-		${"filter_count_for_show"}
+		array("nPageSize" => 20)
 	);
 
 	$dbResultList = new CAdminResult($dbResultList, $sTableID);
@@ -136,12 +146,12 @@ $lAdmin->CheckListMode();
 $APPLICATION->SetTitle(GetMessage("SPS_SEARCH_TITLE"));
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_admin.php");
 
-$func_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['func_name']);
-$form_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['form_name']);
-$field_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['field_name']);
-$field_name_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['field_name_name']);
-$field_name_url = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['field_name_url']);
-$alt_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['alt_name']);
+$func_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['func_name'] ?? '');
+$form_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['form_name'] ?? '');
+$field_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['field_name'] ?? '');
+$field_name_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['field_name_name'] ?? '');
+$field_name_url = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['field_name_url'] ?? '');
+$alt_name = preg_replace("/[^a-z0-9_\\[\\]:]/i", "", $_REQUEST['alt_name'] ?? '');
 ?>
 
 <script type="text/javascript">
@@ -153,17 +163,17 @@ function SelEl(id, name, url)
 		el = eval("window.opener.document.<?= $form_name ?>.<?= $field_name ?>");
 		if(el)
 			el.value = id;
-		<?if (strlen($field_name_name) > 0):?>
+		<?if ($field_name_name <> ''):?>
 			el = eval("window.opener.document.<?= $form_name ?>.<?= $field_name_name ?>");
 			if(el)
 				el.value = name;
 		<?endif;?>
-		<?if (strlen($field_name_url) > 0):?>
+		<?if ($field_name_url <> ''):?>
 			el = eval("window.opener.document.<?= $form_name ?>.<?= $field_name_url ?>");
 			if(el)
 				el.value = url;
 		<?endif;?>
-		<?if (strlen($alt_name) > 0):?>
+		<?if ($alt_name <> ''):?>
 			el = window.opener.document.getElementById("<?= $alt_name ?>");
 			if(el)
 				el.innerHTML = name;

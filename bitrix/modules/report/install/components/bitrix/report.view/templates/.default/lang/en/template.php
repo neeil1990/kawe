@@ -1,4 +1,5 @@
 <?
+$MESS["REPORT_CHART_ERR_49"] = "Invalid chart parameters";
 $MESS["TASKS_THIS_MONTH"] = "this month";
 $MESS["TASKS_PREVIOUS_MONTH"] = "last month";
 $MESS["TASKS_THIS_WEEK"] = "this week";
@@ -15,7 +16,7 @@ $MESS["REPORT_FILTER_APPLY"] = "Apply";
 $MESS["REPORT_FILTER_CANCEL"] = "Cancel";
 $MESS["REPORT_EDIT"] = "Edit report";
 $MESS["REPORT_RETURN_TO_LIST"] = "Back to reports";
-$MESS["REPORT_IGNORE_FILTER_VALUE"] = "(no)";
+$MESS["REPORT_IGNORE_FILTER_VALUE"] = "Ignore";
 $MESS["REPORT_FILTER_COMPARE_VAR_EQUAL"] = "is equal to";
 $MESS["REPORT_FILTER_COMPARE_VAR_GREATER_OR_EQUAL"] = "is more than or equal to";
 $MESS["REPORT_FILTER_COMPARE_VAR_GREATER"] = "is more than";
@@ -66,4 +67,9 @@ $MESS["REPORT_CHART_ERR_17"] = "The number of the data ranges does not match tha
 $MESS["REPORT_CHART_ERR_47"] = "No data to build the chart.";
 $MESS["REPORT_CHART_ERR_48"] = "No data left after deleting empty values.";
 $MESS["REPORT_COPY"] = "Copy report";
+$MESS["CRM_REPORT_LRP_DLG_BTN_START"] = "Run";
+$MESS["CRM_REPORT_LRP_DLG_BTN_STOP"] = "Stop";
+$MESS["CRM_REPORT_LRP_DLG_BTN_CLOSE"] = "Close";
+$MESS["CRM_REPORT_LRP_DLG_WAIT"] = "Please wait...";
+$MESS["CRM_REPORT_LRP_DLG_REQUEST_ERR"] = "Error processing the request.";
 ?>

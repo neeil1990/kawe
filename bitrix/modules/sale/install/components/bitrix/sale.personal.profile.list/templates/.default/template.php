@@ -3,18 +3,18 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
 use Bitrix\Main\Localization\Loc;
 
-if(strlen($arResult["ERROR_MESSAGE"])>0)
+if($arResult["ERROR_MESSAGE"] <> '')
 {
 	ShowError($arResult["ERROR_MESSAGE"]);
 }
-if(strlen($arResult["NAV_STRING"]) > 0)
+if($arResult["NAV_STRING"] <> '')
 {
 	?>
 	<p><?=$arResult["NAV_STRING"]?></p>
 	<?
 }
 
-if (count($arResult["PROFILES"]))
+if (is_array($arResult["PROFILES"]) && !empty($arResult["PROFILES"]))
 {
 	?>
 	<table class="table sale-personal-profile-list-container">
@@ -63,14 +63,14 @@ if (count($arResult["PROFILES"]))
 		}?>
 	</table>
 	<?
-	if(strlen($arResult["NAV_STRING"]) > 0)
+	if($arResult["NAV_STRING"] <> '')
 	{
 		?>
 		<p><?=$arResult["NAV_STRING"]?></p>
 		<?
 	}
 }
-else
+elseif ($arResult['USER_IS_NOT_AUTHORIZED'] !== 'Y')
 {
 	?>
 	<h3><?=Loc::getMessage("STPPL_EMPTY_PROFILE_LIST") ?></h3>

@@ -1,4 +1,4 @@
-<?
+<?php
 /** @global CMain $APPLICATION */
 use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
@@ -10,6 +10,13 @@ Main\Loader::includeModule('sale');
 
 Loc::loadMessages(__FILE__);
 
+/** @global CAdminPage $adminPage */
+global $adminPage;
+/** @global CAdminSidePanelHelper $adminSidePanelHelper */
+global $adminSidePanelHelper;
+
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions < "W")
 	$APPLICATION->AuthForm(Loc::getMessage("ACCESS_DENIED"));
@@ -17,10 +24,18 @@ if ($saleModulePermissions < "W")
 if ($_SERVER["REQUEST_METHOD"] == "POST" && !check_bitrix_sessid())
 	$APPLICATION->AuthForm(Loc::getMessage("ACCESS_DENIED"));
 
+\Bitrix\Main\UI\Extension::load(['ui.design-tokens']);
 $APPLICATION->SetAdditionalCSS("/bitrix/panel/sale/preset.css");
 
-$presetManager = \Bitrix\Sale\Discount\Preset\Manager::getInstance();
+$enableRestrictedGroupsMode = ($adminSidePanelHelper->isPublicSidePanel()
+	&& Main\Loader::includeModule('crm')
+	&& Main\Loader::includeModule('bitrix24')
+);
 
+$presetManager = \Bitrix\Sale\Discount\Preset\Manager::getInstance();
+$presetManager->enableRestrictedGroupsMode($enableRestrictedGroupsMode);
+
+$preset = null;
 if(!empty($_GET['DISCOUNT_ID']))
 {
 	$discountId = $_GET['DISCOUNT_ID'];
@@ -73,25 +88,33 @@ if($preset->hasErrors())
 if(!empty($_GET['from_list']))
 {
 	$contextMenuItems = array();
+	$contextListButtonParams = array();
+
 	if($_GET['from_list'] === 'discount')
 	{
-		$contextMenuItems = array(
-			array(
-				"TEXT" => Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_DISCOUNT_LIST'),
-				"LINK" => "/bitrix/admin/sale_discount.php?lang=".LANGUAGE_ID.GetFilterParams("filter_"),
-				"ICON" => "btn_list"
-			)
-		);
+		$discountUrl = "sale_discount.php?lang=".LANGUAGE_ID;
+		$discountUrl = $adminSidePanelHelper->editUrlToPublicPage($discountUrl);
+		$contextListButtonParams["TEXT"] = Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_DISCOUNT_LIST');
+		$contextListButtonParams["LINK"] = $discountUrl;
+		$contextListButtonParams["ICON"] = "btn_list";
+		$contextMenuItems = array($contextListButtonParams);
 	}
 	elseif($_GET['from_list'] === 'preset')
 	{
-		$contextMenuItems = array(
-			array(
-				"TEXT" => Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_PRESET_DISCOUNT_LIST'),
-				"LINK" => "/bitrix/admin/sale_discount_preset_list.php?lang=".LANGUAGE_ID.GetFilterParams("filter_"),
-				"ICON" => "btn_list"
-			)
-		);
+		$presetListUrl = $selfFolderUrl."sale_discount_preset_list.php?lang=".LANGUAGE_ID;
+		$presetListUrl = $adminSidePanelHelper->editUrlToPublicPage($presetListUrl);
+		$contextListButtonParams["TEXT"] = Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_PRESET_DISCOUNT_LIST');
+		$contextListButtonParams["LINK"] = $presetListUrl;
+		$contextListButtonParams["ICON"] = "btn_list";
+		$contextMenuItems = array($contextListButtonParams);
+	}
+	elseif($_GET['from_list'] === 'coupon')
+	{
+		$couponListUrl = $selfFolderUrl."sale_discount_coupons.php?lang=".LANGUAGE_ID;
+		$contextListButtonParams["TEXT"] = Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_COUPON_LIST');
+		$contextListButtonParams["LINK"] = $couponListUrl;
+		$contextListButtonParams["ICON"] = "btn_list";
+		$contextMenuItems = array($contextListButtonParams);
 	}
 	$contextMenu = new CAdminContextMenu($contextMenuItems);
 	$contextMenu->Show();
@@ -114,22 +137,28 @@ $APPLICATION->SetTitle($preset->getTitle());
 		</div>
 	</div>
 	<div style="margin-top: 20px">
-		<? if($preset->hasPrevStep()){ ?>
-		<a href="javascript:  BX('__run_prev_step').value = 'Y';BX.submit(document.forms['__preset_form'])" style="margin-right: 10px;" class="adm-btn adm-btn-grey"><?= Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_PREV_STEP') ?></a>
-		<? } ?>
-		<? if(!$preset->isLastStep()) {?>
-		<a href="javascript: BX.submit(document.forms['__preset_form'])" class="adm-btn adm-btn-grey"><?= Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_NEXT_STEP') ?></a>
-		<?
-			} else {
-				$listDiscountLink = 'sale_discount.php?' . http_build_query(array(
+		<?php
+		if($preset->hasPrevStep())
+		{
+			?><a href="javascript:  BX('__run_prev_step').value = 'Y';BX.submit(document.forms['__preset_form'])" style="margin-right: 10px;" class="adm-btn adm-btn-grey"><?= Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_PREV_STEP') ?></a><?php
+		}
+		if(!$preset->isLastStep())
+		{
+			?><a href="javascript: BX.submit(document.forms['__preset_form'])" class="adm-btn adm-btn-grey"><?= Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_NEXT_STEP') ?></a><?php
+		}
+		else
+		{
+			$listDiscountLink = $selfFolderUrl.'sale_discount.php?' . http_build_query(array(
 					'from_list'=> 'preset',
 					'lang' => LANGUAGE_ID,
-					'filter_preset_id' => $preset::className(),
+					'PRESET_DISCOUNT_ID' => $preset::className(),
+					'apply_filter' => 'Y'
 				));
+			$listDiscountLink = $adminSidePanelHelper->editUrlToPublicPage($listDiscountLink);
+			?><a href="<?= $listDiscountLink ?>" class="adm-btn adm-btn-grey" target="_top"><?= Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_PRESET_DISCOUNT_GO_TO_LIST') ?></a><?php
+		}
 		?>
-		<a href="<?= $listDiscountLink ?>" class="adm-btn adm-btn-grey"><?= Loc::getMessage('SALE_DISCOUNT_PRESET_DETAIL_PRESET_DISCOUNT_GO_TO_LIST') ?></a>
-		<? } ?>
 	</div>
 </div>
-<?
+<?php
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

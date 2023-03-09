@@ -11,7 +11,6 @@
 				<td class="catalog-detail-image">
 					<div class="catalog-detail-image" id="catalog-detail-main-image">
 						<?echo CFile::ShowImage($arResult["IMAGE_ID"], 250, 200, "border=0", "", true);?>
-
 					</div>
 				</td>
 				<?
@@ -29,12 +28,12 @@
 			?>
 
 			<td class="catalog-detail-desc">
-				<?if($arResult["DESCRIPTION"]):?>
-				<span itemprop = "description"><?=$arResult["DESCRIPTION"];?></span>
-				<div class="catalog-detail-line"></div>
-				<?endif;?>
 				<?if($arResult["TITLE"]):?>
 				<span itemprop = "description"><?=GetMessage("S_NAME")." ".$arResult["TITLE"];?></span>
+				<div class="catalog-detail-line"></div>
+				<?endif;?>
+				<?if($arResult["DESCRIPTION"]):?>
+				<span itemprop = "description"><?=$arResult["DESCRIPTION"];?></span>
 				<div class="catalog-detail-line"></div>
 				<?endif;?>
 				<?if($arResult["ADDRESS"]):?>
@@ -56,10 +55,10 @@
 		<?
 		if(($arResult["GPS_N"]) != 0 && ($arResult["GPS_S"]) != 0)
 		{
-			$gpsN = substr($arResult["GPS_N"],0,15);
-			$gpsS = substr($arResult["GPS_S"],0,15);
+			$gpsN = mb_substr($arResult["GPS_N"], 0, 15);
+			$gpsS = mb_substr($arResult["GPS_S"], 0, 15);
 			$gpsText = $arResult["ADDRESS"];
-			$gpsTextLen = strlen($arResult["ADDRESS"]);
+			$gpsTextLen = mb_strlen($arResult["ADDRESS"]);
 			if($arResult["MAP"] == 0)
 			{
 				$APPLICATION->IncludeComponent("bitrix:map.yandex.view", ".default", array(

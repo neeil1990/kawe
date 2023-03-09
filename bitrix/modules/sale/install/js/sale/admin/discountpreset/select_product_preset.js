@@ -56,7 +56,7 @@ BX.Sale.Admin.DiscountPreset.SelectProduct = (function(){
 	SelectProduct.prototype.onClickSectionToShowPopup = function(event) {
 		var target = event.srcElement || event.target;
 		var sectionNumber = target.getAttribute('data-section-number');
-		var url = '/bitrix/admin/cat_section_search.php?land=ru&discount=Y&n=sect_' + sectionNumber;
+		var url = 'cat_section_search.php?land=ru&discount=Y&n=sect_' + sectionNumber;
 		window.open(url, '', 'scrollbars=yes,resizable=yes,width=900,height=600,top=' + parseInt((screen.height - 500) / 2 - 14, 10) + ',left=' + parseInt((screen.width - 600) / 2 - 5, 10));
 
 		BX.PreventDefault(event);
@@ -485,10 +485,11 @@ BX.Sale.Admin.DiscountPreset.SelectProduct = (function(){
 
 	SelectProduct.prototype.getParamsByProductId = function(product, iblockId) {
 		BX.ajax({
-			url: '/bitrix/admin/sale_discount_preset_detail.php?' +
+			url: 'sale_discount_preset_detail.php?' +
 					'lang=' + BX.message.LANGUAGE_ID + '&' +
 					'action=getProductDetails&' +
-					'PRESET_ID=' + BX.util.urlencode(this.presetId)
+					'PRESET_ID=' + BX.util.urlencode(this.presetId) +
+					'&public=y'
 			,
 			method: 'POST',
 			dataType: 'json',
@@ -546,27 +547,8 @@ BX.Sale.Admin.DiscountPreset.SelectProduct = (function(){
 	};
 
 	SelectProduct.prototype.onClickAddSection = function(event) {
-
-		if(!BX('sect_stub'))
-		{
-			this.container.appendChild(BX.create('input', {
-				props: {
-					type: 'hidden',
-					id: 'sect_stub',
-					name: 'sect_stub'
-				}
-			}));
-		}
-
-		var url = '/bitrix/admin/cat_section_search.php?land=ru&discount=Y&n=sect_stub';
+		var url = 'iblock_section_search.php?lang='+ BX.message.LANGUAGE_ID +'&discount=Y&lookup=jsMLI_select_section';
 		var popup = window.open(url, '', 'scrollbars=yes,resizable=yes,width=900,height=600,top=' + parseInt((screen.height - 500) / 2 - 14, 10) + ',left=' + parseInt((screen.width - 600) / 2 - 5, 10));
-
-		popup.onbeforeunload = function(){
-			if(window.jsMLI_select_section)
-			{
-				jsMLI_select_section.AddValue(BX('sect_stub').value);
-			}
-		};
 
 		BX.PreventDefault(event);
 	};

@@ -17,4 +17,10 @@ $MESS["opt_sub_link"] = "Свой адрес страницы подписки:"
 $MESS["opt_auto_agent_interval"] = "Интервал в секундах между запусками рассылки агентом (0 - запуск сразу):";
 $MESS["opt_link_protocol"] = "Протокол адресов ссылок в письмах:";
 $MESS["opt_mail_headers"] = "Заголовки письма(к примеру, \"List-Post: NO\"):";
+$MESS["opt_track_mails"] = "Отслеживать прочтения и переходы по ссылкам:";
+$MESS["opt_threads_type"] = "Количество потоков при отправке";
+$MESS["opt_method_single_thread"] = "В 1 поток";
+$MESS["opt_method_ten_threads"] = "В 10 потоков";
+$MESS["mail_need_consent"] = "Необходимо согласие для Email рассылок";
+$MESS["mail_max_consent_requests"] = "Количество запросов на соглашения для Email рассылок";
 ?>

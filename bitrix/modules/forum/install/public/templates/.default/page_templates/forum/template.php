@@ -53,7 +53,7 @@ class CForumPageTemplate
 			while (($file = readdir($directory)) !== false)
 			{
 				if ($file != "." && $file != ".." && is_dir($dir.$file))
-					$arThemes[$file] = (!empty($arThemesMessages[$file]) ? $arThemesMessages[$file] : strtoupper(substr($file, 0, 1)).strtolower(substr($file, 1)));
+					$arThemes[$file] = (!empty($arThemesMessages[$file]) ? $arThemesMessages[$file] : mb_strtoupper(mb_substr($file, 0, 1)).mb_strtolower(mb_substr($file, 1)));
 			}
 			closedir($directory);
 		}
@@ -107,7 +107,7 @@ window.ForumVoteChannelClick = function(el)
 ';
 				$arVoteChannels = array();
 				CModule::IncludeModule("vote");
-				$db_res = CVoteChannel::GetList($by="s_title", $order="asc", array("ACTIVE" => "Y"), $is_filtered);
+				$db_res = CVoteChannel::GetList("s_title", "asc", array("ACTIVE" => "Y"));
 				if($db_res && $res=$db_res->Fetch())
 				{
 					$s .= '
@@ -133,7 +133,7 @@ window.ForumVoteChannelClick = function(el)
 	<td class="bx-popup-label">'.GetMessage("forum_template_vote_groups").'</td>
 	<td><select name="forum_VOTE_GROUP_ID[]" size="4" multiple>
 ';
-				$db_res = CGroup::GetList($by = "c_sort", $order = "asc");
+				$db_res = CGroup::GetList();
 				while($res = $db_res->Fetch())
 					$s .= '<option value="'.$res["ID"].'">'.htmlspecialcharsbx($res["NAME"])." [".$res["ID"]."]".'</option>';
 				$s .= '

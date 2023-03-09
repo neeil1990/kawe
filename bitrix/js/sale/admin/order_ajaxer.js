@@ -22,6 +22,7 @@ BX.Sale.Admin.OrderAjaxer =
 			postData = this.refreshOrderData.modifyParams(postData);
 
 		postData.sessid = BX.bitrix_sessid();
+		postData.lang = BX.message('LANGUAGE_ID');
 
 		var ajaxParams = {
 			timeout:    60,
@@ -62,7 +63,7 @@ BX.Sale.Admin.OrderAjaxer =
 				{
 					BX.debug("Admin order ajaxer recieved error: " + result.ERROR);
 				}
-				
+
 				if(result && result.WARNING)
 				{
 					BX.debug("Admin order ajaxer recieved warning: " + result.WARNING);
@@ -108,7 +109,8 @@ BX.Sale.Admin.OrderAjaxer =
 					 */
 					BX.Sale.Admin.OrderEditPage.rollBack();
 				}
-				else if(result.ORDER_DATA)
+
+				if(result.ORDER_DATA)
 				{
 					BX.Sale.Admin.OrderEditPage.resetRollbackMethods();
 					BX.Sale.Admin.OrderEditPage.callFieldsUpdaters(result.ORDER_DATA);

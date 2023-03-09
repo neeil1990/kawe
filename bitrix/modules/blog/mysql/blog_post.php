@@ -1,10 +1,11 @@
-<?
+<?php
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/blog/general/blog_post.php");
 
 class CBlogPost extends CAllBlogPost
 {
 	/*************** ADD, UPDATE, DELETE *****************/
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		global $DB, $USER_FIELD_MANAGER;
 
@@ -12,9 +13,9 @@ class CBlogPost extends CAllBlogPost
 
 		foreach ($arFields as $key => $value)
 		{
-			if (substr($key, 0, 1) == "=")
+			if (mb_substr($key, 0, 1) == "=")
 			{
-				$arFields1[substr($key, 1)] = $value;
+				$arFields1[mb_substr($key, 1)] = $value;
 				unset($arFields[$key]);
 			}
 		}
@@ -35,13 +36,13 @@ class CBlogPost extends CAllBlogPost
 			&& is_array($arFields["ATTACH_IMG"])
 			&& (
 				!array_key_exists("MODULE_ID", $arFields["ATTACH_IMG"])
-				|| strlen($arFields["ATTACH_IMG"]["MODULE_ID"]) <= 0
+				|| $arFields["ATTACH_IMG"]["MODULE_ID"] == ''
 			)
 		)
 			$arFields["ATTACH_IMG"]["MODULE_ID"] = "blog";
 
 		$prefix = "blog";
-		if(strlen($arFields["URL"]) > 0)
+		if($arFields["URL"] <> '')
 			$prefix .= "/".$arFields["URL"];
 		
 		CFile::SaveForDB($arFields, "ATTACH_IMG", $prefix);
@@ -50,23 +51,23 @@ class CBlogPost extends CAllBlogPost
 
 		foreach ($arFields1 as $key => $value)
 		{
-			if (strlen($arInsert[0]) > 0)
+			if ($arInsert[0] <> '')
 				$arInsert[0] .= ", ";
 			$arInsert[0] .= $key;
-			if (strlen($arInsert[1]) > 0)
+			if ($arInsert[1] <> '')
 				$arInsert[1] .= ", ";
 			$arInsert[1] .= $value;
 		}
 
 		$ID = false;
-		if (strlen($arInsert[0]) > 0)
+		if ($arInsert[0] <> '')
 		{
 			$strSql =
 				"INSERT INTO b_blog_post(".$arInsert[0].") ".
 				"VALUES(".$arInsert[1].")";
 			$DB->Query($strSql, False, "File: ".__FILE__."<br>Line: ".__LINE__);
 
-			$ID = IntVal($DB->LastID());
+			$ID = intval($DB->LastID());
 
 			foreach(GetModuleEvents("blog", "OnBeforePostUserFieldUpdate", true) as $arEvent)
 				ExecuteModuleEventEx($arEvent, Array("BLOG_POST", $ID, $arFields));
@@ -107,10 +108,10 @@ class CBlogPost extends CAllBlogPost
 					{
 						$arGroup = CBlogGroup::GetByID(isset($arFields["SEARCH_GROUP_ID"]) && intval($arFields["SEARCH_GROUP_ID"]) > 0 ? $arFields["SEARCH_GROUP_ID"] : $arBlog["GROUP_ID"]);
 
-						if(strlen($arFields["PATH"]) > 0)
+						if($arFields["PATH"] <> '')
 						{
 							$arFields["PATH"] = (
-								strlen($arFields["CODE"]) > 0 
+								$arFields["CODE"] <> ''
 									? str_replace("#post_id#", $arFields["CODE"], $arFields["PATH"]) 
 									: str_replace("#post_id#", $ID, $arFields["PATH"])
 							);
@@ -152,7 +153,7 @@ class CBlogPost extends CAllBlogPost
 							}
 						}
 
-						if(strlen($arPost["CATEGORY_ID"])>0)
+						if($arPost["CATEGORY_ID"] <> '')
 						{
 							$arC = explode(",", $arPost["CATEGORY_ID"]);
 							$arTag = Array();
@@ -167,7 +168,7 @@ class CBlogPost extends CAllBlogPost
 						$searchContent = blogTextParser::killAllTags($arPost["DETAIL_TEXT"]);
 						$searchContent .= "\r\n" . $USER_FIELD_MANAGER->OnSearchIndex("BLOG_POST", $arPost["ID"]);
 
-						if(IntVal($arPost["AUTHOR_ID"]) > 0)
+						if(intval($arPost["AUTHOR_ID"]) > 0)
 						{
 							$dbUser = CUser::GetByID($arPost["AUTHOR_ID"]);
 							if($arUser = $dbUser->Fetch())
@@ -179,7 +180,7 @@ class CBlogPost extends CAllBlogPost
 									"LOGIN" => $arUser["LOGIN"],
 								);
 								$authorName = CUser::FormatName(CSite::GetNameFormat(), $arTmpUser, false, false);
-								if(strlen($authorName) > 0)
+								if($authorName <> '')
 								{
 									$searchContent .= "\r\n".$authorName;
 								}
@@ -222,16 +223,16 @@ class CBlogPost extends CAllBlogPost
 	{
 		global $DB, $USER_FIELD_MANAGER, $CACHE_MANAGER;
 
-		$ID = IntVal($ID);
-		if(strlen($arFields["PATH"]) > 0)
+		$ID = intval($ID);
+		if($arFields["PATH"] <> '')
 			$arFields["PATH"] = str_replace("#post_id#", $ID, $arFields["PATH"]);
 
 		$arFields1 = array();
 		foreach ($arFields as $key => $value)
 		{
-			if (substr($key, 0, 1) == "=")
+			if (mb_substr($key, 0, 1) == "=")
 			{
-				$arFields1[substr($key, 1)] = $value;
+				$arFields1[mb_substr($key, 1)] = $value;
 				unset($arFields[$key]);
 			}
 		}
@@ -253,12 +254,12 @@ class CBlogPost extends CAllBlogPost
 		{
 			if (
 				!array_key_exists("MODULE_ID", $arFields["ATTACH_IMG"])
-				|| strlen($arFields["ATTACH_IMG"]["MODULE_ID"]) <= 0
+				|| $arFields["ATTACH_IMG"]["MODULE_ID"] == ''
 			)
 				$arFields["ATTACH_IMG"]["MODULE_ID"] = "blog";
 
 			$prefix = "blog";
-			if(strlen($arFields["URL"]) > 0)
+			if($arFields["URL"] <> '')
 				$prefix .= "/".$arFields["URL"];
 			CFile::SaveForDB($arFields, "ATTACH_IMG", $prefix);
 		}
@@ -267,12 +268,12 @@ class CBlogPost extends CAllBlogPost
 
 		foreach ($arFields1 as $key => $value)
 		{
-			if (strlen($strUpdate) > 0)
+			if ($strUpdate <> '')
 				$strUpdate .= ", ";
 			$strUpdate .= $key."=".$value." ";
 		}
 
-		if (strlen($strUpdate) > 0)
+		if ($strUpdate <> '')
 		{
 			$oldPostPerms = CBlogUserGroup::GetGroupPerms(1, $arOldPost["BLOG_ID"], $ID, BLOG_PERMS_POST);
 
@@ -354,14 +355,14 @@ class CBlogPost extends CAllBlogPost
 				{
 					$tag = "";
 					$arGroup = CBlogGroup::GetByID(isset($arFields["SEARCH_GROUP_ID"]) && intval($arFields["SEARCH_GROUP_ID"]) > 0 ? $arFields["SEARCH_GROUP_ID"] : $arBlog["GROUP_ID"]);
-					if(strlen($arFields["PATH"]) > 0)
+					if($arFields["PATH"] <> '')
 					{
 						$arPostSite = array($arGroup["SITE_ID"] => $arFields["PATH"]);
 					}
-					elseif(strlen($arNewPost["PATH"]) > 0)
+					elseif($arNewPost["PATH"] <> '')
 					{
 						$arNewPost["PATH"] = (
-							strlen($arNewPost["CODE"]) > 0 
+							$arNewPost["CODE"] <> ''
 								? str_replace("#post_id#", $arNewPost["CODE"], $arNewPost["PATH"]) 
 								: str_replace("#post_id#", $ID, $arNewPost["PATH"])
 						);
@@ -400,7 +401,7 @@ class CBlogPost extends CAllBlogPost
 						}
 					}
 
-					if(strlen($arNewPost["CATEGORY_ID"])>0)
+					if($arNewPost["CATEGORY_ID"] <> '')
 					{
 						$arC = explode(",", $arNewPost["CATEGORY_ID"]);
 						$arTag = Array();
@@ -416,7 +417,7 @@ class CBlogPost extends CAllBlogPost
 					$searchContent .= "\r\n" . $USER_FIELD_MANAGER->OnSearchIndex("BLOG_POST", $arNewPost["ID"]);
 
 					$authorName = "";
-					if(IntVal($arNewPost["AUTHOR_ID"]) > 0)
+					if(intval($arNewPost["AUTHOR_ID"]) > 0)
 					{
 						$dbUser = CUser::GetByID($arNewPost["AUTHOR_ID"]);
 						if($arUser = $dbUser->Fetch())
@@ -428,7 +429,7 @@ class CBlogPost extends CAllBlogPost
 									"LOGIN" => $arUser["LOGIN"],
 								);
 							$authorName = CUser::FormatName(CSite::GetNameFormat(), $arTmpUser, false, false);
-							if(strlen($authorName) > 0)
+							if($authorName <> '')
 							{
 								$searchContent .= "\r\n".$authorName;
 							}
@@ -507,7 +508,7 @@ class CBlogPost extends CAllBlogPost
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if (
 			!empty(static::$arBlogPostCache[$ID])
@@ -529,6 +530,15 @@ class CBlogPost extends CAllBlogPost
 			$dbResult = $DB->Query($strSql.$ID, False, "File: ".__FILE__."<br>Line: ".__LINE__);
 			if ($arResult = $dbResult->Fetch())
 			{
+				if (!empty($arResult['TITLE']))
+				{
+					$arResult['TITLE'] = \Bitrix\Main\Text\Emoji::decode($arResult['TITLE']);
+				}
+				if (!empty($arResult['DETAIL_TEXT']))
+				{
+					$arResult['DETAIL_TEXT'] = \Bitrix\Main\Text\Emoji::decode($arResult['DETAIL_TEXT']);
+				}
+
 				static::$arBlogPostCache[$ID] = $arResult;
 				return $arResult;
 			}
@@ -537,7 +547,7 @@ class CBlogPost extends CAllBlogPost
 		return False;
 	}
 
-	function GetList($arOrder = Array("ID" => "DESC"), $arFilter = Array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = Array("ID" => "DESC"), $arFilter = Array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB, $USER_FIELD_MANAGER, $USER, $APPLICATION;
 		static $blogPostEventIdList = null;
@@ -550,7 +560,7 @@ class CBlogPost extends CAllBlogPost
 
 		if (isset($arFilter["DATE_PUBLISH_DAY"]) && isset($arFilter["DATE_PUBLISH_MONTH"]) && isset($arFilter["DATE_PUBLISH_YEAR"]))
 		{
-			if (strlen($arFilter["DATE_PUBLISH_YEAR"]) == 2)
+			if (mb_strlen($arFilter["DATE_PUBLISH_YEAR"]) == 2)
 				$arFilter["DATE_PUBLISH_YEAR"] = "20".$arFilter["DATE_PUBLISH_YEAR"];
 			$date1 = mktime(0, 0, 0, $arFilter["DATE_PUBLISH_MONTH"], $arFilter["DATE_PUBLISH_DAY"], $arFilter["DATE_PUBLISH_YEAR"]);
 			$date2 = mktime(0, 0, 0, $arFilter["DATE_PUBLISH_MONTH"], $arFilter["DATE_PUBLISH_DAY"] + 1, $arFilter["DATE_PUBLISH_YEAR"]);
@@ -563,7 +573,7 @@ class CBlogPost extends CAllBlogPost
 		}
 		elseif (isset($arFilter["DATE_PUBLISH_MONTH"]) && isset($arFilter["DATE_PUBLISH_YEAR"]))
 		{
-			if (strlen($arFilter["DATE_PUBLISH_YEAR"]) == 2)
+			if (mb_strlen($arFilter["DATE_PUBLISH_YEAR"]) == 2)
 				$arFilter["DATE_PUBLISH_YEAR"] = "20".$arFilter["DATE_PUBLISH_YEAR"];
 			$date1 = mktime(0, 0, 0, $arFilter["DATE_PUBLISH_MONTH"], 1, $arFilter["DATE_PUBLISH_YEAR"]);
 			$date2 = mktime(0, 0, 0, $arFilter["DATE_PUBLISH_MONTH"] + 1, 1, $arFilter["DATE_PUBLISH_YEAR"]);
@@ -575,7 +585,7 @@ class CBlogPost extends CAllBlogPost
 		}
 		elseif (isset($arFilter["DATE_PUBLISH_YEAR"]))
 		{
-			if (strlen($arFilter["DATE_PUBLISH_YEAR"]) == 2)
+			if (mb_strlen($arFilter["DATE_PUBLISH_YEAR"]) == 2)
 				$arFilter["DATE_PUBLISH_YEAR"] = "20".$arFilter["DATE_PUBLISH_YEAR"];
 			$date1 = mktime(0, 0, 0, 1, 1, $arFilter["DATE_PUBLISH_YEAR"]);
 			$date2 = mktime(0, 0, 0, 1, 1, $arFilter["DATE_PUBLISH_YEAR"] + 1);
@@ -608,7 +618,7 @@ class CBlogPost extends CAllBlogPost
 			"DATE_PUBLISH" => array("FIELD" => "P.DATE_PUBLISH", "TYPE" => "datetime"),
 			"KEYWORDS" => array("FIELD" => "P.KEYWORDS", "TYPE" => "string"),
 			"PUBLISH_STATUS" => array("FIELD" => "P.PUBLISH_STATUS", "TYPE" => "string"),
-			"ATRIBUTE" => array("FIELD" => "P.ATRIBUTE", "TYPE" => "string"),
+			"ATRIBUTE" => array("FIELD" => "P.ATRIBUTE", "TYPE" => "string"),   /* deprecated. Not using nowhere */
 			"ATTACH_IMG" => array("FIELD" => "P.ATTACH_IMG", "TYPE" => "int"),
 			"ENABLE_TRACKBACK" => array("FIELD" => "P.ENABLE_TRACKBACK", "TYPE" => "string"),
 			"ENABLE_COMMENTS" => array("FIELD" => "P.ENABLE_COMMENTS", "TYPE" => "string"),
@@ -661,6 +671,7 @@ class CBlogPost extends CAllBlogPost
 			"COMMENT_ID" => array("FIELD" => "PC.ID", "TYPE" => "string", "FROM" => "INNER JOIN b_blog_comment PC ON (P.ID = PC.POST_ID)"),
 		);
 
+		$unreadImportantFilter = false;
 		if (\Bitrix\Main\Loader::includeModule('socialnetwork'))
 		{
 			if ($blogPostEventIdList === null)
@@ -678,7 +689,16 @@ class CBlogPost extends CAllBlogPost
 		{
 			$key_res = CBlog::GetFilterOperation($key);
 			$k = $key_res["FIELD"];
-			if (strpos($k, "POST_PARAM_") === 0)
+			if (
+				$k == 'POST_PARAM_BLOG_POST_IMPRTNT'
+				&& $key_res['NEGATIVE'] == 'Y'
+				&& $key_res['OR_NULL'] == 'N'
+			)
+			{
+				$unreadImportantFilter = true;
+				unset($arFilter[$key]);
+			}
+			elseif (mb_strpos($k, "POST_PARAM_") === 0)
 			{
 				$user_id = 0; $ii++; $pref = "BPP".$ii;
 				if (is_array($val))
@@ -689,16 +709,17 @@ class CBlogPost extends CAllBlogPost
 				$arSelectFields[] = $k;
 				$arFields[$k] = array("FIELD" => $pref.".VALUE", "TYPE" => "string",
 					"FROM" => "LEFT JOIN b_blog_post_param ".$pref." ON (P.ID = ".$pref.".POST_ID AND ".$pref.".USER_ID".
-						($user_id <= 0 ? " IS NULL" : "=".$user_id)." AND ".$pref.".NAME='".$GLOBALS["DB"]->ForSql(substr($k, 11), 50)."')");
+						($user_id <= 0 ? " IS NULL" : "=".$user_id)." AND ".$pref.".NAME='".$GLOBALS["DB"]->ForSql(mb_substr($k, 11), 50)."')");
 			}
 		}
+
 		if(isset($arFilter["GROUP_CHECK_PERMS"]))
 		{
 			if(is_array($arFilter["GROUP_CHECK_PERMS"]))
 			{
 				foreach($arFilter["GROUP_CHECK_PERMS"] as $val)
 				{
-					if(IntVal($val)>0)
+					if(intval($val)>0)
 					{
 						$arFields["POST_PERM_".$val] = Array(
 								"FIELD" => "BUGP".$val.".PERMS",
@@ -715,7 +736,7 @@ class CBlogPost extends CAllBlogPost
 			}
 			else
 			{
-				if(IntVal($arFilter["GROUP_CHECK_PERMS"])>0)
+				if(intval($arFilter["GROUP_CHECK_PERMS"])>0)
 				{
 					$arFields["POST_PERM_".$arFilter["GROUP_CHECK_PERMS"]] = Array(
 							"FIELD" => "BUGP.PERMS",
@@ -774,10 +795,10 @@ class CBlogPost extends CAllBlogPost
 
 			if(!CBlog::IsBlogOwner($arFilter["BLOG_ID"], $user_id))
 			{
-				$arUserGroups = CBlogUser::GetUserGroups($user_id, IntVal($arFilter["BLOG_ID"]), "Y", BLOG_BY_USER_ID);
+				$arUserGroups = CBlogUser::GetUserGroups($user_id, intval($arFilter["BLOG_ID"]), "Y", BLOG_BY_USER_ID);
 				$strUserGroups = "0";
 				foreach($arUserGroups as $v)
-					$strUserGroups .= ",".IntVal($v);
+					$strUserGroups .= ",".intval($v);
 
 				$arFields["PERMS"] = array("FIELD" => "UGP.PERMS", "TYPE" => "string", "FROM" => "INNER JOIN b_blog_user_group_perms UGP ON (P.ID = UGP.POST_ID AND P.BLOG_ID = UGP.BLOG_ID AND UGP.USER_GROUP_ID IN (".$strUserGroups.") AND UGP.PERMS_TYPE = '".BLOG_PERMS_POST."')");
 				$bNeedDistinct = true;
@@ -796,53 +817,78 @@ class CBlogPost extends CAllBlogPost
 			$bNeedDistinct = true;
 		if(array_key_exists("FOR_USER", $arFilter))
 		{
-			if(IntVal($arFilter["FOR_USER"]) > 0) //authorized user
+			if(intval($arFilter["FOR_USER"]) > 0) //authorized user
 			{
 				if($arFilter["FOR_USER_TYPE"] == "ALL")
 				{
 					$arSqls["FROM"] .=
 								" INNER JOIN b_blog_socnet_rights SR ON (P.ID = SR.POST_ID) ".
-								" LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = ".IntVal($arFilter["FOR_USER"]).") ";
-					if(strlen($arSqls["WHERE"]) > 0)
+								" LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = ".intval($arFilter["FOR_USER"]).") ";
+					if($arSqls["WHERE"] <> '')
 						$arSqls["WHERE"] .= " AND ";
 					$arSqls["WHERE"] .= " (SR.ENTITY_TYPE != 'SG') AND ".
-										" (SR.ENTITY = 'U".IntVal($arFilter["FOR_USER"])."' OR (UA.USER_ID is not NULL AND SR.ENTITY_TYPE = 'DR') OR P.AUTHOR_ID = '".IntVal($arFilter["FOR_USER"])."')";
+										" (SR.ENTITY = 'U".intval($arFilter["FOR_USER"])."' OR (UA.USER_ID is not NULL AND SR.ENTITY_TYPE = 'DR') OR P.AUTHOR_ID = '".intval($arFilter["FOR_USER"])."')";
 				}
 				elseif($arFilter["FOR_USER_TYPE"] == "SELF")
 				{
 					$arSqls["FROM"] .=
 								" INNER JOIN b_blog_socnet_rights SR ON (P.ID = SR.POST_ID) ".
-								" LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = ".IntVal($arFilter["FOR_USER"]).") ";
-					if(strlen($arSqls["WHERE"]) > 0)
+								" LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = ".intval($arFilter["FOR_USER"]).") ";
+					if($arSqls["WHERE"] <> '')
 						$arSqls["WHERE"] .= " AND ";
-					$arSqls["WHERE"] .= " (SR.ENTITY = 'U".IntVal($arFilter["FOR_USER"])."' OR (UA.USER_ID is not NULL AND SR.ENTITY_TYPE = 'DR')) ";
+					$arSqls["WHERE"] .= " (SR.ENTITY = 'U".intval($arFilter["FOR_USER"])."' OR (UA.USER_ID is not NULL AND SR.ENTITY_TYPE = 'DR')) ";
 				}
 				elseif($arFilter["FOR_USER_TYPE"] == "DR")
 				{
 					$arSqls["FROM"] .=
 								" INNER JOIN b_blog_socnet_rights SR ON (P.ID = SR.POST_ID) " .
-								" LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = ".IntVal($arFilter["FOR_USER"]).") ";
-					if(strlen($arSqls["WHERE"]) > 0)
+								" LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = ".intval($arFilter["FOR_USER"]).") ";
+					if($arSqls["WHERE"] <> '')
 						$arSqls["WHERE"] .= " AND ";
 					$arSqls["WHERE"] .= " (UA.USER_ID is not NULL AND SR.ENTITY_TYPE = 'DR') ";
 				}
 				else
 				{
-					$arSqls["FROM"] .=
-								" INNER JOIN b_blog_socnet_rights SR ON (P.ID = SR.POST_ID) " .
-								" LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = ".IntVal($arFilter["FOR_USER"]).") ";
-					if(strlen($arSqls["WHERE"]) > 0)
+					$currentExtranetSite = (
+						\Bitrix\Main\ModuleManager::isModuleInstalled('extranet')
+						&& ($extranetSiteId = \Bitrix\Main\Config\Option::get("extranet", "extranet_site"))
+						&& $extranetSiteId == SITE_ID
+					);
+					if($arSqls["WHERE"] <> '')
 						$arSqls["WHERE"] .= " AND ";
-					$arSqls["WHERE"] .= " (UA.USER_ID is not NULL OR SR.ENTITY = 'AU') ";
+					$arSqls["WHERE"] .=
+						" EXISTS ( ".
+							"SELECT SRX.ID ".
+							"FROM b_blog_socnet_rights SRX ".
+							"LEFT JOIN b_user_access UA ON (UA.ACCESS_CODE = SRX.ENTITY AND UA.USER_ID = ".intval($arFilter["FOR_USER"]).") ".
+							"WHERE P.ID = SRX.POST_ID 
+								AND (
+									".($currentExtranetSite ? "" : " (SRX.ENTITY = 'AU') OR ")." 
+									(UA.ACCESS_CODE = SRX.ENTITY AND UA.USER_ID = ".intval($arFilter["FOR_USER"]).") ".
+									($currentExtranetSite ? " AND NOT (SRX.ENTITY = 'G2') " : "").
+								")".
+						")";
 				}
 			}
 			else
 			{
 				$arSqls["FROM"] .=
-							" INNER JOIN b_blog_socnet_rights SR ON (P.ID = SR.POST_ID) ".
-							" INNER JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = 0)";
+					" INNER JOIN b_blog_socnet_rights SR ON (P.ID = SR.POST_ID) ".
+					" INNER JOIN b_user_access UA ON (UA.ACCESS_CODE = SR.ENTITY AND UA.USER_ID = 0)";
 			}
 			$bNeedDistinct = true;
+		}
+
+		if ($unreadImportantFilter)
+		{
+			if($arSqls["WHERE"] <> '')
+				$arSqls["WHERE"] .= " AND ";
+			$arSqls["WHERE"] .=
+				" NOT EXISTS ( ".
+					"SELECT BPPX.POST_ID ".
+					"FROM b_blog_post_param BPPX ".
+					" WHERE P.ID = BPPX.POST_ID AND BPPX.USER_ID = ".intval($arFilter["FOR_USER"])." AND BPPX.NAME = 'BLOG_POST_IMPRTNT' AND BPPX.VALUE = 'Y' ".
+				")";
 		}
 
 		if($bNeedDistinct)
@@ -851,7 +897,7 @@ class CBlogPost extends CAllBlogPost
 			$arSqls["SELECT"] = str_replace("%%_DISTINCT_%%", "", $arSqls["SELECT"]);
 
 		$r = $obUserFieldsSql->GetFilter();
-		if(strlen($r)>0)
+		if($r <> '')
 			$strSqlUFFilter = " (".$r.") ";
 
 		if (is_array($arGroupBy) && count($arGroupBy)==0)
@@ -862,14 +908,14 @@ class CBlogPost extends CAllBlogPost
 				"FROM b_blog_post P ".
 				"	".$arSqls["FROM"]." ".
 					$obUserFieldsSql->GetJoin("P.ID")." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-			if(strlen($arSqls["WHERE"]) > 0 && strlen($strSqlUFFilter) > 0)
+			if($arSqls["WHERE"] <> '' && $strSqlUFFilter <> '')
 				$strSql .= " AND ".$strSqlUFFilter." ";
-			elseif(strlen($arSqls["WHERE"]) <= 0 && strlen($strSqlUFFilter) > 0)
+			elseif($arSqls["WHERE"] == '' && $strSqlUFFilter <> '')
 				$strSql .= " WHERE ".$strSqlUFFilter." ";
 
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!1!=".htmlspecialcharsbx($strSql)."<br>";
@@ -887,39 +933,39 @@ class CBlogPost extends CAllBlogPost
 			"FROM b_blog_post P ".
 			"	".$arSqls["FROM"]." ".
 				$obUserFieldsSql->GetJoin("P.ID")." ";
-		if (strlen($arSqls["WHERE"]) > 0)
+		if ($arSqls["WHERE"] <> '')
 			$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-		if(strlen($arSqls["WHERE"]) > 0 && strlen($strSqlUFFilter) > 0)
+		if($arSqls["WHERE"] <> '' && $strSqlUFFilter <> '')
 			$strSql .= " AND ".$strSqlUFFilter." ";
-		elseif(strlen($arSqls["WHERE"]) <= 0 && strlen($strSqlUFFilter) > 0)
+		elseif($arSqls["WHERE"] == '' && $strSqlUFFilter <> '')
 			$strSql .= " WHERE ".$strSqlUFFilter." ";
 
-		if (strlen($arSqls["GROUPBY"]) > 0)
+		if ($arSqls["GROUPBY"] <> '')
 			$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
-		if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"])<=0)
+		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
 		{
 			$strSql_tmp =
 				"SELECT COUNT(DISTINCT P.ID) as CNT ".
 				"FROM b_blog_post P ".
 				"	".$arSqls["FROM"]." ".
 					$obUserFieldsSql->GetJoin("P.ID")." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
-			if(strlen($arSqls["WHERE"]) > 0 && strlen($strSqlUFFilter) > 0)
+			if($arSqls["WHERE"] <> '' && $strSqlUFFilter <> '')
 				$strSql_tmp .= " AND ".$strSqlUFFilter." ";
-			elseif(strlen($arSqls["WHERE"]) <= 0 && strlen($strSqlUFFilter) > 0)
+			elseif($arSqls["WHERE"] == '' && $strSqlUFFilter <> '')
 				$strSql_tmp .= " WHERE ".$strSqlUFFilter." ";
 
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql_tmp .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
 
 			$dbRes = $DB->Query($strSql_tmp, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			$cnt = 0;
-			if (strlen($arSqls["GROUPBY"]) <= 0)
+			if ($arSqls["GROUPBY"] == '')
 			{
 				if ($arRes = $dbRes->Fetch())
 					$cnt = $arRes["CNT"];
@@ -938,8 +984,8 @@ class CBlogPost extends CAllBlogPost
 		}
 		else
 		{
-			if (is_array($arNavStartParams) && IntVal($arNavStartParams["nTopCount"]) > 0)
-				$strSql .= "LIMIT ".IntVal($arNavStartParams["nTopCount"]);
+			if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"]) > 0)
+				$strSql .= "LIMIT ".intval($arNavStartParams["nTopCount"]);
 
 			//echo "!3!=".htmlspecialcharsbx($strSql)."<br>";
 
@@ -950,15 +996,15 @@ class CBlogPost extends CAllBlogPost
 		return $dbRes;
 	}
 
-	function GetListCalendar($blogID, $year = false, $month = false, $day = false)
+	public static function GetListCalendar($blogID, $year = false, $month = false, $day = false)
 	{
 		global $DB, $USER, $APPLICATION;
 
-		$blogID = IntVal($blogID);
+		$blogID = intval($blogID);
 
 		if (
 			$year
-			&& strlen($year) == 2
+			&& mb_strlen($year) == 2
 		)
 		{
 			$year = "20".$year;
@@ -985,7 +1031,7 @@ class CBlogPost extends CAllBlogPost
 		$arUserGroups = CBlogUser::GetUserGroups(($USER->IsAuthorized() ? $USER->GetID() : 0), $blogID, "Y", BLOG_BY_USER_ID);
 		$strUserGroups = "0";
 		foreach($arUserGroups as $v)
-			$strUserGroups .= ",".IntVal($v);
+			$strUserGroups .= ",".intval($v);
 
 		$strFromPerms =
 			"	LEFT JOIN b_blog_user_group_perms UGP ".
@@ -1030,4 +1076,3 @@ class CBlogPost extends CAllBlogPost
 		return $arResult;
 	}
 }
-?>

@@ -14,6 +14,8 @@ if (is_array($arResult['VALUE']) && count($arResult['VALUE']) > 0)
 		$arParams['ENTITY_TYPE'][] = 'COMPANY';	
 	if ($arParams['arUserField']['SETTINGS']['DEAL'] == 'Y')
 		$arParams['ENTITY_TYPE'][] = 'DEAL';
+	if ($arParams['arUserField']['SETTINGS']['ORDER'] == 'Y')
+		$arParams['ENTITY_TYPE'][] = 'ORDER';
 
 	$arParams['PREFIX'] = false;
 	if (count($arParams['ENTITY_TYPE']) > 1)
@@ -47,7 +49,7 @@ if (is_array($arResult['VALUE']) && count($arResult['VALUE']) > 0)
 		{
 			$arResult['VALUE']['LEAD'][$arRes['ID']] = Array(
 				'ENTITY_TITLE' => $arRes['TITLE'],
-				'ENTITY_LINK' => CComponentEngine::MakePathFromTemplate(COption::GetOptionString('crm', 'path_to_lead_show'), array('lead_id' => $arRes['ID']))
+				'ENTITY_LINK' => CCrmOwnerType::GetEntityShowPath(CCrmOwnerType::Lead, $arRes['ID']),
 			);
 		}
 	}
@@ -84,31 +86,45 @@ if (is_array($arResult['VALUE']) && count($arResult['VALUE']) > 0)
 
 			$arResult['VALUE']['CONTACT'][$arRes['ID']] = Array(
 				'ENTITY_TITLE' => $title,
-				'ENTITY_LINK' => CComponentEngine::MakePathFromTemplate(COption::GetOptionString('crm', 'path_to_contact_show'), array('contact_id' => $arRes['ID']))
+				'ENTITY_LINK' => CCrmOwnerType::GetEntityShowPath(CCrmOwnerType::Contact, $arRes['ID']),
 			);
 		}
 	}
-	if ($arParams['arUserField']['SETTINGS']['COMPANY'] == 'Y'
-	&& isset($arValue['COMPANY']) && !empty($arValue['COMPANY']))
+	if ($arParams['arUserField']['SETTINGS']['COMPANY'] == 'Y' && isset($arValue['COMPANY']) && !empty($arValue['COMPANY']))
 	{
 		$dbRes = CCrmCompany::GetListEx(array('TITLE'=>'ASC'), array('ID' => $arValue['COMPANY']));
 		while ($arRes = $dbRes->Fetch())
 		{
 			$arResult['VALUE']['COMPANY'][$arRes['ID']] = Array(
 				'ENTITY_TITLE' => $arRes['TITLE'],
-				'ENTITY_LINK' => CComponentEngine::MakePathFromTemplate(COption::GetOptionString('crm', 'path_to_company_show'), array('company_id' => $arRes['ID']))
+				'ENTITY_LINK' => CCrmOwnerType::GetEntityShowPath(CCrmOwnerType::Company, $arRes['ID']),
 			);
 		}
 	}
-	if ($arParams['arUserField']['SETTINGS']['DEAL'] == 'Y'
-	&& isset($arValue['DEAL']) && !empty($arValue['DEAL']))
+	if ($arParams['arUserField']['SETTINGS']['DEAL'] == 'Y' && isset($arValue['DEAL']) && !empty($arValue['DEAL']))
 	{
 		$dbRes = CCrmDeal::GetListEx(array('TITLE'=>'ASC'), array('ID' => $arValue['DEAL']));
 		while ($arRes = $dbRes->Fetch())
 		{
 			$arResult['VALUE']['DEAL'][$arRes['ID']] = Array(
 				'ENTITY_TITLE' => $arRes['TITLE'],
-				'ENTITY_LINK' => CComponentEngine::MakePathFromTemplate(COption::GetOptionString('crm', 'path_to_deal_show'), array('deal_id' => $arRes['ID']))
+				'ENTITY_LINK' => CCrmOwnerType::GetEntityShowPath(CCrmOwnerType::Deal, $arRes['ID']),
+			);
+		}
+	}
+	if ($arParams['arUserField']['SETTINGS']['ORDER'] == 'Y' && isset($arValue['ORDER']) && !empty($arValue['ORDER']))
+	{
+		$resultDB = \Bitrix\Crm\Order\Order::getList(array(
+			'filter' => array('=ID' => $arValue['ORDER']),
+			'select' =>  array('ID', 'ACCOUNT_NUMBER'),
+			'order' => array('ID' => 'DESC')
+		));
+
+		while ($order = $resultDB->fetch())
+		{
+			$arResult['VALUE']['ORDER'][$order['ID']] = array(
+				'ENTITY_TITLE' => $order['ACCOUNT_NUMBER'],
+				'ENTITY_LINK' => CCrmOwnerType::GetEntityShowPath(CCrmOwnerType::Order, $order['ID']),
 			);
 		}
 	}

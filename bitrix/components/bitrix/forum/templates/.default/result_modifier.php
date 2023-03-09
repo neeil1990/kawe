@@ -1,4 +1,6 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+
+CJSCore::Init(array("core"));
 // Template params
 /********************************************************************
 				Input params
@@ -19,10 +21,10 @@
 			"user_list" => "PAGE_NAME=user_list");
 	foreach ($URL_NAME_DEFAULT as $URL => $URL_VALUE)
 	{
-		if (strLen(trim($res["URL_TEMPLATES_".strToUpper($URL)])) <= 0)
-			$res["URL_TEMPLATES_".strToUpper($URL)] = $GLOBALS["APPLICATION"]->GetCurPage()."?".$URL_VALUE;
-		$res["~URL_TEMPLATES_".strToUpper($URL)] = $res["URL_TEMPLATES_".strToUpper($URL)];
-		$res["URL_TEMPLATES_".strToUpper($URL)] = htmlspecialcharsbx($res["~URL_TEMPLATES_".strToUpper($URL)]);
+		if (trim($res["URL_TEMPLATES_".mb_strtoupper($URL)]) == '')
+			$res["URL_TEMPLATES_".mb_strtoupper($URL)] = $GLOBALS["APPLICATION"]->GetCurPage()."?".$URL_VALUE;
+		$res["~URL_TEMPLATES_".mb_strtoupper($URL)] = $res["URL_TEMPLATES_".mb_strtoupper($URL)];
+		$res["URL_TEMPLATES_".mb_strtoupper($URL)] = htmlspecialcharsbx($res["~URL_TEMPLATES_".mb_strtoupper($URL)]);
 	}
 	$res["URL"] = array(
 		"ACTIVE" => CComponentEngine::MakePathFromTemplate($res["URL_TEMPLATES_ACTIVE"], array()), 
@@ -45,13 +47,13 @@
 // Rapid Access $arParams["SHOW_FORUMS"] == "Y"
 if ($_GET["rapid_access"] == "Y"):
 	$url = "";
-	if (strpos($_GET["FID"], "GID_") !== false):
-		$iGid = intVal(substr($_GET["FID"], 4));
+	if (mb_strpos($_GET["FID"], "GID_") !== false):
+		$iGid = intval(mb_substr($_GET["FID"], 4));
 		if ($iGid > 0):
 			$url = str_replace("#GID#", $iGid, $arResult["URL_TEMPLATES"]["FORUMS"]);
 		endif;
-	elseif (intVal($_GET["FID"]) > 0):
-		$url = str_replace("#FID#", intVal($_GET["FID"]), $arResult["URL_TEMPLATES"]["FORUM"]);
+	elseif (intval($_GET["FID"]) > 0):
+		$url = str_replace("#FID#", intval($_GET["FID"]), $arResult["URL_TEMPLATES"]["FORUM"]);
 	endif;
 	$url = str_replace(array("rapid_access=Y", "&&"), "", (empty($url) ? $arResult["URL_TEMPLATES"]["INDEX"] : $url));
 
@@ -68,13 +70,13 @@ if ($this->__page !== "menu"):
 	$this->__page = $sTempatePage;
 	$this->__file = $sTempateFile;
 
-	if ($arParams["SEO_USER"] == "TEXT" && strToLower($this->__page) == "profile_view" &&
+	if ($arParams["SEO_USER"] == "TEXT" && mb_strtolower($this->__page) == "profile_view" &&
 		$GLOBALS["USER"]->GetId() != $arResult["UID"] && $GLOBALS["APPLICATION"]->GetGroupRight("forum") < "W")
 	{
 		$APPLICATION->AuthForm("");
 	}
 
-	if ($arParams["SHOW_FORUM_USERS"] != "N" && in_array(strToLower($this->__page), array("profile", "profile_view", "subscr_list", "user_post"))):
+	if ($arParams["SHOW_FORUM_USERS"] != "N" && in_array(mb_strtolower($this->__page), array("profile", "profile_view", "subscr_list", "user_post"))):
 		$GLOBALS["APPLICATION"]->AddChainItem(GetMessage("F_USERS"), CComponentEngine::MakePathFromTemplate($res["~URL_TEMPLATES_USER_LIST"], array()));
 	endif;
 else:
@@ -115,15 +117,15 @@ $arParams["SHOW_AUTHOR_COLUMN"] = ($arParams["SHOW_AUTHOR_COLUMN"] == "Y" ? "Y" 
 $arParams["TMPLT_SHOW_ADDITIONAL_MARKER"] = trim($arParams["TMPLT_SHOW_ADDITIONAL_MARKER"]);
 if (!is_set($arParams, "SMILES_COUNT"))
 	$arParams["SMILES_COUNT"] = 100;
-$arParams["SMILES_COUNT"] = intVal($arParams["SMILES_COUNT"]);
+$arParams["SMILES_COUNT"] = intval($arParams["SMILES_COUNT"]);
 
-$arParams["WORD_LENGTH"] = intVal($arParams["WORD_LENGTH"]);
-$arParams["WORD_WRAP_CUT"] = intVal($arParams["WORD_WRAP_CUT"]);
+$arParams["WORD_LENGTH"] = intval($arParams["WORD_LENGTH"]);
+$arParams["WORD_WRAP_CUT"] = intval($arParams["WORD_WRAP_CUT"]);
 $arParams["PATH_TO_SMILE"] = "";
 $arParams["PATH_TO_ICON"] = "";
 $arParams["PAGE_NAVIGATION_TEMPLATE"] = trim($arParams["PAGE_NAVIGATION_TEMPLATE"]);
 $arParams["PAGE_NAVIGATION_TEMPLATE"] = (empty($arParams["PAGE_NAVIGATION_TEMPLATE"]) ? "forum" : $arParams["PAGE_NAVIGATION_TEMPLATE"]);
-$arParams["PAGE_NAVIGATION_WINDOW"] = intVal(intVal($arParams["PAGE_NAVIGATION_WINDOW"]) > 0 ? $arParams["PAGE_NAVIGATION_WINDOW"] : 5);
+$arParams["PAGE_NAVIGATION_WINDOW"] = intval(intVal($arParams["PAGE_NAVIGATION_WINDOW"]) > 0 ? $arParams["PAGE_NAVIGATION_WINDOW"] : 5);
 $arParams["THEME"] = trim($arParams["THEME"]);
 if (empty($arParams["THEME"])):
 	$arParams["THEME"] = (in_array("blue", $arThemes) ? "blue" : $arThemes[0]);
@@ -150,9 +152,9 @@ $GLOBALS['APPLICATION']->SetAdditionalCSS($sTemplateDir.'styles/additional.css?'
 $GLOBALS['APPLICATION']->AddHeadScript("/bitrix/js/main/utils.js");
 $GLOBALS['APPLICATION']->AddHeadScript("/bitrix/components/bitrix/forum.interface/templates/.default/script.js");
 
-$file = trim(preg_replace("'[\\\\/]+'", "/", (dirname(__FILE__)."/lang/".LANGUAGE_ID."/result_modifier.php")));
+$file = trim(preg_replace("'[\\\\/]+'", "/", (__DIR__."/lang/".LANGUAGE_ID."/result_modifier.php")));
 if (!file_exists($file))
-	$file = trim(preg_replace("'[\\\\/]+'", "/", (dirname(__FILE__)."/lang/en/result_modifier.php")));
+	$file = trim(preg_replace("'[\\\\/]+'", "/", (__DIR__."/lang/en/result_modifier.php")));
 if(file_exists($file)):
 	global $MESS;
 	include_once($file);
@@ -193,7 +195,7 @@ if ($arParams["SHOW_FORUMS"] == "Y" && in_array($this->__page, array("forums", "
 		{
 			$arResult = array();
 			
-			if (intVal($arGroup["ID"]) > 0)
+			if (intval($arGroup["ID"]) > 0)
 			{
 				$arResult["GROUP_".$arGroup["ID"]] = $arGroup;
 				unset($arResult["GROUP_".$arGroup["ID"]]["GROUPS"]);
@@ -229,7 +231,7 @@ if ($arParams["SHOW_FORUMS"] == "Y" && in_array($this->__page, array("forums", "
 	
 	foreach ($arParams["FID"] as $key => $val)
 	{
-		if (intVal($val) > 0)
+		if (intval($val) > 0)
 			$res[] = $val;
 	}
 	$arParams["FID_RANGE"] = $res;

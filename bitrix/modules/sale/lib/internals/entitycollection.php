@@ -16,16 +16,16 @@ abstract class EntityCollection
 	protected $isClone = false;
 
 	protected $anyItemDeleted = false;
+	protected $anyItemAdded = false;
 
 	/**
 	 * EntityCollection constructor.
 	 */
-	protected function __construct()
-	{
-
-	}
+	protected function __construct() {}
 
 	/**
+	 * @internal
+	 *
 	 * @param CollectableEntity $item
 	 * @param null $name
 	 * @param null $oldValue
@@ -38,6 +38,15 @@ abstract class EntityCollection
 	}
 
 	/**
+	 * @throws Main\NotImplementedException
+	 * @return string
+	 */
+	public static function getRegistryType()
+	{
+		throw new Main\NotImplementedException();
+	}
+
+	/**
 	 * @internal
 	 *
 	 * @param $index
@@ -47,7 +56,9 @@ abstract class EntityCollection
 	public function deleteItem($index)
 	{
 		if (!isset($this->collection[$index]))
+		{
 			throw new Main\ArgumentOutOfRangeException("collection item index wrong");
+		}
 
 		$oldItem = $this->collection[$index];
 
@@ -80,6 +91,7 @@ abstract class EntityCollection
 		$item->setInternalIndex($index);
 
 		$this->collection[$index] = $item;
+		$this->setAnyItemAdded(true);
 
 		$eventManager = Main\EventManager::getInstance();
 		$eventsList = $eventManager->findEventHandlers('sale', 'OnCollectionAddItem');
@@ -105,9 +117,37 @@ abstract class EntityCollection
 		return $this->index;
 	}
 
+	/**
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ObjectNotFoundException
+	 */
 	public function clearCollection()
 	{
+		$this->callEventOnBeforeCollectionClear();
+
+		/** @var CollectableEntity $item */
+		foreach ($this->getDeletableItems() as $item)
+		{
+			$item->delete();
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getDeletableItems()
+	{
+		return $this->collection;
+	}
+
+
+	/**
+	 * @return void
+	 */
+	protected function callEventOnBeforeCollectionClear()
+	{
 		$eventManager = Main\EventManager::getInstance();
+
 		$eventsList = $eventManager->findEventHandlers('sale', 'OnBeforeCollectionClear');
 		if (!empty($eventsList))
 		{
@@ -117,11 +157,7 @@ abstract class EntityCollection
 			));
 			$event->send();
 		}
-		/** @var CollectableEntity $item */
-		foreach ($this->collection as $item)
-			$item->delete();
 	}
-
 
 	/**
 	 * @param $id
@@ -212,7 +248,9 @@ abstract class EntityCollection
 	{
 		$parent = $this->getEntityParent();
 		if ($parent === null)
+		{
 			return false;
+		}
 
 		return $parent->isStartField($isMeaningfulField);
 	}
@@ -224,7 +262,10 @@ abstract class EntityCollection
 	{
 		$parent = $this->getEntityParent();
 		if ($parent === null)
+		{
 			return false;
+		}
+
 		return $parent->clearStartField();
 	}
 
@@ -235,7 +276,10 @@ abstract class EntityCollection
 	{
 		$parent = $this->getEntityParent();
 		if ($parent === null)
+		{
 			return false;
+		}
+
 		return $parent->hasMeaningfulField();
 	}
 
@@ -247,7 +291,9 @@ abstract class EntityCollection
 	{
 		$parent = $this->getEntityParent();
 		if ($parent === null)
+		{
 			return new Sale\Result();
+		}
 
 		return $parent->doFinalAction($hasMeaningfulField);
 	}
@@ -259,7 +305,9 @@ abstract class EntityCollection
 	{
 		$parent = $this->getEntityParent();
 		if ($parent === null)
+		{
 			return false;
+		}
 
 		return $parent->isMathActionOnly();
 	}
@@ -272,7 +320,9 @@ abstract class EntityCollection
 	{
 		$parent = $this->getEntityParent();
 		if ($parent == null)
+		{
 			return false;
+		}
 
 		return $parent->setMathActionOnly($value);
 	}
@@ -288,11 +338,13 @@ abstract class EntityCollection
 			foreach ($this->collection as $item)
 			{
 				if ($item->isChanged())
+				{
 					return true;
+				}
 			}
 		}
 
-		return $this->isAnyItemDeleted();
+		return $this->isAnyItemDeleted() || $this->isAnyItemAdded();
 	}
 
 	/**
@@ -329,6 +381,25 @@ abstract class EntityCollection
 	{
 		return $this->anyItemDeleted = ($value === true);
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function isAnyItemAdded()
+	{
+		return $this->anyItemAdded;
+	}
+
+	/**
+	 * @param $value
+	 *
+	 * @return bool
+	 */
+	protected function setAnyItemAdded($value)
+	{
+		return $this->anyItemAdded = ($value === true);
+	}
+
 	/**
 	 * @internal
 	 */
@@ -383,7 +454,4 @@ abstract class EntityCollection
 
 		return $entityClone;
 	}
-
-
-
 }

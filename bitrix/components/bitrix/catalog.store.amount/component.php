@@ -1,8 +1,9 @@
-<?
+<?php
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 
-use Bitrix\Main,
-	Bitrix\Main\Loader;
+use Bitrix\Main;
+use Bitrix\Main\Loader;
+use Bitrix\Catalog;
 
 global $USER_FIELD_MANAGER, $APPLICATION;
 
@@ -24,13 +25,13 @@ if (!function_exists("getStringCatalogStoreAmount"))
 if (!isset($arParams['CACHE_TIME']))
 	$arParams['CACHE_TIME'] = 360000;
 
-$arParams['ELEMENT_ID']     = (int)(isset($arParams['ELEMENT_ID']) ? $arParams['ELEMENT_ID'] : 0);
-$arParams['ELEMENT_CODE']   = (isset($arParams['ELEMENT_CODE']) ? $arParams['ELEMENT_CODE'] : '');
-$arParams['OFFER_ID']     = (int)(isset($arParams['OFFER_ID']) ? $arParams['OFFER_ID'] : 0);
+$arParams['ELEMENT_ID']     = (int)($arParams['ELEMENT_ID'] ?? 0);
+$arParams['ELEMENT_CODE']   = trim($arParams['ELEMENT_CODE'] ?? '');
+$arParams['OFFER_ID']     = (int)($arParams['OFFER_ID'] ?? 0);
 $arParams['MAIN_TITLE']     = trim($arParams['MAIN_TITLE']);
 $arParams['STORE_PATH']     = trim($arParams['STORE_PATH']);
 $arParams['USE_MIN_AMOUNT'] = (isset($arParams['USE_MIN_AMOUNT']) && $arParams['USE_MIN_AMOUNT'] == 'N' ? 'N' : 'Y');
-$arParams['MIN_AMOUNT']     = (float)(isset($arParams['MIN_AMOUNT']) ? $arParams['MIN_AMOUNT'] : 0);
+$arParams['MIN_AMOUNT']     = (float)($arParams['MIN_AMOUNT'] ?? 0);
 if (!isset($arParams['FIELDS']))
 	$arParams['FIELDS'] = array();
 if (!is_array($arParams['FIELDS']))
@@ -83,26 +84,44 @@ if ($this->startResultCache())
 		return;
 	}
 
+	$product = Catalog\ProductTable::getRow([
+		'select' => [
+			'ID',
+			'TYPE',
+			'IBLOCK_ID' => 'IBLOCK_ELEMENT.IBLOCK_ID',
+		],
+		'filter' => [
+			'=ID' => $arParams['ELEMENT_ID'],
+		],
+	]);
+	if ($product === null)
+	{
+		$this->abortResultCache();
+		ShowError(GetMessage("PRODUCT_NOT_EXIST"));
+		return;
+	}
+	$product['ID'] = (int)$product['ID'];
+	$product['TYPE'] = (int)$product['TYPE'];
+	$product['IBLOCK_ID'] = (int)$product['IBLOCK_ID'];
+	if (
+		$product['TYPE'] === Catalog\ProductTable::TYPE_SERVICE
+		|| $product['TYPE'] === Catalog\ProductTable::TYPE_EMPTY_SKU
+		|| $product['TYPE'] === Catalog\ProductTable::TYPE_FREE_OFFER
+	)
+	{
+		$this->abortResultCache();
+		return;
+	}
+
 	$context = Main\Application::getInstance()->getContext();
 
-	$arResult['IS_SKU'] = false;
+	$arResult['IS_SKU'] = $product['TYPE'] === Catalog\ProductTable::TYPE_SKU;
 	$arResult['STORES'] = array();
-	$isProductExistSKU = CCatalogSku::IsExistOffers($arParams['ELEMENT_ID'], $iblockId);
 	$productSku = array();
-	if ($isProductExistSKU)
+	if ($arResult['IS_SKU'])
 	{
-		$res = CIBlockElement::GetList(
-			array(),
-			array('ID' => $arParams['ELEMENT_ID']),
-			false,
-			false,
-			array('ID', 'IBLOCK_ID')
-		);
-		if ($productInfo = $res->Fetch())
-		{
-			$productId  = $productInfo['ID'];
-			$iblockId   = $productInfo['IBLOCK_ID'];
-		}
+		$productId = $product['ID'];
+		$iblockId = $product['IBLOCK_ID'];
 
 		$skuInfo = CCatalogSku::GetInfoByProductIBlock($iblockId);
 		$skuIterator = CIBlockElement::GetList(
@@ -115,7 +134,6 @@ if ($this->startResultCache())
 
 		while ($sku = $skuIterator->Fetch())
 		{
-			$arResult['IS_SKU'] = true;
 			$amount = array();
 			$sum = 0;
 			$filter = array('PRODUCT_ID' => $sku['ID']);
@@ -145,16 +163,22 @@ if ($this->startResultCache())
 			$arParams['ELEMENT_ID'] = $arParams['OFFER_ID'];
 	}
 
-	$res = CCatalogProduct::GetList(
+	$res = CIBlockElement::GetList(
 		array(),
 		array("ID" => $arParams["ELEMENT_ID"]),
 		false,
 		false,
-		array("TYPE", "QUANTITY", "ID")
+		array("TYPE", "QUANTITY", "ID", "IBLOCK_ID")
 	);
 	$data = $res->Fetch();
+	if (empty($data))
+	{
+		$this->abortResultCache();
+		ShowError(GetMessage("PRODUCT_NOT_EXIST"));
+		return;
+	}
 
-	if ($data["TYPE"] == CCatalogProduct::TYPE_SET)
+	if ($data["TYPE"] == Catalog\ProductTable::TYPE_SET)
 	{
 		$arParams["SHOW_GENERAL_STORE_INFORMATION"] = "Y";
 		$arParams["~SHOW_GENERAL_STORE_INFORMATION"] = "Y";
@@ -281,7 +305,7 @@ if ($this->startResultCache())
 					if ($field['MULTIPLE'] == 'Y')
 					{
 						if (!is_array($value))
-							$value = unserialize($value);
+							$value = unserialize($value, ['allowed_classes' => false]);
 						if (empty($value))
 							continue;
 					}

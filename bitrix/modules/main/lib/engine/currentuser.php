@@ -40,7 +40,7 @@ final class CurrentUser
 	}
 
 	/**
-	 * @return null
+	 * @return int|null
 	 */
 	public function getId()
 	{
@@ -109,5 +109,22 @@ final class CurrentUser
 	public function getFormattedName()
 	{
 		return $this->cuser->getFormattedName(false, false);
+	}
+
+	/**
+	 * @param string $operationName
+	 * @return boolean
+	 */
+	public function canDoOperation($operationName)
+	{
+		return $this->cuser->canDoOperation($operationName);
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function isAdmin()
+	{
+		return $this->cuser->isAdmin();
 	}
 }

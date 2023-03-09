@@ -1,6 +1,7 @@
-<?
+<?php
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/start.php");
-error_reporting(COption::GetOptionInt("main", "error_reporting", E_COMPILE_ERROR|E_ERROR|E_CORE_ERROR|E_PARSE));
+
 class CMainPage
 {
 	// определяет сайт по HTTP_HOST в таблице сайтов
@@ -8,13 +9,13 @@ class CMainPage
 	{
 		$cur_host = $_SERVER["HTTP_HOST"];
 		$arURL = parse_url("http://".$cur_host);
-		if($arURL["scheme"]=="" && strlen($arURL["host"])>0)
+		if($arURL["scheme"]=="" && $arURL["host"] <> '')
 			$CURR_DOMAIN = $arURL["host"];
 		else
 			$CURR_DOMAIN = $cur_host;
 
-		if(strpos($CURR_DOMAIN, ':')>0)
-			$CURR_DOMAIN = substr($CURR_DOMAIN, 0, strpos($CURR_DOMAIN, ':'));
+		if(mb_strpos($CURR_DOMAIN, ':') > 0)
+			$CURR_DOMAIN = mb_substr($CURR_DOMAIN, 0, mb_strpos($CURR_DOMAIN, ':'));
 		$CURR_DOMAIN = Trim($CURR_DOMAIN, "\t\r\n\0 .");
 
 		global $DB;
@@ -23,7 +24,7 @@ class CMainPage
 			"FROM b_lang L, b_lang_domain LD ".
 			"WHERE L.ACTIVE='Y' ".
 			"	AND L.LID=LD.LID ".
-			"	AND '".$DB->ForSql($CURR_DOMAIN, 255)."' LIKE ".$DB->Concat("'%'", "LD.DOMAIN")." ".
+			"	AND '".$DB->ForSql(".".$CURR_DOMAIN, 255)."' LIKE ".$DB->Concat("'%.'", "LD.DOMAIN")." ".
 			"ORDER BY ".$DB->Length("LD.DOMAIN")." DESC, L.SORT";
 
 		$res = $DB->Query($strSql);
@@ -55,16 +56,16 @@ class CMainPage
 		{
 			foreach($arUserLang as $user_lid)
 			{
-				$user_lid = strtolower(substr($user_lid, 0, 2));
+				$user_lid = mb_strtolower(mb_substr($user_lid, 0, 2));
 				foreach($arSites as $arSite)
 				{
-					$sid = ($compare_site_id) ? strtolower($arSite["ID"]) : strtolower($arSite["LANGUAGE_ID"]);
+					$sid = ($compare_site_id)? mb_strtolower($arSite["ID"]) : mb_strtolower($arSite["LANGUAGE_ID"]);
 					if($user_lid==$sid)
 						return $arSite["ID"];
 				}
 			}
 		}
-		if(strlen($site_id)<=0)
+		if($site_id == '')
 			return $last_site_id;
 		return $site_id;
 	}
@@ -72,26 +73,26 @@ class CMainPage
 	// делает перенаправление на сайт
 	function RedirectToSite($site)
 	{
-		if(strlen($site)<=0) return false;
+		if($site == '') return false;
 		$db_site = CSite::GetByID($site);
 		if($arSite = $db_site->Fetch())
 		{
 			$arSite["DIR"] = RTrim($arSite["DIR"], ' \/');
-			if(strlen($arSite["DIR"])>0)
-				LocalRedirect((strlen($arSite["SERVER_NAME"])>0?"http://".$arSite["SERVER_NAME"]:"").$arSite["DIR"].$_SERVER["REQUEST_URI"], true);
+			if($arSite["DIR"] <> '')
+				LocalRedirect(($arSite["SERVER_NAME"] <> ''?"http://".$arSite["SERVER_NAME"]:"").$arSite["DIR"].$_SERVER["REQUEST_URI"], true);
 		}
 	}
 
 	// подключает страницу с папки другого сайта
 	function GetIncludeSitePage($site)
 	{
-		if(strlen($site)<=0) return false;
+		if($site == '') return false;
 		$db_site = CSite::GetByID($site);
 		if($arSite = $db_site->Fetch())
 		{
 			$arSite["DIR"] = RTrim($arSite["DIR"], ' \/');
 			$cur_page = GetPagePath();
-			if(strlen($arSite["DIR"])>0)
+			if($arSite["DIR"] <> '')
 			{
 				global $REQUEST_URI;
 				$REQUEST_URI = $arSite["DIR"].$cur_page;
@@ -102,4 +103,3 @@ class CMainPage
 		return false;
 	}
 }
-?>

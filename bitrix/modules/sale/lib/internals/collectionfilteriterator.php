@@ -7,7 +7,7 @@ namespace Bitrix\Sale\Internals;
  */
 class CollectionFilterIterator extends \FilterIterator
 {
-	public $callback = null;
+	protected $callback = null;
 
 	/**
 	 * CustomFilterIterator constructor.
@@ -24,6 +24,7 @@ class CollectionFilterIterator extends \FilterIterator
 	/**
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function accept()
 	{
 		return call_user_func($this->callback, parent::current());

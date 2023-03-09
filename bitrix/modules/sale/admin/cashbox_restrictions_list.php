@@ -25,7 +25,7 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Restrictions
 
 	$id = (int)$_GET['ID'];
 	$tableId = 'table_cashbox_restrictions';
-	$oSort = new \CAdminSorting($tableId);
+	$oSort = new \CAdminSubSorting($tableId);
 	$lAdmin = new \CAdminSubList($tableId, $oSort, '/bitrix/admin/sale_cashbox_restriction_list.php?ID='.$id);
 
 	$restrictionClassNames = Manager::getClassesList();
@@ -51,7 +51,7 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Restrictions
 
 	while ($record = $dbRecords->Fetch())
 	{
-		if(strlen($record['CLASS_NAME']) > 0)
+		if($record['CLASS_NAME'] <> '')
 		{
 			$restrictionClassNamesUsed[] = $record['CLASS_NAME'];
 
@@ -90,7 +90,7 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Restrictions
 		{
 			$html = Input\Manager::getViewHtml($params, (isset($record["PARAMS"][$name]) ? $record["PARAMS"][$name] : null));
 			if ($html)
-				$paramsField .= (isset($params["LABEL"]) && strlen($params["LABEL"]) > 0 ? $params["LABEL"].': ' : '').$html.'<br>';
+				$paramsField .= (isset($params["LABEL"]) && $params["LABEL"] <> '' ? $params["LABEL"].': ' : '').$html.'<br>';
 		}
 
 		$row->AddField('PARAMS', $paramsField);
@@ -121,7 +121,7 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Restrictions
 
 		foreach($restrictionClassNames as $class)
 		{
-			if(strlen($class) <= 0)
+			if($class == '')
 				continue;
 
 			if(in_array($class, $restrictionClassNamesUsed))
@@ -156,8 +156,10 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Restrictions
 		$lAdmin->AddAdminContextMenu($aContext, false);
 	}
 
-	if($_REQUEST['table_id'] == $tableId)
+	if (isset($_REQUEST['table_id']) && $_REQUEST['table_id'] === $tableId)
+	{
 		$lAdmin->CheckListMode();
+	}
 
 	$lAdmin->DisplayList();
 }

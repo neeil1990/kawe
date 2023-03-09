@@ -19,6 +19,7 @@ $MESS["MAIN_RATING_TEXT_LIKE_N"] = "Не нравится";
 $MESS["MAIN_RATING_TEXT_LIKE_D"] = "Это нравится";
 $MESS["MAIN_DEFAULT_SITE_NAME"] = "Сайт по умолчанию";
 $MESS["MAIN_DEFAULT_LANGUAGE_NAME"] = "Russian";
+$MESS["MAIN_DEFAULT_LANGUAGE_CODE"] = "ru";
 $MESS["MAIN_DEFAULT_LANGUAGE_FORMAT_DATE"] = "DD.MM.YYYY";
 $MESS["MAIN_DEFAULT_LANGUAGE_FORMAT_DATETIME"] = "DD.MM.YYYY HH:MI:SS";
 $MESS["MAIN_DEFAULT_LANGUAGE_FORMAT_NAME"] = "#NAME# #LAST_NAME#";
@@ -216,10 +217,126 @@ $MESS["MAIN_DESKTOP_EMAIL_KEY"] = "E-mail";
 $MESS["MAIN_DESKTOP_EMAIL_VALUE"] = "<a href=\"mailto:info@1c-bitrix.ru\">info@1c-bitrix.ru</a>";
 $MESS["MAIN_DESKTOP_INFO_TITLE"] = "Информация о сайте";
 $MESS["MAIN_DESKTOP_RSS_TITLE"] = "Новости 1С-Битрикс";
-
 $MESS["MAIN_MAIL_CONFIRM_EVENT_TYPE_NAME"] = "Подтверждение email-адреса отправителя";
 $MESS["MAIN_MAIL_CONFIRM_EVENT_TYPE_DESC"] = "
 
 #EMAIL_TO# - Email-адрес для подтверждения
 #MESSAGE_SUBJECT# - Тема сообщения
 #CONFIRM_CODE# - Код подтверждения";
+$MESS["main_install_sms_event_confirm_name"] = "Подтверждение номера телефона по СМС";
+$MESS["main_install_sms_event_confirm_descr"] = "#USER_PHONE# - номер телефона
+#CODE# - код подтверждения
+";
+$MESS["main_install_sms_event_restore_name"] = "Восстановление пароля через СМС";
+$MESS["main_install_sms_event_restore_descr"] = "#USER_PHONE# - номер телефона
+#CODE# - код для восстановления
+";
+$MESS["main_install_sms_template_confirm_mess"] = "Код подтверждения #CODE#";
+$MESS["main_install_sms_template_restore_mess"] = "Код для восстановления пароля #CODE#";
+$MESS["MAIN_DEFAULT_LANGUAGE_SHORT_DATE_FORMAT"] = "d.m.Y";
+$MESS["MAIN_DEFAULT_LANGUAGE_MEDIUM_DATE_FORMAT"] = "j M Y";
+$MESS["MAIN_DEFAULT_LANGUAGE_LONG_DATE_FORMAT"] = "j F Y";
+$MESS["MAIN_DEFAULT_LANGUAGE_FULL_DATE_FORMAT"] = "l, j F Y";
+$MESS["MAIN_DEFAULT_LANGUAGE_DAY_MONTH_FORMAT"] = "j F";
+$MESS["MAIN_DEFAULT_LANGUAGE_DAY_SHORT_MONTH_FORMAT"] = "j M";
+$MESS["MAIN_DEFAULT_LANGUAGE_DAY_OF_WEEK_MONTH_FORMAT"] = "l, j F";
+$MESS["MAIN_DEFAULT_LANGUAGE_SHORT_DAY_OF_WEEK_MONTH_FORMAT"] = "D, j F";
+$MESS["MAIN_DEFAULT_LANGUAGE_SHORT_DAY_OF_WEEK_SHORT_MONTH_FORMAT"] = "D, j M";
+$MESS["MAIN_DEFAULT_LANGUAGE_SHORT_TIME_FORMAT"] = "H:i";
+$MESS["MAIN_DEFAULT_LANGUAGE_LONG_TIME_FORMAT"] = "H:i:s";
+$MESS["MAIN_DEFAULT_LANGUAGE_AM_VALUE"] = "am";
+$MESS["MAIN_DEFAULT_LANGUAGE_PM_VALUE"] = "pm";
+$MESS["MAIN_DEFAULT_LANGUAGE_NUMBER_THOUSANDS_SEPARATOR"] = " ";
+$MESS["MAIN_DEFAULT_LANGUAGE_NUMBER_DECIMAL_SEPARATOR"] = ",";
+$MESS["MAIN_INSTALL_EVENT_TYPE_NOTIFICATION"] = "Оповещение журнала событий";
+$MESS["MAIN_INSTALL_EVENT_TYPE_NOTIFICATION_DESC"] = "#EMAIL# - Email получателя
+#ADDITIONAL_TEXT# - Дополнительный текст действия
+#NAME# - Название оповещения
+#AUDIT_TYPE_ID# - Тип события
+#ITEM_ID# - Объект
+#USER_ID# - Пользователь
+#REMOTE_ADDR# - IP-адрес
+#USER_AGENT# - Браузер
+#REQUEST_URI# - Страница
+#EVENT_COUNT# - Количество записей";
+$MESS["MAIN_INSTALL_EVENT_TYPE_NOTIFICATION_DESC_SMS"] = "#PHONE_NUMBER# - Номер телефона получателя
+#ADDITIONAL_TEXT# - Дополнительный текст действия
+#NAME# - Название оповещения
+#AUDIT_TYPE_ID# - Тип события
+#ITEM_ID# - Объект
+#USER_ID# - Пользователь
+#REMOTE_ADDR# - IP-адрес
+#USER_AGENT# - Браузер
+#REQUEST_URI# - Страница
+#EVENT_COUNT# - Количество записей";
+$MESS["MAIN_EVENT_MESS_NOTIFICATION"] = "Оповещение журнала событий: #NAME#";
+$MESS["MAIN_EVENT_MESS_NOTIFICATION_TEXT"] = "Зафиксированы события в журнале, соответствующие параметрам оповещения:
+
+Тип события: #AUDIT_TYPE_ID#
+Объект: #ITEM_ID#
+Пользователь: #USER_ID# 
+IP-адрес: #REMOTE_ADDR#
+Браузер: #USER_AGENT#
+Страница: #REQUEST_URI# 
+
+Количество записей: #EVENT_COUNT# 
+
+#ADDITIONAL_TEXT#
+
+Перейти в журнал событий:
+http://#SERVER_NAME#/bitrix/admin/event_log.php?set_filter=Y&find_audit_type_id=#AUDIT_TYPE_ID#";
+$MESS["main_install_sms_template_notification_mess"] = "#NAME#: #ADDITIONAL_TEXT# (событий: #EVENT_COUNT#)";
+$MESS["MAIN_INSTALL_EVENT_TYPE_USER_CODE_REQUEST"] = "Запрос кода авторизации";
+$MESS["MAIN_INSTALL_EVENT_TYPE_USER_CODE_REQUEST_DESC"] = "#USER_ID# - ID пользователя
+#STATUS# - Статус логина
+#LOGIN# - Логин
+#CHECKWORD# - Код для авторизации
+#NAME# - Имя
+#LAST_NAME# - Фамилия
+#EMAIL# - Email пользователя
+";
+$MESS["MAIN_INSTALL_EVENT_MESS_USER_CODE_REQUEST"] = "#SITE_NAME#: Запрос кода авторизации";
+$MESS["MAIN_INSTALL_EVENT_MESS_USER_CODE_REQUEST_MESS"] = "Используйте для авторизации код:
+
+#CHECKWORD#
+
+После авторизации вы сможете изменить свой пароль в редактировании профиля.
+
+Ваша регистрационная информация:
+
+ID пользователя: #USER_ID#
+Статус профиля: #STATUS#
+Логин: #LOGIN#
+
+Сообщение создано автоматически.";
+$MESS['MAIN_INSTALL_EVENT_TYPE_NEW_DEVICE_LOGIN'] = 'Вход с нового устройства';
+$MESS['MAIN_INSTALL_EVENT_TYPE_NEW_DEVICE_LOGIN_DESC'] = '#USER_ID# - ID пользователя
+#EMAIL# - Email пользователя
+#LOGIN# - Логин пользователя
+#NAME# - Имя пользователя
+#LAST_NAME# - Фамилия пользователя
+#DEVICE# - Устройство
+#BROWSER# - Браузер
+#PLATFORM# - Платформа
+#USER_AGENT# - User agent
+#IP# - IP-адрес
+#DATE# - Дата
+#COUNTRY# - Страна
+#REGION# - Регион
+#CITY# - Город
+#LOCATION# - Объединенные город, регион, страна
+';
+$MESS['MAIN_INSTALL_EVENT_MESSAGE_NEW_DEVICE_LOGIN'] = 'Здравствуйте, #NAME#,
+
+Новое устройство авторизовалось под вашим логином #LOGIN#.
+ 
+Устройство: #DEVICE# 
+Браузер: #BROWSER#
+Платформа: #PLATFORM#
+Местоположение: #LOCATION# (может быть неточным)
+Дата: #DATE#
+
+Если вы не знаете, кто это был, рекомендуем немедленно сменить пароль.
+';
+$MESS['MAIN_INSTALL_EVENT_MESSAGE_NEW_DEVICE_LOGIN_SUBJECT'] = 'Вход с нового устройства';
+?>

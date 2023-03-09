@@ -6,12 +6,7 @@ class CPHPCacheEAccelerator implements ICacheBackend
 	var $written = false;
 	var $read = false;
 
-	function __construct()
-	{
-		$this->CPHPCacheEAccelerator();
-	}
-
-	function CPHPCacheEAccelerator()
+	public function __construct()
 	{
 		if(defined("BX_CACHE_SID"))
 			$this->sid = BX_CACHE_SID;
@@ -26,17 +21,21 @@ class CPHPCacheEAccelerator implements ICacheBackend
 
 	function clean($basedir, $initdir = false, $filename = false)
 	{
-		if(strlen($filename))
+		if($filename <> '')
 		{
 			$basedir_version = eaccelerator_get($this->sid.$basedir);
 			if($basedir_version === null)
+			{
 				return true;
+			}
 
 			if($initdir !== false)
 			{
 				$initdir_version = eaccelerator_get($basedir_version."|".$initdir);
 				if($initdir_version === null)
+				{
 					return true;
+				}
 			}
 			else
 			{
@@ -47,11 +46,13 @@ class CPHPCacheEAccelerator implements ICacheBackend
 		}
 		else
 		{
-			if(strlen($initdir))
+			if($initdir <> '')
 			{
 				$basedir_version = eaccelerator_get($this->sid.$basedir);
 				if($basedir_version === null)
+				{
 					return true;
+				}
 
 				eaccelerator_rm($basedir_version."|".$initdir);
 			}
@@ -88,7 +89,7 @@ class CPHPCacheEAccelerator implements ICacheBackend
 		}
 		else
 		{
-			$this->read = strlen($arAllVars);
+			$this->read = mb_strlen($arAllVars);
 			$arAllVars = unserialize($arAllVars);
 		}
 
@@ -121,7 +122,7 @@ class CPHPCacheEAccelerator implements ICacheBackend
 		}
 
 		$arAllVars = serialize($arAllVars);
-		$this->written = strlen($arAllVars);
+		$this->written = mb_strlen($arAllVars);
 
 		eaccelerator_put($basedir_version."|".$initdir_version."|".$filename, $arAllVars, intval($TTL));
 	}

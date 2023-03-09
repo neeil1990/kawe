@@ -13,13 +13,11 @@ Class photogallery extends CModule
 	var $MODULE_CSS;
 	var $MODULE_GROUP_RIGHTS = "N";
 
-	function photogallery()
+	public function __construct()
 	{
 		$arModuleVersion = array();
 
-		$path = str_replace("\\", "/", __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen("/index.php"));
-		include($path."/version.php");
+		include(__DIR__.'/version.php');
 
 		if (is_array($arModuleVersion) && array_key_exists("VERSION", $arModuleVersion))
 		{
@@ -43,6 +41,7 @@ Class photogallery extends CModule
 		RegisterModuleDependences("iblock", "OnAfterIBlockElementAdd", "photogallery", "CPhotogalleryElement", "OnAfterIBlockElementAdd");
 		RegisterModuleDependences("search", "BeforeIndex", "photogallery", "CRatingsComponentsPhotogallery", "BeforeIndex");
 		RegisterModuleDependences("im", "OnGetNotifySchema", "photogallery", "CPhotogalleryNotifySchema", "OnGetNotifySchema");
+		RegisterModuleDependences("socialnetwork", "OnSocNetGroupDelete", "photogallery", "\\Bitrix\\Photogallery\\Integration\\Socialnetwork\\Group", "onSocNetGroupDelete");
 		return true;
 	}
 
@@ -52,6 +51,7 @@ Class photogallery extends CModule
 		UnRegisterModuleDependences("iblock", "OnAfterIBlockElementAdd", "photogallery", "CPhotogalleryElement", "OnAfterIBlockElementAdd");
 		UnRegisterModuleDependences("search", "BeforeIndex", "photogallery", "CRatingsComponentsPhotogallery", "BeforeIndex");
 		UnRegisterModuleDependences("im", "OnGetNotifySchema", "photogallery", "CPhotogalleryNotifySchema", "OnGetNotifySchema");
+		UnRegisterModuleDependences("socialnetwork", "OnSocNetGroupDelete", "photogallery", "\\Bitrix\\Photogallery\\Integration\\Socialnetwork\\Group", "onSocNetGroupDelete");
 		UnRegisterModule("photogallery");
 		return true;
 	}
@@ -87,7 +87,7 @@ Class photogallery extends CModule
 		global $APPLICATION;
 		if (IsModuleInstalled("iblock"))
 		{
-			$step = IntVal($_REQUEST["step"]);
+			$step = intval($_REQUEST["step"]);
 
 			if ($step < 2)
 				$APPLICATION->IncludeAdminFile(GetMessage("PHOTO_INSTALL"), $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/photogallery/install/step1.php");

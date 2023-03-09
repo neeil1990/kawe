@@ -1,20 +1,15 @@
-<?
-
-/***************************************
-				Ответы
-***************************************/
+<?php
 
 class CAllFormAnswer
 {
-	function err_mess()
+	public static function err_mess()
 	{
 		$module_id = "form";
 		@include($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$module_id."/install/version.php");
 		return "<br>Module: ".$module_id." (".$arModuleVersion["VERSION"].")<br>Class: CAllFormAnswer<br>File: ".__FILE__;
 	}
 
-	// копирует ответ
-	function Copy($ID, $NEW_QUESTION_ID=false)
+	public static function Copy($ID, $NEW_QUESTION_ID=false)
 	{
 		global $DB, $APPLICATION, $strError;
 		$err_mess = (CAllFormAnswer::err_mess())."<br>Function: Copy<br>Line: ";
@@ -41,8 +36,7 @@ class CAllFormAnswer
 		return false;
 	}
 
-	// удаляем ответ
-	function Delete($ID, $QUESTION_ID=false)
+	public static function Delete($ID, $QUESTION_ID=false)
 	{
 		global $DB, $strError;
 		$err_mess = (CAllFormAnswer::err_mess())."<br>Function: Delete<br>Line: ";
@@ -53,7 +47,7 @@ class CAllFormAnswer
 		return true;
 	}
 
-	function GetTypeList()
+	public static function GetTypeList()
 	{
 		global $bSimple;
 		$arrT = array(
@@ -76,24 +70,31 @@ class CAllFormAnswer
 		return $arr;
 	}
 
-	// возвращает список ответов
-	function GetList($QUESTION_ID, &$by, &$order, $arFilter=Array(), &$is_filtered)
+	public static function GetList($QUESTION_ID, $by = 's_sort', $order = 'asc', $arFilter = [])
 	{
 		$err_mess = (CAllFormAnswer::err_mess())."<br>Function: GetList<br>Line: ";
-		global $DB, $strError;
+		global $DB;
 		$QUESTION_ID = intval($QUESTION_ID);
 		$arSqlSearch = Array();
-		$strSqlSearch = "";
 		if (is_array($arFilter))
 		{
 			$filter_keys = array_keys($arFilter);
-			for ($i=0; $i<count($filter_keys); $i++)
+			$keyCount = count($filter_keys);
+			for ($i=0; $i<$keyCount; $i++)
 			{
 				$key = $filter_keys[$i];
 				$val = $arFilter[$filter_keys[$i]];
-				if (strlen($val)<=0 || "$val"=="NOT_REF") continue;
-				if (is_array($val) && count($val)<=0) continue;
-				$match_value_set = (in_array($key."_EXACT_MATCH", $filter_keys)) ? true : false;
+				if(is_array($val))
+				{
+					if(empty($val))
+						continue;
+				}
+				else
+				{
+				if((string)$val == '' || $val === "NOT_REF")
+					continue;
+				}
+				$match_value_set = (in_array($key."_EXACT_MATCH", $filter_keys));
 				$key = strtoupper($key);
 				switch($key)
 				{
@@ -121,19 +122,18 @@ class CAllFormAnswer
 		elseif ($by == "s_c_sort" || $by == "s_sort") $strSqlOrder = "ORDER BY A.C_SORT";
 		else
 		{
-			$by = "s_sort";
 			$strSqlOrder = "ORDER BY A.C_SORT";
 		}
-		if ($order!="desc")
+
+		if ($order != "desc")
 		{
 			$strSqlOrder .= " asc ";
-			$order="asc";
 		}
 		else
 		{
 			$strSqlOrder .= " desc ";
-			$order="desc";
 		}
+
 		$strSql = "
 			SELECT
 				A.ID,
@@ -157,11 +157,11 @@ class CAllFormAnswer
 			";
 		//echo "<pre>$strSql</pre>";
 		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
-		$is_filtered = (IsFiltered($strSqlSearch));
+
 		return $res;
 	}
 
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		$err_mess = (CAllFormAnswer::err_mess())."<br>Function: GetByID<br>Line: ";
 		global $DB, $strError;
@@ -190,8 +190,7 @@ class CAllFormAnswer
 		return $res;
 	}
 
-	// проверка ответа
-	function CheckFields($arFields, $ANSWER_ID=false)
+	public static function CheckFields($arFields, $ANSWER_ID=false)
 	{
 		$err_mess = (CAllFormAnswer::err_mess())."<br>Function: CheckFields<br>Line: ";
 		global $DB, $strError, $APPLICATION, $USER;
@@ -208,15 +207,14 @@ class CAllFormAnswer
 
 		if ($ANSWER_ID<=0 || ($ANSWER_ID>0 && is_set($arFields, "MESSAGE")))
 		{
-			if (strlen($arFields["MESSAGE"])<=0) $str .= GetMessage("FORM_ERROR_FORGOT_ANSWER_TEXT")."<br>";
+			if ($arFields["MESSAGE"] == '') $str .= GetMessage("FORM_ERROR_FORGOT_ANSWER_TEXT")."<br>";
 		}
 
 		$strError .= $str;
-		if (strlen($str)>0) return false; else return true;
+		if ($str <> '') return false; else return true;
 	}
 
-	// добавление/обновление ответа
-	function Set($arFields, $ANSWER_ID=false)
+	public static function Set($arFields, $ANSWER_ID=false)
 	{
 		$err_mess = (CAllFormAnswer::err_mess())."<br>Function: Set<br>Line: ";
 		global $DB, $USER, $strError, $APPLICATION;
@@ -257,7 +255,6 @@ class CAllFormAnswer
 			{
 				$DB->Update("b_form_answer", $arFields_i, "WHERE ID='".$ANSWER_ID."'", $err_mess.__LINE__);
 
-				// обновим все результаты для данного ответа
 				$arFields_u = array();
 				$arFields_u["ANSWER_TEXT"] = $arFields_i["MESSAGE"];
 				$arFields_u["ANSWER_VALUE"] = $arFields_i["VALUE"];
@@ -270,7 +267,7 @@ class CAllFormAnswer
 				else $arFields["QUESTION_ID"] = $arFields["FIELD_ID"];
 
 				$arFields_i["FIELD_ID"] = "'".intval($arFields["QUESTION_ID"])."'";
-				
+
 				$ANSWER_ID = $DB->Insert("b_form_answer", $arFields_i, $err_mess.__LINE__);
 				$ANSWER_ID = intval($ANSWER_ID);
 			}
@@ -279,6 +276,3 @@ class CAllFormAnswer
 		return false;
 	}
 }
-
-
-?>

@@ -1,9 +1,9 @@
 <?php
+
 namespace Bitrix\Main\Type;
 
 use Bitrix\Main;
 use Bitrix\Main\Context;
-use Bitrix\Main\DB;
 
 class Date
 {
@@ -11,8 +11,8 @@ class Date
 	protected $value;
 
 	/**
-	 * @param string $date String representation of date.
-	 * @param string $format PHP date format. If not specified, the format is got from the current culture.
+	 * @param string | null $date String representation of date.
+	 * @param string | null $format PHP date format. If not specified, the format is got from the current culture.
 	 *
 	 * @throws Main\ObjectException
 	 */
@@ -26,32 +26,78 @@ class Date
 				$format = static::getFormat();
 			}
 
-			$parsedValue = date_parse_from_format($format, $date);
-			//Ignore errors when format is longer than date
-			//or date string is longer than format
-			if ($parsedValue['error_count'] > 1)
+			$parsedValue = $this->parse($format, $date);
+
+			if($parsedValue === false)
 			{
-				if (
-					current($parsedValue['errors']) !== 'Trailing data'
-					&& current($parsedValue['errors']) !== 'Data missing'
-				)
-				{
-					throw new Main\ObjectException("Incorrect date: ".$date);
-				}
+				throw new Main\ObjectException("Incorrect date: ".$date);
 			}
 
-			$this->value->setDate($parsedValue['year'], $parsedValue['month'], $parsedValue['day']);
-
-			if (
-				isset($parsedValue["relative"])
-				&& isset($parsedValue["relative"]["second"])
-				&& $parsedValue["relative"]["second"] != 0
-			)
+			if(isset($parsedValue["timestamp"]))
 			{
-				$this->value->add(new \DateInterval("PT".$parsedValue["relative"]["second"]."S"));
+				$this->value->setTimestamp($parsedValue["timestamp"]);
+			}
+			else
+			{
+				$this->value->setDate($parsedValue['year'], $parsedValue['month'], $parsedValue['day']);
+  			}
+		}
+		$this->value->setTime(0, 0);
+	}
+
+	/**
+	 * @param string $format
+	 * @param string $time
+	 * @return array|bool
+	 */
+	protected function parse($format, $time)
+	{
+		$parsedValue = date_parse_from_format($format, $time);
+
+		//Ignore errors when format is longer than date
+		//or date string is longer than format
+		if ($parsedValue['error_count'] > 1)
+		{
+			$error = current($parsedValue['errors']);
+
+			if ($error === 'A two digit second could not be found')
+			{
+				//possibly missed seconds with am/pm format
+				$timestamp = strtotime($time);
+
+				if ($timestamp === false)
+				{
+					return false;
+				}
+
+				return [
+					"timestamp" => $timestamp,
+				];
+			}
+			if ($error !== 'Trailing data' && $error !== 'Data missing')
+			{
+				return false;
 			}
 		}
-		$this->value->setTime(0, 0, 0);
+
+		if(isset($parsedValue["relative"]["second"]) && $parsedValue["relative"]["second"] <> 0)
+		{
+			return [
+				"timestamp" => $parsedValue["relative"]["second"],
+			];
+		}
+
+		//normalize values
+		if($parsedValue['month'] === false)
+		{
+			$parsedValue['month'] = 1;
+		}
+		if($parsedValue['day'] === false)
+		{
+			$parsedValue['day'] = 1;
+		}
+
+		return $parsedValue;
 	}
 
 	/**
@@ -94,7 +140,7 @@ class Date
 	 *
 	 * @param string $interval Time interval to add.
 	 *
-	 * @return Date
+	 * @return $this
 	 */
 	public function add($interval)
 	{
@@ -105,6 +151,21 @@ class Date
 		}
 
 		$this->value->add($i);
+
+		return $this;
+	}
+
+	/**
+	 * Sets the current date of the DateTime object to a different date.
+	 * @param int $year
+	 * @param int $month
+	 * @param int $day
+	 * 
+	 * @return $this
+	 */
+	public function setDate($year, $month, $day)
+	{
+		$this->value->setDate($year, $month, $day);
 
 		return $this;
 	}
@@ -157,9 +218,20 @@ class Date
 	}
 
 	/**
+	 * Returns difference between dates.
+	 *
+	 * @param Date $time
+	 * @return \DateInterval
+	 */
+	public function getDiff(Date $time)
+	{
+		return $this->value->diff($time->value);
+	}
+
+	/**
 	 * Converts a date to the string.
 	 *
-	 * @param Context\Culture $culture Culture contains date format.
+	 * @param Context\Culture | null $culture Culture contains date format.
 	 *
 	 * @return string
 	 */
@@ -182,7 +254,7 @@ class Date
 	/**
 	 * Returns a date format from the culture in the php format.
 	 *
-	 * @param Context\Culture $culture Optional culture.
+	 * @param Context\Culture | null $culture Optional culture.
 	 *
 	 * @return string
 	 */
@@ -195,7 +267,10 @@ class Date
 			if($defaultCulture === null)
 			{
 				$context = Context::getCurrent();
-				$defaultCulture = $context->getCulture();
+				if($context)
+				{
+					$defaultCulture = $context->getCulture();
+				}
 			}
 			$culture = $defaultCulture;
 		}
@@ -208,13 +283,17 @@ class Date
 	/**
 	 * Returns short date culture format.
 	 *
-	 * @param Context\Culture $culture Culture.
+	 * @param Context\Culture | null $culture Culture.
 	 *
 	 * @return string
 	 */
-	protected static function getCultureFormat(Context\Culture $culture)
+	protected static function getCultureFormat(Context\Culture $culture = null)
 	{
-		return $culture->getDateFormat();
+		if($culture)
+		{
+			return $culture->getDateFormat();
+		}
+		return "DD.MM.YYYY";
 	}
 
 	/**
@@ -222,7 +301,7 @@ class Date
 	 *
 	 * @param string $format Format string.
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public static function convertFormatToPhp($format)
 	{
@@ -304,10 +383,9 @@ class Date
 	 */
 	public static function createFromPhp(\DateTime $datetime)
 	{
-		/** @var Date $d */
 		$d = new static();
-		$d->value = $datetime;
-		$d->value->setTime(0, 0, 0);
+		$d->value = clone $datetime;
+		$d->value->setTime(0, 0);
 		return $d;
 	}
 
@@ -320,10 +398,9 @@ class Date
 	 */
 	public static function createFromTimestamp($timestamp)
 	{
-		/** @var Date $d */
 		$d = new static();
 		$d->value->setTimestamp($timestamp);
-		$d->value->setTime(0, 0, 0);
+		$d->value->setTime(0, 0);
 		return $d;
 	}
 
@@ -332,11 +409,11 @@ class Date
 	 * Examples: "end of next week", "tomorrow morning", "friday 25.10"
 	 *
 	 * @param string $text
-	 * @return \Bitrix\Main\Text\DateConverterResult[]
+	 * @return DateTime|null
 	 */
 	public static function createFromText($text)
 	{
-		$result = \Bitrix\Main\Text\DateConverter::decode($text);
+		$result = Main\Text\DateConverter::decode($text);
 		if (empty($result))
 		{
 			return null;

@@ -6,6 +6,9 @@
  * @copyright 2001-2013 Bitrix
  */
 
+use Bitrix\Main;
+use Bitrix\Main\Authentication\Policy;
+
 IncludeModuleLangFile(__FILE__);
 
 class CCheckList
@@ -52,7 +55,7 @@ class CCheckList
 		$dbResult = CCheckListResult::GetList(array(), $arFilter);
 		if ($arCurrentResult = $dbResult->Fetch())
 		{
-			$this->current_result = unserialize($arCurrentResult["STATE"]);
+			$this->current_result = unserialize($arCurrentResult["STATE"], ['allowed_classes' => false]);
 			if (intval($ID)>0)
 			{
 				$this->report_id = intval($ID);
@@ -123,7 +126,7 @@ class CCheckList
 						$arResult["FAILED"]++;
 					if ($arPointFields["STATE"]["STATUS"] == "W")
 						$arResult["WAITING"]++;
-					if ($arPointFields["REQUIRE"] == "Y")
+					if (isset($arPointFields["REQUIRE"]) && $arPointFields["REQUIRE"] == "Y")
 					{
 						$arResult["REQUIRE"]++;
 						if ($arPointFields["STATE"]["STATUS"] == "A")
@@ -174,15 +177,16 @@ class CCheckList
 		$arCheckList = $this->GetCurrentState();
 		$arResult = array();
 		if (is_array($arCheckList) && !empty($arCheckList))
-		foreach ($arCheckList["POINTS"] as $key => $arFields)
 		{
-			$arFields = array_merge($this->GetDescription($key), $arFields);
+			foreach ($arCheckList["POINTS"] as $key => $arFields)
+			{
+				$arFields = array_merge($this->GetDescription($key), $arFields);
 
-			if ($arFields["PARENT"] == $arSectionCode || $arSectionCode  == false)
-			$arResult[$key] = $arFields;
-			if ($arResult[$key]["STATE"]['COMMENTS'] && is_array($arResult[$key]["STATE"]['COMMENTS']))
-				$arResult[$key]["STATE"]['COMMENTS_COUNT'] = count($arResult[$key]["STATE"]['COMMENTS']);
-
+				if ($arFields["PARENT"] == $arSectionCode || $arSectionCode  == false)
+					$arResult[$key] = $arFields;
+				if (isset($arResult[$key]["STATE"]['COMMENTS']) && is_array($arResult[$key]["STATE"]['COMMENTS']))
+					$arResult[$key]["STATE"]['COMMENTS_COUNT'] = count($arResult[$key]["STATE"]['COMMENTS']);
+			}
 		}
 
 		return $arResult;
@@ -240,11 +244,20 @@ class CCheckList
 			if ($f = @fopen($file, "r"))
 				$arHowTo = fread($f, filesize($file));
 		}
+
+		$convertEncoding = \Bitrix\Main\Localization\Translation::needConvertEncoding(LANG);
+		if ($convertEncoding)
+		{
+			$targetEncoding = \Bitrix\Main\Localization\Translation::getCurrentEncoding();
+			$sourceEncoding = \Bitrix\Main\Localization\Translation::getSourceEncoding(LANG);
+			$arHowTo = \Bitrix\Main\Text\Encoding::convertEncoding($arHowTo, $sourceEncoding, $targetEncoding);
+		}
+
 		$arDesc = array(
 			"NAME" => GetMessage("CL_".$ID),
 			"DESC" => GetMessage("CL_".$ID."_DESC", array('#LANG#' => LANG)),
 			"AUTOTEST_DESC" => GetMessage("CL_".$ID."_AUTOTEST_DESC"),
-			"HOWTO" => (strlen($arHowTo)>0)?(str_ireplace('#LANG#', LANG, $arHowTo)):"",
+			"HOWTO" => ($arHowTo <> '')?(str_ireplace('#LANG#', LANG, $arHowTo)):"",
 			"LINKS" => GetMessage("CL_".$ID."_LINKS")
 		);
 
@@ -294,11 +307,11 @@ class CCheckList
 		$arClass = 	$arPoint["CLASS_NAME"];
 		$arMethod = $arPoint["METHOD_NAME"];
 
-		if (strlen($arPoint["FILE_PATH"])>0 && file_exists($_SERVER["DOCUMENT_ROOT"].$arPoint["FILE_PATH"]))
+		if ($arPoint["FILE_PATH"] <> '' && file_exists($_SERVER["DOCUMENT_ROOT"].$arPoint["FILE_PATH"]))
 			include($_SERVER["DOCUMENT_ROOT"].$arPoint["FILE_PATH"]);
 
 		if(is_callable(array($arClass, $arMethod)))
-			$result = call_user_func_array(array($arClass, $arMethod), array("PARAM" => $arParams));
+			$result = call_user_func_array(array($arClass, $arMethod), array($arParams));
 
 		$arResult = array();
 		if ($result && is_array($result))
@@ -311,9 +324,9 @@ class CCheckList
 
 				$arFields["COMMENTS"] = $arPoint["STATE"]["COMMENTS"];
 				$arFields["COMMENTS"]["SYSTEM"] = array();
-				if (array_key_exists("PREVIEW", $result["MESSAGE"]))
+				if (isset($result["MESSAGE"]["PREVIEW"]))
 					$arFields["COMMENTS"]["SYSTEM"]["PREVIEW"]= $result["MESSAGE"]["PREVIEW"];
-				if (array_key_exists("DETAIL", $result["MESSAGE"]))
+				if (isset($result["MESSAGE"]["DETAIL"]))
 					$arFields["COMMENTS"]["SYSTEM"]["DETAIL"]= $result["MESSAGE"]["DETAIL"];
 
 				if ($this->PointUpdate($arTestID, $arFields))
@@ -495,7 +508,7 @@ class CCheckListResult
 	public static function Update($ID, $arFields)
 	{
 		global $DB;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$strUpdate = $DB->PrepareUpdate("b_checklist", $arFields);
 
@@ -577,7 +590,7 @@ class CAutoCheck
 				$arResult["MESSAGE"]["DETAIL"] .= $component["name"]." \n";
 			}
 
-			if (strlen($arResult["MESSAGE"]["DETAIL"]) == 0)
+			if ($arResult["MESSAGE"]["DETAIL"] == '')
 			{
 				$arResult["MESSAGE"]["PREVIEW"] = GetMessage("CL_HAVE_NO_CUSTOM_COMPONENTS");
 			}
@@ -601,7 +614,7 @@ class CAutoCheck
 					$arResult["MESSAGE"]["DETAIL"] .= GetMessage("CL_EMPTY_DESCRIPTION")." ".$component["name"]." \n";
 			}
 
-			if (strlen($arResult["MESSAGE"]["DETAIL"]) == 0)
+			if ($arResult["MESSAGE"]["DETAIL"] == '')
 			{
 				$arResult["STATUS"] = true;
 				$arResult["MESSAGE"]["PREVIEW"] = GetMessage("CL_HAVE_CUSTOM_COMPONENTS_DESC");
@@ -625,10 +638,9 @@ class CAutoCheck
 		$arCount = 0;
 		$arResult = array();
 		$arResult["STATUS"] = false;
-		$bMcrypt = function_exists('mcrypt_encrypt') || function_exists('openssl_encrypt');
-		$bBitrixCloud = $bMcrypt && CModule::IncludeModule('bitrixcloud') && CModule::IncludeModule('clouds');
+		$bBitrixCloud = function_exists('openssl_encrypt') && CModule::IncludeModule('bitrixcloud') && CModule::IncludeModule('clouds');
 
-		$site = CSite::GetSiteByFullPath(DOCUMENT_ROOT);
+		$site = CSite::GetSiteByFullPath($_SERVER['DOCUMENT_ROOT']);
 		$path = BX_ROOT."/backup";
 		$arTmpFiles = array();
 		$arFilter = array();
@@ -636,7 +648,7 @@ class CAutoCheck
 
 		foreach($arTmpFiles as $ar)
 		{
-			if (strpos($ar['NAME'], ".enc.gz") || strpos($ar['NAME'], ".tar.gz") || strpos($ar['NAME'], ".tar") || strpos($ar['NAME'], ".enc"))
+			if (mb_strpos($ar['NAME'], ".enc.gz") || mb_strpos($ar['NAME'], ".tar.gz") || mb_strpos($ar['NAME'], ".tar") || mb_strpos($ar['NAME'], ".enc"))
 				$arCount++;
 		}
 
@@ -647,7 +659,7 @@ class CAutoCheck
 			{
 				foreach($backup->listFiles() as $ar)
 				{
-					if (strpos($ar['FILE_NAME'], ".enc.gz") || strpos($ar['FILE_NAME'], ".tar.gz") || strpos($ar['FILE_NAME'], ".tar") || strpos($ar['FILE_NAME'], ".enc"))
+					if (mb_strpos($ar['FILE_NAME'], ".enc.gz") || mb_strpos($ar['FILE_NAME'], ".tar.gz") || mb_strpos($ar['FILE_NAME'], ".tar") || mb_strpos($ar['FILE_NAME'], ".enc"))
 						$arCount++;
 				}
 			}
@@ -707,16 +719,22 @@ class CAutoCheck
 							preg_match('/\$APPLICATION->ShowHead\(/im', $arHeader, $arShowHead);
 							preg_match('/\$APPLICATION->ShowTitle\(/im', $arHeader, $arShowTitle);
 							preg_match('/\$APPLICATION->ShowPanel\(/im', $arHeader, $arShowPanel);
-							if (count($arShowHead) == 0)
+							if (!in_array($dir, array('mail_join')) && count($arShowHead) == 0)
 							{
 								preg_match_all('/\$APPLICATION->(ShowCSS|ShowHeadScripts|ShowHeadStrings)\(/im', $arHeader, $arShowHead);
 								if (!$arShowHead[0] || count($arShowHead[0]) != 3)
+								{
 									$arMessage .= GetMessage("NO_SHOWHEAD", array("#template#" => $dir))."\n";
+								}
 							}
-							if (!in_array($dir, array('empty')) && count($arShowTitle) == 0)
+							if (!in_array($dir, array('empty', 'mail_join')) && count($arShowTitle) == 0)
+							{
 								$arMessage .= GetMessage("NO_SHOWTITLE", array("#template#" => $dir))."\n";
-							if (!in_array($dir, array('mobile_app', 'desktop_app', 'empty', 'learning_10_0_0')) && count($arShowPanel) == 0)
+							}
+							if (!in_array($dir, array('mobile_app', 'desktop_app', 'empty', 'learning_10_0_0', 'call_app', 'mail_join')) && count($arShowPanel) == 0)
+							{
 								$arMessage .= GetMessage("NO_SHOWPANEL", array("#template#" => $dir))."\n";
+							}
 						}
 					}
 
@@ -729,7 +747,7 @@ class CAutoCheck
 		{
 			$arResult["MESSAGE"]["PREVIEW"] = GetMessage("NOT_FOUND_TEMPLATE");
 		}
-		elseif (strlen($arMessage) == 0)
+		elseif ($arMessage == '')
 		{
 			$arResult["STATUS"] = true;
 		}
@@ -744,10 +762,10 @@ class CAutoCheck
 
 	public static function CheckKernel($arParams)
 	{
-
-		$time_start = time();
 		global $DB;
-		$arCompare = array(
+
+		$startTime = time();
+		$installFilesMapping = array(
 			"install/components/bitrix/" => "/bitrix/components/bitrix/",
 			"install/js/" => "/bitrix/js/",
 			"install/activities/" => "/bitrix/activities/",
@@ -755,16 +773,32 @@ class CAutoCheck
 			"install/wizards/" => "/bitrix/wizards/",
 		);
 
-		if(!$_SESSION["BX_CHECKLIST"][$arParams["TEST_ID"]])
-			$_SESSION["BX_CHECKLIST"][$arParams["TEST_ID"]] = array();
-		$NS = &$_SESSION["BX_CHECKLIST"][$arParams["TEST_ID"]];
+		$events = \Bitrix\Main\EventManager::getInstance()->findEventHandlers("main", "onKernelCheckInstallFilesMappingGet");
+		foreach ($events as $event)
+		{
+			$pathList = ExecuteModuleEventEx($event);
+			if(is_array($pathList))
+			{
+				foreach ($pathList as $pathFrom=>$pathTo)
+				{
+					if(!array_key_exists($pathFrom, $installFilesMapping))
+					{
+						$installFilesMapping[$pathFrom] = $pathTo;
+					}
+				}
+			}
+		}
+
+		if(!\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"][$arParams["TEST_ID"]])
+			\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"][$arParams["TEST_ID"]] = array();
+		$NS = &\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"][$arParams["TEST_ID"]];
 		if ($arParams["STEP"] == false)
 		{
 			$NS = array();
 			$rsInstalledModules = CModule::GetList();
 			while ($ar = $rsInstalledModules->Fetch())
 			{
-				if (!strpos($ar["ID"], "."))
+				if (!mb_strpos($ar["ID"], "."))
 					$NS["MLIST"][] = $ar["ID"];
 			}
 			$NS["MNUM"] = 0;
@@ -772,22 +806,22 @@ class CAutoCheck
 			$NS["FILES_COUNT"] = 0;
 			$NS["MODFILES_COUNT"] = 0;
 		}
+
 		$arError = false;
-		$module_id = $NS["MLIST"][$NS["MNUM"]];
-		$module_folder = $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$module_id."/";
-		$dbtype = strtolower($DB->type);
-		$arFilesCount = 0;
-		$arModifiedFilesCount = 0;
+		$moduleId = $NS["MLIST"][$NS["MNUM"]];
+		$moduleFolder = $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$moduleId."/";
+		$dbtype = mb_strtolower($DB->type);
+		$fileCount = 0;
+		$modifiedFileCount = 0;
 		$state = array();
-		$Skip = false;
+		$skip = false;
 
-		$ver = \Bitrix\Main\ModuleManager::getVersion($module_id);
-
+		$ver = \Bitrix\Main\ModuleManager::getVersion($moduleId);
 		if ($ver === false)
 		{
 			$state = array(
 				"STATUS" => false,
-				"MESSAGE" =>  GetMessage("CL_MODULE_VERSION_ERROR", array("#module_id#" => $module_id))."\n"
+				"MESSAGE" =>  GetMessage("CL_MODULE_VERSION_ERROR", array("#module_id#" => $moduleId))."\n"
 			);
 			$arError = true;
 		}
@@ -804,50 +838,60 @@ class CAutoCheck
 				$http = new \Bitrix\Main\Web\HttpClient();
 				$http->setProxy($proxyAddr, $proxyPort, $proxyUserName, $proxyPassword);
 
-				$data = $http->get("http://".$sHost."/bitrix/updates/checksum.php?check_sum=Y&module_id=".$module_id."&ver=".$ver."&dbtype=".$dbtype."&mode=2");
+				$data = $http->get("http://".$sHost."/bitrix/updates/checksum.php?check_sum=Y&module_id=".$moduleId."&ver=".$ver."&dbtype=".$dbtype."&mode=2");
 
-				$NS["FILE_LIST"] = $result = unserialize(gzinflate($data));
+				$result = unserialize(gzinflate($data), ['allowed_classes' => false]);
+				if (is_array($result))
+				{
+					$NS["FILE_LIST"] = $result;
+				}
 				$NS["MODULE_FILES_COUNT"] = count($NS["FILE_LIST"]);
 			}
 			else
 			{
 				$result = $NS["FILE_LIST"];
 			}
-			$arMessage = "";
+
+			$message = "";
 			$timeout = COption::GetOptionString("main", "update_load_timeout", "30");
 			if (is_array($result) && !$result["error"])
 			{
 				foreach($result as $file => $checksum)
 				{
-					$arFile = $module_folder.$file;
+					$filePath = $moduleFolder.$file;
 					unset($NS["FILE_LIST"][$file]);
-					if (!file_exists($arFile))
+
+					if (!file_exists($filePath))
 						continue;
-					$arFilesCount++;
-					if (md5_file($arFile)!=$checksum)
+
+					$fileCount++;
+					if (md5_file($filePath)!=$checksum)
 					{
-						$arMessage.= str_replace(array("//", "\\\\"), array("/", "\\"), $arFile)."\n";
-						$arModifiedFilesCount++;
+						$message.= str_replace(array("//", "\\\\"), array("/", "\\"), $filePath)."\n";
+						$modifiedFileCount++;
 					}
-					$arTmpCompare = $arCompare;
-					foreach ($arTmpCompare as $key => $value)
-					if (strpos($file, $key) === 0)
+
+					foreach ($installFilesMapping as $key => $value)
 					{
-						$arFile = str_replace($key, $_SERVER["DOCUMENT_ROOT"].$value, $file);
-						if (file_exists($arFile) && md5_file($arFile)!=$checksum)
+						if (mb_strpos($file, $key) === 0)
 						{
-							$arModifiedFilesCount++;
-							$arMessage.= str_replace(array("//", "\\\\"), array("/", "\\"), $arFile)."\n";
+							$filePath = str_replace($key, $_SERVER["DOCUMENT_ROOT"].$value, $file);
+							if (file_exists($filePath) && md5_file($filePath)!=$checksum)
+							{
+								$modifiedFileCount++;
+								$message.= str_replace(array("//", "\\\\"), array("/", "\\"), $filePath)."\n";
+							}
+							$fileCount++;
 						}
-						$arFilesCount++;
 					}
-					if ((time()-$time_start)>=$timeout)
+
+					if ((time()-$startTime)>=$timeout)
 						break;
 				}
-				if (strlen($arMessage)> 0)
+				if ($message <> '')
 				{
 					$state = array(
-						"MESSAGE" => $arMessage,
+						"MESSAGE" => $message,
 						"STATUS" => false
 					);
 				}
@@ -856,28 +900,30 @@ class CAutoCheck
 			{
 				if($result["error"]!= "unknow module id")
 				{
-					$state["MESSAGE"] = GetMessage("CL_CANT_CHECK", array("#module_id#" => $module_id))."\n";
+					$state["MESSAGE"] = GetMessage("CL_CANT_CHECK", array("#module_id#" => $moduleId))."\n";
 					$arError = true;
 				}
 				else
-					$Skip = true;
+					$skip = true;
 			}
 		}
 		if ($state["MESSAGE"])
-			$NS["MESSAGE"][$module_id].=$state["MESSAGE"];
-		if (!$arError && !$Skip)
+		{
+			$NS["MESSAGE"][$moduleId].=$state["MESSAGE"];
+		}
+		if (!$arError && !$skip)
 		{
 			if (count($NS["FILE_LIST"]) == 0)
 			{
-				if (strlen($NS["MESSAGE"][$module_id]) == 0)
-					$NS["MESSAGE"][$module_id] = GetMessage("CL_NOT_MODIFIED", array("#module_id#" => $module_id))."\n";
+				if ($NS["MESSAGE"][$moduleId] == '')
+					$NS["MESSAGE"][$moduleId] = GetMessage("CL_NOT_MODIFIED", array("#module_id#" => $moduleId))."\n";
 				else
-					$NS["MESSAGE"][$module_id] = GetMessage("CL_MODIFIED_FILES", array("#module_id#" => $module_id))."\n".$NS["MESSAGE"][$module_id];
+					$NS["MESSAGE"][$moduleId] = GetMessage("CL_MODIFIED_FILES", array("#module_id#" => $moduleId))."\n".$NS["MESSAGE"][$moduleId];
 			}
-			$NS["FILES_COUNT"]+=$arFilesCount;
-			$NS["MODFILES_COUNT"]+=$arModifiedFilesCount;
+			$NS["FILES_COUNT"]+=$fileCount;
+			$NS["MODFILES_COUNT"]+=$modifiedFileCount;
 		}
-		if ($state["STATUS"] === false || $arError == true || $Skip)
+		if ($state["STATUS"] === false || $arError == true || $skip)
 		{
 			if ($state["STATUS"] === false || $arError == true)
 				$NS["STATUS"] = false;
@@ -1027,7 +1073,6 @@ class CAutoCheck
 
 	public static function CheckDBPassword()
 	{
-		global $DBPassword;
 		$err = 0;
 		$arMessage = "";
 		$sign = ",.#!*%$:-^@{}[]()'\"-+=<>?`&;";
@@ -1035,18 +1080,24 @@ class CAutoCheck
 		$have_sign = false;
 		$have_dit = false;
 		$arResult["STATUS"] = true;
-		if (strlen($DBPassword)==0)
+
+		$connection = Main\Application::getInstance()->getConnection();
+		$password = $connection->getPassword();
+
+		if ($password == '')
+		{
 			$arMessage.=GetMessage("CL_EMPTY_PASS")."\n";
+		}
 		else
 		{
-			if ($DBPassword == strtolower($DBPassword))
+			if ($password == mb_strtolower($password))
 				$arMessage .= (++$err).". ".GetMessage("CL_SAME_REGISTER")."\n";
 
-			for($j=0, $c=strlen($DBPassword); $j<$c; $j++)
+			for($j=0, $c = mb_strlen($password); $j<$c; $j++)
 			{
-				if (strpos($sign, $DBPassword[$j])!==false)
+				if (mb_strpos($sign, $password[$j]) !== false)
 					$have_sign = true;
-				if (strpos($dit, $DBPassword[$j])!==false)
+				if (mb_strpos($dit, $password[$j]) !== false)
 					$have_dit = true;
 				if ($have_dit == true && $have_sign == true)
 					break;
@@ -1056,7 +1107,7 @@ class CAutoCheck
 				$arMessage .= (++$err).". ".GetMessage("CL_HAVE_NO_DIT")."\n";
 			if (!$have_sign)
 				$arMessage .= (++$err).". ".GetMessage("CL_HAVE_NO_SIGN")."\n";
-			if (strlen($DBPassword)<8)
+			if (mb_strlen($password) < 8)
 				$arMessage .= (++$err).". ".GetMessage("CL_LEN_MIN")."\n";
 		}
 		if($arMessage)
@@ -1149,9 +1200,9 @@ class CAutoCheck
 		);
 
 		$arParams["STEP"] = (intval($arParams["STEP"])>=0)?intval($arParams["STEP"]):0;
-		if (!$_SESSION["BX_CHECKLIST"] || $arParams["STEP"] == 0)
+		if (!\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"] || $arParams["STEP"] == 0)
 		{
-			$_SESSION["BX_CHECKLIST"] = array(
+			\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"] = array(
 				"LAST_FILE" => "",
 				"FOUND" => "",
 				"PERCENT" => 0,
@@ -1162,7 +1213,7 @@ class CAutoCheck
 			{
 				CCheckListTools::__scandir($path, $files, $arExept);
 			}
-			$_SESSION["BX_CHECKLIST"]["COUNT"] = count($files);
+			\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["COUNT"] = count($files);
 		}
 
 		$arFileNum = 0;
@@ -1174,10 +1225,10 @@ class CAutoCheck
 			{
 				$arFileNum++;
 				//this is not first step?
-				if (strlen($_SESSION["BX_CHECKLIST"]["LAST_FILE"])>0)
+				if (\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["LAST_FILE"] <> '')
 				{
-					if ($_SESSION["BX_CHECKLIST"]["LAST_FILE"] == $file)
-						$_SESSION["BX_CHECKLIST"]["LAST_FILE"] = "";
+					if (\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["LAST_FILE"] == $file)
+						\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["LAST_FILE"] = "";
 					continue;
 				}
 				$queries = array();
@@ -1188,25 +1239,25 @@ class CAutoCheck
 						preg_match('/((?:mysql_query|odbc_exec|oci_execute|odbc_execute)\(.*\))/ism', $content, $queries);
 				}
 				if ($queries && count($queries[0])>0)
-					$_SESSION["BX_CHECKLIST"]["FOUND"].=str_replace(array("//", "\\\\"), array("/", "\\"), $file)."\n";
+					\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["FOUND"].=str_replace(array("//", "\\\\"), array("/", "\\"), $file)."\n";
 
 				if (time()-$time>=20)
 				{
-					$_SESSION["BX_CHECKLIST"]["LAST_FILE"] = $file;
+					\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["LAST_FILE"] = $file;
 					return array(
 						"IN_PROGRESS" => "Y",
-						"PERCENT" => round($arFileNum/($_SESSION["BX_CHECKLIST"]["COUNT"]*0.01), 2)
+						"PERCENT" => round($arFileNum/(\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["COUNT"]*0.01), 2)
 					);
 				}
 			}
 		}
 		$arResult = array("STATUS" => true);
-		if (strlen($_SESSION["BX_CHECKLIST"]["FOUND"])>0)
+		if (\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["FOUND"] <> '')
 		{
 			$arResult["STATUS"] = false;
 			$arResult["MESSAGE"]=array(
 				"PREVIEW" => GetMessage("CL_KERNEL_CHECK_FILES").$arFileNum.".\n".GetMessage("CL_ERROR_FOUND_SHORT")."\n",
-				"DETAIL" => GetMessage("CL_DIRECT_QUERY_TO_DB")."\n".$_SESSION["BX_CHECKLIST"]["FOUND"],
+				"DETAIL" => GetMessage("CL_DIRECT_QUERY_TO_DB")."\n".\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]["FOUND"],
 			);
 		}
 		else
@@ -1215,7 +1266,7 @@ class CAutoCheck
 				"PREVIEW" => GetMessage("CL_KERNEL_CHECK_FILES").$arFileNum."\n"
 			);
 		}
-		unset($_SESSION["BX_CHECKLIST"]);
+		unset(\Bitrix\Main\Application::getInstance()->getSession()["BX_CHECKLIST"]);
 		return $arResult;
 	}
 
@@ -1330,7 +1381,7 @@ class CCheckListTools
 					if (!in_array($file, $arExept["FOLDERS"]))
 						CCheckListTools::__scandir($pwd."$file/", $arFiles, $arExept);
 				}
-				elseif(in_array(substr(strrchr($file, '.'), 1), $arExept["EXT"])
+				elseif(in_array(mb_substr(strrchr($file, '.'), 1), $arExept["EXT"])
 					&& !in_array($pwd.$file, $arExept["FILES"])
 					&& !in_array($file, $arExept["FILES"])
 					)
@@ -1341,163 +1392,27 @@ class CCheckListTools
 		}
 	}
 
+	/**
+	 * @return string 'low', 'middle', 'high'
+	 */
 	public static function AdminPolicyLevel()
 	{
-		$arGroupPolicy = array(
-			"parent" => array(
-				"SESSION_TIMEOUT" => "",
-				"SESSION_IP_MASK" => "",
-				"MAX_STORE_NUM" => "",
-				"STORE_IP_MASK" => "",
-				"STORE_TIMEOUT" => "",
-				"CHECKWORD_TIMEOUT" => "",
-				"PASSWORD_LENGTH" => "",
-				"PASSWORD_UPPERCASE" => "N",
-				"PASSWORD_LOWERCASE" => "N",
-				"PASSWORD_DIGITS" => "N",
-				"PASSWORD_PUNCTUATION" => "N",
-				"LOGIN_ATTEMPTS" => "",
-			),
-			"low" => array(
-				"SESSION_TIMEOUT" => 30, //minutes
-				"SESSION_IP_MASK" => "0.0.0.0",
-				"MAX_STORE_NUM" => 20,
-				"STORE_IP_MASK" => "255.0.0.0",
-				"STORE_TIMEOUT" => 60*24*93, //minutes
-				"CHECKWORD_TIMEOUT" => 60*24*185,  //minutes
-				"PASSWORD_LENGTH" => 6,
-				"PASSWORD_UPPERCASE" => "N",
-				"PASSWORD_LOWERCASE" => "N",
-				"PASSWORD_DIGITS" => "N",
-				"PASSWORD_PUNCTUATION" => "N",
-				"LOGIN_ATTEMPTS" => 0,
-			),
-			"middle" => array(
-				"SESSION_TIMEOUT" => 20, //minutes
-				"SESSION_IP_MASK" => "255.255.0.0",
-				"MAX_STORE_NUM" => 10,
-				"STORE_IP_MASK" => "255.255.0.0",
-				"STORE_TIMEOUT" => 60*24*30, //minutes
-				"CHECKWORD_TIMEOUT" => 60*24*1,  //minutes
-				"PASSWORD_LENGTH" => 8,
-				"PASSWORD_UPPERCASE" => "Y",
-				"PASSWORD_LOWERCASE" => "Y",
-				"PASSWORD_DIGITS" => "Y",
-				"PASSWORD_PUNCTUATION" => "N",
-				"LOGIN_ATTEMPTS" => 0,
-			),
-			"high" => array(
-				"SESSION_TIMEOUT" => 15, //minutes
-				"SESSION_IP_MASK" => "255.255.255.255",
-				"MAX_STORE_NUM" => 1,
-				"STORE_IP_MASK" => "255.255.255.255",
-				"STORE_TIMEOUT" => 60*24*3, //minutes
-				"CHECKWORD_TIMEOUT" => 60,  //minutes
-				"PASSWORD_LENGTH" => 10,
-				"PASSWORD_UPPERCASE" => "Y",
-				"PASSWORD_LOWERCASE" => "Y",
-				"PASSWORD_DIGITS" => "Y",
-				"PASSWORD_PUNCTUATION" => "Y",
-				"LOGIN_ATTEMPTS" => 3,
-			),
-		);
-		$arAdminPolicy = CUser::GetGroupPolicy(1);
-		$level = 'high';
-		if (is_array($arGroupPolicy))
+		$policy = CUser::getPolicy(1);
+
+		$preset = Policy\RulesCollection::createByPreset(Policy\RulesCollection::PRESET_MIDDLE);
+		if ($policy->compare($preset))
 		{
-			foreach($arGroupPolicy['parent'] as $key => $value)
-			{
-				$el2_value = $arAdminPolicy[$key];
-				$el2_checked = $arAdminPolicy[$key] === "Y";
-				$clevel = '';
-
-				switch($key)
-				{
-				case "SESSION_TIMEOUT":
-				case "MAX_STORE_NUM":
-				case "STORE_TIMEOUT":
-				case "CHECKWORD_TIMEOUT":
-					if(intval($el2_value) <= intval($arGroupPolicy['high'][$key]))
-						$clevel = 'high';
-					elseif(intval($el2_value) <= intval($arGroupPolicy['middle'][$key]))
-						$clevel = 'middle';
-					else
-						$clevel = 'low';
-					break;
-				case "PASSWORD_LENGTH":
-					if(intval($el2_value) >= intval($arGroupPolicy['high'][$key]))
-						$clevel = 'high';
-					elseif(intval($el2_value) >= intval($arGroupPolicy['middle'][$key]))
-						$clevel = 'middle';
-					else
-						$clevel = 'low';
-					break;
-				case "LOGIN_ATTEMPTS":
-					if(intval($el2_value) > 0)
-					{
-						if(intval($el2_value) <= intval($arGroupPolicy['high'][$key]))
-							$clevel = 'high';
-						elseif(intval($el2_value) <= intval($arGroupPolicy['middle'][$key]))
-							$clevel = 'middle';
-						else
-							$clevel = 'low';
-					}
-					else
-					{
-						if(intval($arGroupPolicy['high'][$key]) <= 0)
-							$clevel = 'high';
-						elseif(intval($arGroupPolicy['middle'][$key]) <= 0)
-							$clevel = 'middle';
-						else
-							$clevel = 'low';
-					}
-					break;
-				case "PASSWORD_UPPERCASE":
-				case "PASSWORD_LOWERCASE":
-				case "PASSWORD_DIGITS":
-				case "PASSWORD_PUNCTUATION":
-					if($el2_checked)
-					{
-						if($arGroupPolicy['high'][$key] == 'Y')
-							$clevel = 'high';
-						elseif($arGroupPolicy['middle'][$key] == 'Y')
-							$clevel = 'middle';
-						else
-							$clevel = 'low';
-					}
-					else
-					{
-						if($arGroupPolicy['high'][$key] == 'N')
-							$clevel = 'high';
-						elseif($arGroupPolicy['middle'][$key] == 'N')
-							$clevel = 'middle';
-						else
-							$clevel = 'low';
-					}
-					break;
-					case "SESSION_IP_MASK":
-					case "STORE_IP_MASK":
-						$gp_ip = ip2long($el2_value);
-						$high_ip = ip2long($arGroupPolicy['high'][$key]);
-						$middle_ip = ip2long($arGroupPolicy['middle'][$key]);
-						if(($gp_ip & $high_ip) == (0xFFFFFFFF & $high_ip))
-							$clevel = 'high';
-						elseif(($gp_ip & $middle_ip) == (0xFFFFFFFF & $middle_ip))
-							$clevel = 'middle';
-						else
-							$clevel = 'low';
-					break;
-					default:
-					break;
-				}
-
-				if($clevel == 'low')
-					$level = $clevel;
-				elseif($clevel == 'middle' && $level == 'high')
-					$level = $clevel;
-			}
+			// middle preset is stronger than the current
+			return 'low';
 		}
 
-		return $level;
+		$preset = Policy\RulesCollection::createByPreset(Policy\RulesCollection::PRESET_HIGH);
+		if ($policy->compare($preset))
+		{
+			// high preset is stronger than the current
+			return 'middle';
+		}
+
+		return 'high';
 	}
 }

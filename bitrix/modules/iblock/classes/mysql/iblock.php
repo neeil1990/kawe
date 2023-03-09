@@ -1,4 +1,5 @@
-<?
+<?php
+
 class CIBlock extends CAllIBlock
 {
 	///////////////////////////////////////////////////////////////////
@@ -13,7 +14,7 @@ class CIBlock extends CAllIBlock
 		foreach($arFilter as $key => $val)
 		{
 			$res = CIBlock::MkOperationFilter($key);
-			$key = strtoupper($res["FIELD"]);
+			$key = mb_strtoupper($res["FIELD"]);
 			$cOperationType = $res["OPERATION"];
 
 			switch($key)
@@ -24,8 +25,10 @@ class CIBlock extends CAllIBlock
 			case "LID":
 			case "SITE_ID":
 				$sql = CIBlock::FilterCreate("BS.SITE_ID", $val, "string_equal", $cOperationType);
-				if(strlen($sql))
+				if($sql <> '')
+				{
 					$bAddSites = true;
+				}
 				break;
 			case "NAME":
 			case "CODE":
@@ -49,8 +52,10 @@ class CIBlock extends CAllIBlock
 				break;
 			}
 
-			if(strlen($sql))
+			if($sql <> '')
+			{
 				$strSqlSearch .= " AND  (".$sql.") ";
+			}
 		}
 
 		$bCheckPermissions =
@@ -68,7 +73,7 @@ class CIBlock extends CAllIBlock
 		}
 		if($bCheckPermissions && ($permissionsBy !== null || !$bIsAdmin))
 		{
-			$min_permission = (strlen($arFilter["MIN_PERMISSION"])==1) ? $arFilter["MIN_PERMISSION"] : "R";
+			$min_permission = (mb_strlen($arFilter["MIN_PERMISSION"]) == 1) ? $arFilter["MIN_PERMISSION"] : "R";
 
 			if ($permissionsBy !== null)
 			{
@@ -103,16 +108,26 @@ class CIBlock extends CAllIBlock
 					AND (IBG.PERMISSION='X' OR B.ACTIVE='Y')
 				";
 
-			if (strlen($arFilter["OPERATION"]) > 0)
+			if (!empty($arFilter["OPERATION"]))
+			{
 				$operation  = "'".$DB->ForSql($arFilter["OPERATION"])."'";
+			}
 			elseif($min_permission >= "X")
+			{
 				$operation = "'iblock_edit'";
+			}
 			elseif($min_permission >= "U")
+			{
 				$operation = "'element_edit'";
+			}
 			elseif($min_permission >= "S")
+			{
 				$operation = "'iblock_admin_display'";
+			}
 			else
+			{
 				$operation = "'section_read', 'element_read', 'section_element_bind', 'section_section_bind'";
+			}
 
 			if($operation)
 			{
@@ -206,8 +221,8 @@ class CIBlock extends CAllIBlock
 		{
 			foreach($arOrder as $by=>$order)
 			{
-				$by = strtolower($by);
-				$order = strtolower($order);
+				$by = mb_strtolower($by);
+				$order = mb_strtolower($order);
 				if ($order!="asc")
 					$order = "desc";
 
@@ -241,13 +256,13 @@ class CIBlock extends CAllIBlock
 		return $str;
 	}
 
-	function _Add($ID)
+	public function _Add($ID)
 	{
 		global $DB;
 		$err_mess = "FILE: ".__FILE__."<br>LINE: ";
 		$ID = intval($ID);
 
-		if(defined("MYSQL_TABLE_TYPE") && strlen(MYSQL_TABLE_TYPE) > 0)
+		if(defined("MYSQL_TABLE_TYPE") && MYSQL_TABLE_TYPE <> '')
 		{
 			$DB->Query("SET storage_engine = '".MYSQL_TABLE_TYPE."'", true);
 		}

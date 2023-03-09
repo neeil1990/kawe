@@ -29,7 +29,9 @@ function ___writeToAreasFile($path, $text)
 if (COption::GetOptionString("main", "upload_dir") == "")
 	COption::SetOptionString("main", "upload_dir", "upload");
 
-if(COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SITE_ID) == "N" || WIZARD_INSTALL_DEMO_DATA)
+if (COption::GetOptionString("eshop", "wizard_installed", "N", WIZARD_SITE_ID) == "N"
+	|| WIZARD_INSTALL_DEMO_DATA
+)
 {
 	if(file_exists(WIZARD_ABSOLUTE_PATH."/site/public/".LANGUAGE_ID."/"))
 	{
@@ -106,6 +108,24 @@ WizardServices::ReplaceMacrosRecursive(WIZARD_SITE_PATH."about/delivery/", Array
 CWizardUtil::ReplaceMacros(WIZARD_SITE_PATH."/index.php", Array("SITE_DIR" => WIZARD_SITE_DIR));
 CWizardUtil::ReplaceMacros(WIZARD_SITE_PATH."/.section.php", array("SITE_DESCRIPTION" => htmlspecialcharsbx($wizard->GetVar("siteMetaDescription"))));
 CWizardUtil::ReplaceMacros(WIZARD_SITE_PATH."/.section.php", array("SITE_KEYWORDS" => htmlspecialcharsbx($wizard->GetVar("siteMetaKeywords"))));
+
+if (CModule::IncludeModule("sale"))
+{
+	$addResult = \Bitrix\Main\UserConsent\Internals\AgreementTable::add(array(
+		"CODE" => "sale_default",
+		"NAME" => GetMessage("WIZ_DEFAULT_USER_CONSENT_NAME"),
+		"TYPE" => \Bitrix\Main\UserConsent\Agreement::TYPE_STANDARD,
+		"LANGUAGE_ID" => LANGUAGE_ID,
+		"DATA_PROVIDER" => \Bitrix\Sale\UserConsent::DATA_PROVIDER_CODE
+	));
+	if ($addResult->isSuccess())
+	{
+		CWizardUtil::ReplaceMacros(
+			WIZARD_SITE_PATH."personal/order/make/index.php",
+			array("USER_CONSENT_ID" => $addResult->getId())
+		);
+	}
+}
 
 $arUrlRewrite = array();
 if (file_exists(WIZARD_SITE_ROOT_PATH."/urlrewrite.php"))

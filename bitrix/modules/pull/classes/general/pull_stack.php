@@ -1,4 +1,5 @@
-<?
+<?php
+
 class CAllPullStack
 {
 	// receive messages on stack
@@ -19,7 +20,7 @@ class CAllPullStack
 			if ($newLastId < $arRes['ID'])
 				$newLastId = $arRes['ID'];
 
-			$data = unserialize($arRes['MESSAGE']);
+			$data = unserialize($arRes['MESSAGE'], ["allowed_classes" => false]);
 			$data['id'] = $arRes['ID'];
 			$data['extra'] = Array(
 				'server_time' => date('c'),
@@ -41,67 +42,25 @@ class CAllPullStack
 	// add a message to stack
 	public static function AddByChannel($channelId, $params = Array())
 	{
-		global $DB;
-
-		if (!is_array($channelId))
+		if (is_array($channelId))
 		{
-			$channelId = Array($channelId);
+			$channelList = array_map(
+				fn($channel) => \Bitrix\Pull\Model\Channel::createWithFields(['CHANNEL_ID' => $channel]),
+				$channelId
+			);
+			return \Bitrix\Pull\Event::add($channelList, $params);
 		}
-
-		$result = false;
-		if (strlen($params['module_id']) <= 0 || strlen($params['command']) <= 0)
+		else if (is_string($channelId))
 		{
-			return false;
-		}
-
-		$extra = is_array($params['extra'])? $params['extra']: Array();
-		$extra = array_merge($extra, Array(
-			'server_name' => COption::GetOptionString('main', 'server_name', $_SERVER['SERVER_NAME']),
-			'revision_web' => PULL_REVISION_WEB,
-			'revision_mobile' => PULL_REVISION_MOBILE,
-		));
-
-		if (!isset($extra['server_time']))
-		{
-			$extra['server_time'] = date('c');
-		}
-		if (!$extra['server_time_unix'])
-		{
-			$extra['server_time_unix'] = microtime(true);
-		}
-
-		$arData = Array(
-			'module_id' => strtolower($params['module_id']),
-			'command' => $params['command'],
-			'params' => is_array($params['params'])? $params['params']: Array(),
-			'extra' => $extra
-		);
-		if (CPullOptions::GetQueueServerStatus())
-		{
-			if (!is_array($channelId) && CPullOptions::GetQueueServerVersion() == 1)
-			{
-				$arData['extra']['channel'] = $channelId;
-			}
-
-			$options = array('expiry' => isset($params['expiry'])? intval($params['expiry']): 86400);
-			$res = CPullChannel::Send($channelId, \Bitrix\Pull\Common::jsonEncode($arData), $options);
-			$result = $res? true: false;
+			return \Bitrix\Pull\Event::add(
+				\Bitrix\Pull\Model\Channel::createWithFields(['CHANNEL_ID' => $channelId]),
+				$params
+			);
 		}
 		else
 		{
-			foreach ($channelId as $channel)
-			{
-				$params = Array(
-					'CHANNEL_ID' => $channel,
-					'MESSAGE' => str_replace("\n", " ", serialize($arData)),
-					'~DATE_CREATE' => $DB->CurrentTimeFunction(),
-				);
-				$res = IntVal($DB->Add("b_pull_stack", $params, Array("MESSAGE")));
-				$result = $res? true: false;
-			}
+			throw new \Bitrix\Main\ArgumentException('channelId must be a string or an array of strings');
 		}
-
-		return $result;
 	}
 
 	public static function AddByUser($userId, $arMessage, $channelType = 'private')
@@ -116,13 +75,27 @@ class CAllPullStack
 
 	public static function AddShared($arMessage, $channelType = 'shared')
 	{
-		if (!CPullOptions::GetQueueServerStatus())
+		try
+		{
+			$sharedChannel = \Bitrix\Pull\Model\Channel::getShared();
+		}
+		catch (\Bitrix\Main\SystemException $e)
+		{
+			// \Bitrix\Main\Application::getInstance()->getExceptionHandler()->writeToLog($e);
 			return false;
+		}
 
-		$arChannel = CPullChannel::GetChannelShared($channelType);
-		return self::AddByChannel($arChannel['CHANNEL_ID'], $arMessage);
+		return \Bitrix\Pull\Event::add(
+			$sharedChannel,
+			$arMessage,
+			$channelType
+		);
 	}
 
+	/**
+	 * @deprecated
+	 * @see \CAllPullStack::AddShared Use instead
+	 */
 	public static function AddBroadcast($arMessage)
 	{
 		return self::AddShared($arMessage);

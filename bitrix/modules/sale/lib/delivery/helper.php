@@ -2,13 +2,18 @@
 
 namespace Bitrix\Sale\Delivery;
 
+use Bitrix\Main\Loader;
+use Bitrix\Main\ModuleManager;
 use Bitrix\Main\SystemException;
 use Bitrix\Main\Localization\Loc;
-use Bitrix\Sale\Internals\Input;
 use Bitrix\Currency;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class Helper
+ * @package Bitrix\Sale\Delivery
+ */
 class Helper
 {
 	/**
@@ -108,6 +113,12 @@ class Helper
 		return $result;
 	}
 
+	/**
+	 * @return string Default site id.
+	 * @throws SystemException
+	 * @throws \Bitrix\Main\ArgumentException
+	 * @throws \Bitrix\Main\ObjectPropertyException
+	 */
 	public static function getDefaultSiteId()
 	{
 		static $result = null;
@@ -126,9 +137,43 @@ class Helper
 		return $result;
 	}
 
+	/**
+	 * Clean additional delivery cache
+	 */
 	public static function additionalHandlerCacheClean()
 	{
 		require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/handlers/delivery/additional/cache.php");
 		\Sale\Handlers\Delivery\Additional\CacheManager::cleanAll();
+	}
+
+	/**
+	 * Returns portal zone
+	 *
+	 * @return string
+	 * @throws \Bitrix\Main\LoaderException
+	 */
+	public static function getPortalZone(): string
+	{
+		static $result = null;
+
+		if ($result === null)
+		{
+			$result = '';
+
+			if (ModuleManager::isModuleInstalled('bitrix24')
+				&& Loader::includeModule('bitrix24')
+			)
+			{
+				$result = \CBitrix24::getLicensePrefix();
+			}
+			elseif (ModuleManager::isModuleInstalled('intranet')
+				&& Loader::includeModule('intranet')
+			)
+			{
+				$result = \CIntranetUtils::getPortalZone();
+			}
+		}
+
+		return (string)$result;
 	}
 }

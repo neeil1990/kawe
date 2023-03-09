@@ -42,7 +42,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 if (empty($errorMsg) && $_SERVER["REQUEST_METHOD"] == "GET" && check_bitrix_sessid())
 {
 	$doc = (string)$_GET['doc'];
-	if (strlen($doc) == 0)
+	if ($doc == '')
 	{
 		$errorMsg .= GetMessage("SOP_ERROR_REPORT").'<br>';
 	}
@@ -76,7 +76,8 @@ if (empty($errorMsg) && $_SERVER["REQUEST_METHOD"] == "GET" && check_bitrix_sess
 						'select' => array('BASKET_ID', 'QUANTITY'),
 						'filter' => array(
 							'DELIVERY.ORDER_ID' => $orderId,
-							'ORDER_DELIVERY_ID' => $shipmentId
+							'ORDER_DELIVERY_ID' => $shipmentId,
+							'BASKET.SET_PARENT_ID' => 0
 						)
 					);
 

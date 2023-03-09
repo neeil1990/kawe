@@ -15,6 +15,22 @@ use Bitrix\Sale\Location\Util\Assert;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class ExternalTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_External_Query query()
+ * @method static EO_External_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_External_Result getById($id)
+ * @method static EO_External_Result getList(array $parameters = array())
+ * @method static EO_External_Entity getEntity()
+ * @method static \Bitrix\Sale\Location\EO_External createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Location\EO_External_Collection createCollection()
+ * @method static \Bitrix\Sale\Location\EO_External wakeUpObject($row)
+ * @method static \Bitrix\Sale\Location\EO_External_Collection wakeUpCollection($rows)
+ */
 class ExternalTable extends Entity\DataManager
 {
 	public static function getFilePath()
@@ -39,7 +55,7 @@ class ExternalTable extends Entity\DataManager
 		{
 			$serivceId = intval($data['SERVICE_ID']);
 
-			if($serivceId && strlen($data['XML_ID']))
+			if($serivceId && mb_strlen($data['XML_ID']))
 			{
 				$res = self::add(array(
 					'SERVICE_ID' => $serivceId,
@@ -73,7 +89,7 @@ class ExternalTable extends Entity\DataManager
 
 			if(isset($existed[$id]))
 			{
-				if(!strlen($data['XML_ID']) || !$serivceId || $data['REMOVE']) // field either empty or prepared to remove
+				if(!mb_strlen($data['XML_ID']) || !$serivceId || $data['REMOVE']) // field either empty or prepared to remove
 					self::delete($id);
 				else
 				{
@@ -87,7 +103,7 @@ class ExternalTable extends Entity\DataManager
 			}
 			else
 			{
-				if($serivceId && strlen($data['XML_ID']))
+				if($serivceId && mb_strlen($data['XML_ID']))
 				{
 					$res = self::add(array(
 						'SERVICE_ID' => $serivceId,
@@ -125,7 +141,7 @@ class ExternalTable extends Entity\DataManager
 	 */
 	public static function deleteMultipleByParentRangeSql($sql)
 	{
-		if(!strlen($sql))
+		if($sql == '')
 			throw new Main\SystemException('Range sql is empty');
 
 		$dbConnection = Main\HttpApplication::getConnection();

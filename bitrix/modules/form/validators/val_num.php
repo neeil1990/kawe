@@ -1,9 +1,10 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
 
 class CFormValidatorNumber
 {
-	function GetDescription()
+	public static function GetDescription()
 	{
 		return array(
 			"NAME" => "number", // validator string ID
@@ -13,14 +14,31 @@ class CFormValidatorNumber
 		);
 	}
 
-	function DoValidate($arParams, $arQuestion, $arAnswers, $arValues)
+	public static function DoValidate($arParams, $arQuestion, $arAnswers, $arValues)
 	{
 		global $APPLICATION;
 
+		$prepared = [];
+
 		foreach ($arValues as $value)
 		{
-			// empty string is not a number but we won't return error - crossing with "required" mark
-			if ($value != "" && (($value !==0  && intval($value) == 0) || strval($value + 0) != strval($value)))
+			if (is_int($value))
+			{
+				continue;
+			}
+			elseif (is_string($value))
+			{
+				// empty string is not a number but we won't return error - crossing with "required" mark
+				if ($value != "")
+				{
+					if (!preg_match('/^(-)?[0-9]+$/', $value, $prepared))
+					{
+						$APPLICATION->ThrowException(GetMessage("FORM_VALIDATOR_VAL_NUM_ERROR"));
+						return false;
+					}
+				}
+			}
+			else
 			{
 				$APPLICATION->ThrowException(GetMessage("FORM_VALIDATOR_VAL_NUM_ERROR"));
 				return false;
@@ -32,4 +50,3 @@ class CFormValidatorNumber
 }
 
 AddEventHandler("form", "onFormValidatorBuildList", array("CFormValidatorNumber", "GetDescription"));
-?>

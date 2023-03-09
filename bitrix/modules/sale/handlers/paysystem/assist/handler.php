@@ -24,7 +24,9 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 	public function initiatePay(Payment $payment, Request $request = null)
 	{
 		$extraParams = array(
-			'URL' => $this->getUrl($payment, 'pay')
+			'URL' => $this->getUrl($payment, 'pay'),
+			'ASSIST_SUCCESS_URL' => $this->getSuccessUrl($payment),
+			'ASSIST_FAIL_URL' => $this->getFailUrl($payment),
 		);
 		$this->setExtraParams($extraParams);
 
@@ -75,22 +77,17 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 			}
 			else
 			{
-				PaySystem\ErrorLog::add(array(
-					'ACTION' => 'return',
-					'MESSAGE' => 'assist error refund: firstcode='.$data['result']['@']['firstcode'].' secondcode='.$data['result']['@']['secondcode']
-				));
+				$error = 'assist error refund: firstcode='.$data['result']['@']['firstcode'].' secondcode='.$data['result']['@']['secondcode'];
+				PaySystem\Logger::addError('Assist: return: '.$error);
 				$result->addError(new EntityError(Loc::getMessage('SALE_PS_MESSAGE_ERROR_CONNECT_PAY_SYS')));
 			}
 		}
 		else
 		{
 			$message = 'Incorrect server response';
-
 			$result->addError(new Error($message));
-			PaySystem\ErrorLog::add(array(
-				'ACTION' => 'return',
-				'MESSAGE' => $message
-			));
+
+			PaySystem\Logger::addError('Assist: return: '.$message);
 		}
 
 		return $result;
@@ -186,7 +183,7 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 			$result->setPSData(
 				array(
 					"PS_STATUS" => $psStatus,
-					"PS_STATUS_CODE" => substr($status, 0, 5),
+					"PS_STATUS_CODE" => mb_substr($status, 0, 5),
 					"PS_STATUS_DESCRIPTION" => Loc::getMessage('SALE_PS_DESCRIPTION_'.ToUpper($status)),
 					"PS_STATUS_MESSAGE" => Loc::getMessage('SALE_PS_MESSAGE_'.ToUpper($status)),
 					"PS_SUM" => $request->get('orderamount'),
@@ -216,10 +213,7 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 
 		if (!$result->isSuccess())
 		{
-			PaySystem\ErrorLog::add(array(
-				'ACTION' => $request->get('orderstate'),
-				'MESSAGE' => join('\n', $result->getErrorMessages())
-			));
+			PaySystem\Logger::addError('Assist: '.$request->get('orderstate').': '.join('\n', $result->getErrorMessages()));
 		}
 
 		return $result;
@@ -316,7 +310,7 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 
 						$psData = array(
 							'PS_STATUS' => ($orderData['orderstate'][0]['#'] == 'Approved' ? 'Y' : 'N'),
-							'PS_STATUS_CODE' => substr($orderData['orderstate'][0]['#'], 0, 5),
+							'PS_STATUS_CODE' => mb_substr($orderData['orderstate'][0]['#'], 0, 5),
 							'PS_STATUS_DESCRIPTION' => Loc::getMessage('SALE_PS_DESCRIPTION_'.ToUpper($status)),
 							'PS_STATUS_MESSAGE' => Loc::getMessage('SALE_PS_MESSAGE_'.ToUpper($status)),
 							'PS_SUM' => DoubleVal($orderData['orderamount'][0]['#']),
@@ -344,5 +338,23 @@ class AssistHandler extends PaySystem\ServiceHandler implements PaySystem\IRefun
 		}
 
 		return $serviceResult;
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getSuccessUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'ASSIST_SUCCESS_URL') ?: $this->service->getContext()->getUrl();
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @return mixed|string
+	 */
+	private function getFailUrl(Payment $payment)
+	{
+		return $this->getBusinessValue($payment, 'ASSIST_FAIL_URL') ?: $this->service->getContext()->getUrl();
 	}
 }

@@ -10,13 +10,18 @@ use Bitrix\Main\Localization\Loc,
 	Bitrix\Sale\Helpers\Admin\OrderEdit,
 	Bitrix\Sale\Helpers\Admin\Blocks,
 	Bitrix\Sale,
-	Bitrix\Catalog;
+	Bitrix\Catalog,
+	Bitrix\Sale\Exchange\Integration\Admin\Link,
+	Bitrix\Sale\Exchange\Integration\Admin\Registry;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
+Bitrix\Main\Loader::includeModule('sale');
 Loc::loadMessages(__FILE__);
-$ID = isset($_REQUEST["ID"]) ? intval($_REQUEST["ID"]) : 0;
+
+$ID = (int)($_REQUEST["ID"] ?? 0);
+$RESTORE_ID = (int)($_GET['restoreID'] ?? 0);
 
 $isSavingOperation = (
 	$_SERVER["REQUEST_METHOD"] == "POST"
@@ -26,12 +31,19 @@ $isSavingOperation = (
 	)
 	&& check_bitrix_sessid()
 );
+$request = \Bitrix\Main\Context::getCurrent()->getRequest();
 $needFieldsRestore = $_SERVER["REQUEST_METHOD"] == "POST" && !$isSavingOperation;
 $isCopyingOrderOperation = $ID > 0;
-$isRestoringOrderOperation = ((int)$_GET['restoreID'] > 0);
+$isRestoringOrderOperation = $RESTORE_ID > 0;
 $createWithProducts = (isset($_GET["USER_ID"]) && isset($_GET["SITE_ID"]) || isset($_GET["product"]));
 $showProfiles = false;
 $profileId = 0;
+$link = Link::getInstance();
+
+$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+
+/** @var Sale\Order $orderClass */
+$orderClass = $registry->getOrderClassName();
 
 $arUserGroups = $USER->GetUserGroupArray();
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
@@ -59,8 +71,12 @@ $result = new \Bitrix\Sale\Result();
 $customTabber = new CAdminTabEngine("OnAdminSaleOrderCreate");
 $customDraggableBlocks = new CAdminDraggableBlockEngine('OnAdminSaleOrderCreateDraggable');
 
-DiscountCouponsManager::init(
-	DiscountCouponsManager::MODE_MANAGER,
+$errorMessage = '';
+
+/** @var Sale\DiscountCouponsManager $discountCouponsClass */
+$discountCouponsClass = $registry->getDiscountCouponClassName();
+$discountCouponsClass::init(
+	$discountCouponsClass::MODE_MANAGER,
 	array(
 		'userId' => isset($_POST["USER_ID"]) ? $_POST["USER_ID"] : 0
 	)
@@ -75,8 +91,6 @@ if($isSavingOperation || $needFieldsRestore)
 
 	if($order && $result->isSuccess())
 	{
-		$errorMessage = '';
-
 		if (!$customTabber->Check())
 		{
 			if ($ex = $APPLICATION->GetException())
@@ -113,6 +127,8 @@ if($isSavingOperation || $needFieldsRestore)
 				$result->addErrors($payRes->getErrors());
 		}
 
+		OrderEdit::fillOrderProperties($order, $_POST, $_FILES);
+
 		if($isSavingOperation && $result->isSuccess())
 		{
 			$res = OrderEdit::saveCoupons($order->getUserId(), $_POST);
@@ -126,13 +142,27 @@ if($isSavingOperation || $needFieldsRestore)
 
 			$res = $basket->refreshData(array('PRICE', 'QUANTITY', 'COUPONS'));
 
-			if(!$res->isSuccess())
+			if (!$res->isSuccess())
+			{
 				$result->addErrors($res->getErrors());
-			/* * */
+			}
 
-			$res = $order->save();
+			$res = $order->verify();
+			if (!$res->isSuccess())
+			{
+				$result->addErrors($res->getErrors());
+			}
 
-			if($res->isSuccess())
+			if ($result->isSuccess())
+			{
+				$res = $order->save();
+				if (!$res->isSuccess())
+				{
+					$result->addErrors($res->getErrors());
+				}
+			}
+
+			if ($result->isSuccess())
 			{
 				if(isset($_POST["BUYER_PROFILE_ID"]))
 					$profileId = intval($_POST["BUYER_PROFILE_ID"]);
@@ -171,7 +201,10 @@ if($isSavingOperation || $needFieldsRestore)
 					&& (int)$_POST["ABANDONED_FUSER_ID"] > 0
 				)
 				{
-					$itemsDataList = Sale\Internals\BasketTable::getList(
+					/** @var Sale\Basket $basketClass */
+					$basketClass = $registry->getBasketClassName();
+
+					$itemsDataList = $basketClass::getList(
 						array(
 							"filter" => array(
 								"=ORDER_ID" => NULL,
@@ -188,13 +221,24 @@ if($isSavingOperation || $needFieldsRestore)
 				}
 
 				if(isset($_POST["save"]))
-					LocalRedirect("/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+				{
+					$link
+						->create()
+						->setPageByType(Registry::SALE_ORDER)
+						->setFilterParams(false)
+						->fill()
+						->redirect();
+				}
 				else
-					LocalRedirect("/bitrix/admin/sale_order_edit.php?lang=".LANGUAGE_ID."&ID=".$order->getId().GetFilterParams("filter_", false));
-			}
-			else
-			{
-				$result->addErrors($res->getErrors());
+				{
+					$link
+						->create()
+						->setPageByType(Registry::SALE_ORDER_EDIT)
+						->setFilterParams(false)
+						->setField('ID', $order->getId())
+						->fill()
+						->redirect();
+				}
 			}
 		}
 	}
@@ -226,7 +270,7 @@ elseif($createWithProducts)
 				!is_array($productParams[$productId])
 				|| empty($productParams[$productId])
 				|| intval($productParams[$productId]["PRODUCT_ID"]) <= 0
-				|| strlen($productParams[$productId]["MODULE"]) <= 0
+				|| $productParams[$productId]["MODULE"] == ''
 			)
 			{
 				continue;
@@ -249,7 +293,9 @@ elseif($createWithProducts)
 		{
 			$basketList = array();
 
-			$fakeBasket = Sale\Basket::create($_GET['SITE_ID']);
+			/** @var Sale\Basket $basketClass */
+			$basketClass = $registry->getBasketClassName();
+			$fakeBasket = $basketClass::create($_GET['SITE_ID']);
 
 			$context = array(
 				"SITE_ID" => $_GET['SITE_ID'],
@@ -273,7 +319,7 @@ elseif($createWithProducts)
 				'order' => array('ID' => 'ASC'),
 			);
 
-			$resBasketDataList = \Bitrix\Sale\Basket::getList($basketFilter);
+			$resBasketDataList = $basketClass::getList($basketFilter);
 			while($basketData = $resBasketDataList->fetch())
 			{
 				if ($basketData['CAN_BUY'] != 'Y')
@@ -315,7 +361,10 @@ elseif($createWithProducts)
 					$basketFields['PAY_CALLBACK_FUNC'] = $basketData['PAY_CALLBACK_FUNC'];
 				}
 
-				$r = Catalog\Product\Basket::addProductToBasket($fakeBasket, $basketFields, $context);
+				// With the USE_MERGE=N parameter, so that the elements do not collapse, but are added as is.
+				$r = Catalog\Product\Basket::addProductToBasket($fakeBasket, $basketFields, $context, [
+					'USE_MERGE' => 'N',
+				]);
 				if ($r->isSuccess())
 				{
 					$resultData = $r->getData();
@@ -381,7 +430,7 @@ elseif($createWithProducts)
 					if(!is_array($productParams[$productId]) || empty($productParams[$productId]))
 						continue;
 
-					if(strlen($productParams[$productId]['PRODUCT_ID']) <= 0)
+					if($productParams[$productId]['PRODUCT_ID'] == '')
 					{
 						$result->addError(
 							new \Bitrix\Main\Error(
@@ -457,13 +506,16 @@ elseif($isRestoringOrderOperation) // Restore order from archive
 {
 	$profileList = array();
 
-	$archivedOrder = Sale\Archive\Manager::returnArchivedOrder((int)$_GET['restoreID']);
+	$archivedOrder = Sale\Archive\Manager::returnArchivedOrder($RESTORE_ID);
 
-	$allowedStatusUpdate = \Bitrix\Sale\OrderStatus::getStatusesUserCanDoOperations($USER->GetID(), array('update'));
+	/** @var Sale\OrderStatus $orderStatusClass */
+	$orderStatusClass = $registry->getOrderStatusClassName();
+
+	$allowedStatusUpdate = $orderStatusClass::getStatusesUserCanDoOperations($USER->GetID(), array('update'));
 
 	if (!in_array($archivedOrder->getField("STATUS_ID"), $allowedStatusUpdate))
 	{
-		LocalRedirect("/bitrix/admin/sale_order_archive.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+		LocalRedirect("/bitrix/admin/sale_order_archive.php?lang=".LANGUAGE_ID);
 	}
 
 	if ($saleModulePermissions == 'P')
@@ -472,16 +524,16 @@ elseif($isRestoringOrderOperation) // Restore order from archive
 		if (
 			!in_array($archivedOrder->getField('COMPANY_ID'), $userCompanyList)
 			&& $archivedOrder->getField('RESPONSIBLE_ID') !== $USER->GetID()
-		) 
+		)
 		{
-			LocalRedirect("/bitrix/admin/sale_order_archive.php?lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+			LocalRedirect("/bitrix/admin/sale_order_archive.php?lang=".LANGUAGE_ID);
 		}
 	}
-	
-	//Create order for form from a returned archive
-	$order = Sale\Order::create($archivedOrder->getSiteId(), $archivedOrder->getUserId(), $archivedOrder->getCurrency());
 
-	$availableFields = array_flip(Sale\Order::getAvailableFields());
+	//Create order for form from a returned archive
+	$order = $orderClass::create($archivedOrder->getSiteId(), $archivedOrder->getUserId(), $archivedOrder->getCurrency());
+
+	$availableFields = array_flip($orderClass::getAvailableFields());
 	$orderFields = array_intersect_key($archivedOrder->getFieldValues(), $availableFields);
 	$order->setFields($orderFields);
 
@@ -572,14 +624,28 @@ elseif($isRestoringOrderOperation) // Restore order from archive
 		break;
 
 	}
+
+	foreach ($profileList as $id => $propertyProfileValue)
+	{
+		$property = $propertyCollection->getItemByOrderPropertyId($id);
+		if($property)
+		{
+			try
+			{
+				$property->setValue($propertyProfileValue);
+			}
+			catch(\Exception $e)
+			{}
+		}
+	}
 }
 elseif($isCopyingOrderOperation) // copy order
 {
-	/** @var \Bitrix\Sale\Order $originalOrder */
-	$originalOrder = Bitrix\Sale\Order::load($ID);
+	/** @var Sale\Order $originalOrder */
+	$originalOrder = $orderClass::load($ID);
 	if ($originalOrder)
 	{
-		$order = \Bitrix\Sale\Order::create($originalOrder->getSiteId(), $originalOrder->getUserId(), $originalOrder->getCurrency());
+		$order = $orderClass::create($originalOrder->getSiteId(), $originalOrder->getUserId(), $originalOrder->getCurrency());
 		$order->setPersonTypeId($originalOrder->getPersonTypeId());
 		$userProfiles = \Bitrix\Sale\Helpers\Admin\Blocks\OrderBuyer::getUserProfiles($originalOrder->getUserId());
 
@@ -602,7 +668,7 @@ elseif($isCopyingOrderOperation) // copy order
 				$propValue = $prop->getValue();
 				if ($propValue)
 				{
-					$files[] = CAllFile::MakeFileArray($propValue['ID']);
+					$files[] = CFile::MakeFileArray($propValue['ID']);
 					$properties['PROPERTIES'][$prop->getPropertyId()] = $propValue['ID'];
 				}
 			}
@@ -615,15 +681,34 @@ elseif($isCopyingOrderOperation) // copy order
 		$propCollection = $order->getPropertyCollection();
 		$propCollection->setValuesFromPost($properties, $files);
 		$originalBasket = $originalOrder->getBasket();
+		$originalBasketProviderData = Sale\Provider::getProductData($originalBasket);
 		$originalBasketItems = $originalBasket->getBasketItems();
-		$basket = \Bitrix\Sale\Basket::create($originalOrder->getSiteId());
+
+		/** @var Sale\Basket $basketClass */
+		$basketClass = $registry->getBasketClassName();
+		$basket = $basketClass::create($originalOrder->getSiteId());
 		$basket->setFUserId($originalBasket->getFUserId());
 
 		/** @var \Bitrix\Sale\BasketItem $originalBasketItem */
 		foreach($originalBasketItems as $originalBasketItem)
 		{
-			$item = $basket->createItem($originalBasketItem->getField("MODULE"), $originalBasketItem->getProductId());
-			$item->setField('NAME', $originalBasketItem->getField('NAME'));
+			$obBasketCode = $originalBasketItem->getBasketCode();
+			$module = $originalBasketItem->getField("MODULE");
+			$name = $originalBasketItem->getField("NAME");
+			$isCatalogProductDeleted = !isset($originalBasketProviderData[$obBasketCode])&& $module == 'catalog';
+
+			if($isCatalogProductDeleted)
+			{
+				//Make it custom
+				$module = '';
+				//And warn
+				$errorMessage .= Loc::getMessage('SALE_OK_ORDER_COPY_ERROR_BASKET_ITEM_NOT_FOUND',[
+						"#NAME#" => $name
+					])."<br>\n";
+			}
+
+			$item = $basket->createItem($module, $originalBasketItem->getProductId());
+			$item->setField('NAME', $name);
 
 			$item->setFields(
 				array_intersect_key(
@@ -633,6 +718,11 @@ elseif($isCopyingOrderOperation) // copy order
 					)
 				)
 			);
+
+			if($isCatalogProductDeleted)
+			{
+				$item->setField('PRODUCT_PROVIDER_CLASS', '');
+			}
 
 			$item->getPropertyCollection()->setProperty(
 				$originalBasketItem->getPropertyCollection()->getPropertyValues()
@@ -680,13 +770,15 @@ elseif($isCopyingOrderOperation) // copy order
 			$shipment->setBasePriceDelivery($basePrice, ($customPriceDelivery == 'Y'));
 		}
 
+		$propCollection->setValuesFromPost($properties, $files);
+
 		$order->getDiscount()->calculate();
 	}
 }
 
 if(!$order)
 {
-	$order = \Bitrix\Sale\Order::create($siteId);
+	$order = $orderClass::create($siteId);
 	$order->setPersonTypeId(
 		Blocks\OrderBuyer::getDefaultPersonType(
 			$siteId
@@ -694,7 +786,7 @@ if(!$order)
 	);
 }
 
-if(strlen($siteName) > 0)
+if($siteName <> '')
 	$APPLICATION->SetTitle(str_replace("##SITE##", $siteName, Loc::getMessage("SALE_OK_TITLE_SITE")));
 else
 	$APPLICATION->SetTitle(Loc::getMessage("SALE_OK_TITLE_NO_SITE"));
@@ -714,7 +806,7 @@ if ($isRestoringOrderOperation)
 		"ICON" => "btn_list",
 		"TEXT" => Loc::getMessage("SALE_OK_ARCHIVE_LIST"),
 		"TITLE"=> Loc::getMessage("SALE_OK_ARCHIVE_LIST_TITLE"),
-		"LINK" => "/bitrix/admin/sale_order_archive.php?lang=".LANGUAGE_ID.GetFilterParams("filter_")
+		"LINK" => "/bitrix/admin/sale_order_archive.php?lang=".LANGUAGE_ID
 	);
 }
 else
@@ -723,7 +815,12 @@ else
 		"ICON" => "btn_list",
 		"TEXT" => Loc::getMessage("SALE_OK_LIST"),
 		"TITLE"=> Loc::getMessage("SALE_OK_LIST_TITLE"),
-		"LINK" => "/bitrix/admin/sale_order.php?lang=".LANGUAGE_ID.GetFilterParams("filter_")
+		"LINK" => $link
+			->create()
+			->setPageByType(Registry::SALE_ORDER_VIEW)
+			->setFilterParams(false)
+			->fill()
+			->build()
 	);
 }
 
@@ -731,11 +828,10 @@ $context = new CAdminContextMenu($aMenu);
 $context->Show();
 
 //errors
-$errorMessage = "";
 
 if(!empty($_SESSION['SALE_ORDER_EDIT_ERROR']))
 {
-	$errorMessage = $_SESSION['SALE_ORDER_EDIT_ERROR']."<br>\n";
+	$errorMessage .= $_SESSION['SALE_ORDER_EDIT_ERROR']."<br>\n";
 	unset($_SESSION['SALE_ORDER_EDIT_ERROR']);
 }
 
@@ -746,6 +842,14 @@ if(!$result->isSuccess() && !$needFieldsRestore)
 if(!empty($errorMessage))
 {
 	$admMessage = new CAdminMessage($errorMessage);
+	echo $admMessage->Show();
+}
+
+if($request->get('HANDLER') == Sale\Exchange\Integration\HandlerType::ORDER_NEW
+	&& $request->get('entityTypeId')>0
+	&& $request->get('entityId')>0)
+{
+	$admMessage = new CAdminMessage(['MESSAGE'=>Loc::getMessage('SALE_INTEGRATION_TITLE'), 'TYPE'=>'OK', 'DETAILS'=>Loc::getMessage('SALE_INTEGRATION_DETAILS').$request->get('entityId')]);
 	echo $admMessage->Show();
 }
 
@@ -783,7 +887,18 @@ $aTabs = array(
 	array("DIV" => "tab_order", "TAB" => Loc::getMessage("SALE_OK_TAB_ORDER"), "SHOW_WRAP" => "N", "IS_DRAGGABLE" => "Y"),
 );
 
-?><form method="POST" action="<?=$APPLICATION->GetCurPage()."?lang=".LANGUAGE_ID."&SITE_ID=".$siteId.GetFilterParams("filter_", false)?>" name="<?=$formId?>_form" id="<?=$formId?>_form" enctype="multipart/form-data"><?
+$url = $link
+	->create()
+	->setPage($APPLICATION->GetCurPage())
+	->setFilterParams(false)
+	->setField('entityTypeId', $request->get('entityTypeId'))
+	->setField('entityId', $request->get('entityId'))
+	->setField('HANDLER', $request->get('HANDLER'))
+	->fill()
+	->setField('SITE_ID', $siteId)
+	->build();
+
+?><form method="POST" action="<?=$url?>" name="<?=$formId?>_form" id="<?=$formId?>_form" enctype="multipart/form-data"><?
 $tabControl = new CAdminTabControlDrag($formId, $aTabs, $moduleId, false, true);
 $tabControl->AddTabs($customTabber);
 $tabControl->Begin();
@@ -818,7 +933,7 @@ foreach($blocksOrder as $item)
 	<input type="hidden" id="OLD_USER_ID" name="OLD_USER_ID" value="0">
 	<input type="hidden" name="BASKET_PREFIX" value="<?=$basketPrefix?>">
 	<?
-	if ($_REQUEST["ABANDONED"] === 'Y')
+	if (isset($_REQUEST["ABANDONED"]) && $_REQUEST["ABANDONED"] === 'Y')
 	{
 		?>
 		<input type="hidden" id="ABANDONED_USER_ID" name="ABANDONED_USER_ID" value="<?=(int)$_REQUEST["USER_ID"]?>">
@@ -837,7 +952,7 @@ foreach($blocksOrder as $item)
 			switch ($blockCode)
 			{
 				case "basket":
-					if (strlen($errorAbsentProductMessage))
+					if(!empty($errorAbsentProductMessage))
 					{
 						$admMessage = new CAdminMessage($errorAbsentProductMessage);
 						echo $admMessage->Show();
@@ -857,7 +972,9 @@ foreach($blocksOrder as $item)
 					/** @var \Bitrix\Sale\Shipment  $shipment*/
 					foreach ($shipments as $shipment)
 						if (!$shipment->isSystem())
-							echo Blocks\OrderShipment::getEdit($shipment, 0, '', $_POST['SHIPMENT'][1]);
+						{
+							echo Blocks\OrderShipment::getEdit($shipment, 0, '', $_POST['SHIPMENT'][1] ?? null);
+						}
 
 					break;
 				case "payment":
@@ -868,9 +985,9 @@ foreach($blocksOrder as $item)
 
 					$index = 0;
 					foreach ($payments as $payment)
-						echo Blocks\OrderPayment::getEdit($payment, ++$index, $_POST['PAYMENT'][$index]);
+						echo Blocks\OrderPayment::getEdit($payment, ++$index, $_POST['PAYMENT'][$index] ?? null);
 
-					echo Blocks\OrderPayment::createButtonAddPayment('edit');
+					echo Blocks\OrderPayment::createButtonAddPayment(['formType'=>'edit']);
 					break;
 				case 'relprops' :
 					echo Blocks\OrderBuyer::getPropsEdit($order);
@@ -882,7 +999,8 @@ foreach($blocksOrder as $item)
 					echo Blocks\OrderAdditional::getEdit($order, $formId."_form", 'ORDER', (!empty($_POST['ORDER']) ? $_POST['ORDER'] : array()));
 					break;
 				case "statusorder":
-					echo Blocks\OrderStatus::getEditSimple($USER->GetID(), 'STATUS_ID', \Bitrix\Sale\OrderStatus::getInitialStatus());
+					$orderStatusClass = $registry->getOrderStatusClassName();
+					echo Blocks\OrderStatus::getEditSimple($USER->GetID(), 'STATUS_ID', $orderStatusClass::getInitialStatus());
 					break;
 				default:
 					echo $customDraggableBlocks->getBlockContent($blockCode, $tabControl->selectedTab);
@@ -897,9 +1015,20 @@ foreach($blocksOrder as $item)
 
 $tabControl->EndTab();
 
+$url = $link
+	->create()
+	->setPageByType(Sale\Exchange\Integration\Admin\Registry::SALE_ORDER_CREATE)
+	->setFilterParams(false)
+	->fill()
+	->setField('entityTypeId', $request->get('entityTypeId'))
+	->setField('entityId', $request->get('entityId'))
+	->setField('HANDLER', $request->get('HANDLER'))
+	->setField('SITE_ID', $siteId)
+	->build();
+
 $tabControl->Buttons(
 	array(
-		"back_url" => "/bitrix/admin/sale_order_create.php?lang=".LANGUAGE_ID."&SITE_ID=".$siteId.GetFilterParams("filter_"))
+		"back_url" => $url)
 );
 
 $tabControl->End();
@@ -926,8 +1055,8 @@ $tabControl->End();
 		BX.ready( function(){
 			BX.Sale.Admin.OrderEditPage.restoreFormData(
 				<?=CUtil::PhpToJSObject(OrderEdit::restoreFieldsNames(
-						array_diff_key($_POST, array("USER_ID" => true))
-					));
+					array_diff_key($_POST, array("USER_ID" => true))
+				));
 				?>
 			);
 		});

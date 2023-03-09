@@ -2,6 +2,7 @@
 namespace Bitrix\Sale\Delivery\Requests;
 
 use Bitrix\Main;
+use Bitrix\Main\Loader;
 use Bitrix\Sale\Order;
 use Bitrix\Sale\ResultWarning;
 use Bitrix\Sale\Shipment;
@@ -19,13 +20,27 @@ Loc::loadMessages(__FILE__);
  */
 final class Manager
 {
-	const STATUS_PREPARED = 0;
-	const STATUS_SENT = 10;
-	const STATUS_PROCESSED = 20;
+	public const STATUS_PREPARED = 0;
+	public const STATUS_SENT = 10;
+	public const STATUS_PROCESSED = 20;
 
 	const FORM_FIELDS_TYPE_CREATE = 10;
 	const FORM_FIELDS_TYPE_ADD = 20;
 	const FORM_FIELDS_TYPE_ACTION = 30;
+
+	public const REQUEST_CREATED_EVENT_CODE = 'OnDeliveryRequestCreated';
+	public const REQUEST_DELETED_EVENT_CODE = 'OnDeliveryRequestDeleted';
+	public const REQUEST_UPDATED_EVENT_CODE = 'OnDeliveryRequestUpdated';
+	public const REQUEST_ACTION_EXECUTED_EVENT_CODE = 'OnDeliveryRequestActionExecuted';
+
+	public const MESSAGE_RECEIVED_EVENT_CODE = 'OnDeliveryRequestMessageReceived';
+	public const MESSAGE_MANAGER_ADDRESSEE = 'MANAGER';
+	public const MESSAGE_RECIPIENT_ADDRESSEE = 'RECIPIENT';
+
+	public const EXTERNAL_STATUS_SEMANTIC_SUCCESS = 'success';
+	public const EXTERNAL_STATUS_SEMANTIC_PROCESS = 'process';
+
+	protected static $isChangedShipmentNeedsMark = true;
 
 	/**
 	 * @param int $shipmentId
@@ -37,7 +52,7 @@ final class Manager
 	{
 		$result = new Result();
 
-		if(intval($shipmentId) <= 0)
+		if (intval($shipmentId) <= 0)
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SHIPMENT_ID')));
 			return $result;
@@ -53,7 +68,7 @@ final class Manager
 			)
 		));
 
-		if(!($row = $res->fetch()))
+		if (!($row = $res->fetch()))
 		{
 			$result->addError(
 				new Main\Error(
@@ -67,7 +82,7 @@ final class Manager
 
 		$deliveryId = intval($row['DELIVERY_ID']);
 
-		if($deliveryId <= 0)
+		if ($deliveryId <= 0)
 		{
 			$result->addError(
 				new Main\Error(
@@ -80,7 +95,7 @@ final class Manager
 
 		$deliveryRequestHandler = self::getDeliveryRequestHandlerByDeliveryId($deliveryId);
 
-		if(!$deliveryRequestHandler)
+		if (!$deliveryRequestHandler)
 		{
 			$result->addError(
 				new Main\Error(
@@ -103,13 +118,13 @@ final class Manager
 	{
 		$deliveryId = $shipment->getDeliveryId();
 
-		if($deliveryId <= 0)
+		if ($deliveryId <= 0)
 			return array();
 
-		if(!($delivery = Services\Manager::getObjectById($deliveryId)))
+		if (!($delivery = Services\Manager::getObjectById($deliveryId)))
 			return array();
 
-		if(!($deliveryRequestHandler = $delivery->getDeliveryRequestHandler()))
+		if (!($deliveryRequestHandler = $delivery->getDeliveryRequestHandler()))
 			return array();
 
 		return $deliveryRequestHandler->getShipmentActions($shipment);
@@ -125,7 +140,7 @@ final class Manager
 		$result = array();
 		$deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId);
 
-		if($deliveryRequestHandler)
+		if ($deliveryRequestHandler)
 			$result = $deliveryRequestHandler->getActions($requestId);
 
 		return $result;
@@ -138,13 +153,13 @@ final class Manager
 	 */
 	protected static function getDeliveryRequestHandlerByRequestId($requestId)
 	{
-		if(intval($requestId) <= 0)
+		if (intval($requestId) <= 0)
 			return null;
 
-		if(!($requestFields = RequestTable::getById($requestId)->fetch()))
+		if (!($requestFields = RequestTable::getById($requestId)->fetch()))
 			return null;
 
-		if(intval($requestFields['DELIVERY_ID']) <= 0)
+		if (intval($requestFields['DELIVERY_ID']) <= 0)
 			return null;
 
 		return self::getDeliveryRequestHandlerByDeliveryId($requestFields['DELIVERY_ID']);
@@ -159,10 +174,10 @@ final class Manager
 
 	public static function getDeliveryRequestHandlerByDeliveryId($deliveryId)
 	{
-		if(intval($deliveryId) <= 0)
+		if (intval($deliveryId) <= 0)
 			return null;
 
-		if(!($delivery = Services\Manager::getObjectById($deliveryId)))
+		if (!($delivery = Services\Manager::getObjectById($deliveryId)))
 			return null;
 
 		return $delivery->getDeliveryRequestHandler();
@@ -183,7 +198,7 @@ final class Manager
 	{
 		$result = new Result();
 
-		if(!($deliveryRequestHandler = self::getDeliveryRequestHandlerByDeliveryId($deliveryId)))
+		if (!($deliveryRequestHandler = self::getDeliveryRequestHandlerByDeliveryId($deliveryId)))
 		{
 			$result->addError(
 				new Main\Error(
@@ -198,9 +213,9 @@ final class Manager
 		/** @var ShipmentResult[] $checkResults */
 		$checkResults = self::checkShipmentIdsBeforeAdd($shipmentIds);
 
-		foreach($checkResults as $res)
+		foreach ($checkResults as $res)
 		{
-			if($res->isSuccess())
+			if ($res->isSuccess())
 				continue;
 
 			$result->addResult(
@@ -211,23 +226,22 @@ final class Manager
 			unset($shipmentIds[array_search($res->getInternalId(), $shipmentIds)]);
 		}
 
-		if(empty($shipmentIds))
+		if (empty($shipmentIds))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SHP_ABSENT')));
 			return $result;
 		}
 
-		$res = $deliveryRequestHandler->create($shipmentIds, $additional);
-
-		if($res->isSuccess())
+		$handlerResult = $deliveryRequestHandler->create($shipmentIds, $additional);
+		if ($handlerResult->isSuccess())
 		{
-			$result->addResults($res->getResults());
+			$result->addResults($handlerResult->getResults());
 		}
 		else
 		{
-			$result->addErrors($res->getErrors());
+			$result->addErrors($handlerResult->getErrors());
 
-			foreach($res->getShipmentResults() as $sRes)
+			foreach ($handlerResult->getShipmentResults() as $sRes)
 				$result->addResult(self::processShipmentResult($sRes));
 
 			return $result;
@@ -235,32 +249,42 @@ final class Manager
 
 		$results = $result->getResults();
 
-		if(!is_array($results) || empty($results))
+		if (!is_array($results) || empty($results))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_RES_UNKNOWN')));
 			return $result;
 		}
 
 		/** @var  ShipmentResult|RequestResult $requestResult */
-		foreach($results as $resId => $requestResult)
+		foreach ($results as $resId => $requestResult)
 		{
-			if($requestResult instanceof ShipmentResult)
+			if ($requestResult instanceof ShipmentResult)
 			{
 				$requestResult = self::processShipmentResult($requestResult);
 			}
-			elseif($requestResult instanceof RequestResult)
+			elseif ($requestResult instanceof RequestResult)
 			{
 				$requestId = 0;
 				/** @var RequestResult  $requestResult*/
-				if($requestResult->isSuccess())
+				if ($requestResult->isSuccess())
 				{
+					$handlerResultData = $handlerResult->getData();
+
 					$res = RequestTable::add(array(
 						'DELIVERY_ID' => $deliveryRequestHandler->getHandlingDeliveryServiceId(),
 						'EXTERNAL_ID' => $requestResult->getExternalId(),
-						'STATUS' => Manager::STATUS_SENT
+						'CREATED_BY' => ($GLOBALS['USER'] instanceof \CUser && (int)$GLOBALS['USER']->GetID() > 0)
+							? (int)$GLOBALS['USER']->GetID()
+							: null,
+						'STATUS' => Manager::STATUS_SENT,
+						'EXTERNAL_STATUS' => $handlerResultData['STATUS'] ?? null,
+						'EXTERNAL_STATUS_SEMANTIC' => $handlerResultData['STATUS_SEMANTIC'] ?? null,
+						'EXTERNAL_PROPERTIES' => (isset($handlerResultData['PROPERTIES']) && is_array($handlerResultData['PROPERTIES']))
+							? $handlerResultData['PROPERTIES']
+							: [],
 					));
 
-					if(!$res->isSuccess())
+					if (!$res->isSuccess())
 					{
 						$requestResult->addErrors($res->getErrors());
 						continue;
@@ -268,17 +292,21 @@ final class Manager
 
 					$requestId = $res->getId();
 
-					if($requestId > 0)
+					if ($requestId > 0)
+					{
 						$requestResult->setInternalId($requestId);
+					}
 				}
 
 				$shipmentsResults = $requestResult->getShipmentResults();
 
-				if(empty($shipmentsResults))
+				if (empty($shipmentsResults))
 					continue;
 
-				foreach($shipmentsResults as $sResIdx => $shipmentResult)
+				foreach ($shipmentsResults as $sResIdx => $shipmentResult)
+				{
 					$shipmentsResults[$sResIdx] = self::processShipmentResult($shipmentResult, $requestId);
+				}
 
 				$requestResult->setResults($shipmentsResults);
 			}
@@ -292,6 +320,18 @@ final class Manager
 		}
 
 		$result->setResults($results);
+
+		(new Main\Event(
+			'sale',
+			self::REQUEST_CREATED_EVENT_CODE,
+			[
+				'DELIVERY_ID' => $deliveryId,
+				'SHIPMENT_IDS' => $shipmentIds,
+				'ADDITIONAL' => $additional,
+				'RESULT' => $result,
+			]
+		))->send();
+
 		return $result;
 	}
 
@@ -302,12 +342,12 @@ final class Manager
 	 */
 	protected static function processShipmentResult($result, $requestId = 0)
 	{
-		if(!($result instanceof ShipmentResult))
+		if (!($result instanceof ShipmentResult))
 			return $result;
 
 		$shipmentId = $result->getInternalId();
 
-		if(intval($shipmentId) <= 0)
+		if (intval($shipmentId) <= 0)
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SAVE_SHIPMENT_ID')));
 			return $result;
@@ -315,9 +355,9 @@ final class Manager
 
 		$extShipmentId = $result->getExternalId();
 
-		if($result->isSuccess())
+		if ($result->isSuccess())
 		{
-			if(intval($requestId) > 0)
+			if (intval($requestId) > 0)
 			{
 				$res = ShipmentTable::setShipment(array(
 					'REQUEST_ID' => $requestId,
@@ -326,12 +366,12 @@ final class Manager
 					'ERROR_DESCRIPTION' => ''
 				));
 
-				if(!$res->isSuccess())
+				if (!$res->isSuccess())
 					$result->addErrors($res->getErrors());
 
 				$res = self::saveShipmentResult($shipmentId, $result);
 
-				if(!$res->isSuccess())
+				if (!$res->isSuccess())
 					$result->addErrors($res->getErrors());
 			}
 		}
@@ -356,7 +396,7 @@ final class Manager
 	 */
 	public static function getDeliveryRequestFormFields($deliveryId, $formFieldsType, array $shipmentIds, array $additional = array())
 	{
-		if(!$deliveryRequestHandler = self::getDeliveryRequestHandlerByDeliveryId($deliveryId))
+		if (!$deliveryRequestHandler = self::getDeliveryRequestHandlerByDeliveryId($deliveryId))
 			return array();
 
 		return $deliveryRequestHandler->getFormFields($formFieldsType, $shipmentIds, $additional);
@@ -370,29 +410,147 @@ final class Manager
 	public static function deleteDeliveryRequest($requestId)
 	{
 		$result = new Result();
+		$shipmentIds = [];
 
-		if(empty($requestId))
+		if (empty($requestId))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_ID')));
 			return $result;
 		}
 
-		if($deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId))
+		if ($deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId))
 		{
 			$res = $deliveryRequestHandler->delete($requestId);
 
-			if(!$res->isSuccess())
+			if (!$res->isSuccess())
 				$result->addErrors($res->getErrors());
 		}
 
-		if($result->isSuccess())
+		if ($result->isSuccess())
 		{
+			$requestShipmentList = ShipmentTable::getList(array('filter' => array('=REQUEST_ID' => $requestId)));
+			while ($requestShipment = $requestShipmentList->fetch())
+			{
+				$shipmentIds[] = $requestShipment['SHIPMENT_ID'];
+			}
+
 			$con = Main\Application::getConnection();
 			$con->queryExecute("DELETE FROM ".ShipmentTable::getTableName()." WHERE REQUEST_ID=".intval($requestId));
 			$res = RequestTable::delete($requestId);
 
-			if(!$res->isSuccess())
+			if (!$res->isSuccess())
 				$result->addErrors($res->getErrors());
+		}
+
+		(new Main\Event(
+			'sale',
+			self::REQUEST_DELETED_EVENT_CODE,
+			[
+				'REQUEST_ID' => $requestId,
+				'SHIPMENT_IDS' => $shipmentIds,
+				'RESULT' => $result
+			]
+		))->send();
+
+		if ($result->isSuccess() && Loader::includeModule('pull'))
+		{
+			\CPullWatch::AddToStack(
+				'SALE_DELIVERY_REQUEST',
+				[
+					'module_id' => 'sale',
+					'command' => 'onDeliveryRequestDelete',
+					'params' => [
+						'ID' => $requestId,
+					]
+				]
+			);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param $requestId
+	 * @param array $fields
+	 * @param bool $overwriteProperties
+	 * @return Result
+	 */
+	public static function updateDeliveryRequest($requestId, array $fields, bool $overwriteProperties = false): Result
+	{
+		$result = new Result();
+
+		if (empty($requestId))
+		{
+			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_ID')));
+			return $result;
+		}
+
+		if (isset($fields['EXTERNAL_PROPERTIES']) && !is_array($fields['EXTERNAL_PROPERTIES']))
+		{
+			unset($fields['EXTERNAL_PROPERTIES']);
+		}
+
+		if (
+			$overwriteProperties === false
+			&& isset($fields['EXTERNAL_PROPERTIES'])
+			&& ($existingRequestFields = RequestTable::getById($requestId)->fetch())
+		)
+		{
+			$existingProperties = array_column(
+				is_null($existingRequestFields['EXTERNAL_PROPERTIES'])
+					? []
+					: $existingRequestFields['EXTERNAL_PROPERTIES'],
+				null,
+				'NAME'
+			);
+			$newProperties = array_column(
+				$fields['EXTERNAL_PROPERTIES'],
+				null,
+				'NAME'
+			);
+
+			$fields['EXTERNAL_PROPERTIES'] = array_values(array_merge($existingProperties, $newProperties));
+		}
+
+ 		$updateResult = RequestTable::update(
+			$requestId,
+			array_intersect_key(
+				$fields,
+				array_flip([
+					'STATUS',
+					'EXTERNAL_STATUS',
+					'EXTERNAL_STATUS_SEMANTIC',
+					'EXTERNAL_PROPERTIES',
+				])
+			)
+		);
+		if (!$updateResult->isSuccess())
+		{
+			$result->addErrors($updateResult->getErrors());
+		}
+
+		(new Main\Event(
+			'sale',
+			self::REQUEST_UPDATED_EVENT_CODE,
+			[
+				'REQUEST_ID' => $requestId,
+				'FIELDS' => $fields,
+				'RESULT' => $result,
+			]
+		))->send();
+
+		if ($result->isSuccess() && Loader::includeModule('pull'))
+		{
+			\CPullWatch::AddToStack(
+				'SALE_DELIVERY_REQUEST',
+				[
+					'module_id' => 'sale',
+					'command' => 'onDeliveryRequestUpdate',
+					'params' => [
+						'ID' => $requestId,
+					]
+				]
+			);
 		}
 
 		return $result;
@@ -407,19 +565,19 @@ final class Manager
 	{
 		$result = new Result();
 
-		if(empty($requestId))
+		if (empty($requestId))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_ID')));
 			return $result;
 		}
 
-		if(empty($shipmentIds))
+		if (empty($shipmentIds))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SHP_ID_LIST_EMPTY')));
 			return $result;
 		}
 
-		if(!($deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId)))
+		if (!($deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId)))
 		{
 			$result->addError(
 				new Main\Error(
@@ -432,22 +590,22 @@ final class Manager
 
 		$checkResults = self::checkShipmentIdsBeforeDelete($shipmentIds);
 
-		foreach($checkResults as $res)
+		foreach ($checkResults as $res)
 		{
-			if(!$res->isSuccess())
+			if (!$res->isSuccess())
 			{
 				$result->addErrors($res->getErrors());
 				unset($shipmentIds[array_search($res->getInternalId(), $shipmentIds)]);
 			}
 		}
 
-		if(empty($shipmentIds))
+		if (empty($shipmentIds))
 			return $result;
 
 		$res = $deliveryRequestHandler->deleteShipments($requestId, $shipmentIds);
 		$result->setResults($res->getResults());
 
-		if(!$res->isSuccess())
+		if (!$res->isSuccess())
 		{
 			$result->addErrors($res->getErrors());
 			return $result;
@@ -455,7 +613,7 @@ final class Manager
 
 		$results = $result->getResults();
 
-		if(!is_array($results) || empty($results))
+		if (!is_array($results) || empty($results))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_RES_UNKNOWN')));
 			return $result;
@@ -464,19 +622,19 @@ final class Manager
 		$con = Main\Application::getConnection();
 
 		/** @var  ShipmentResult $shpRes */
-		foreach($results as $resId => $shpRes)
+		foreach ($results as $resId => $shpRes)
 		{
-			if(!($shpRes instanceof ShipmentResult))
+			if (!($shpRes instanceof ShipmentResult))
 			{
 				$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_ANSW_TYPE').' "'.get_class($shpRes).'"'));
 				continue;
 			}
 
-			if($shpRes->isSuccess())
+			if ($shpRes->isSuccess())
 			{
 				$shpId = intval($shpRes->getInternalId());
 
-				if($shpId <= 0)
+				if ($shpId <= 0)
 				{
 					$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_SHP_ID_LESS_ZERO')));
 					continue;
@@ -487,11 +645,11 @@ final class Manager
 				self::unSetMarkerShipmentChanged($shpId);
 
 				//If there is no more shipments in this request
-				if(!ShipmentTable::getList(array('filter' => array('=REQUEST_ID' => $requestId)))->fetch())
+				if (!ShipmentTable::getList(array('filter' => array('=REQUEST_ID' => $requestId)))->fetch())
 				{
 					$res = RequestTable::delete($requestId);
 
-					if($res->isSuccess())
+					if ($res->isSuccess())
 					{
 						$result->addMessage(
 							new Message(
@@ -528,7 +686,7 @@ final class Manager
 	{
 		$deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId);
 
-		if(!$deliveryRequestHandler)
+		if (!$deliveryRequestHandler)
 		{
 			$result= new Result();
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_OBJ')));
@@ -548,14 +706,28 @@ final class Manager
 	{
 		$deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId);
 
-		if(!$deliveryRequestHandler)
+		if (!$deliveryRequestHandler)
 		{
 			$result = new Result();
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_ACTION_EXEC').'. '.Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_OBJ')));
 			return $result;
 		}
 
-		return $deliveryRequestHandler->executeAction($requestId, $actionType, $additional);
+		$result = $deliveryRequestHandler->executeAction($requestId, $actionType, $additional);
+
+		(new Main\Event(
+			'sale',
+			self::REQUEST_ACTION_EXECUTED_EVENT_CODE,
+			[
+				'REQUEST_ID' => $requestId,
+				'ACTION_TYPE' => $actionType,
+				'ADDITIONAL' => $additional,
+				'RESULT' => $result,
+				'DELIVERY_REQUEST_HANDLER' => $deliveryRequestHandler,
+			]
+		))->send();
+
+		return $result;
 	}
 
 	/**
@@ -569,7 +741,7 @@ final class Manager
 	{
 		$deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId);
 
-		if(!$deliveryRequestHandler)
+		if (!$deliveryRequestHandler)
 		{
 			$result = new Result();
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_ACTION_EXEC').'. '.Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_OBJ')));
@@ -589,7 +761,7 @@ final class Manager
 		$result = array();
 		$positiveIds = self::filterPositiveIds($shipmentIds);
 
-		foreach(array_diff($shipmentIds, $positiveIds) as $id)
+		foreach (array_diff($shipmentIds, $positiveIds) as $id)
 		{
 			$shpRes = new ShipmentResult($id);
 			$shpRes->addError(
@@ -602,7 +774,7 @@ final class Manager
 
 		$addedIds = self::filterAddedIds($positiveIds);
 
-		foreach(array_intersect($positiveIds, $addedIds) as $id)
+		foreach (array_intersect($positiveIds, $addedIds) as $id)
 		{
 			$shpRes = new ShipmentResult($id);
 			$shpRes->addError(
@@ -614,7 +786,7 @@ final class Manager
 
 		$existingIds = self::filterExistIds($addedIds);
 
-		foreach(array_diff($addedIds, $existingIds) as $id)
+		foreach (array_diff($addedIds, $existingIds) as $id)
 		{
 			$shpRes = new ShipmentResult($id);
 			$shpRes->addError(
@@ -630,7 +802,6 @@ final class Manager
 	/**
 	 * @param int[] $shipmentIds
 	 * @return int[] Choose ids only for existing shipments.
-	 * @throws Main\ArgumentException
 	 */
 	protected static function filterExistIds(array $shipmentIds)
 	{
@@ -642,7 +813,7 @@ final class Manager
 			)
 		));
 
-		while($row = $res->fetch())
+		while ($row = $res->fetch())
 			$result[] = $row['ID'];
 
 		return $result;
@@ -651,7 +822,6 @@ final class Manager
 	/**
 	 * @param int[] $shipmentIds
 	 * @return int[]
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	protected static function filterAddedIds(array $shipmentIds)
 	{
@@ -664,7 +834,7 @@ final class Manager
 			)
 		));
 
-		while($row = $res->fetch())
+		while ($row = $res->fetch())
 			$result[] = $row['SHIPMENT_ID'];
 
 		return $result;
@@ -678,8 +848,8 @@ final class Manager
 	{
 		$result = array();
 
-		foreach($shipmentIds as $id)
-			if(intval($id) > 0)
+		foreach ($shipmentIds as $id)
+			if (intval($id) > 0)
 				$result[] = $id;
 
 		return $result;
@@ -704,7 +874,7 @@ final class Manager
 		$result = array();
 		$positiveIds = self::filterPositiveIds($shipmentIds);
 
-		foreach(array_diff($shipmentIds, $positiveIds) as $id)
+		foreach (array_diff($shipmentIds, $positiveIds) as $id)
 		{
 			$shpRes = new ShipmentResult($id);
 			$shpRes->addError(
@@ -716,7 +886,7 @@ final class Manager
 
 		$addedIds = self::filterAddedIds($positiveIds);
 
-		foreach(array_diff($positiveIds, $addedIds) as $id)
+		foreach (array_diff($positiveIds, $addedIds) as $id)
 		{
 			$shpRes = new ShipmentResult($id);
 			$shpRes->addError(
@@ -728,7 +898,7 @@ final class Manager
 
 		$existingIds = self::filterExistIds($addedIds);
 
-		foreach(array_diff($addedIds, $existingIds) as $id)
+		foreach (array_diff($addedIds, $existingIds) as $id)
 		{
 			$shpRes = new ShipmentResult($id);
 			$shpRes->addError(
@@ -753,7 +923,6 @@ final class Manager
 	/**
 	 * @param int $shipmentId
 	 * @return int Request ID
-	 * @throws Main\ArgumentException
 	 */
 	public static function getRequestIdByShipmentId($shipmentId)
 	{
@@ -765,7 +934,7 @@ final class Manager
 			)
 		));
 
-		if($row = $res->fetch())
+		if ($row = $res->fetch())
 			$result = $row['REQUEST_ID'];
 
 		return $result;
@@ -773,27 +942,27 @@ final class Manager
 
 	/**
 	 * @param int $requestId
-	 * @param int [] $shipmentIds
+	 * @param int[] $shipmentIds
+	 * @param array $additional
 	 * @return Result
-	 * @throws \Exception
 	 */
-	public static function addShipmentsToDeliveryRequest($requestId, array $shipmentIds)
+	public static function addShipmentsToDeliveryRequest($requestId, array $shipmentIds, array $additional = [])
 	{
 		$result = new Result();
 
-		if(empty($requestId))
+		if (empty($requestId))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_ID')));
 			return $result;
 		}
 
-		if(empty($shipmentIds))
+		if (empty($shipmentIds))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SHP_ID_LIST_EMPTY')));
 			return $result;
 		}
 
-		if(!($deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId)))
+		if (!($deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId)))
 		{
 			$result->addError(
 				new Main\Error(
@@ -807,9 +976,9 @@ final class Manager
 
 		$checkResults = self::checkShipmentIdsBeforeAdd($shipmentIds);
 
-		foreach($checkResults as $res)
+		foreach ($checkResults as $res)
 		{
-			if($res->isSuccess())
+			if ($res->isSuccess())
 				continue;
 
 			$result->addResult(
@@ -820,15 +989,15 @@ final class Manager
 			unset($shipmentIds[array_search($res->getInternalId(), $shipmentIds)]);
 		}
 
-		if(empty($shipmentIds))
+		if (empty($shipmentIds))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SHP_ABSENT')));
 			return $result;
 		}
 
-		$res = $deliveryRequestHandler->addShipments($requestId, $shipmentIds);
+		$res = $deliveryRequestHandler->addShipments($requestId, $shipmentIds, $additional);
 
-		if($res->isSuccess())
+		if ($res->isSuccess())
 		{
 			$result->addResults($res->getResults());
 		}
@@ -836,7 +1005,7 @@ final class Manager
 		{
 			$result->addErrors($res->getErrors());
 
-			foreach($res->getShipmentResults() as $sRes)
+			foreach ($res->getShipmentResults() as $sRes)
 				$result->addResult(self::processShipmentResult($sRes));
 
 			return $result;
@@ -844,7 +1013,7 @@ final class Manager
 
 		$results = $result->getResults();
 
-		if(!is_array($results) || empty($results))
+		if (!is_array($results) || empty($results))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_RES_UNKNOWN')));
 			return $result;
@@ -853,21 +1022,21 @@ final class Manager
 		$successResCount = 0;
 
 		/** @var RequestResult $reqRes */
-		foreach($results as $resId => $reqRes)
+		foreach ($results as $resId => $reqRes)
 		{
-			if($reqRes instanceof ShipmentResult)
+			if ($reqRes instanceof ShipmentResult)
 			{
 				$results[$resId] = self::processShipmentResult($reqRes, $requestId);
 			}
-			elseif($reqRes instanceof RequestResult)
+			elseif ($reqRes instanceof RequestResult)
 			{
 				$reqShpResults = $reqRes->getShipmentResults();
 
-				foreach($reqShpResults as $id => $shpRes)
+				foreach ($reqShpResults as $id => $shpRes)
 				{
 					$reqShpResults[$id] = self::processShipmentResult($shpRes, $requestId);
 
-					if($shpRes->isSuccess())
+					if ($shpRes->isSuccess())
 						$successResCount++;
 				}
 
@@ -892,7 +1061,7 @@ final class Manager
 			}
 		}
 
-		if($successResCount <= 0)
+		if ($successResCount <= 0)
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SHP_ABSENT2')));
 
 		$result->setResults($results);
@@ -909,13 +1078,13 @@ final class Manager
 	{
 		$result = new Result();
 
-		if(empty($requestId))
+		if (empty($requestId))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_REQ_ID')));
 			return $result;
 		}
 
-		if(empty($shipmentIds))
+		if (empty($shipmentIds))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SHP_ID_LIST_EMPTY')));
 			return $result;
@@ -923,9 +1092,9 @@ final class Manager
 
 		$checkResults = self::checkShipmentIdsBeforeUpdate($shipmentIds);
 
-		foreach($checkResults as $res)
+		foreach ($checkResults as $res)
 		{
-			if($res->isSuccess())
+			if ($res->isSuccess())
 				continue;
 
 			$result->addResult(
@@ -935,7 +1104,7 @@ final class Manager
 			unset($shipmentIds[array_search($res->getInternalId(), $shipmentIds)]);
 		}
 
-		if(empty($shipmentIds))
+		if (empty($shipmentIds))
 		{
 			$result->addError(
 				new Main\Error(
@@ -948,7 +1117,7 @@ final class Manager
 
 		$deliveryRequestHandler = self::getDeliveryRequestHandlerByRequestId($requestId);
 
-		if(!$deliveryRequestHandler)
+		if (!$deliveryRequestHandler)
 		{
 			$result->addError(
 				new Main\Error(
@@ -965,7 +1134,7 @@ final class Manager
 		$res = $deliveryRequestHandler->updateShipments($requestId, $shipmentIds);
 		$result->addResults($res->getResults());
 
-		if(!$res->isSuccess())
+		if (!$res->isSuccess())
 		{
 			$result->addErrors($res->getErrors());
 			return $result;
@@ -973,7 +1142,7 @@ final class Manager
 
 		$results = $res->getResults();
 
-		if(empty($results))
+		if (empty($results))
 		{
 			$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_RES_EMPTY')));
 			return $result;
@@ -981,21 +1150,21 @@ final class Manager
 
 		$resultsFinal = array();
 
-		foreach($results as $res)
+		foreach ($results as $res)
 		{
-			if($res instanceof ShipmentResult)
+			if ($res instanceof ShipmentResult)
 			{
 				$resultsFinal[] = self::processShipmentResult($res, $requestId);
 			}
-			elseif($res instanceof RequestResult)
+			elseif ($res instanceof RequestResult)
 			{
 				$reqShpResults = $res->getShipmentResults();
 
-				foreach($reqShpResults as $id => $shpRes)
+				foreach ($reqShpResults as $id => $shpRes)
 				{
 					$shpRes = self::processShipmentResult($shpRes, $requestId);
 
-					if($shpRes->isSuccess())
+					if ($shpRes->isSuccess())
 					{
 						$shpInternalId = intval($shpRes->getInternalId());
 						//Unset mark about changed shipments
@@ -1003,7 +1172,7 @@ final class Manager
 
 						$dbRes = self::saveShipmentResult($shpRes->getInternalId(), $shpRes);
 
-						if(!$dbRes->isSuccess())
+						if (!$dbRes->isSuccess())
 							$shpRes->addErrors($dbRes->getErrors());
 					}
 
@@ -1041,7 +1210,7 @@ final class Manager
 		$result = new Result();
 		$shipments = Helper::getShipmentsByIds(array($shipmentId));
 
-		if($shipments[$shipmentId])
+		if ($shipments[$shipmentId])
 		{
 			$shipments[$shipmentId]->setFields(array(
 				'TRACKING_NUMBER' => $shipmentResult->getTrackingNumber(),
@@ -1049,9 +1218,11 @@ final class Manager
 				'DELIVERY_DOC_DATE' => $shipmentResult->getDeliveryDocDate()
 			));
 
-			$res = $shipments[$shipmentId]->save();
+			static::$isChangedShipmentNeedsMark = false;
+			$res = $shipments[$shipmentId]->getOrder()->save();
+			static::$isChangedShipmentNeedsMark = true;
 
-			if(!$res->isSuccess())
+			if (!$res->isSuccess())
 				$result->addError(new Main\Error(Loc::getMessage('SALE_DLVR_REQ_MNGR_ERROR_SAVE_SHIPMENT').'"'.$shipmentId.'"'));
 		}
 		else
@@ -1073,7 +1244,7 @@ final class Manager
 	 */
 	public static function onBeforeShipmentSave(&$order, &$shipment)
 	{
-		if(self::isShipmentSent($shipment->getId()))
+		if (static::$isChangedShipmentNeedsMark && self::isShipmentSent($shipment->getId()))
 		{
 			self::setMarkerShipmentChanged($order, $shipment);
 		}
@@ -1086,7 +1257,7 @@ final class Manager
 	{
 		$shipmentId = $shipment->getId();
 
-		if(self::isShipmentSent($shipmentId))
+		if (self::isShipmentSent($shipmentId))
 		{
 			self::deleteShipmentsFromDeliveryRequest(
 				self::getRequestIdByShipmentId($shipmentId),
@@ -1125,6 +1296,53 @@ final class Manager
 			'=ENTITY_ID' => $shipmentId,
 			'=CODE' => 'DELIVERY_REQUEST_NOT_UPDATED'
 		));
+	}
+
+	/**
+	 * @param string $addressee
+	 * @param Message\Message $message
+	 * @param int $requestId
+	 * @param int $shipmentId
+	 */
+	public static function sendMessage(
+		string $addressee,
+		Message\Message $message,
+		int $requestId,
+		int $shipmentId
+	): void
+	{
+		(new Main\Event(
+			'sale',
+			self::MESSAGE_RECEIVED_EVENT_CODE,
+			[
+				'ADDRESSEE' => $addressee,
+				'REQUEST_ID' => $requestId,
+				'SHIPMENT_ID' => $shipmentId,
+				'MESSAGE' => $message,
+			]
+		))->send();
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function getMessageAddressees(): array
+	{
+		return [
+			self::MESSAGE_MANAGER_ADDRESSEE,
+			self::MESSAGE_RECIPIENT_ADDRESSEE,
+		];
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function getRequestStatusSemantics(): array
+	{
+		return [
+			self::EXTERNAL_STATUS_SEMANTIC_SUCCESS,
+			self::EXTERNAL_STATUS_SEMANTIC_PROCESS,
+		];
 	}
 
 	public static function initJs()

@@ -11,6 +11,8 @@ Loc::loadMessages(__FILE__);
 
 class CAllAgent
 {
+	protected const LOCK_TIME = 600;
+
 	public static function AddAgent(
 		$name, // PHP function name
 		$module = "", // module
@@ -55,16 +57,19 @@ class CAllAgent
 			if (!$existError)
 				return $agent['ID'];
 
-			$e = new CAdminException(array(
-				array(
-					"id" => "agent_exist",
-					"text" => ($user_id
-						? Loc::getMessage("MAIN_AGENT_ERROR_EXIST_FOR_USER", array('#AGENT#' => $name, '#USER_ID#' => $user_id))
-						: Loc::getMessage("MAIN_AGENT_ERROR_EXIST_EXT", array('#AGENT#' => $name))
+			if ($APPLICATION instanceof CMain)
+			{
+				$e = new CAdminException(array(
+					array(
+						"id" => "agent_exist",
+						"text" => ($user_id
+							? Loc::getMessage("MAIN_AGENT_ERROR_EXIST_FOR_USER", array('#AGENT#' => $name, '#USER_ID#' => $user_id))
+							: Loc::getMessage("MAIN_AGENT_ERROR_EXIST_EXT", array('#AGENT#' => $name))
+						)
 					)
-				)
-			));
-			$APPLICATION->throwException($e);
+				));
+				$APPLICATION->throwException($e);
+			}
 			return false;
 		}
 	}
@@ -127,7 +132,7 @@ class CAllAgent
 	{
 		global $DB;
 
-		if (strlen($module) > 0)
+		if ($module <> '')
 		{
 			$strSql = "DELETE FROM b_agent WHERE MODULE_ID='".$DB->ForSql($module,255)."'";
 			$DB->Query($strSql, false, "FILE: ".__FILE__."<br> LINE: ".__LINE__);
@@ -164,7 +169,7 @@ class CAllAgent
 
 	public static function GetById($ID)
 	{
-		return CAgent::GetList(Array(), Array("ID"=>IntVal($ID)));
+		return CAgent::GetList(Array(), Array("ID"=>intval($ID)));
 	}
 
 	public static function GetList($arOrder = Array("ID" => "DESC"), $arFilter = array())
@@ -197,8 +202,8 @@ class CAllAgent
 		for($i = 0, $n = count($filter_keys); $i < $n; $i++)
 		{
 			$val = $arFilter[$filter_keys[$i]];
-			$key = strtoupper($filter_keys[$i]);
-			if(strlen($val)<=0 || ($key=="USER_ID" && $val!==false && $val!==null))
+			$key = mb_strtoupper($filter_keys[$i]);
+			if((string)$val == '' || ($key=="USER_ID" && $val!==false && $val!==null))
 				continue;
 
 			switch($key)
@@ -207,12 +212,12 @@ class CAllAgent
 					$arSqlSearch[] = "A.ID=".(int)$val;
 					break;
 				case "ACTIVE":
-					$t_val = strtoupper($val);
+					$t_val = mb_strtoupper($val);
 					if($t_val == "Y" || $t_val == "N")
 						$arSqlSearch[] = "A.ACTIVE='".$t_val."'";
 					break;
 				case "IS_PERIOD":
-					$t_val = strtoupper($val);
+					$t_val = mb_strtoupper($val);
 					if($t_val=="Y" || $t_val=="N")
 						$arSqlSearch[] = "A.IS_PERIOD='".$t_val."'";
 					break;
@@ -226,7 +231,7 @@ class CAllAgent
 					$arSqlSearch[] = "A.MODULE_ID = '".$DB->ForSQL($val)."'";
 					break;
 				case "USER_ID":
-					$arSqlSearch[] = "A.USER_ID ".(IntVal($val)<=0?"IS NULL":"=".IntVal($val));
+					$arSqlSearch[] = "A.USER_ID ".(intval($val)<=0?"IS NULL":"=".intval($val));
 					break;
 				case "LAST_EXEC":
 					$arr = ParseDateTime($val, CLang::GetDateFormat());
@@ -249,14 +254,14 @@ class CAllAgent
 
 		foreach($arOrder as $by => $order)
 		{
-			$by = strtoupper($by);
-			$order = strtoupper($order);
+			$by = mb_strtoupper($by);
+			$order = mb_strtoupper($order);
 			if (isset($arOFields[$by]))
 			{
 				if ($order != "ASC")
-					$order = "DESC".($DB->type=="ORACLE" ? " NULLS LAST" : "");
+					$order = "DESC";
 				else
-					$order = "ASC".($DB->type=="ORACLE" ? " NULLS FIRST" : "");
+					$order = "ASC";
 				$arSqlOrder[] = $arOFields[$by]." ".$order;
 			}
 		}
@@ -266,7 +271,7 @@ class CAllAgent
 			$DB->DateToCharFunction("A.LAST_EXEC")." as LAST_EXEC, ".
 			$DB->DateToCharFunction("A.NEXT_EXEC")." as NEXT_EXEC, ".
 			$DB->DateToCharFunction("A.DATE_CHECK")." as DATE_CHECK, ".
-			"A.AGENT_INTERVAL, A.IS_PERIOD ".
+			"A.AGENT_INTERVAL, A.IS_PERIOD, A.RETRY_COUNT ".
 			"FROM b_agent A LEFT JOIN b_user B ON(A.USER_ID = B.ID)";
 		$strSql .= (count($arSqlSearch)>0) ? " WHERE ".implode(" AND ", $arSqlSearch) : "";
 		$strSql .= (count($arSqlOrder)>0) ? " ORDER BY ".implode(", ", $arSqlOrder) : "";
@@ -282,14 +287,14 @@ class CAllAgent
 
 		$errMsg = array();
 
-		if(!$ign_name && (!is_set($arFields, "NAME") || strlen(trim($arFields["NAME"])) <= 2))
+		if(!$ign_name && (!is_set($arFields, "NAME") || mb_strlen(trim($arFields["NAME"])) <= 2))
 			$errMsg[] = array("id" => "NAME", "text" => Loc::getMessage("MAIN_AGENT_ERROR_NAME"));
 
 		if(
 			array_key_exists("NEXT_EXEC", $arFields)
 			&& (
 				$arFields["NEXT_EXEC"] == ""
-				|| !$DB->IsDate($arFields["NEXT_EXEC"], false, LANG, "FULL")
+				|| !$DB->IsDate($arFields["NEXT_EXEC"], false, false, "FULL")
 			)
 		)
 		{
@@ -299,7 +304,7 @@ class CAllAgent
 		if(
 			array_key_exists("DATE_CHECK", $arFields)
 			&& $arFields["DATE_CHECK"] <> ""
-			&& !$DB->IsDate($arFields["DATE_CHECK"], false, LANG, "FULL")
+			&& !$DB->IsDate($arFields["DATE_CHECK"], false, false, "FULL")
 		)
 		{
 			$errMsg[] = array("id" => "DATE_CHECK", "text" => Loc::getMessage("MAIN_AGENT_ERROR_DATE_CHECK"));
@@ -308,22 +313,34 @@ class CAllAgent
 		if(
 			array_key_exists("LAST_EXEC", $arFields)
 			&& $arFields["LAST_EXEC"] <> ""
-			&& !$DB->IsDate($arFields["LAST_EXEC"], false, LANG, "FULL")
+			&& !$DB->IsDate($arFields["LAST_EXEC"], false, false, "FULL")
 		)
 		{
 			$errMsg[] = array("id" => "LAST_EXEC", "text" => Loc::getMessage("MAIN_AGENT_ERROR_LAST_EXEC"));
 		}
 
-		if($arFields["MODULE_ID"] <> '')
-			if(!IsModuleInstalled($arFields["MODULE_ID"]))
-				$errMsg[] = array("id" => "MODULE_ID", "text" => Loc::getMessage("MAIN_AGENT_ERROR_MODULE"));
-
 		if(!empty($errMsg))
 		{
-			$e = new CAdminException($errMsg);
-			$APPLICATION->ThrowException($e);
+			if ($APPLICATION instanceof CMain)
+			{
+				$e = new CAdminException($errMsg);
+				$APPLICATION->ThrowException($e);
+			}
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Three states: no cron (null), on cron (true), on hit (false).
+	 * @return bool|null
+	 */
+	protected static function OnCron()
+	{
+		if (COption::GetOptionString('main', 'agents_use_crontab', 'N') == 'Y' || (defined('BX_CRONTAB_SUPPORT') && BX_CRONTAB_SUPPORT === true))
+		{
+			return (defined('BX_CRONTAB') && BX_CRONTAB === true);
+		}
+		return null;
 	}
 }

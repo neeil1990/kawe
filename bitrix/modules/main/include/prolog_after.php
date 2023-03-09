@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Bitrix Framework
  * @package bitrix
@@ -10,14 +11,13 @@
  * Bitrix vars
  * @global CUser $USER
  * @global CMain $APPLICATION
- * @global $SiteExpireDate
  */
 
 use Bitrix\Main;
 
 global $USER, $APPLICATION;
 
-define("START_EXEC_PROLOG_AFTER_1", microtime());
+define("START_EXEC_PROLOG_AFTER_1", microtime(true));
 $GLOBALS["BX_STATE"] = "PA";
 
 if(!headers_sent())
@@ -33,7 +33,7 @@ if(defined("DEMO") && DEMO=="Y")
 	if(file_exists($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/.config.php"))
 		include($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/.config.php");
 
-	$delta = $SiteExpireDate-time();
+	$delta = $GLOBALS['SiteExpireDate'] - time();
 	$daysToExpire = ($delta < 0? 0 : ceil($delta/86400));
 	$bSaas = (COption::GetOptionString('main', '~SAAS_MODE', "N") == "Y");
 
@@ -65,6 +65,16 @@ if(defined("DEMO") && DEMO=="Y")
 	elseif($daysToExpire == 0)
 	{
 		echo GetMessage("expire_mess1");
+	}
+}
+elseif (defined("TIMELIMIT_EDITION") && TIMELIMIT_EDITION == "Y")
+{
+	if (defined("OLDSITEEXPIREDATE") && defined("SITEEXPIREDATE") && OLDSITEEXPIREDATE != SITEEXPIREDATE)
+		die(GetMessage("expire_mess2"));
+
+	if (isset($GLOBALS['SiteExpireDate']) && $GLOBALS['SiteExpireDate'] < time())
+	{
+		echo GetMessage("expire_mess_timelicense1");
 	}
 }
 
@@ -103,8 +113,6 @@ $BX_GLOBAL_AREA_EDIT_ICON = false;
 
 if($APPLICATION->GetShowIncludeAreas())
 {
-	require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/interface/init_admin.php");
-
 	$aUserOpt = CUserOptions::GetOption("global", "settings", array());
 	if ($aUserOpt["page_edit_control_enable"] != "N")
 	{
@@ -133,7 +141,7 @@ if($APPLICATION->GetShowIncludeAreas())
 		}
 	}
 }
-define("START_EXEC_PROLOG_AFTER_2", microtime());
+define("START_EXEC_PROLOG_AFTER_2", microtime(true));
 $GLOBALS["BX_STATE"] = "WA";
 $APPLICATION->RestartWorkarea(true);
 

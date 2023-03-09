@@ -12,10 +12,10 @@ if (!empty($arResult['ERROR']))
 <?
 
 // determine column data type
-function getResultColumnDataType(&$viewColumnInfo, &$customColumnTypes = array(), $helperClassName)
+function getResultColumnDataType(&$viewColumnInfo, &$customColumnTypes, $helperClassName)
 {
 	$dataType = null;
-	if (array_key_exists($viewColumnInfo['fieldName'], $customColumnTypes))
+	if (is_array($customColumnTypes) && array_key_exists($viewColumnInfo['fieldName'], $customColumnTypes))
 	{
 		$dataType = $customColumnTypes[$viewColumnInfo['fieldName']];
 	}
@@ -134,8 +134,16 @@ function groupingReportResultHtml(&$arParams, &$arResult, $level = 0, $arRowSet 
 				while ($rowNumber++ < $nRows)
 				{
 					// get index
-					if ($bUseRowSet) list(,$dataIndex) = each($arRowSet);
-					else list($dataIndex,) = each($arData);
+					if ($bUseRowSet)
+					{
+						$dataIndex = current($arRowSet);
+						next($arRowSet);
+					}
+					else
+					{
+						$dataIndex = key($arData);
+						next($arData);
+					}
 
 					// fill index and value of group
 					$arGroupValuesIndexes[] = $dataIndex;
@@ -295,8 +303,16 @@ function groupingReportResultHtml(&$arParams, &$arResult, $level = 0, $arRowSet 
 					while ($rowNumber++ < $nRows)
 					{
 						// get index
-						if ($bUseRowSet) list(,$dataIndex) = each($arRowSet);
-						else list($dataIndex,) = each($arData);
+						if ($bUseRowSet)
+						{
+							$dataIndex = current($arRowSet);
+							next($arRowSet);
+						}
+						else
+						{
+							$dataIndex = key($arData);
+							next($arData);
+						}
 
 						// total += values
 						foreach ($arColumns as $columnIndex => $viewColumnIndex)
@@ -456,7 +472,7 @@ unset($arGroupingResult);
 							.'">'.$v.'</a>';
 					}
 				}
-				elseif (strlen($row[$col['resultName']]))
+				elseif(mb_strlen($row[$col['resultName']]))
 				{
 					$finalValue = '<a href="'.$row['__HREF_'.$col['resultName']].'">'.$row[$col['resultName']].'</a>';
 				}

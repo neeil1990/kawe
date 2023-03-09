@@ -15,4 +15,14 @@ if(CModule::IncludeModule('search'))
 		));
 	}
 }
-?>
+
+function search_isShortDate($strDate)
+{
+	$arDate = ParseDateTime($strDate, FORMAT_DATETIME);
+	unset($arDate["DD"]);
+	unset($arDate["MMMM"]);
+	unset($arDate["MM"]);
+	unset($arDate["M"]);
+	unset($arDate["YYYY"]);
+	return array_sum($arDate) == 0;
+}

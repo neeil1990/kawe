@@ -29,7 +29,20 @@ Loc::loadMessages(__FILE__);
  * </ul>
  *
  * @package Bitrix\Currency
- **/
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_CurrencyLang_Query query()
+ * @method static EO_CurrencyLang_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_CurrencyLang_Result getById($id)
+ * @method static EO_CurrencyLang_Result getList(array $parameters = array())
+ * @method static EO_CurrencyLang_Entity getEntity()
+ * @method static \Bitrix\Currency\EO_CurrencyLang createObject($setDefaultValues = true)
+ * @method static \Bitrix\Currency\EO_CurrencyLang_Collection createCollection()
+ * @method static \Bitrix\Currency\EO_CurrencyLang wakeUpObject($row)
+ * @method static \Bitrix\Currency\EO_CurrencyLang_Collection wakeUpCollection($rows)
+ */
 
 class CurrencyLangTable extends Main\Entity\DataManager
 {
@@ -97,6 +110,7 @@ class CurrencyLangTable extends Main\Entity\DataManager
 				'title' => Loc::getMessage('CURRENCY_LANG_ENTITY_CREATED_BY_FIELD')
 			)),
 			'DATE_CREATE' => new Main\Entity\DatetimeField('DATE_CREATE', array(
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('CURRENCY_LANG_ENTITY_DATE_CREATE_FIELD')
 			)),
 			'MODIFIED_BY' => new Main\Entity\IntegerField('MODIFIED_BY', array(
@@ -104,7 +118,7 @@ class CurrencyLangTable extends Main\Entity\DataManager
 			)),
 			'TIMESTAMP_X' => new Main\Entity\DatetimeField('TIMESTAMP_X', array(
 				'required' => true,
-				'default_value' => new Main\Type\DateTime(),
+				'default_value' => function(){ return new Main\Type\DateTime(); },
 				'title' => Loc::getMessage('CURRENCY_LANG_ENTITY_TIMESTAMP_X_FIELD')
 			)),
 			'CREATED_BY_USER' => array(

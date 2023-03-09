@@ -4,6 +4,7 @@ namespace Sale\Handlers\Delivery\Additional\DeliveryRequests\RusPost;
 use Bitrix\Main\Application;
 use Bitrix\Main\Error;
 use Bitrix\Main\Loader;
+use Bitrix\Main\Web\HttpClient;
 use Bitrix\Sale\Shipment;
 use Bitrix\Main\Type\Date;
 use Bitrix\Main\Localization\Loc;
@@ -15,6 +16,9 @@ Loc::loadMessages(__FILE__);
 
 class Handler extends Requests\HandlerBase
 {
+	/** @var HttpClient */
+	protected $httpClient = null;
+
 	/**
 	 * Handler constructor.
 	 * @param Services\Base $deliveryService
@@ -23,6 +27,33 @@ class Handler extends Requests\HandlerBase
 	{
 		parent::__construct($deliveryService);
 		self::registerLocalClasses();
+	}
+
+	/**
+	 * @return null
+	 */
+	protected function getHttpClient()
+	{
+		if($this->httpClient === null)
+		{
+			$this->httpClient = new HttpClient(array(
+				"version" => "1.1",
+				"socketTimeout" => 30,
+				"streamTimeout" => 30,
+				"redirect" => true,
+				"redirectMax" => 5,
+			));
+		}
+
+		return $this->httpClient;
+	}
+
+	/**
+	 * @param HttpClient $httpClient
+	 */
+	public function setHttpClient(HttpClient $httpClient): void
+	{
+		$this->httpClient = $httpClient;
 	}
 
 	/**
@@ -41,14 +72,15 @@ class Handler extends Requests\HandlerBase
 		$requestClasses = array(
 			'Base', 'BaseFile', 'OrderCreate', 'OrderDelete', 'CleanAddress', 'NormalizeFio', 'BatchCreate',
 			'OrderDocF7P', 'OrderDocForms', 'BatchOrderAdd', 'BatchesList', 'BatchOrders', 'BatchDocF103',
-			'BatchDocPrepare', 'BatchDateUpdate', 'BatchDocAll', 'Batch', 'BatchOrder', 'OPS', 'OrderDocF112EK'
+			'BatchDocPrepare', 'BatchDateUpdate', 'BatchDocAll', 'Batch', 'BatchOrder', 'OPS', 'OrderDocF112EK',
+			'UserSettings', 'UnreliableRecipient'
 		);
 		$classes = array(
 			__NAMESPACE__.'\Reference' => 'handlers/delivery/additional/deliveryrequests/ruspost/reference.php'
 		);
 
 		foreach($requestClasses as $className)
-			$classes[$namespace.$className] = $path.strtolower($className).'.php';
+			$classes[$namespace.$className] = $path.mb_strtolower($className).'.php';
 
 		Loader::registerAutoLoadClasses('sale', $classes);
 		$registered = true;
@@ -93,7 +125,7 @@ class Handler extends Requests\HandlerBase
 			);
 
 			$delivery = Services\Manager::getObjectById($shipment->getDeliveryId());
-			$deliveryConfig = $delivery->getConfigValues();
+			$deliveryConfig = $delivery ? $delivery->getConfigValues() : [];
 
 			//cache on delivery
 			if($deliveryConfig['MAIN']['CATEGORY'] == 4)
@@ -155,10 +187,11 @@ class Handler extends Requests\HandlerBase
 
 	/**
 	 * @param int $requestId
-	 * @param \int[] $shipmentIds
+	 * @param int[] $shipmentIds
+	 * @param array $additional
 	 * @return Requests\Result
 	 */
-	public function addShipments($requestId, $shipmentIds)
+	public function addShipments($requestId, $shipmentIds, $additional = [])
 	{
 		$result = new Requests\Result();
 		$request = $this->getRequestObject('BATCH_ORDER_ADD');
@@ -177,11 +210,14 @@ class Handler extends Requests\HandlerBase
 
 		$result = $request->process(
 			$shipmentIds,
-			array(
-				'BATCH_NAME' => $requestFields['EXTERNAL_ID'],
-				'REQUEST_ID' => $requestFields['ID']
-		));
-
+			array_merge(
+				$additional,
+				array(
+					'BATCH_NAME' => $requestFields['EXTERNAL_ID'],
+					'REQUEST_ID' => $requestFields['ID']
+				)
+			)
+		);
 
 		return $result;
 	}
@@ -203,7 +239,7 @@ class Handler extends Requests\HandlerBase
 	 */
 	public function getFormFields($formFieldsType, array $entityIds, array $additional = array())
 	{
-		if($formFieldsType == Requests\Manager::FORM_FIELDS_TYPE_CREATE)
+		if ($formFieldsType == Requests\Manager::FORM_FIELDS_TYPE_CREATE)
 		{
 			$date = new Date();
 			$date->add('P1D');
@@ -218,26 +254,20 @@ class Handler extends Requests\HandlerBase
 				)
 			);
 
-			//todo: cache
-			$opsRes = $this->getRequestObject('OPS')->send();
-
-			if($opsRes->isSuccess())
+			$opsData = $this->getOpsData();
+			if (!is_null($opsData))
 			{
-				$opsList = array();
+				$result["OPS"] = $opsData;
+			}
+		}
+		elseif ($formFieldsType == Requests\Manager::FORM_FIELDS_TYPE_ADD)
+		{
+			$result = array();
 
-				foreach($opsRes->getData() as $ops)
-					if($ops['enabled'] == true)
-						$opsList[$ops['operator-postcode']] = '('.$ops['operator-postcode'].') '.$ops['ops-address'];
-
-				if(!empty($opsList))
-				{
-					$result["OPS"] = array(
-						"TYPE" => "ENUM",
-						"TITLE" => Loc::getMessage('SALE_DLVRS_ADD_DREQ_OPS'),
-						"REQUIRED" => "Y",
-						"OPTIONS" => $opsList
-					);
-				}
+			$opsData = $this->getOpsData();
+			if (!is_null($opsData))
+			{
+				$result["OPS"] = $opsData;
 			}
 		}
 		elseif($formFieldsType == Requests\Manager::FORM_FIELDS_TYPE_ACTION)
@@ -250,6 +280,48 @@ class Handler extends Requests\HandlerBase
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	private function getOpsData(): ?array
+	{
+		$opsList = array();
+		$ops = $this->getDeliveryServiceOps();
+
+		if(!empty($ops['VALUE']) && isset($ops['NAME']))
+		{
+			$opsList[$ops['VALUE']] = $ops['NAME'];
+		}
+		else
+		{
+			//todo: cache
+			$opsRes = $this->getRequestObject('OPS')->send();
+
+			if($opsRes->isSuccess())
+			{
+				foreach($opsRes->getData() as $ops)
+					if($ops['enabled'] == true)
+						$opsList[$ops['operator-postcode']] = '('.$ops['operator-postcode'].') '.$ops['ops-address'];
+			}
+		}
+
+		if(!empty($opsList))
+		{
+			return array(
+				"TYPE" => "ENUM",
+				"TITLE" => Loc::getMessage('SALE_DLVRS_ADD_DREQ_OPS'),
+				"REQUIRED" => "Y",
+				"OPTIONS" => $opsList
+			);
+		}
+
+		return null;
+	}
+	protected function getDeliveryServiceOps()
+	{
+		return \Sale\Handlers\Delivery\Additional\RusPost\Helper::getSelectedShippingPoint($this->deliveryService);
 	}
 
 	/**
@@ -277,13 +349,15 @@ class Handler extends Requests\HandlerBase
 			'BATCH' => 'Batch',
 			'BATCHORDER' => 'BatchOrder',
 			'OPS' => 'OPS',
-			'ORDER_DOC_F112EK' => 'OrderDocF112EK'
+			'USER_SETTINGS' => 'UserSettings',
+			'ORDER_DOC_F112EK' => 'OrderDocF112EK',
+			'UNRELIABLE_RECIPIENT' => 'UnreliableRecipient'
 		);
 
 		if(isset($requests[$type]))
 		{
 			$className = __NAMESPACE__.'\Requests\\'.$requests[$type];
-			$result = new $className($this->deliveryService);
+			$result = new $className($this->deliveryService, $this->getHttpClient());
 		}
 
 		return $result;
@@ -649,7 +723,7 @@ class Handler extends Requests\HandlerBase
 
 		$row = $res->fetch();
 
-		if(!$row || strlen($row['EXTERNAL_ID']) < 0)
+		if(!$row || (string)$row['EXTERNAL_ID'] === '')
 		{
 			$result->addError(
 				new Error(

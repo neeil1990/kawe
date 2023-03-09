@@ -1,8 +1,8 @@
-<?
-use	Bitrix\Sale\Internals\OrderTable,
-	Bitrix\Sale\Internals\OrderArchiveTable,
-	Bitrix\Sale\Compatible,
-	Bitrix\Main\Localization\Loc;
+<?php
+
+use	Bitrix\Sale\Internals\OrderTable;
+use	Bitrix\Sale\Internals\OrderArchiveTable;
+use	Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
 
@@ -10,33 +10,65 @@ $GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"] = Array();
 
 class CAllSalePersonType
 {
-	static function DoProcessOrder(&$arOrder, $personTypeId, &$arErrors)
+	public static function DoProcessOrder(&$arOrder, $personTypeId, &$arErrors, $arOptions)
 	{
 		$personTypeId = intval($personTypeId);
 
+		if (isset($arOptions['ORDER'])
+			&& $arOptions['ORDER'] instanceof \Bitrix\Sale\Order
+		)
+		{
+			$registry = \Bitrix\Sale\Registry::getInstance($arOptions['ORDER']::getRegistryType());
+			$personType = $registry->getPersonTypeClassName();
+		}
+		else
+		{
+			$personType = \Bitrix\Sale\PersonType::class;
+		}
+
 		if ($personTypeId > 0)
 		{
-			$dbPersonType = CSalePersonType::GetList(array(), array("ID" => $personTypeId, "LID" => $arOrder["SITE_ID"], "ACTIVE" => "Y"));
-			if ($arPersonType = $dbPersonType->Fetch())
+			/** @var Bitrix\Main\DB\Result $dbPersonType */
+			$dbPersonType = $personType::getList([
+				'filter' => ['=ID' => $personTypeId]
+			]);
+			if ($arPersonType = $dbPersonType->fetch())
+			{
 				$arOrder["PERSON_TYPE_ID"] = $arPersonType["ID"];
+			}
 			else
+			{
 				$arErrors[] = array("CODE" => "PERSON_TYPE_ID", "TEXT" => GetMessage('SKGP_PERSON_TYPE_NOT_FOUND'));
+			}
 
 			return;
 		}
 
-		$dbPersonType = CSalePersonType::GetList(array("SORT" => "ASC", "NAME" => "ASC"), array("LID" => $arOrder["SITE_ID"], "ACTIVE" => "Y"));
+		/** @var Bitrix\Main\DB\Result $dbPersonType */
+		$dbPersonType = $personType::getList([
+			'filter' => [
+				"=PERSON_TYPE_SITE.SITE_ID" => $arOrder["SITE_ID"],
+				"=ACTIVE" => "Y"
+			],
+			'order' => [
+				'SORT' => 'ASC',
+				'NAME' => 'ASC'
+			] 
+		]);
+
 		if ($arPersonType = $dbPersonType->Fetch())
+		{
 			$arOrder["PERSON_TYPE_ID"] = $arPersonType["ID"];
+		}
 		else
+		{
 			$arErrors[] = array("CODE" => "PERSON_TYPE_ID", "TEXT" => GetMessage('SKGP_PERSON_TYPE_EMPTY'));
+		}
 	}
 
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
-		global $DB;
-
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		$dbPerson = CSalePersonType::GetList(Array(), Array("ID" => $ID));
 		if ($res = $dbPerson->Fetch())
 		{
@@ -45,11 +77,9 @@ class CAllSalePersonType
 		return False;
 	}
 
-	function CheckFields($ACTION, &$arFields, $ID=false)
+	public static function CheckFields($ACTION, &$arFields, $ID=false)
 	{
-		global $DB, $USER;
-
-		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && strlen(trim($arFields["NAME"]))<=0)
+		if ((is_set($arFields, "NAME") || $ACTION=="ADD") && trim($arFields["NAME"]) == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SKGP_NO_NAME_TP"), "ERROR_NO_NAME");
 			return false;
@@ -62,12 +92,11 @@ class CAllSalePersonType
 			&& (
 				(is_array($arFields["LID"]) && count($arFields["LID"])<=0)
 				||
-				(!is_array($arFields["LID"]) && strlen($arFields["LID"])<=0)
+				(!is_array($arFields["LID"]) && $arFields["LID"] == '')
 				)
 			)
 		)
 		{
-			//$this->LAST_ERROR .= GetMessage("SKGP_BAD_SITE_NA")."<br>";
 			$arMsg[] = array("id"=>"LID", "text"=> GetMessage("SKGP_BAD_SITE_NA"));
 		}
 		elseif(is_set($arFields, "LID"))
@@ -80,7 +109,6 @@ class CAllSalePersonType
 				$r = CSite::GetByID($v);
 				if(!$r->Fetch())
 				{
-					//$this->LAST_ERROR .= str_replace("#ID#", $arFields["LID"], GetMessage("SKGP_NO_SITE"));
 					$arMsg[] = array("id"=>"LID", "text"=> GetMessage("MAIN_EVENT_BAD_SITE"));
 				}
 			}
@@ -96,11 +124,11 @@ class CAllSalePersonType
 		return True;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if (!CSalePersonType::CheckFields("UPDATE", $arFields, $ID))
 			return false;
 
@@ -121,7 +149,7 @@ class CAllSalePersonType
 			$arFields["LID"] = false;
 			foreach($arLID as $k => $v)
 			{
-				if(strlen($v) > 0)
+				if($v <> '')
 				{
 					$str_LID .= ", '".$DB->ForSql($v)."'";
 					if(empty($arFields["LID"]))
@@ -160,7 +188,7 @@ class CAllSalePersonType
 		return $ID;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB, $APPLICATION;
 
@@ -224,14 +252,14 @@ class CAllSalePersonType
 		return $DB->Query("DELETE FROM b_sale_person_type WHERE ID = ".$ID."", true);
 	}
 
-	function OnBeforeLangDelete($lang)
+	public static function OnBeforeLangDelete($lang)
 	{
 		global $DB;
-		$r = $DB->Query("SELECT 'x' FROM b_sale_person_type WHERE LID = '".$DB->ForSQL($lang, 2)."'");
+		$r = $DB->Query("SELECT 'x' FROM b_sale_person_type WHERE LID = '".$DB->ForSQL($lang, 2)."' AND ENTITY_REGISTRY_TYPE='".\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER."'");
 		return ($r->Fetch() ? false : true);
 	}
 
-	function SelectBox($sFieldName, $sValue, $sDefaultValue = "", $bFullName = True, $JavaFunc = "", $sAddParams = "")
+	public static function SelectBox($sFieldName, $sValue, $sDefaultValue = "", $bFullName = True, $JavaFunc = "", $sAddParams = "")
 	{
 		if (!isset($GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"]) || !is_array($GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"]) || count($GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"])<1)
 		{
@@ -242,19 +270,23 @@ class CAllSalePersonType
 				$GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"][$arPersonType["ID"]] = Array("ID" => $arPersonType["ID"], "NAME" => $arPersonType["NAME"], "LID" => implode(", ", $arPersonType["LIDS"]));
 			}
 		}
+		$s1 = '';
 		$s = '<select name="'.$sFieldName.'"';
-		if (strlen($sAddParams)>0) $s .= ' '.$sAddParams.'';
-		if (strlen($JavaFunc)>0) $s .= ' OnChange="'.$JavaFunc.'"';
+		if ($sAddParams <> '') $s .= ' '.$sAddParams.'';
+		if ($JavaFunc <> '') $s .= ' OnChange="'.$JavaFunc.'"';
 		$s .= '>'."\n";
 		$found = false;
-		foreach ($GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"] as $res)
+
+		if (is_array($GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"]))
 		{
-			$found = (IntVal($res["ID"]) == IntVal($sValue));
-			$s1 .= '<option value="'.$res["ID"].'"'.($found ? ' selected':'').'>'.(($bFullName)?("[".$res["ID"]."] ".htmlspecialcharsbx($res["NAME"])." (".htmlspecialcharsbx($res["LID"]).")"):(htmlspecialcharsbx($res["NAME"]))).'</option>'."\n";
+			foreach ($GLOBALS["SALE_PERSON_TYPE_LIST_CACHE"] as $res)
+			{
+				$found = (intval($res["ID"]) == intval($sValue));
+				$s1 .= '<option value="'.$res["ID"].'"'.($found ? ' selected' : '').'>'.(($bFullName) ? ("[".$res["ID"]."] ".htmlspecialcharsbx($res["NAME"])." (".htmlspecialcharsbx($res["LID"]).")") : (htmlspecialcharsbx($res["NAME"]))).'</option>'."\n";
+			}
 		}
-		if (strlen($sDefaultValue)>0)
+		if ($sDefaultValue <> '')
 			$s .= "<option value='' ".($found ? "" : "selected").">".htmlspecialcharsbx($sDefaultValue)."</option>";
 		return $s.$s1.'</select>';
 	}
 }
-?>

@@ -22,7 +22,7 @@ abstract class NameEntity extends Entity\DataManager
 		return 'LANGUAGE_ID';
 	}
 
-	abstract public function getReferenceFieldName();
+	abstract public static function getReferenceFieldName();
 
 	/**
 	 * Add translations for $primaryOwner
@@ -49,7 +49,7 @@ abstract class NameEntity extends Entity\DataManager
 			$empty = true;
 			foreach($name as $arg)
 			{
-				if(strlen($arg) > 0)
+				if($arg <> '')
 				{
 					$empty = false;
 					break;
@@ -116,7 +116,7 @@ abstract class NameEntity extends Entity\DataManager
 			$empty = true;
 			foreach($name as $arg)
 			{
-				if(strlen($arg) > 0)
+				if($arg <> '')
 				{
 					$empty = false;
 					break;
@@ -248,7 +248,7 @@ abstract class NameEntity extends Entity\DataManager
 	 */
 	public static function deleteMultipleByParentRangeSql($sql)
 	{
-		if(!strlen($sql))
+		if($sql == '')
 			throw new Main\SystemException('Range sql is empty');
 
 		$dbConnection = Main\HttpApplication::getConnection();

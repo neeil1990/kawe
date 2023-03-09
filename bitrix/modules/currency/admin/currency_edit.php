@@ -27,15 +27,13 @@ $separatorList = CCurrencyLang::GetSeparatorTypes(true);
 
 $langList = array();
 $langID = array();
-$by = "sort";
-$order = "asc";
-$langIterator = CLangAdmin::GetList($by, $order);
+$langIterator = CLangAdmin::GetList();
 while ($oneLang = $langIterator->Fetch())
 {
 	$langID[] = $oneLang['LID'];
 	$langList[$oneLang['LID']] = $oneLang['NAME'];
 }
-unset($oneLang, $langIterator, $order, $by);
+unset($oneLang, $langIterator);
 
 $arFields = array();
 
@@ -44,10 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $CURRENCY_RIGHT=="W" && !empty($_POS
 	if (!isset($_POST['BASE']) || $_POST['BASE'] != 'Y')
 	{
 		$arFields = array(
-			'AMOUNT' => (isset($_POST['AMOUNT']) ? $_POST['AMOUNT'] : ''),
-			'AMOUNT_CNT' => (isset($_POST['AMOUNT_CNT']) ? $_POST['AMOUNT_CNT'] : ''),
-			'SORT' => (isset($_POST['SORT']) ? $_POST['SORT'] : ''),
-			'NUMCODE' => (isset($_POST['NUMCODE']) ? $_POST['NUMCODE'] : '')
+			'AMOUNT' => ($_POST['AMOUNT'] ?? ''),
+			'AMOUNT_CNT' => ($_POST['AMOUNT_CNT'] ?? ''),
+			'SORT' => ($_POST['SORT'] ?? ''),
+			'NUMCODE' => ($_POST['NUMCODE'] ?? '')
 		);
 	}
 	else
@@ -55,8 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $CURRENCY_RIGHT=="W" && !empty($_POS
 		$arFields = array(
 			'AMOUNT' => 1,
 			'AMOUNT_CNT' => 1,
-			'SORT' => (isset($_POST['SORT']) ? $_POST['SORT'] : ''),
-			'NUMCODE' => (isset($_POST['NUMCODE']) ? $_POST['NUMCODE'] : '')
+			'SORT' => ($_POST['SORT'] ?? ''),
+			'NUMCODE' => ($_POST['NUMCODE'] ?? '')
 		);
 	}
 	if (!$ID && isset($_POST['CURRENCY']))
@@ -140,9 +138,7 @@ if ($ID != '')
 	}
 	else
 	{
-		$by = 'currency';
-		$order = 'asc';
-		$langIterator = CCurrencyLang::GetList($by, $order, $ID);
+		$langIterator = CCurrencyLang::GetList('currency', 'asc', $ID);
 		while ($language = $langIterator->Fetch())
 		{
 			$language['THOUSANDS_SEP'] = (string)$language['THOUSANDS_SEP'];
@@ -152,7 +148,7 @@ if ($ID != '')
 				$language['FULL_NAME'] = $ID;
 			$currencyLangs[$language['LID']] = $language;
 		}
-		unset($language, $langIterator, $order, $by);
+		unset($language, $langIterator);
 	}
 }
 
@@ -234,18 +230,13 @@ function setThousandsVariant(lang)
 	document.forms['form1'].elements['LANG_' + lang + '[THOUSANDS_SEP]'].disabled = (value.length > 0);
 }
 </script>
-<form method="post" action="<?$APPLICATION->GetCurPage()?>" name="form1">
+<form method="post" action="<?= $APPLICATION->GetCurPage()?>" name="form1">
 <? echo bitrix_sessid_post(); ?>
 <?echo GetFilterHiddens("filter_");?>
 <input type="hidden" name="ID" value="<?=htmlspecialcharsbx($ID); ?>">
 <input type="hidden" name="Update" value="Y">
-<input type="hidden" name="from" value="<?echo htmlspecialcharsbx($from)?>">
 <input type="hidden" name="BASE" value="<?echo htmlspecialcharsbx($currency['BASE']); ?>">
 <?
-if (isset($return_url) && $return_url != '')
-{
-	?><input type="hidden" name="return_url" value="<?=htmlspecialcharsbx($return_url)?>"><?
-}
 
 $tabControl->Begin();?>
 <?$tabControl->BeginNextTab();?>
@@ -290,6 +281,10 @@ $tabControl->Begin();?>
 <?$tabControl->BeginNextTab();
 	foreach ($currencyLangs as $languageId => $settings)
 	{
+		if (!isset($langList[$languageId]))
+		{
+			continue;
+		}
 		$fieldPrefix = 'LANG_'.htmlspecialcharsbx($languageId);
 		$scriptLanguageId = CUtil::JSEscape(htmlspecialcharsbx($languageId));
 		?><tr class="heading"><td colspan="2"><?=htmlspecialcharsbx($langList[$languageId]); ?></td></tr>
@@ -298,10 +293,11 @@ $tabControl->Begin();?>
 			<td width="60%"><input title="<?=htmlspecialcharsbx(GetMessage("CURRENCY_FULL_NAME_DESC")); ?>" type="text" maxlength="50" size="15" name="<?=$fieldPrefix; ?>[FULL_NAME]" value="<?=htmlspecialcharsbx($settings['FULL_NAME']);?>"></td>
 		</tr>
 		<tr>
-			<td width="40%"><?echo GetMessage("CURRENCY_FORMAT_TEMPLATE")?>:</td>
+			<td width="40%"><span id="hint_format_<?=htmlspecialcharsbx($languageId); ?>"></span>
+				<script type="text/javascript">BX.hint_replace(BX('hint_format_<?=htmlspecialcharsbx($languageId); ?>'), '<?=\CUtil::JSEscape(htmlspecialcharsbx(GetMessage('CURRENCY_FORMAT_TEMPLATE_HINT'))); ?>');</script>&nbsp;<?echo GetMessage("CURRENCY_FORMAT_TEMPLATE_EXT")?>:</td>
 			<td width="60%">
 				<select name="format_<?=htmlspecialcharsbx($languageId); ?>" onchange="setTemplate('<?=$scriptLanguageId; ?>')">
-					<option value="">-<?=htmlspecialcharsbx(GetMessage("CURRENCY_SELECT_TEMPLATE")); ?>-</option>
+					<option value="">-<?=htmlspecialcharsbx(GetMessage("CURRENCY_SELECT_TEMPLATE_EXT")); ?>-</option>
 					<?foreach ($arTemplates as $key => $ar):?>
 						<option value="<?=htmlspecialcharsbx($key); ?>"><?=htmlspecialcharsbx($ar["TEXT"]); ?></option>
 					<?endforeach?>

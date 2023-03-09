@@ -22,6 +22,11 @@ class SaleAccountPay extends \CBitrixComponent
 	protected $errorCollection;
 
 	/**
+	 * @var Sale\Registry registry
+	 */
+	protected $registry = null;
+
+	/**
 	 * Function checks and prepares all the parameters passed. Everything about $arParam modification is here.
 	 * @param mixed[] $params List of unchecked parameters
 	 * @return mixed[] Checked and valid parameters
@@ -30,11 +35,13 @@ class SaleAccountPay extends \CBitrixComponent
 	{
 		global $APPLICATION;
 
-		$this->checkModules();
-
 		$this->errorCollection = new Main\ErrorCollection();
+		if (!$this->checkModules())
+		{
+			return $params;
+		}
 
-		if ((!isset($params["VAR"]) || strlen($params["VAR"])<=0))
+		if ((!isset($params["VAR"]) || $params["VAR"] == ''))
 		{
 			$params["VAR"] = "buyMoney";
 		}
@@ -49,7 +56,7 @@ class SaleAccountPay extends \CBitrixComponent
 			$params['PERSON_TYPE'] = 1;
 		}
 
-		if (strlen($params["PATH_TO_PAYMENT"]) <= 0)
+		if ($params["PATH_TO_PAYMENT"] == '')
 		{
 			$params["PATH_TO_PAYMENT"] = "/personal/order/payment";
 		}
@@ -58,7 +65,7 @@ class SaleAccountPay extends \CBitrixComponent
 			$params["PATH_TO_PAYMENT"] = trim($params["PATH_TO_PAYMENT"]);
 		}
 
-		if (strlen($params["PATH_TO_BASKET"]) <= 0)
+		if ($params["PATH_TO_BASKET"] == '')
 		{
 			$params["PATH_TO_BASKET"] = "/personal/cart";
 		}
@@ -83,7 +90,7 @@ class SaleAccountPay extends \CBitrixComponent
 				$params["SELL_USER_INPUT"] = "Y";
 			}
 
-			if (strlen($params["PRODUCT_PROVIDER_CLASS"])<=0)
+			if ($params["PRODUCT_PROVIDER_CLASS"] == '')
 			{
 				$params["PRODUCT_PROVIDER_CLASS"] = "\\Bitrix\\Sale\\ProviderAccountPay";
 			}
@@ -106,7 +113,7 @@ class SaleAccountPay extends \CBitrixComponent
 		}
 		else
 		{
-			if (strlen($params["CALLBACK_NAME"])<=0)
+			if ($params["CALLBACK_NAME"] == '')
 			{
 				$params["CALLBACK_NAME"] = "PayUserAccountDeliveryOrderCallback";
 			}
@@ -115,6 +122,11 @@ class SaleAccountPay extends \CBitrixComponent
 			{
 				$params["CURRENT_PAGE"] = htmlspecialcharsEx($APPLICATION->GetCurPageParam());
 			}
+		}
+
+		if (empty($params['RETURN_URL']))
+		{
+			$params['RETURN_URL'] = (new Sale\PaySystem\Context())->getUrl();
 		}
 
 		return $params;
@@ -132,6 +144,13 @@ class SaleAccountPay extends \CBitrixComponent
 			$this->errorCollection->setError(new Main\Error(Loc::getMessage('SAP_MODULE_NOT_INSTALL')));
 			return false;
 		}
+
+		if (!CBXFeatures::IsFeatureEnabled('SaleAccounts'))
+		{
+			$this->errorCollection->setError(new Main\Error(Loc::getMessage('SAP_FEATURE_NOT_ALLOW')));
+			return false;
+		}
+
 		return true;
 	}
 
@@ -143,7 +162,7 @@ class SaleAccountPay extends \CBitrixComponent
 	{
 		global $APPLICATION;
 
-		$amountArray = unserialize(Main\Config\Option::get("sale", "pay_amount"));
+		$amountArray = unserialize(Main\Config\Option::get("sale", "pay_amount"), ['allowed_classes' => false]);
 
 		if (empty($amountArray))
 		{
@@ -173,7 +192,7 @@ class SaleAccountPay extends \CBitrixComponent
 		foreach ($this->arResult["PAY_ACCOUNT_AMOUNT"] as $key => $value)
 		{
 			$tmp = $value;
-			if (strlen($this->arParams["SELL_CURRENCY"]) > 0)
+			if ($this->arParams["SELL_CURRENCY"] <> '')
 			{
 				if ($value["CURRENCY"] != $this->arParams["SELL_CURRENCY"])
 				{
@@ -240,7 +259,7 @@ class SaleAccountPay extends \CBitrixComponent
 
 		foreach ($paySystemList as $paySystemElement)
 		{
-			if (!empty($paySystemElement['PAY_SYSTEM_ID']) && !in_array($paySystemElement['ID'], $this->arParams['ELIMINATED_PAY_SYSTEMS']))
+			if (!in_array($paySystemElement['ID'], $this->arParams['ELIMINATED_PAY_SYSTEMS']))
 			{
 				if (!empty($paySystemElement["LOGOTIP"]))
 				{
@@ -265,15 +284,25 @@ class SaleAccountPay extends \CBitrixComponent
 
 		if ($this->errorCollection->isEmpty())
 		{
-			$currencyList = CCurrencyLang::GetFormatDescription($this->arParams["SELL_CURRENCY"]);
-			$this->arResult['FORMATED_CURRENCY'] = $currencyList['FORMAT_STRING'];
+			$parsedFormat = \CCurrencyLang::getParsedCurrencyFormat($this->arParams["SELL_CURRENCY"]);
+			if (!empty($parsedFormat))
+			{
+				$index = array_search('#', $parsedFormat);
+				if ($index !== false)
+				{
+					$parsedFormat[$index] = '';
+				}
+
+				$this->arResult['FORMATED_CURRENCY'] = trim(implode('', $parsedFormat));
+			}
 
 			$signer = new Main\Security\Sign\Signer;
 			$ajaxParams = array(
 				'PERSON_TYPE' => (int)$this->arParams['PERSON_TYPE'],
 				'SELL_CURRENCY' => $this->arParams['SELL_CURRENCY'],
 				'NAME_CONFIRM_TEMPLATE' => $this->arParams['NAME_CONFIRM_TEMPLATE'],
-				'PATH_TO_PAYMENT' => $this->arParams['PATH_TO_PAYMENT']
+				'PATH_TO_PAYMENT' => $this->arParams['PATH_TO_PAYMENT'],
+				'RETURN_URL' => $this->arParams['RETURN_URL'],
 			);
 			$this->arResult['SIGNED_PARAMS'] = base64_encode($signer->sign(serialize($ajaxParams), 'sale.account.pay'));
 		}
@@ -288,17 +317,18 @@ class SaleAccountPay extends \CBitrixComponent
 		global $APPLICATION;
 		$templateName = null;
 
-		if ($this->checkModules())
+		if ($this->errorCollection->isEmpty())
 		{
 			/** @var Main\HttpRequest $request */
 			$request = Application::getInstance()->getContext()->getRequest();
 			$request->addFilter(new \Bitrix\Main\Web\PostDecodeFilter);
 
-			if ($this->arParams["SET_TITLE"]!="N")
+			if ($this->arParams["SET_TITLE"] !== "N")
 			{
 				$APPLICATION->SetTitle(Loc::getMessage('SAP_TITLE'));
 			}
 
+			$this->setRegistry();
 			if ($this->arParams['AJAX_DISPLAY'] === 'Y')
 			{
 				$this->orderPayment($request);
@@ -310,7 +340,7 @@ class SaleAccountPay extends \CBitrixComponent
 				{
 					$this->fillArrayResultOld();
 
-					if (strlen($request[$this->arParams["VAR"]]) > 0)
+					if ($request[$this->arParams["VAR"]] <> '')
 					{
 						$this->sendToBasketOld($request);
 					}
@@ -324,6 +354,17 @@ class SaleAccountPay extends \CBitrixComponent
 
 		$this->formatResultErrors();
 		$this->includeComponentTemplate($templateName);
+	}
+
+	/**
+	 * Return current class registry
+	 *
+	 * @param mixed[] array that date conversion performs in
+	 * @return void
+	 */
+	protected function setRegistry()
+	{
+		$this->registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
 	}
 
 	/**
@@ -371,12 +412,14 @@ class SaleAccountPay extends \CBitrixComponent
 	protected function initBasket($requestValue, $savePropertyCharge = true)
 	{
 		$productId = (int)($requestValue * 100);
-		$basket = Sale\Basket::create(SITE_ID);
+		$basketClassName = $this->registry->getBasketClassName();
+		/** @var Sale\Basket $basket */
+		$basket = $basketClassName::create(SITE_ID);
 
 		$basketItem = $basket->createItem('sale', $productId);
 
 		$productFields = array(
-			"PRICE" => $requestValue,
+			"BASE_PRICE" => $requestValue,
 			"CURRENCY" => $this->arParams["SELL_CURRENCY"],
 			"QUANTITY" => 1,
 			"LID" => SITE_ID,
@@ -418,7 +461,9 @@ class SaleAccountPay extends \CBitrixComponent
 	{
 		global $USER;
 
-		$order = Sale\Order::create(SITE_ID, $USER->GetID(), $this->arParams['SELL_CURRENCY']);
+		$orderClassName = $this->registry->getOrderClassName();
+		/** @var Sale\Order $order */
+		$order = $orderClassName::create(SITE_ID, $USER->GetID(), $this->arParams['SELL_CURRENCY']);
 
 		/** @var Main\Result $result */
 		$result = $order->setBasket($basket);
@@ -434,6 +479,22 @@ class SaleAccountPay extends \CBitrixComponent
 		}
 
 		$this->initOrderShipment($order);
+
+		if (
+			isset($this->arParams['CONTEXT_SITE_ID'])
+			&& $this->arParams['CONTEXT_SITE_ID'] > 0
+			&& Loader::includeModule('landing')
+		)
+		{
+			$code = \Bitrix\Sale\TradingPlatform\Landing\Landing::getCodeBySiteId($this->arParams['CONTEXT_SITE_ID']);
+
+			$platform = \Bitrix\Sale\TradingPlatform\Landing\Landing::getInstanceByCode($code);
+			if ($platform->isInstalled())
+			{
+				$collection = $order->getTradeBindingCollection();
+				$collection->createItem($platform);
+			}
+		}
 
 		return $order;
 	}
@@ -462,7 +523,7 @@ class SaleAccountPay extends \CBitrixComponent
 
 			$fields = array(
 				"PRODUCT_ID" => $productId,
-				"PRICE" => $price,
+				"BASE_PRICE" => $price,
 				"CURRENCY" => $currency,
 				"QUANTITY" => 1,
 				"LID" => SITE_ID,
@@ -472,7 +533,9 @@ class SaleAccountPay extends \CBitrixComponent
 				"PAY_CALLBACK_FUNC" => $this->arParams["CALLBACK_NAME"]
 			);
 
-			$basket = Sale\Basket::loadItemsForFUser(Sale\Fuser::getId(), Main\Context::getCurrent()->getSite());
+			$basketClassName = $this->registry->getBasketClassName();
+			/** @var Sale\Basket $basket */
+			$basket = $basketClassName::loadItemsForFUser(Sale\Fuser::getId(), Main\Context::getCurrent()->getSite());
 
 			$item = $basket->getExistsItem('sale', $productId);
 			if ($item)
@@ -677,7 +740,7 @@ class SaleAccountPay extends \CBitrixComponent
 				"ORDER_ID"=>$order->getId(),
 				"ORDER_DATE"=>$order->getDateInsert()->toString(),
 				"PAYMENT_ID"=>$payment->getId(),
-				"IS_CASH" => $paySystemObject->isCash(),
+				"IS_CASH" => $paySystemObject->isCash() || $paySystemObject->getField("ACTION_FILE") === 'cash',
 				"NAME_CONFIRM_TEMPLATE"=>$this->arParams['NAME_CONFIRM_TEMPLATE']
 			);
 
@@ -687,6 +750,11 @@ class SaleAccountPay extends \CBitrixComponent
 			}
 			else
 			{
+				if ($returnUrl = $this->arParams['RETURN_URL'])
+				{
+					$paySystemObject->getContext()->setUrl($returnUrl);
+				}
+
 				$paySystemBufferedOutput = $paySystemObject->initiatePay($payment, null, PaySystem\BaseServiceHandler::STRING);
 				if ($paySystemBufferedOutput->isSuccess())
 				{

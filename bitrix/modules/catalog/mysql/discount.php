@@ -1,10 +1,13 @@
-<?
+<?php
+
 use Bitrix\Main;
+use	Bitrix\Catalog;
+
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/catalog/general/discount.php');
 
 class CCatalogDiscount extends CAllCatalogDiscount
 {
-	public function _Add(&$arFields)
+	public static function _Add(&$arFields)
 	{
 		global $DB;
 
@@ -24,7 +27,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		return $ID;
 	}
 
-	public function _Update($ID, &$arFields)
+	public static function _Update($ID, &$arFields)
 	{
 		global $DB;
 		global $APPLICATION;
@@ -71,7 +74,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		return $ID;
 	}
 
-	public function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 
@@ -85,12 +88,13 @@ class CCatalogDiscount extends CAllCatalogDiscount
 				return false;
 		}
 
-		$DB->Query("delete from b_catalog_discount_module where DISCOUNT_ID = ".$ID);
-		$DB->Query("delete from b_catalog_discount_cond where DISCOUNT_ID = ".$ID);
-		$DB->Query("delete from b_catalog_discount_coupon where DISCOUNT_ID = ".$ID);
 		$DB->Query("delete from b_catalog_discount2iblock where DISCOUNT_ID = ".$ID);
 		$DB->Query("delete from b_catalog_discount2section where DISCOUNT_ID = ".$ID);
 		$DB->Query("delete from b_catalog_discount2product where DISCOUNT_ID = ".$ID);
+		Catalog\DiscountRestrictionTable::deleteByDiscount($ID);
+		Catalog\DiscountModuleTable::deleteByDiscount($ID);
+		Catalog\DiscountEntityTable::deleteByDiscount($ID);
+		Catalog\DiscountCouponTable::deleteByDiscount($ID);
 
 		$DB->Query("delete from b_catalog_discount where ID = ".$ID." and TYPE = ".self::ENTITY_ID);
 
@@ -141,6 +145,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arField
 	 * @param array $arFilter
 	 * @return bool|string
+	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public static function PrepareSection4Where($val, $key, $operation, $negative, $field, $arField, $arFilter)
 	{
@@ -182,7 +187,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arSelectFields
 	 * @return bool|CDBResult
 	 */
-	public function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -215,6 +220,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 			"CONDITIONS" => array("FIELD" => "CD.CONDITIONS", "TYPE" => "string"),
 			"UNPACK" => array("FIELD" => "CD.UNPACK", "TYPE" => "string"),
 			"SALE_ID" => array("FIELD" => "CD.SALE_ID", "TYPE" => "int"),
+			"USE_COUPONS" => array("FIELD" => "CD.USE_COUPONS", "TYPE" => "char"),
 
 			"PRODUCT_ID" => array("FIELD" => "CDP.PRODUCT_ID", "TYPE" => "int", "FROM" => "LEFT JOIN b_catalog_discount2product CDP ON (CD.ID = CDP.DISCOUNT_ID)"),
 			"SECTION_ID" => array("FIELD" => "CDS.SECTION_ID", "TYPE" => "int", "FROM" => "LEFT JOIN b_catalog_discount2section CDS ON (CD.ID = CDS.DISCOUNT_ID)", "WHERE" => array("CCatalogDiscount", "PrepareSection4Where")),
@@ -332,7 +338,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arSelectFields
 	 * @return bool|CDBResult
 	 */
-	public function GetDiscountGroupsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetDiscountGroupsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		return self::__GetDiscountEntityList($arOrder, $arFilter, $arGroupBy, $arNavStartParams, $arSelectFields);
 	}
@@ -345,7 +351,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arSelectFields
 	 * @return bool|CDBResult
 	 */
-	public function GetDiscountCatsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetDiscountCatsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		return self::__GetDiscountEntityList($arOrder, $arFilter, $arGroupBy, $arNavStartParams, $arSelectFields);
 	}
@@ -360,7 +366,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arSelectFields
 	 * @return bool|CDBResult
 	 */
-	public function GetDiscountProductsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetDiscountProductsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -449,7 +455,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arSelectFields
 	 * @return bool|CDBResult
 	 */
-	public function GetDiscountSectionsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetDiscountSectionsList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -538,7 +544,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arSelectFields
 	 * @return bool|CDBResult
 	 */
-	public function GetDiscountIBlocksList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetDiscountIBlocksList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -625,7 +631,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arSelectFields
 	 * @return bool|CDBResult
 	 */
-	protected function __GetDiscountEntityList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	protected static function __GetDiscountEntityList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -711,8 +717,10 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @deprecated deprecated since catalog 12.0.0
 	 *
 	 * @return void
+	 *
+	 * @noinspection PhpDeprecationInspection
 	 */
-	public function SaveFilterOptions()
+	public static function SaveFilterOptions()
 	{
 		COption::SetOptionString("catalog", "do_use_discount_product", 'Y');
 
@@ -730,7 +738,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 	 * @param array $arParams
 	 * @return void
 	 */
-	protected function __SaveFilterForEntity($arParams)
+	protected static function __SaveFilterForEntity($arParams)
 	{
 		global $DB;
 
@@ -755,7 +763,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		COption::SetOptionString("catalog", $arParams['OPTION_ID'], $strFilter);
 	}
 
-	protected function __UpdateSubdiscount($intDiscountID, &$arConditions, $active = '')
+	protected static function __UpdateSubdiscount($intDiscountID, &$arConditions, $active = '')
 	{
 		global $DB;
 
@@ -823,7 +831,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		return $boolResult;
 	}
 
-	protected function __GetDiscountID($arFilter)
+	protected static function __GetDiscountID($arFilter)
 	{
 		global $DB;
 
@@ -947,7 +955,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		return $arResult;
 	}
 
-	protected function __UpdateOldEntities($ID, &$arFields, $boolUpdate)
+	protected static function __UpdateOldEntities($ID, &$arFields, $boolUpdate)
 	{
 		$ID = intval($ID);
 		if (0 >= $ID)
@@ -978,7 +986,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		);
 	}
 
-	protected function __FillArrays($intDiscountID, &$arFields, $strEntityID)
+	protected static function __FillArrays($intDiscountID, &$arFields, $strEntityID)
 	{
 		$boolResult = false;
 		$intDiscountID = intval($intDiscountID);
@@ -1013,7 +1021,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		return $boolResult;
 	}
 
-	protected function updateDiscountHandlers($discountID, $handlers, $update)
+	protected static function updateDiscountHandlers($discountID, $handlers, $update)
 	{
 		global $DB;
 
@@ -1046,7 +1054,7 @@ class CCatalogDiscount extends CAllCatalogDiscount
 		}
 	}
 
-	protected function getDiscountHandlers($discountList)
+	protected static function getDiscountHandlers($discountList)
 	{
 		global $DB;
 

@@ -1,6 +1,7 @@
 <?php
 namespace Bitrix\Sale;
 
+use Bitrix\Main;
 use Bitrix\Main\Entity\DeleteResult;
 use Bitrix\Main\NotImplementedException;
 use Bitrix\Main\ObjectNotFoundException;
@@ -17,8 +18,6 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 {
 	/** @var BasketItemBase */
 	protected $basketItem;
-
-	static protected $propertyCache = array();
 
 	/**
 	 * @return BasketItemBase
@@ -45,48 +44,56 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 	}
 
 	/**
-	 * @throws NotImplementedException
 	 * @return BasketPropertiesCollection
+	 * @throws Main\ArgumentException
+	 * @throws NotImplementedException
 	 */
-	protected static function createBasketPropertiesCollectionObject()
+	private static function createBasketPropertiesCollectionObject()
 	{
-		throw new NotImplementedException();
+		$registry = Registry::getInstance(static::getRegistryType());
+		$basketPropertiesCollectionClassName = $registry->getBasketPropertiesCollectionClassName();
+
+		return new $basketPropertiesCollectionClassName();
 	}
 
 	/**
 	 * @param BasketItemBase $basketItem
-	 * @return static
-	 * @throws \Bitrix\Main\ArgumentException
+	 * @return BasketPropertiesCollectionBase|null
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentTypeException
+	 * @throws NotImplementedException
+	 * @throws ObjectNotFoundException
 	 */
 	public static function load(BasketItemBase $basketItem)
 	{
 		$basketPropertyCollection = static::createBasketPropertiesCollectionObject();
 		$basketPropertyCollection->setBasketItem($basketItem);
+		$basketItem->setPropertyCollection($basketPropertyCollection);
 
-		/** @var BasketItemCollection $collection */
-		$collection = $basketItem->getCollection();
-		if ($collection)
+		if ($basketItem->getId() > 0)
 		{
-			static::loadByCollection($collection);
+			$registry = Registry::getInstance(static::getRegistryType());
 
-			if ($basketItem->getId() <= 0)
-				return $basketPropertyCollection;
+			/** @var BasketPropertyItemBase $basketPropertyItemClass */
+			$basketPropertyItemClass = $registry->getBasketPropertyItemClassName();
 
-			$item = $collection->getItemByBasketCode($basketItem->getBasketCode());
-			if ($item)
+			$propertyList = $basketPropertyItemClass::loadForBasketItem($basketItem->getId());
+			/** @var BasketPropertyItemBase $property */
+			foreach ($propertyList as $property)
 			{
-				$basketPropertyCollection = $item->getPropertyCollection();
+				$property->setCollection($basketPropertyCollection);
+				$basketPropertyCollection->addItem($property);
 			}
 		}
 
-		return $basketPropertyCollection;
+		return $basketItem->getPropertyCollection();
 	}
 
 	/**
 	 * @param BasketItemCollection $basket
-	 *
 	 * @return array
-	 * @throws ObjectNotFoundException
+	 * @throws Main\ArgumentNullException
 	 */
 	protected static function getBasketIdList(BasketItemCollection $basket)
 	{
@@ -106,82 +113,66 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 
 	/**
 	 * @param BasketItemCollection $collection
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws NotImplementedException
 	 */
 	public static function loadByCollection(BasketItemCollection $collection)
 	{
-		$basketGetIdList = array();
+		$propertyList = [];
 
 		$basketIdList = static::getBasketIdList($collection);
 
 		if (!empty($basketIdList))
 		{
-			foreach ($basketIdList as $basketItemId)
-			{
-				if (!array_key_exists($basketItemId, static::$propertyCache))
-				{
-					$basketGetIdList[] = $basketItemId;
-					static::$propertyCache[$basketItemId] = null;
-				}
-			}
-		}
+			$registry = Registry::getInstance(static::getRegistryType());
 
-		if (!empty($basketGetIdList))
-		{
-			$res = static::getList(
-				array(
-					'filter' => array("=BASKET_ID" => $basketGetIdList),
-					'order' => array("SORT" => "ASC", "ID" => "ASC"),
-				)
-			);
+			/** @var BasketPropertyItemBase $basketPropertyItemClass */
+			$basketPropertyItemClass = $registry->getBasketPropertyItemClassName();
 
-			while($property = $res->fetch())
-			{
-				static::$propertyCache[$property['BASKET_ID']][] = $property;
-			}
+			$propertyList = $basketPropertyItemClass::loadForBasket($basketIdList);
 		}
 
 		/** @var BasketItemBase $basketItem */
-		foreach($collection as $basketItem)
+		foreach ($collection as $basketItem)
 		{
-			$basketPropertyCollection = new static();
-			$basketPropertyCollection->basketItem = $basketItem;
-			if (isset(static::$propertyCache[$basketItem->getId()]))
+			if ($basketItem->isExistPropertyCollection())
 			{
-				foreach (static::$propertyCache[$basketItem->getId()] as $propertyData)
+				continue;
+			}
+
+			$basketPropertyCollection = static::createBasketPropertiesCollectionObject();
+			$basketPropertyCollection->setBasketItem($basketItem);
+
+			if (isset($propertyList[$basketItem->getId()]))
+			{
+				/** @var BasketPropertyItemBase $property */
+				foreach ($propertyList[$basketItem->getId()] as $property)
 				{
-					static::applyProperty($basketPropertyCollection, $propertyData);
+					$property->setCollection($basketPropertyCollection);
+					$basketPropertyCollection->addItem($property);
 				}
 			}
 
-			if (!$basketItem->existsPropertyCollection())
-			{
-				$basketItem->setPropertyCollection($basketPropertyCollection);
-			}
+			$basketItem->setPropertyCollection($basketPropertyCollection);
 		}
 	}
 
 	/**
-	 * @param BasketPropertiesCollectionBase $basketPropertyCollection
-	 * @param array $property
-	 */
-	protected static function applyProperty(BasketPropertiesCollectionBase $basketPropertyCollection, array $property)
-	{
-		$basketPropertyItem = $basketPropertyCollection->createItem();
-		$basketPropertyItem->initFields($property);
-	}
-
-	/**
-	 * @return BasketPropertyItemBase
-	 */
-	abstract protected function getBasketPropertiesCollectionElementClassName();
-
-	/**
-	 * @return BasketPropertyItemBase
+	 * @return BasketPropertyItem
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws NotImplementedException
 	 */
 	public function createItem()
 	{
+		$registry  = Registry::getInstance(static::getRegistryType());
+
 		/** @var BasketPropertyItemBase $basketPropertyItemClassName */
-		$basketPropertyItemClassName = $this->getBasketPropertiesCollectionElementClassName();
+		$basketPropertyItemClassName = $registry->getBasketPropertyItemClassName();
 
 		$basketPropertyItem = $basketPropertyItemClassName::create($this);
 		$this->addItem($basketPropertyItem);
@@ -199,25 +190,32 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 	}
 
 	/**
-	 * @param array $values
+	 * @param array $properties
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\NotSupportedException
+	 * @throws NotImplementedException
+	 * @throws ObjectNotFoundException
 	 */
-	public function setProperty(array $values)
+	public function redefine(array $properties)
 	{
 		$indexList = array();
-		if (count($this->collection) > 0)
+
+		/** @var BasketPropertyItemBase $propertyItem */
+		foreach($this->collection as $propertyItem)
 		{
-			/** @var BasketPropertyItemBase $propertyItem */
-			foreach($this->collection as $propertyItem)
-			{
-				$code = $this->getPropertyCode($propertyItem);
-				$indexList[$code] = $propertyItem->getId();
-			}
+			$code = $this->getPropertyCode($propertyItem);
+			$indexList[$code] = $propertyItem->getId();
 		}
 
-		foreach ($values as $value)
+		foreach ($properties as $value)
 		{
 			if (!is_array($value) || empty($value))
+			{
 				continue;
+			}
 
 			if (isset($value['ID']) && intval($value['ID']) > 0)
 			{
@@ -241,11 +239,12 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 				}
 			}
 
-			unset($value['ID']);
+			$availableFields = $propertyItem::getAvailableFields();
+
 			$fields = array();
 			foreach ($value as $k => $v)
 			{
-				if (strpos($k, '~') === false)
+				if (isset($availableFields[$k]))
 				{
 					$fields[$k] = $v;
 				}
@@ -253,7 +252,6 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 
 			$propertyItem->setFields($fields);
 		}
-
 
 		if (!empty($indexList))
 		{
@@ -264,13 +262,13 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 					/** @var BasketPropertyItemBase $propertyItem */
 					if ($propertyItem = $this->getItemById($id))
 					{
-						if (!empty($values)
-							|| ($propertyItem->getField('CODE') == "CATALOG.XML_ID"
-								|| $propertyItem->getField('CODE') == "PRODUCT.XML_ID")
+						if ($propertyItem->getField('CODE') == "CATALOG.XML_ID"
+							|| $propertyItem->getField('CODE') == "PRODUCT.XML_ID"
 						)
 						{
 							continue;
 						}
+
 						$propertyItem->delete();
 					}
 				}
@@ -279,9 +277,8 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 					/** @var BasketPropertyItemBase $propertyItem */
 					foreach ($this->collection as $propertyItem)
 					{
-						if (!empty($values)
-							|| ($propertyItem->getField('CODE') == "CATALOG.XML_ID"
-								|| $propertyItem->getField('CODE') == "PRODUCT.XML_ID")
+						if ($propertyItem->getField('CODE') == "CATALOG.XML_ID"
+							|| $propertyItem->getField('CODE') == "PRODUCT.XML_ID"
 						)
 						{
 							continue;
@@ -300,26 +297,31 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 
 	/**
 	 * @return Result
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws NotImplementedException
 	 */
 	public function save()
 	{
 		$result = new Sale\Result();
 
-		$itemsFromDb = array();
+		$itemsFromDb = [];
 
 		$isItemDeleted = $this->isAnyItemDeleted();
 		if ($isItemDeleted)
 		{
 			$basketItem = $this->getBasketItem();
 			$itemsFromDbList = static::getList(
-				array(
-					"select" => array("ID"),
-					"filter" => array("BASKET_ID" => ($basketItem) ? $basketItem->getId() : 0)
-				)
+				[
+					"select" => ["ID"],
+					"filter" => ["BASKET_ID" => ($basketItem) ? $basketItem->getId() : 0]
+				]
 			);
 
 			while ($itemsFromDbItem = $itemsFromDbList->fetch())
+			{
 				$itemsFromDb[$itemsFromDbItem["ID"]] = true;
+			}
 		}
 
 		/** @var BasketPropertyItemBase $basketProperty */
@@ -327,16 +329,22 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 		{
 			$r = $basketProperty->save();
 			if (!$r->isSuccess())
+			{
 				$result->addErrors($r->getErrors());
+			}
 
 			unset($itemsFromDb[$basketProperty->getId()]);
 		}
 
 		foreach ($itemsFromDb as $basketPropertyId => $value)
+		{
 			static::delete($basketPropertyId);
+		}
 
 		if ($isItemDeleted)
+		{
 			$this->setAnyItemDeleted(false);
+		}
 
 		return $result;
 	}
@@ -356,7 +364,9 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 		foreach ($values as $value)
 		{
 			if (!($propertyValue = static::bringingPropertyValue($value)))
+			{
 				continue;
+			}
 
 			$requestValues[$propertyValue['CODE']] = $propertyValue["VALUE"];
 		}
@@ -370,7 +380,9 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 			foreach($requestValues as $key => $val)
 			{
 				if (!array_key_exists($key, $propertyValues) || (array_key_exists($key, $propertyValues) && $propertyValues[$key]['VALUE'] != $val))
+				{
 					return false;
+				}
 			}
 		}
 
@@ -384,7 +396,9 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 	public function getPropertyItemByValue(array $value)
 	{
 		if (!($propertyValue = static::bringingPropertyValue($value)))
+		{
 			return false;
+		}
 
 		/** @var BasketPropertyItemBase $propertyItem */
 		foreach ($this->collection as $propertyItem)
@@ -392,11 +406,15 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 			$propertyItemValues = $propertyItem->getFieldValues();
 
 			if (!($propertyItemValue = static::bringingPropertyValue($propertyItemValues)))
+			{
 				continue;
+			}
 
 
 			if ($propertyItemValue['CODE'] == $propertyValue['CODE'])
+			{
 				return $propertyItem;
+			}
 		}
 
 		return false;
@@ -415,7 +433,9 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 			$value = $property->getFieldValues();
 			$propertyValue = static::bringingPropertyValue($value);
 			if (!$propertyValue)
+			{
 				continue;
+			}
 
 			$result[$propertyValue['CODE']] = $propertyValue;
 		}
@@ -434,23 +454,24 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 		if (array_key_exists('VALUE', $value))
 		{
 			$propID = '';
-			if (array_key_exists('CODE', $value) && strval($value["CODE"]) != '')
+			if (array_key_exists('CODE', $value) && (string)$value["CODE"] !== '')
 			{
 				$propID = $value["CODE"];
 			}
-			elseif (array_key_exists('NAME', $value) && strval($value["NAME"]) != '')
+			elseif (array_key_exists('NAME', $value) && (string)$value["NAME"] !== '')
 			{
 				$propID = $value["NAME"];
 			}
 
-			if (strval($propID) != '')
+			$propID = (string)$propID;
+			if ($propID !== '')
 			{
 				$result = array(
 					'CODE' => $propID,
-					'ID' => $value["ID"],
-					'VALUE' => $value["VALUE"],
-					'SORT' => $value["SORT"],
-					'NAME' => $value["NAME"],
+					'VALUE' => $value['VALUE'],
+					'NAME' => $value['NAME'] ?? null,
+					'SORT' => $value['SORT'] ?? null,
+					'ID' => $value['ID'] ?? null,
 				);
 			}
 		}
@@ -460,9 +481,16 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 
 	/**
 	 * @internal
-	 * @param \SplObjectStorage $cloneEntity
 	 *
-	 * @return BasketPropertiesCollectionBase
+	 * @param \SplObjectStorage $cloneEntity
+	 * @return BasketPropertiesCollectionBase|Internals\EntityCollection
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\ObjectException
+	 * @throws NotImplementedException
+	 * @throws ObjectNotFoundException
 	 */
 	public function createClone(\SplObjectStorage $cloneEntity)
 	{
@@ -486,10 +514,9 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 		return $basketPropertiesCollectionClone;
 	}
 
-
 	/**
 	 * @return Result
-	 * @throws ObjectNotFoundException
+	 * @throws NotImplementedException
 	 */
 	public function verify()
 	{
@@ -510,9 +537,8 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 	/**
 	 * Load basket item properties.
 	 *
-	 * @param array $parameters	orm getList parameters.
+	 * @param array $parameters
 	 * @throws NotImplementedException
-	 * @return \Bitrix\Main\DB\Result
 	 */
 	public static function getList(array $parameters = array())
 	{
@@ -524,10 +550,26 @@ abstract class BasketPropertiesCollectionBase extends Internals\EntityCollection
 	 *
 	 * @param $primary
 	 * @throws NotImplementedException
-	 * @return DeleteResult
 	 */
 	protected static function delete($primary)
 	{
 		throw new NotImplementedException();
+	}
+
+	/**
+	 * @deprecated Use \Bitrix\Sale\BasketPropertiesCollectionBase::redefine instead
+	 *
+	 * @param array $values
+	 * @throws Main\ArgumentException
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\ArgumentTypeException
+	 * @throws Main\NotSupportedException
+	 * @throws NotImplementedException
+	 * @throws ObjectNotFoundException
+	 */
+	public function setProperty(array $values)
+	{
+		$this->redefine($values);
 	}
 }

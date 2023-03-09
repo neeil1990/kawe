@@ -1,10 +1,11 @@
-<?
+<?php
+
 IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/rating_rules.php");
 
 class CAllRatingRulesMain
 {
 	// return configs
-	function OnGetRatingRuleConfigs()
+	public static function OnGetRatingRuleConfigs()
 	{
 		$arConfigs["USER"]["CONDITION_CONFIG"][] = array(
 		    "ID"	=> 'RATING',
@@ -242,22 +243,22 @@ class CAllRatingRulesMain
 		return $arConfigs;
 	}
 
-	function ratingCheck($arConfigs)
+	public static function ratingCheck($arConfigs)
 	{
 		global $DB;
 		$err_mess = "File: ".__FILE__."<br>Function: ratingCheck<br>Line: ";
 
-		$ruleId = IntVal($arConfigs['ID']);
+		$ruleId = intval($arConfigs['ID']);
 		if (isset($arConfigs['CONDITION_CONFIG']['RATING']))
 		{
-			$ratingValue = IntVal($arConfigs['CONDITION_CONFIG']['RATING']['RATING_VALUE']);
+			$ratingValue = intval($arConfigs['CONDITION_CONFIG']['RATING']['RATING_VALUE']);
 			$ratingCondition = ($arConfigs['CONDITION_CONFIG']['RATING']['RATING_CONDITION'] == 1 ? '>=' : '<');
-			$ratingId = IntVal($arConfigs['CONDITION_CONFIG']['RATING']['RATING_ID']);
+			$ratingId = intval($arConfigs['CONDITION_CONFIG']['RATING']['RATING_ID']);
 		}
 		else
 		{
 			$ratingVoteWeight = COption::GetOptionString("main", "rating_vote_weight", 1);
-			$ratingValue = IntVal($arConfigs['CONDITION_CONFIG']['AUTHORITY']['RATING_VALUE'])*$ratingVoteWeight;
+			$ratingValue = intval($arConfigs['CONDITION_CONFIG']['AUTHORITY']['RATING_VALUE'])*$ratingVoteWeight;
 			$ratingCondition = ($arConfigs['CONDITION_CONFIG']['AUTHORITY']['RATING_CONDITION'] == 1 ? '>=' : '<');
 			$ratingId = CRatings::GetAuthorityRating();
 		}
@@ -276,23 +277,23 @@ class CAllRatingRulesMain
 		return true;
 	}
 
-	function ratingCheckInterval($arConfigs)
+	public static function ratingCheckInterval($arConfigs)
 	{
 		global $DB;
 		$err_mess = "File: ".__FILE__."<br>Function: ratingCheckInterval<br>Line: ";
 
-		$ruleId = IntVal($arConfigs['ID']);	
+		$ruleId = intval($arConfigs['ID']);
 		if (isset($arConfigs['CONDITION_CONFIG']['RATING_INTERVAL']))
 		{
-			$ratingValueFrom = IntVal($arConfigs['CONDITION_CONFIG']['RATING_INTERVAL']['RATING_VALUE_FROM']);
-			$ratingValueTo = IntVal($arConfigs['CONDITION_CONFIG']['RATING_INTERVAL']['RATING_VALUE_TO']);
-			$ratingId = IntVal($arConfigs['CONDITION_CONFIG']['RATING_INTERVAL']['RATING_ID']);
+			$ratingValueFrom = intval($arConfigs['CONDITION_CONFIG']['RATING_INTERVAL']['RATING_VALUE_FROM']);
+			$ratingValueTo = intval($arConfigs['CONDITION_CONFIG']['RATING_INTERVAL']['RATING_VALUE_TO']);
+			$ratingId = intval($arConfigs['CONDITION_CONFIG']['RATING_INTERVAL']['RATING_ID']);
 		}
 		else
 		{
 			$ratingVoteWeight = COption::GetOptionString("main", "rating_vote_weight", 1);
-			$ratingValueFrom = IntVal($arConfigs['CONDITION_CONFIG']['AUTHORITY_INTERVAL']['RATING_VALUE_FROM'])*$ratingVoteWeight;
-			$ratingValueTo = IntVal($arConfigs['CONDITION_CONFIG']['AUTHORITY_INTERVAL']['RATING_VALUE_TO'])*$ratingVoteWeight;
+			$ratingValueFrom = intval($arConfigs['CONDITION_CONFIG']['AUTHORITY_INTERVAL']['RATING_VALUE_FROM'])*$ratingVoteWeight;
+			$ratingValueTo = intval($arConfigs['CONDITION_CONFIG']['AUTHORITY_INTERVAL']['RATING_VALUE_TO'])*$ratingVoteWeight;
 			$ratingId = CRatings::GetAuthorityRating();
 		}	
 			
@@ -310,13 +311,13 @@ class CAllRatingRulesMain
 		return true;
 	}
 
-	function addToGroup($arConfigs)
+	public static function addToGroup($arConfigs)
 	{
 		global $DB;
 		$err_mess = "File: ".__FILE__."<br>Function: addToGroup<br>Line: ";
 
-		$ruleId = IntVal(IntVal($arConfigs['ID']));
-		$groupId = IntVal($arConfigs['ACTION_CONFIG']['ADD_TO_GROUP']['GROUP_ID']);
+		$ruleId = intval(IntVal($arConfigs['ID']));
+		$groupId = intval($arConfigs['ACTION_CONFIG']['ADD_TO_GROUP']['GROUP_ID']);
 		$entityTypeId = $DB->ForSql($arConfigs['ENTITY_TYPE_ID']);
 
 		// add a group to all users who do not, but you need to add it
@@ -339,13 +340,13 @@ class CAllRatingRulesMain
 		return true;
 	}
 
-	function removeFromGroup($arConfigs)
+	public static function removeFromGroup($arConfigs)
 	{
 		global $DB;
 		$err_mess = "File: ".__FILE__."<br>Function: addToGroup<br>Line: ";
 
-		$ruleId = IntVal(IntVal($arConfigs['ID']));
-		$groupId = IntVal($arConfigs['ACTION_CONFIG']['REMOVE_FROM_GROUP']['GROUP_ID']);
+		$ruleId = intval(IntVal($arConfigs['ID']));
+		$groupId = intval($arConfigs['ACTION_CONFIG']['REMOVE_FROM_GROUP']['GROUP_ID']);
 		$entityTypeId = $DB->ForSql($arConfigs['ENTITY_TYPE_ID']);
 
 		// remove the group from all users who it is, but you need to remove it
@@ -373,7 +374,7 @@ class CAllRatingRulesMain
 		return true;
 	}
 
-	function GetUfList()
+	public static function GetUfList()
 	{
 		$arFields = array();
 		$rsData = CUserTypeEntity::GetList(array(), array('ENTITY_ID' => 'USER', 'LANG' => LANG));
@@ -386,12 +387,12 @@ class CAllRatingRulesMain
 
 	}
 
-	function changeUF($arConfigs)
+	public static function changeUF($arConfigs)
 	{
 		global $DB;
 		$err_mess = "File: ".__FILE__."<br>Function: changeUF<br>Line: ";
 
-		$ruleId = IntVal(IntVal($arConfigs['ID']));
+		$ruleId = intval(IntVal($arConfigs['ID']));
 		$entityTypeId = $DB->ForSql($arConfigs['ENTITY_TYPE_ID']);
 		$userFieldId = $DB->ForSql($arConfigs['ACTION_CONFIG']['CHANGE_UF']['UF_ID']);
 		$userFieldValue = $DB->ForSql($arConfigs['ACTION_CONFIG']['CHANGE_UF']['UF_VALUE']);
@@ -429,7 +430,7 @@ class CAllRatingRulesMain
 	}
 
 	// return support object
-	function OnGetRatingRuleObjects()
+	public static function OnGetRatingRuleObjects()
 	{
 		$arRatingRulesConfigs = CRatingRulesMain::OnGetRatingRuleConfigs();
 		foreach ($arRatingRulesConfigs as $SupportType => $value)
@@ -439,7 +440,7 @@ class CAllRatingRulesMain
 	}
 
 	// check the value which relate to the module
-	function OnAfterAddRatingRule($ID, $arFields)
+	public static function OnAfterAddRatingRule($ID, $arFields)
 	{
 		$arFields = CRatingRulesMain::__CheckFields($arFields['ENTITY_TYPE_ID'], $arFields);
 
@@ -447,7 +448,7 @@ class CAllRatingRulesMain
 	}
 
 	// check the value which relate to the module
-	function OnAfterUpdateRatingRule($ID, $arFields)
+	public static function OnAfterUpdateRatingRule($ID, $arFields)
 	{
 		$arFields = CRatingRulesMain::__CheckFields($arFields['ENTITY_TYPE_ID'], $arFields);
 
@@ -455,7 +456,7 @@ class CAllRatingRulesMain
 	}
 
 	// check input values, if value does not validate, set the default value
-	function __CheckFields($entityId, $arConfigs)
+	public static function __CheckFields($entityId, $arConfigs)
 	{
 		$arDefaultConfig = CRatingRulesMain::__AssembleConfigDefault($entityId);
 
@@ -524,7 +525,7 @@ class CAllRatingRulesMain
 	}
 
 	// assemble config default value
-	function __AssembleConfigDefault($objectType = null)
+	public static function __AssembleConfigDefault($objectType = null)
 	{
 		$arConfigs = array();
 		$arRatingRuleConfigs = CRatingRulesMain::OnGetRatingRuleConfigs();
@@ -555,5 +556,3 @@ class CAllRatingRulesMain
 		return $arConfigs;
 	}
 }
-
-?>

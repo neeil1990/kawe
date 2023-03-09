@@ -12,13 +12,11 @@ class seo extends CModule
 	var $MODULE_DESCRIPTION;
 	var $MODULE_GROUP_RIGHTS = "Y";
 
-	function seo()
+	public function __construct()
 	{
 		$arModuleVersion = array();
 
-		$path = str_replace("\\", "/", __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen("/index.php"));
-		include($path."/version.php");
+		include(__DIR__.'/version.php');
 
 		if (is_array($arModuleVersion) && array_key_exists("VERSION", $arModuleVersion))
 		{
@@ -48,7 +46,7 @@ class seo extends CModule
 
 		$this->errors = false;
 		if(!$DB->Query("SELECT 'x' FROM b_seo_search_engine", true))
-			$this->errors = $DB->RunSQLBatch($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/seo/install/db/".strtolower($DB->type)."/install.sql");
+			$this->errors = $DB->RunSQLBatch($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/seo/install/db/mysql/install.sql");
 
 		if($this->errors !== false)
 		{
@@ -103,6 +101,8 @@ class seo extends CModule
 		$eventManager->registerEventHandler("catalog", "OnProductUpdate", "seo", "\\Bitrix\\Seo\\Adv\\Auto", "checkQuantity");
 		$eventManager->registerEventHandler("catalog", "OnProductSetAvailableUpdate", "seo", "\\Bitrix\\Seo\\Adv\\Auto", "checkQuantity");
 
+		$eventManager->registerEventHandler("bitrix24", "onDomainChange", "seo", "\\Bitrix\\Seo\\Service", "changeRegisteredDomain");
+
 		if (COption::GetOptionString('seo', 'searchers_list', '') == '' && CModule::IncludeModule('statistic'))
 		{
 			$arFilter = array('ACTIVE' => 'Y', 'NAME' => 'Google|MSN|Bing', 'NAME_EXACT_MATCH' => 'Y');
@@ -110,8 +110,7 @@ class seo extends CModule
 				$arFilter['NAME'] .= '|Yandex';
 
 			$strSearchers = '';
-			$is_filtered = false;
-			$dbRes = CSearcher::GetList($by = 's_id', $order = 'asc', $arFilter, $is_filtered);
+			$dbRes = CSearcher::GetList($by = 's_id', $order = 'asc', $arFilter);
 			while ($arRes = $dbRes->Fetch())
 			{
 				$strSearchers .= ($strSearchers == '' ? '' : ',').$arRes['ID'];
@@ -136,6 +135,7 @@ class seo extends CModule
 			CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/panel", $_SERVER["DOCUMENT_ROOT"]."/bitrix/panel", true, true);
 			CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/js", $_SERVER["DOCUMENT_ROOT"]."/bitrix/js", true, true);
 			CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/images", $_SERVER["DOCUMENT_ROOT"]."/bitrix/images", true, true);
+			CopyDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
 		}
 		return true;
 	}
@@ -148,7 +148,7 @@ class seo extends CModule
 	function DoUninstall()
 	{
 		global $DOCUMENT_ROOT, $APPLICATION, $step;
-		$step = IntVal($step);
+		$step = intval($step);
 		if($step<2)
 		{
 			$APPLICATION->IncludeAdminFile(GetMessage("SEO_UNINSTALL_TITLE"), $DOCUMENT_ROOT."/bitrix/modules/seo/install/unstep1.php");
@@ -174,7 +174,7 @@ class seo extends CModule
 
 		if (!$arParams['savedata'])
 		{
-			$this->errors = $DB->RunSQLBatch($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/seo/install/db/".strtolower($DB->type)."/uninstall.sql");
+			$this->errors = $DB->RunSQLBatch($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/seo/install/db/mysql/uninstall.sql");
 
 			if(empty($this->errors))
 			{
@@ -228,6 +228,8 @@ class seo extends CModule
 		$eventManager->unRegisterEventHandler("catalog", "OnProductUpdate", "seo", "\\Bitrix\\Seo\\Adv\\Auto", "checkQuantity");
 		$eventManager->unRegisterEventHandler("catalog", "OnProductSetAvailableUpdate", "seo", "\\Bitrix\\Seo\\Adv\\Auto", "checkQuantity");
 
+		$eventManager->unregisterEventHandler("bitrix24", "onDomainChange", "seo", "\\Bitrix\\Seo\\Service", "changeRegisteredDomain");
+
 		UnRegisterModule("seo");
 
 		return true;
@@ -241,6 +243,7 @@ class seo extends CModule
 		DeleteDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/admin/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/admin");
 		DeleteDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/tools/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/tools");
 		DeleteDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/images/seo", $_SERVER["DOCUMENT_ROOT"]."/bitrix/images/seo");
+		DeleteDirFiles($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/seo/install/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components");
 
 		return true;
 	}
@@ -261,5 +264,18 @@ class seo extends CModule
 				"[W] ".GetMessage("SEO_FULL"))
 			);
 		return $arr;
+	}
+
+	/**
+	 * Method for migrate from cloud version.
+	 * @return void
+	 * @throws \Bitrix\Main\LoaderException
+	 */
+	public function migrateToBox(): void
+	{
+		if (\Bitrix\Main\Loader::includeModule('seo'))
+		{
+			\Bitrix\Seo\Service::changeRegisteredDomain();
+		}
 	}
 }

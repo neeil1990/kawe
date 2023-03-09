@@ -1,4 +1,4 @@
-<?
+<?php
 $MESS["PRODUCT_ENTITY_ID_FIELD"] = "Идентификатор";
 $MESS["PRODUCT_ENTITY_QUANTITY_FIELD"] = "Доступное количество";
 $MESS["PRODUCT_ENTITY_QUANTITY_TRACE_FIELD"] = "Режим количественного учета";
@@ -27,8 +27,10 @@ $MESS["PRODUCT_ENTITY_AVAILABLE_FIELD"] = "Доступность к покуп�
 $MESS["PRODUCT_ENTITY_TYPE_PRODUCT"] = "простой";
 $MESS["PRODUCT_ENTITY_TYPE_SET"] = "комплект";
 $MESS["PRODUCT_ENTITY_TYPE_SKU"] = "товар с предложениями";
+$MESS["PRODUCT_ENTITY_TYPE_EMPTY_SKU"] = "невалидный товар с предложениями";
 $MESS["PRODUCT_ENTITY_TYPE_OFFER"] = "предложение";
 $MESS["PRODUCT_ENTITY_TYPE_FREE_OFFER"] = "предложение без товара";
+$MESS['PRODUCT_ENTITY_TYPE_SERVICE'] = "услуга";
 $MESS["PRODUCT_ENTITY_BUNDLE_FIELD"] = "Наличие набора";
 $MESS["PRODUCT_ENTITY_PAYMENT_TYPE_SINGLE"] = "одноразовая";
 $MESS["PRODUCT_ENTITY_PAYMENT_TYPE_REGULAR"] = "регулярная";
@@ -40,4 +42,6 @@ $MESS["PRODUCT_ENTITY_PAYMENT_PERIOD_MONTH"] = "месяц";
 $MESS["PRODUCT_ENTITY_PAYMENT_PERIOD_QUART"] = "квартал";
 $MESS["PRODUCT_ENTITY_PAYMENT_PERIOD_SEMIYEAR"] = "полугодие";
 $MESS["PRODUCT_ENTITY_PAYMENT_PERIOD_YEAR"] = "год";
-?>
+$MESS['PRODUCT_ENTITY_ENTITY_NAME_ANY_PRODUCT'] = "товар";
+$MESS['PRODUCT_ENTITY_ENTITY_NAME_ANY_SERVICE'] = "услуга";
+$MESS['PRODUCT_ENTITY_ENTITY_NAME_ANY_RESTLESS'] = "некорректный товар";

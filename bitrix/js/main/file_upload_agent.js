@@ -13,6 +13,7 @@ BX.FileUploadAgent = function(arParams) {
 	this.values = (BX.type.isArray(arParams['values'])) ? arParams['values'] : []; // values which already have been uploaded
 	this.fileInputID = (!! arParams['fileInput']) ? arParams['fileInput'] : null; // ID DOM-element which type is "file" <input type=file id=arParams['fileInput']...
 	this.fileInputName = (!! arParams['fileInputName']) ? arParams['fileInputName'] : null; // Array name to upload file <input type=file name=arParams['fileInputName']
+	this.multiple = !!arParams['multiple'];
 
 	this.placeholder = (!! arParams['placeholder']) ? arParams['placeholder'] : null; // TBODY to add new row with info about new file
 	this.uploadDialog = (!! arParams['uploadDialog']) ? arParams['uploadDialog'] : null; // Parent class method to upload file
@@ -47,9 +48,11 @@ BX.FileUploadAgent = function(arParams) {
 	if (! this.parent._mkFileInput) // first agent
 		this._mkFileInput();
 
+	this.hUploaderChange = this.onUploaderChange.bind(this);
+
 	if (! window.wduf_places)
 		window.wduf_places = {};
-}
+};
 
 BX.FileUploadAgent.prototype.Init = function()
 {
@@ -62,18 +65,16 @@ BX.FileUploadAgent.prototype.Init = function()
 	}
 
 	if (this.fileInput) {
-		if (! this.hUploaderChange)
-			this.hUploaderChange = BX.proxy(this.onUploaderChange, this);
 		BX.bind(this.fileInput, 'change', this.hUploaderChange);
 	}
 	if (this.hAttachEvents && BX.type.isFunction(this.hAttachEvents)) {
 		this.hAttachEvents(this);
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.getID = function() {
 	return ('' + new Date().getTime()).substr(6);
-}
+};
 
 BX.FileUploadAgent.prototype._mkClose = function(parent)
 {
@@ -96,11 +97,10 @@ BX.FileUploadAgent.prototype._mkClose = function(parent)
 		target = divLoaded;
 
 	if (!!target) {
-		var p = parent;
-		BX.bind(closeBtn, 'click', BX.delegate(function() {this.StopUpload(p); }, this));
+		BX.bind(closeBtn, 'click', this.StopUpload.bind(this, parent));
 		target.appendChild(closeBtn);
 	}
-}
+};
 
 BX.FileUploadAgent.prototype._mkPlace = function(name, cacheID)
 {
@@ -188,10 +188,12 @@ BX.FileUploadAgent.prototype._mkPlace = function(name, cacheID)
 		});
 
 		this._mkClose(this.place);
+		if (!this.multiple)
+			this.placeholder.innerHTML = '';
 		this.placeholder.appendChild(this.place);
 		window.wduf_places[cacheID] = this.place;
 	}
-}
+};
 
 BX.FileUploadAgent.prototype._mkFileInput = function(parent)
 {
@@ -202,15 +204,17 @@ BX.FileUploadAgent.prototype._mkFileInput = function(parent)
 		BX.remove(oldFileInput);
 	}
 
+	var attrs = { type: 'file', size: '1' };
+	if (this.multiple)
+	{
+		attrs['multiple'] = 'multiple';
+	}
+
 	var newFileInput = BX.create('INPUT', {
 		props: {
 			className: this.classes.uploader
 		},
-		attrs: {
-			type: 'file',
-			size: '1',
-			multiple: 'multiple'
-		}
+		attrs : attrs
 	});
 	this.fileInput = newFileInput;
 	this.fileInput.name = this.fileInputName;
@@ -219,7 +223,7 @@ BX.FileUploadAgent.prototype._mkFileInput = function(parent)
 	if (this.hUploaderChange)
 		BX.bind(this.fileInput, 'change', this.hUploaderChange);
 	return this.fileInput;
-}
+};
 
 BX.FileUploadAgent.prototype.onUploaderChange = function(e)
 {
@@ -236,16 +240,16 @@ BX.FileUploadAgent.prototype.onUploaderChange = function(e)
 	} else {
 		this.uploadDialog.CallSubmit();
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.onUploadStart = function(dialog)
 {
-	name = dialog.GetUploadFileName();
+	var name = dialog.GetUploadFileName();
 	if ((!this.uploadDialog) || (dialog.id != this.uploadDialog.id)) {
 		return false;
 	}
 
-	if (! this.place)
+	if (!this.place)
 		this._mkPlace(name);
 
 	if (! this.uploadFile) {
@@ -254,7 +258,7 @@ BX.FileUploadAgent.prototype.onUploadStart = function(dialog)
 		newdialog.LoadDialogs(this.dialogs);
 	}
 	this.uploadFile = null;
-}
+};
 
 BX.FileUploadAgent.prototype.onProgress = function(percent, force)
 {
@@ -286,13 +290,13 @@ BX.FileUploadAgent.prototype.onProgress = function(percent, force)
 		this.progressAnimation.__checkOptions();
 		this.progressAnimation.start();
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.onUploadFinish = function(result)
 {
 	this.uploadResult = result;
 	this.onProgress(2, true);
-}
+};
 
 BX.FileUploadAgent.prototype.UpdateProgressIndicator = function(percent)
 {
@@ -318,21 +322,20 @@ BX.FileUploadAgent.prototype.UpdateProgressIndicator = function(percent)
 			}
 		}
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.ShowAttachedFiles = function()
 {
-	var val = null;
 	if (! this.values)
 		return;
 	var valArr = this.values.slice();
-	val = this.values.shift();
+	var val = this.values.shift();
 	if (!!val) {
 		if (BX.type.isDomNode(val)) {
-			sID = val.id;
-			mID = sID.match(new RegExp(this.doc_prefix + '(\\d+)'));
+			var sID = val.id;
+			var mID = sID.match(new RegExp(this.doc_prefix + '(\\d+)'));
 			if (!!mID) {
-				id = mID[1];
+				var id = mID[1];
 				this.BindLoadedFileControls(id, val);
 			}
 		} else {
@@ -343,7 +346,7 @@ BX.FileUploadAgent.prototype.ShowAttachedFiles = function()
 			this.uploadResultArr = new Array();
 			for (var i=0;i<valArr.length;i++)
 			{
-				element_id = valArr[i];
+				var element_id = valArr[i];
 				if (typeof(valArr[i]) == "object")
 				{
 					element_id = valArr[i].element_id;
@@ -358,16 +361,20 @@ BX.FileUploadAgent.prototype.ShowAttachedFiles = function()
 			this.values = [];
 		}
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.BindLoadedFileControls = function(id, node) // event
 {
+	if (!node || node.nodeName !== "TR")
+	{
+		return;
+	}
 	this.place = node;
 	this._mkClose(node);
 	BX.onCustomEvent(this.caller, 'BindLoadedFileControls', [this, id]);
 	this._clearPlace();
 	setTimeout(BX.delegate(this.ShowAttachedFiles, this), 200);
-}
+};
 
 BX.FileUploadAgent.prototype.ShowUploadError = function(messages)
 {
@@ -390,7 +397,7 @@ BX.FileUploadAgent.prototype.ShowUploadError = function(messages)
 			this._mkClose(this.place);
 		}
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.ShowUploadedFile = function(param)
 {
@@ -398,7 +405,7 @@ BX.FileUploadAgent.prototype.ShowUploadedFile = function(param)
 		this.uploadResult = param;
 
 	BX.onCustomEvent(this.caller, 'ShowUploadedFile', [this]);
-}
+};
 
 BX.FileUploadAgent.prototype.AddRowToPlaceholder = function(TR)
 {
@@ -426,7 +433,7 @@ BX.FileUploadAgent.prototype.AddRowToPlaceholder = function(TR)
 			}
 		}
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.AddNodeToPlaceholder = function(node)
 {
@@ -434,33 +441,40 @@ BX.FileUploadAgent.prototype.AddNodeToPlaceholder = function(node)
 	this._clearPlace();
 	var place = this.placeholder.parentNode.parentNode;
 	place.appendChild(node);
-}
+};
 
-BX.FileUploadAgent.prototype._clearPlace = function() {
-	for (i in window.wduf_places) {
-		if ( window.wduf_places[i]  ==  this.place) {
+BX.FileUploadAgent.prototype._clearPlace = function()
+{
+	for (var i in window.wduf_places)
+	{
+		if (window.wduf_places[i]  ==  this.place)
+		{
 			window.wduf_places[i] = false;
 		}
 	}
 	this.place = null;
-}
+};
 
-BX.FileUploadAgent.prototype.StopUpload = function(p)
+BX.FileUploadAgent.prototype.StopUpload = function(parentNode)
 {
-	var parent = p;
-
-	BX.hide(parent);
-	BX.onCustomEvent(this.caller, 'StopUpload', [this, parent]);
-
-	sID = p.id;
-	mID = sID.match(new RegExp(this.doc_prefix + '(\\d+)'));
-	if (!!mID) {
-		id = mID[1];
-		var fileInput = BX('file-doc' + id);
-		if (!!fileInput)
-			BX.remove(fileInput);
+	if (!parentNode)
+	{
+		return;
 	}
-}
+
+	BX.onCustomEvent(this.caller, 'StopUpload', [this, parentNode]);
+
+	BX.hide(parentNode);
+	var mID = parentNode.id.match(new RegExp(this.doc_prefix + '(\\d+)'));
+	if (!!mID)
+	{
+		var fileInput = BX('file-doc' + mID[1]);
+		if (fileInput)
+		{
+			BX.remove(fileInput);
+		}
+	}
+};
 
 BX.FileUploadAgent.prototype.LoadScript = function(src, callback)
 {
@@ -472,7 +486,7 @@ BX.FileUploadAgent.prototype.LoadScript = function(src, callback)
 		BX.loadScript(src, callback);
 		window.loaded_scripts.push(src);
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.BindUploadEvents = function(dialog)
 {
@@ -497,6 +511,7 @@ BX.FileUploadAgent.prototype.BindUploadEvents = function(dialog)
 				}
 				break;
 			}
+			if (!this.multiple) break;
 		}
 		if (this.uploadFile) {
 			if (this.fileInput) {
@@ -511,7 +526,7 @@ BX.FileUploadAgent.prototype.BindUploadEvents = function(dialog)
 		this.uploadDialog.fileDropped = true;
 		this.uploadDialog.UpdateListFiles([this.uploadFile]);
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.UploadDroppedFiles = function(files)
 {
@@ -522,19 +537,20 @@ BX.FileUploadAgent.prototype.UploadDroppedFiles = function(files)
 	if (files.length > 0) {
 		for (var i=0; i<files.length; i++) {
 			this._mkPlace( files[i].fileName || files[i].name );
+			if (!this.multiple) break;
 		}
 		this.uploadDialog.SetFileInput(this.fileInput);
 		this._mkFileInput();
 	}
 	var newdialog = this.GetNewObject();
 	newdialog.LoadDialogs(this.dialogs);
-}
+};
 
 BX.FileUploadAgent.prototype.AddSelectedFiles = function(files)
 {
 	if (!!files && BX.type.isArray(files) && (files.length > 0))
 	{
-		for (i in files) {
+		for (var i in files) {
 			if ((!BX(this.doc_prefix + files.id))) {
 				this._mkPlace(files[i].name, files[i].id);
 				var ar = {'element_id':files[i].id, 'element_url':files[i].link};
@@ -546,13 +562,13 @@ BX.FileUploadAgent.prototype.AddSelectedFiles = function(files)
 			this.ShowAttachedFiles();
 		}
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.Disable = function()
 {
 	BX.cleanNode(this.controller);
 	this.controller.innerHTML = this.msg.access_denied;
-}
+};
 
 BX.FileUploadAgent.prototype.LoadUploadDialog = function()
 {
@@ -560,7 +576,7 @@ BX.FileUploadAgent.prototype.LoadUploadDialog = function()
 	{
 		this.caller.GetUploadDialog(this);
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.SelectViewVariant = function(variant)
 {
@@ -568,7 +584,7 @@ BX.FileUploadAgent.prototype.SelectViewVariant = function(variant)
 		'simple' : this.classes.tpl_simple,
 		'extended' : this.classes.tpl_extended
 	};
-	for (i in target) {
+	for (var i in target) {
 		var domNode = BX.findChild(this.controller, { 'className': target[i]}, true);
 		if (!!domNode) {
 			if (variant == i)
@@ -577,12 +593,12 @@ BX.FileUploadAgent.prototype.SelectViewVariant = function(variant)
 				BX.remove(domNode);
 		}
 	}
-}
+};
 
 BX.FileUploadAgent.prototype.LoadDialogsFinished = function()
 {
 	this.ShowAttachedFiles();
-}
+};
 
 BX.FileUploadAgent.prototype.LoadDialogs = function(dialogs)
 {
@@ -625,10 +641,10 @@ BX.FileUploadAgent.prototype.LoadDialogs = function(dialogs)
 	}
 	if (this.values.length > 0)
 		BX.show(this.controller);
-}
+};
 BX.FileUploadAgent.prototype.GetNewObject = function(parent)
 {
 	return new BX.FileUploadAgent((!!parent ? parent : this));
-}
+};
 })();
 

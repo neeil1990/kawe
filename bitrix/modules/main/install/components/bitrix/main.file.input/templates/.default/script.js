@@ -51,16 +51,12 @@
 				});
 
 				this.fileEvents = {
-					onFileIsAttached : BX.delegate(this.onFileIsAttached, this),
-					onFileIsAppended : BX.delegate(this.onFileIsAppended, this),
-					onFileIsBound : BX.delegate(this.onFileIsBound, this),
-					onFileIsReadyToFrame : BX.delegate(this.onFileIsReadyToFrame, this),
-
-					onUploadStart : BX.delegate(this.onUploadStart, this),
-					onUploadProgress : BX.delegate(this.onUploadProgress, this),
-					onUploadDone : BX.delegate(this.onUploadDone, this),
-					onUploadError : BX.delegate(this.onUploadError, this),
-					onUploadRestore : BX.delegate(this.onUploadRestore, this)
+					onFileIsAppended : this.onFileIsAppended.bind(this),
+					onFileIsBound : this.onFileIsBound.bind(this),
+					onUploadStart : this.onUploadStart.bind(this),
+					onUploadProgress : this.onUploadProgress.bind(this),
+					onUploadDone : this.onUploadDone.bind(this),
+					onUploadError : this.onUploadError.bind(this)
 				};
 
 				BX.addCustomEvent(this.agent, "onAttachFiles", BX.delegate(this.onAttachFiles, this));
@@ -159,7 +155,9 @@
 				for (var ii in this['fileEvents'])
 				{
 					if (this['fileEvents'].hasOwnProperty(ii))
+					{
 						BX.addCustomEvent(file, ii, this['fileEvents'][ii]);
+					}
 				}
 			},
 			onFileIsAppended : function(id, item) {
@@ -271,7 +269,9 @@
 				for (var ii in this['fileEvents'])
 				{
 					if (this['fileEvents'].hasOwnProperty(ii))
-						BX.addCustomEvent(item, ii, this['fileEvents'][ii]);
+					{
+						BX.removeAllCustomEvents(item, ii);
+					}
 				}
 
 				BX.unbindAll(node);
@@ -327,7 +327,9 @@
 
 					var html = this.template, value;
 					file["ext"] = item.ext;
-					file["preview_url"] = (item.canvas ? item.canvas.toDataURL("image/png") : "/bitrix/images/1.gif");
+					file["preview_url"] = (item.canvas
+						? item.canvas.toDataURL("image/png")
+						: ( file['thumb_src'] ?? "/bitrix/images/1.gif"));
 					item.canvas = null;
 					delete item.canvas;
 					for (var ii in file)
@@ -339,7 +341,7 @@
 								value = BX.UploaderUtils.getFormattedSize(value, 0);
 							else if (ii.toLowerCase() === 'name')
 								value = file["originalName"];
-							html = html.replace(new RegExp("#" + ii.toLowerCase() + "#", "gi"), value).replace(new RegExp("#" + ii.toUpperCase() + "#", "gi"), value);
+							html = html.replace(new RegExp("#" + ii.toLowerCase() + "#", "gi"), BX.util.htmlspecialchars(value)).replace(new RegExp("#" + ii.toUpperCase() + "#", "gi"), BX.util.htmlspecialchars(value));
 						}
 					}
 					item.file.file_id = file["file_id"];

@@ -15,9 +15,12 @@ use \Bitrix\Main\Localization\Loc;
  * @var bool $showSubscribe
  * @var array $morePhoto
  * @var bool $showSlider
+ * @var bool $itemHasDetailUrl
  * @var string $imgTitle
  * @var string $productTitle
  * @var string $buttonSizeClass
+ * @var string $discountPositionClass
+ * @var string $labelPositionClass
  * @var CatalogSectionComponent $component
  */
 
@@ -40,14 +43,24 @@ else
 <div class="row product-item">
 	<div class="col-xs-12">
 		<div class="product-item-title">
-			<a href="<?=$item['DETAIL_PAGE_URL']?>" title="<?=$productTitle?>"><?=$productTitle?></a>
+			<? if ($itemHasDetailUrl): ?>
+			<a href="<?=$item['DETAIL_PAGE_URL']?>" title="<?=$productTitle?>">
+			<? endif; ?>
+			<?=$productTitle?>
+			<? if ($itemHasDetailUrl): ?>
+			</a>
+			<? endif; ?>
 		</div>
 	</div>
 	<div class="col-xs-12 col-sm-6 col-md-3 col-lg-2">
+		<? if ($itemHasDetailUrl): ?>
 		<a class="product-item-image-wrapper" href="<?=$item['DETAIL_PAGE_URL']?>" title="<?=$imgTitle?>"
-			data-entity="image-wrapper">
+				data-entity="image-wrapper">
+		<? else: ?>
+		<span class="product-item-image-wrapper" data-entity="image-wrapper">
+		<? endif; ?>
 			<span class="product-item-image-slider-slide-container slide" id="<?=$itemIds['PICT_SLIDER']?>"
-				style="display: <?=($showSlider ? '' : 'none')?>;"
+				<?=($showSlider ? '' : 'style="display: none;"')?>
 				data-slider-interval="<?=$arParams['SLIDER_INTERVAL']?>" data-slider-wrap="true">
 				<?
 				if ($showSlider)
@@ -64,7 +77,7 @@ else
 				?>
 			</span>
 			<span class="product-item-image-original" id="<?=$itemIds['PICT']?>"
-				style="background-image: url('<?=$item['PREVIEW_PICTURE']['SRC']?>'); display: <?=($showSlider ? 'none' : '')?>;">
+				style="background-image: url('<?=$item['PREVIEW_PICTURE']['SRC']?>'); <?=($showSlider ? 'display: none;' : '')?>">
 			</span>
 			<?
 			if ($item['SECOND_PICT'])
@@ -72,7 +85,7 @@ else
 				$bgImage = !empty($item['PREVIEW_PICTURE_SECOND']) ? $item['PREVIEW_PICTURE_SECOND']['SRC'] : $item['PREVIEW_PICTURE']['SRC'];
 				?>
 				<span class="product-item-image-alternative" id="<?=$itemIds['SECOND_PICT']?>"
-					style="background-image: url('<?=$bgImage?>'); display: <?=($showSlider ? 'none' : '')?>;">
+					style="background-image: url('<?=$bgImage?>'); <?=($showSlider ? 'display: none;' : '')?>">
 				</span>
 				<?
 			}
@@ -81,7 +94,7 @@ else
 			{
 				?>
 				<div class="product-item-label-ring <?=$discountPositionClass?>" id="<?=$itemIds['DSC_PERC']?>"
-					style="display: <?=($price['PERCENT'] > 0 ? '' : 'none')?>;">
+					<?=($price['PERCENT'] > 0 ? '' : 'style="display: none;"')?>>
 					<span><?=-$price['PERCENT']?>%</span>
 				</div>
 				<?
@@ -109,7 +122,7 @@ else
 			}
 			?>
 			<div class="product-item-image-slider-control-container" id="<?=$itemIds['PICT_SLIDER']?>_indicator"
-				style="display: <?=($showSlider ? '' : 'none')?>;">
+				<?=($showSlider ? '' : 'style="display: none;"')?>>
 				<?
 				if ($showSlider)
 				{
@@ -132,7 +145,11 @@ else
 				<?
 			}
 			?>
+		<? if ($itemHasDetailUrl): ?>
 		</a>
+		<? else: ?>
+		</span>
+		<? endif; ?>
 	</div>
 	<?
 	if (!$haveOffers)
@@ -511,15 +528,11 @@ else
 								<div class="product-item-info-container" data-entity="quantity-block">
 									<div class="product-item-amount">
 										<div class="product-item-amount-field-container">
-											<a class="product-item-amount-field-btn-minus" id="<?=$itemIds['QUANTITY_DOWN']?>"
-												href="javascript:void(0)" rel="nofollow">
-											</a>
-											<input class="product-item-amount-field" id="<?=$itemIds['QUANTITY']?>" type="tel"
+											<span class="product-item-amount-field-btn-minus no-select" id="<?=$itemIds['QUANTITY_DOWN']?>"></span>
+											<input class="product-item-amount-field" id="<?=$itemIds['QUANTITY']?>" type="number"
 												name="<?=$arParams['PRODUCT_QUANTITY_VARIABLE']?>"
 												value="<?=$measureRatio?>">
-											<a class="product-item-amount-field-btn-plus" id="<?=$itemIds['QUANTITY_UP']?>"
-												href="javascript:void(0)" rel="nofollow">
-											</a>
+											<span class="product-item-amount-field-btn-plus no-select" id="<?=$itemIds['QUANTITY_UP']?>"></span>
 											<div class="product-item-amount-description-container">
 												<span id="<?=$itemIds['QUANTITY_MEASURE']?>">
 													<?=$actualItem['ITEM_MEASURE']['TITLE']?>
@@ -540,15 +553,11 @@ else
 								<div class="product-item-info-container" data-entity="quantity-block">
 									<div class="product-item-amount">
 										<div class="product-item-amount-field-container">
-											<a class="product-item-amount-field-btn-minus" id="<?=$itemIds['QUANTITY_DOWN']?>"
-												href="javascript:void(0)" rel="nofollow">
-											</a>
-											<input class="product-item-amount-field" id="<?=$itemIds['QUANTITY']?>" type="tel"
+											<span class="product-item-amount-field-btn-minus no-select" id="<?=$itemIds['QUANTITY_DOWN']?>"></span>
+											<input class="product-item-amount-field" id="<?=$itemIds['QUANTITY']?>" type="number"
 												name="<?=$arParams['PRODUCT_QUANTITY_VARIABLE']?>"
 												value="<?=$measureRatio?>">
-											<a class="product-item-amount-field-btn-plus" id="<?=$itemIds['QUANTITY_UP']?>"
-												href="javascript:void(0)" rel="nofollow">
-											</a>
+											<span class="product-item-amount-field-btn-plus no-select" id="<?=$itemIds['QUANTITY_UP']?>"></span>
 											<div class="product-item-amount-description-container">
 												<span id="<?=$itemIds['QUANTITY_MEASURE']?>"></span>
 												<span id="<?=$itemIds['PRICE_TOTAL']?>"></span>
@@ -635,10 +644,10 @@ else
 										?>
 										<a class="btn btn-link <?=$buttonSizeClass?>"
 											id="<?=$itemIds['NOT_AVAILABLE_MESS']?>" href="javascript:void(0)" rel="nofollow"
-											style="display: <?=($actualItem['CAN_BUY'] ? 'none' : '')?>;">
+											<?=($actualItem['CAN_BUY'] ? 'style="display: none;"' : '')?>>
 											<?=$arParams['MESS_NOT_AVAILABLE']?>
 										</a>
-										<div id="<?=$itemIds['BASKET_ACTIONS']?>" style="display: <?=($actualItem['CAN_BUY'] ? '' : 'none')?>;">
+										<div id="<?=$itemIds['BASKET_ACTIONS']?>" <?=($actualItem['CAN_BUY'] ? '' : 'style="display: none;"')?>>
 											<a class="btn btn-default <?=$buttonSizeClass?>" id="<?=$itemIds['BUY_LINK']?>"
 												href="javascript:void(0)" rel="nofollow">
 												<?=($arParams['ADD_TO_BASKET_ACTION'] === 'BUY' ? $arParams['MESS_BTN_BUY'] : $arParams['MESS_BTN_ADD_TO_BASKET'])?>

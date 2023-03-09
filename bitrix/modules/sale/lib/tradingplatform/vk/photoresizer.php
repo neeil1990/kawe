@@ -16,43 +16,59 @@ Loc::loadMessages(__FILE__);
  */
 class PhotoResizer
 {
+	const RESIZE_NO = 0;
+	const RESIZE_UP = 10;
+	const RESIZE_UP_CROP = 20;
+	const RESIZE_DOWN = 30;
+	const RESIZE_DOWN_CROP = 40;
+
 	/**
 	 * Return picture URL by picture src
 	 *
 	 * @param $src
-	 * @param string $domainUrl
+	 * @param string $domain - old param. May be empty
 	 * @return string
 	 */
-	protected function buildPictureUrl($src, $domainUrl = '')
+	protected static function buildPictureUrl($src, $domain = '')
 	{
-		if (strlen($domainUrl) == 0)
+		if ($domain == '')
 		{
-//			get different variants of domainUrl, because in diff site some variants not work
+//			get different variants of domain URL, because in diff site some variants not work
 			$server = Application::getInstance()->getContext()->getServer();
-			$host = $server->getHttpHost();
-			$name = $server->getServerName();
-			$siteSeverName = SITE_SERVER_NAME;
-			
-			if ($host)
-				$domainUrl = $host;
-			elseif ($name)
-				$domainUrl = $name;
+			if ($host = $server->getHttpHost())
+			{
+				$domain = strtok($host, ':');
+			}
+			elseif ($name = $server->getServerName())
+			{
+				$domain = strtok($name, ':');
+			}
 			else
-				$domainUrl = $siteSeverName;
+			{
+				$domain = strtok(SITE_SERVER_NAME, ':');
+			}
 		}
 		
 		$protocol = \CMain::IsHTTPS() ? "https://" : "http://";
-		if (substr($src, 0, 1) == "/")
-			$strFile = $protocol . $domainUrl . implode("/", array_map("rawurlencode", explode("/", $src)));
+		// relative path by '/'
+		if (mb_substr($src, 0, 1) == "/")
+		{
+			$strFile = $protocol . $domain . implode("/", array_map("rawurlencode", explode("/", $src)));
+		}
+		// full path
 		elseif (preg_match("/^(http|https):\\/\\/(.*?)\\/(.*)\$/", $src, $match))
+		{
 			$strFile = $protocol . $match[2] . '/' . implode("/", array_map("rawurlencode", explode("/", $match[3])));
+		}
+		// default
 		else
+		{
 			$strFile = $src;
+		}
 		
 		return $strFile;
 	}
-	
-	
+
 	public static function sortPhotoArray($photos, $type)
 	{
 		$sortedPhotos = array();
@@ -98,8 +114,7 @@ class PhotoResizer
 		
 		return $sortedPhotos;
 	}
-	
-	
+
 	/**
 	 * Check photo sizes by type of converter
 	 *
@@ -188,8 +203,7 @@ class PhotoResizer
 		
 		return $result;
 	}
-	
-	
+
 	/**
 	 * Check sizes and filesize of one photo.
 	 * Return only check passed photos
@@ -198,7 +212,7 @@ class PhotoResizer
 	 * @param $sizesLimits
 	 * @return mixed
 	 */
-	private function checkPhoto($photoId, $sizesLimits)
+	private static function checkPhoto($photoId, $sizesLimits)
 	{
 		$photoParams = \CFile::GetFileArray($photoId);
 //		check bad files
@@ -206,7 +220,7 @@ class PhotoResizer
 			return false;
 		$photoSrc = $photoParams["SRC"];
 		$photoUrl = self::buildPictureUrl($photoParams["SRC"]);
-		$needResize = false;
+		$needResize = self::RESIZE_NO;
 		$resizeType = BX_RESIZE_IMAGE_PROPORTIONAL;	// default not crop
 
 //		need 'RESIZE_UP';
@@ -214,41 +228,54 @@ class PhotoResizer
 			$photoParams['HEIGHT'] < $sizesLimits['MIN_HEIGHT'] ||
 			$photoParams['WIDTH'] < $sizesLimits['MIN_WIDTH']
 		)
-			$needResize = 'RESIZE_UP';
+		{
+			$needResize = self::RESIZE_UP;
+		}
 
 //		need 'RESIZE_DOWN';
 		if (
 			($photoParams['HEIGHT'] + $photoParams['WIDTH']) > $sizesLimits['MAX_SIZES_SUM'] ||
 			$photoParams['FILE_SIZE'] > $sizesLimits['MAX_SIZE']
 		)
-			$needResize = 'RESIZE_DOWN';
-		
+		{
+			$needResize = self::RESIZE_DOWN;
+		}
+
 // 		for big RATIO - need a crop. If need resize - use $needResize flag, else - always resize down
-		if(
-			(isset($sizesLimits['RATIO_V']) && $photoParams['WIDTH']/$photoParams['HEIGHT'] <= $sizesLimits['RATIO_V']) ||
-			(isset($sizesLimits['RATIO_H']) && $photoParams['WIDTH']/$photoParams['HEIGHT'] >= $sizesLimits['RATIO_H'])
+		if (
+			(isset($sizesLimits['RATIO_V']) && $photoParams['WIDTH'] / $photoParams['HEIGHT'] <= $sizesLimits['RATIO_V']) ||
+			(isset($sizesLimits['RATIO_H']) && $photoParams['WIDTH'] / $photoParams['HEIGHT'] >= $sizesLimits['RATIO_H'])
 		)
-			$needResize = $needResize ? $needResize.'_CROP' : 'RESIZE_UP_CROP'; // UP, but we reduce image (need for a get correct sizes)
-		
+		{
+			// UP, but we reduce image (need for a get correct sizes)
+			if ($needResize == self::RESIZE_UP || $needResize == self::RESIZE_NO)
+			{
+				$needResize = self::RESIZE_UP_CROP;
+			}
+			elseif ($needResize == self::RESIZE_DOWN)
+			{
+				$needResize = self::RESIZE_DOWN_CROP;
+			}
+		}
 
 //		calculate new sizes
 		if ($needResize)
 		{
 			switch ($needResize)
 			{
-				case 'RESIZE_UP':
+				case self::RESIZE_UP:
 					$multiplier = max($sizesLimits['MIN_WIDTH'] / $photoParams['WIDTH'], $sizesLimits['MIN_HEIGHT'] / $photoParams['HEIGHT']);
 					$newWidth = ceil($photoParams['WIDTH'] * $multiplier);
 					$newHeight = ceil($photoParams['HEIGHT'] * $multiplier);
 					break;
 				
-				case 'RESIZE_DOWN':
+				case self::RESIZE_DOWN:
 					$ratio = $sizesLimits['MIN_WIDTH'] / $sizesLimits['MIN_HEIGHT'];
 					$newHeight = floor($sizesLimits['MAX_SIZES_SUM'] / ($ratio + 1));
 					$newWidth = floor($ratio * $newHeight);
 					break;
 					
-				case 'RESIZE_UP_CROP':
+				case self::RESIZE_UP_CROP:
 					if(($sizesLimits['MIN_WIDTH'] / $photoParams['WIDTH']) < ($sizesLimits['MIN_HEIGHT'] / $photoParams['HEIGHT']))
 					{
 						$ratio = $sizesLimits["RATIO_H"];
@@ -264,7 +291,7 @@ class PhotoResizer
 					$resizeType = BX_RESIZE_IMAGE_EXACT;	// resize with crop
 					break;
 					
-				case 'RESIZE_DOWN_CROP':
+				case self::RESIZE_DOWN_CROP:
 					if(($sizesLimits['MIN_WIDTH'] / $photoParams['WIDTH']) < ($sizesLimits['MIN_HEIGHT'] / $photoParams['HEIGHT']))
 					{
 						$ratio = $sizesLimits["RATIO_H"];
@@ -283,21 +310,30 @@ class PhotoResizer
 				default:
 					return false;
 			}
+
+			$resizeFilters = false;
+			if ($needResize == self::RESIZE_UP || $needResize == self::RESIZE_UP_CROP)
+			{
+//				set empty array for UP resizing - PNG may be failed by timeout
+				$resizeFilters = [];
+			}
 			
-			$photoResize = self::ResizeImageGet(
+			$resizedPhoto = self::ResizeImageGet(
 				$photoId,
 				array('width' => $newWidth, 'height' => $newHeight),
 				$resizeType,
-				true
-//				array(array("name" => "sharpen", "precision" => 15))
+				true,
+				$resizeFilters
 			);
 
 //			need save new photo
-			$paramsToSave = \CFile::MakeFileArray($photoResize['SRC']);
-			$photoId = \CFile::SaveFile($paramsToSave, "resize_cache/vk_export_resize_img");
-			$savedFile = \CFile::GetFileArray($photoId);
-			$photoUrl = self::buildPictureUrl($savedFile['SRC']);
-			$photoSrc = $savedFile['SRC'];
+			$photoId = \CFile::SaveFile(
+				\CFile::MakeFileArray($resizedPhoto['SRC']),
+				"resize_cache/vk_export_resize_img"
+			);
+			$resizedFile = \CFile::GetFileArray($photoId);
+			$photoUrl = self::buildPictureUrl($resizedFile['SRC']);
+			$photoSrc = $resizedFile['SRC'];
 		}
 		
 		return array(
@@ -320,14 +356,14 @@ class PhotoResizer
 	 * @param bool $jpgQuality
 	 * @return bool|mixed
 	 */
-	private static function ResizeImageGet($file, $arSize, $resizeType = BX_RESIZE_IMAGE_PROPORTIONAL, $bInitSizes = false, $arFilters = false, $bImmediate = false, $jpgQuality = false)
+	public static function ResizeImageGet($file, $arSize, $resizeType = BX_RESIZE_IMAGE_PROPORTIONAL, $bInitSizes = false, $arFilters = false, $bImmediate = false, $jpgQuality = false)
 	{
 		if (!is_array($file) && intval($file) > 0)
 		{
 			$file = \CFile::GetFileArray($file);
 		}
 		
-		if (!is_array($file) || !array_key_exists("FILE_NAME", $file) || strlen($file["FILE_NAME"]) <= 0)
+		if (!is_array($file) || !array_key_exists("FILE_NAME", $file) || $file["FILE_NAME"] == '')
 			return false;
 		
 		if ($resizeType !== BX_RESIZE_IMAGE_EXACT && $resizeType !== BX_RESIZE_IMAGE_PROPORTIONAL_ALT)
@@ -348,7 +384,6 @@ class PhotoResizer
 		$arImageSize = false;
 		$bFilters = is_array($arFilters) && !empty($arFilters);
 
-//		not blocked resize up
 		if (
 			($arSize["width"] <= 0 /*|| $arSize["width"] >= $file["WIDTH"]*/)
 			&& ($arSize["height"] <= 0 /*|| $arSize["height"] >= $file["HEIGHT"]*/)
@@ -426,7 +461,7 @@ class PhotoResizer
 				
 				if ($bNeedResize && self::ResizeImageFile($sourceImageFile, $cacheImageFileTmp, $arSize, $resizeType, array(), $jpgQuality, $arFilters))
 				{
-					$cacheImageFile = substr($cacheImageFileTmp, strlen($_SERVER["DOCUMENT_ROOT"]));
+					$cacheImageFile = mb_substr($cacheImageFileTmp, mb_strlen($_SERVER["DOCUMENT_ROOT"]));
 					
 					/****************************** QUOTA ******************************/
 					if (\COption::GetOptionInt("main", "disk_space") > 0)
@@ -534,10 +569,6 @@ class PhotoResizer
 			}
 		}
 		
-		if (\CFile::isEnabledTrackingResizeImage())
-		{
-			header("X-Bitrix-Resize-Image: {$arSize["width"]}_{$arSize["height"]}_{$resizeType}");
-		}
 //		imagemagick was be here. I delete them to simplification
 		
 		if ($io->Copy($sourceFile, $destinationFile))
@@ -695,8 +726,7 @@ class PhotoResizer
 		
 		return false;
 	}
-	
-	
+
 	/**
 	 * Overwrite system ScaleImage. Need for increase images
 	 *

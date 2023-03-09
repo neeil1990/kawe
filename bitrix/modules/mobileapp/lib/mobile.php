@@ -16,6 +16,7 @@ class Mobile
 	public static $isDev = false;
 	protected static $instance;
 	protected static $isAlreadyInit = false;
+	protected static $systemVersion = 9;
 	private $pixelRatio = 1.0;
 	private $minScale = false;
 	private $iniScale = false;
@@ -72,16 +73,29 @@ class Mobile
 		}
 		else
 		{
-			$deviceDetectSource = strtolower(Context::getCurrent()->getServer()->get("HTTP_USER_AGENT"));
+			$deviceDetectSource = mb_strtolower(Context::getCurrent()->getServer()->get("HTTP_USER_AGENT"));
 		}
 
-		if (strrpos(ToUpper($deviceDetectSource), "IPHONE") > 0 || strrpos(ToUpper($deviceDetectSource), "IPAD") > 0)
+		if (mb_strrpos(ToUpper($deviceDetectSource), "IPHONE") > 0 || mb_strrpos(ToUpper($deviceDetectSource), "IPAD") > 0)
 		{
 			self::$platform = "ios";
 		}
-		elseif (strrpos(ToUpper($deviceDetectSource), "ANDROID") > 0 || strrpos(ToUpper($deviceDetectSource), "ANDROID") === 0)
+		elseif (mb_strrpos(ToUpper($deviceDetectSource), "ANDROID") > 0 || mb_strrpos(ToUpper($deviceDetectSource), "ANDROID") === 0)
 		{
 			self::$platform = "android";
+		}
+
+		$userAgent = \Bitrix\Main\Context::getCurrent()->getServer()->get("HTTP_USER_AGENT");
+		if ($_COOKIE["MOBILE_SYSTEM_VERSION"])
+		{
+			self::$systemVersion = $_COOKIE["MOBILE_SYSTEM_VERSION"];
+		}
+		else
+		{
+			//iOS
+			preg_match("/iOS\s(\d+\.\d+)/i",$userAgent, $pregMatch);
+			if(count($pregMatch) == 2)
+				self::$systemVersion = floatval($pregMatch[1]);
 		}
 
 		if (array_key_exists("emulate_platform", $_REQUEST))
@@ -89,10 +103,18 @@ class Mobile
 			self::$platform = $_REQUEST["emulate_platform"];
 		}
 
+		if ($mobileTZ = $APPLICATION->get_cookie("TZ", "MOBILE")) {
+			$tz = $APPLICATION->get_cookie("TZ");
+			if ($tz != $mobileTZ) {
+				$cookie = new \Bitrix\Main\Web\Cookie("TZ", $mobileTZ, time() + 60 * 60 * 24 * 30 * 12);
+				\Bitrix\Main\Context::getCurrent()->getResponse()->addCookie($cookie);
+			}
+
+		}
 
 		if (array_key_exists("MOBILE_API_VERSION", $_COOKIE))
 		{
-			self::$apiVersion = intval($_COOKIE["MOBILE_API_VERSION"]);
+			self::$apiVersion = $_COOKIE["MOBILE_API_VERSION"];
 		}
 		elseif ($APPLICATION->get_cookie("MOBILE_APP_VERSION"))
 		{
@@ -100,11 +122,10 @@ class Mobile
 		}
 		elseif (array_key_exists("api_version", $_REQUEST))
 		{
-			self::$apiVersion = intval($_REQUEST["api_version"]);
+			self::$apiVersion = $_REQUEST["api_version"];
 		}
 		else
 		{
-			$userAgent = \Bitrix\Main\Context::getCurrent()->getServer()->get("HTTP_USER_AGENT");
 			preg_match("/(?<=BitrixMobile\/Version=).*\d/i",$userAgent, $pregMatch);
 
 			if(count($pregMatch) == 1)
@@ -112,6 +133,8 @@ class Mobile
 				self::$apiVersion = $pregMatch[0];
 			}
 		}
+
+		self::$apiVersion = intval(self::$apiVersion);
 	}
 
 	/**
@@ -251,23 +274,10 @@ JSCODE;
 			$APPLICATION->AddHeadString($androidJS, false, true);
 		}
 		$userAgent = \Bitrix\Main\Context::getCurrent()->getServer()->get("HTTP_USER_AGENT");
-		if(strpos($userAgent, "WKWebView/BitrixMobile") === false)
+		if(mb_strpos($userAgent, "WKWebView/BitrixMobile") === false)
 		{
-			if (self::getInstance()->getBXScriptSupported())
-			{
-				/**
-				 * If the application tells us bxscript-feature is available
-				 * it means that device can load cordova-scripts (including plugins) itself.
-				 */
-				$pgJsFile = "/bitrix/js/mobileapp/__deviceload__/cordova.js?mod=1";
-				$APPLICATION->AddHeadString("<script type=\"text/javascript\" src=\"" . $pgJsFile . "\"></script>", false, true);
-
-			}
-			else
-			{
-				$pgJsFile = "/bitrix/js/mobileapp/" . self::$platform . "-cordova-" . self::$pgVersion . ".js";
-				$APPLICATION->AddHeadString("<script type=\"text/javascript\" src=\"" . \CUtil::GetAdditionalFileURL($pgJsFile) . "\"></script>", false, true);
-			}
+			$pgJsFile = "/bitrix/js/mobileapp/__deviceload__/cordova.js?mod=1";
+			$APPLICATION->AddHeadString("<script type='text/javascript' src='$pgJsFile'></script>", false, true);
 		}
 
 
@@ -280,7 +290,14 @@ JSCODE;
 			$APPLICATION->AddHeadString("<script type=\"text/javascript\">app.bindloadPageBlank();</script>", false, false);
 		}
 
-		$APPLICATION->AddHeadString(Mobile::getInstance()->getViewPort());
+		if (!array_key_exists("doNotUseViewPort", $_REQUEST))
+		{
+			$APPLICATION->AddHeadString(Mobile::getInstance()->getViewPort());
+		}
+
+		\Bitrix\Main\UI\Extension::load([
+			'mobile.ajax'
+		]);
 	}
 
 	/**
@@ -346,13 +363,11 @@ JSCODE;
 			$contentAttributes[] = "width=" . ($width / $this->getIniscale());
 		}
 
-		if (toUpper($this->getPlatform()) == "ANDROID")
+		if (!$this->getWidth())
 		{
-			if (!$this->getWidth())
-			{
-				$contentAttributes[] = "width=device-width";
-			}
+			$contentAttributes[] = "width=device-width";
 		}
+
 
 		$contentAttributes[] = "user-scalable=" . $this->getUserScalable();
 		$contentAttributes[] = "viewport-fit=cover";
@@ -622,6 +637,14 @@ JSCODE;
 	public static function getPgVersion()
 	{
 		return self::$pgVersion;
+	}
+
+	/**
+	 * @return float
+	 */
+	public static function getSystemVersion()
+	{
+		return (float) self::$systemVersion;
 	}
 
 	/**

@@ -15,11 +15,8 @@ class CASDIblockRights {
 
 	public static function CheckExtRights() {
 		if (!self::$boolCheck) {
-			$iblockVersion = CASDiblockVersion::getIblockVersion();
-			if (!empty($iblockVersion)) {
-				self::$boolExtRights = version_compare($iblockVersion, '11.0.5', '>=');
-				self::$boolCheck = true;
-			}
+			self::$boolExtRights = CASDModuleVersion::checkMinVersion('iblock', '11.0.5');
+			self::$boolCheck = true;
 		}
 	}
 

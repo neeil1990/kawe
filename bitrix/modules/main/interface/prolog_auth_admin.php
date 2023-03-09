@@ -14,10 +14,10 @@ if (isset($_REQUEST['bxsender']))
 }
 
 IncludeModuleLangFile(__FILE__);
-IncludeModuleLangFile(dirname(__FILE__)."/epilog_main_admin.php");
-IncludeModuleLangFile(dirname(__FILE__)."/epilog_auth_admin.php");
+IncludeModuleLangFile(__DIR__."/epilog_main_admin.php");
+IncludeModuleLangFile(__DIR__."/epilog_auth_admin.php");
 
-if(strlen($APPLICATION->GetTitle())<=0)
+if($APPLICATION->GetTitle() == '')
 	$APPLICATION->SetTitle(GetMessage("MAIN_PROLOG_ADMIN_AUTH_TITLE"));
 
 $aUserOpt = CUserOptions::GetOption("admin_panel", "settings");
@@ -38,7 +38,7 @@ foreach($arLangs as $adminLang)
 	if ($adminLang['SELECTED'])
 	{
 		$arLangButton = array(
-			"TEXT"=>ToUpper($adminLang["LID"]),
+			"TEXT"=>strtoupper($adminLang["LID"]),
 			"TITLE"=>$adminLang["NAME"],
 			"LINK"=>htmlspecialcharsback($adminLang["PATH"]),
 			"SECTION" => 1,
@@ -57,26 +57,12 @@ if (count($arLangMenu) > 1)
 	$arLangButton['MENU'] = $arLangMenu;
 }
 
-
 //Footer
-$vendor = COption::GetOptionString("main", "vendor", "1c_bitrix");
+$copyright = \Bitrix\Main\UI\Copyright::getBitrixCopyright();
 
-$bxProductConfig = array();
-if(file_exists($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/.config.php"))
-	include($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/.config.php");
-
-//wizard customization file
-if(isset($bxProductConfig["admin"]["copyright"]))
-	$sCopyright = $bxProductConfig["admin"]["copyright"];
-else
-	$sCopyright = GetMessage("EPILOG_ADMIN_POWER").' <a href="'.GetMessage("EPILOG_ADMIN_URL_PRODUCT_".$vendor).'">'.GetMessage("EPILOG_ADMIN_SM_".$vendor).'#VERSION#</a>. '.GetMessage("EPILOG_ADMIN_COPY_".$vendor);
 $sVer = ($GLOBALS['USER']->CanDoOperation('view_other_settings')? " ".SM_VERSION : "");
-$sCopyright = str_replace("#VERSION#", $sVer, $sCopyright);
-
-if(isset($bxProductConfig["admin"]["links"]))
-	$sLinks = $bxProductConfig["admin"]["links"];
-else
-	$sLinks = '<a href="'.GetMessage("EPILOG_ADMIN_URL_SUPPORT_".$vendor).'" class="login-footer-link">'.GetMessage("epilog_support_link").'</a>';
+$sCopyright = GetMessage("EPILOG_ADMIN_POWER").' <a href="'.$copyright->getProductUrl().'">'.$copyright->getProductName().$sVer.'</a>. '.$copyright->getCopyright();
+$sLinks = '<a href="'.$copyright->getSupportUrl().'" class="login-footer-link">'.GetMessage("epilog_support_link").'</a>';
 
 CJSCore::Init(array('admin_login'));
 ?>
@@ -91,7 +77,7 @@ $APPLICATION->ShowCSS();
 $APPLICATION->ShowHeadStrings();
 $APPLICATION->ShowHeadScripts();
 ?>
-<title><?echo htmlspecialcharsex($APPLICATION->GetTitle(false, true))?> - <?echo COption::GetOptionString("main","site_name", $_SERVER["SERVER_NAME"])?></title>
+<title><?echo htmlspecialcharsex($APPLICATION->GetTitle(false, true))?> - <?= htmlspecialcharsbx(COption::GetOptionString("main","site_name", $_SERVER["SERVER_NAME"])) ?></title>
 </head>
 <body id="bx-admin-prefix">
 <!--[if lte IE 7]>

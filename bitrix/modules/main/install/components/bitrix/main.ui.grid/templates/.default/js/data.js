@@ -98,11 +98,17 @@
 				data: data
 			};
 
+		this.parent.disableCheckAllCheckboxes();
 		BX.onCustomEvent(
 			window,
 			"Grid::beforeRequest",
 			[this, eventArgs]
 		);
+
+		if(eventArgs.hasOwnProperty("cancelRequest") && eventArgs.cancelRequest === true)
+		{
+			return;
+		}
 
 		url = eventArgs.url;
 
@@ -141,9 +147,11 @@
 		var self = this;
 
 		setTimeout(function() {
+			var formData = BX.Http.Data.convertObjectToFormData(data);
+
 			var xhr = BX.ajax({
 				url: BX.Grid.Utils.ajaxUrl(url, self.getParent().getAjaxId()),
-				data: data,
+				data: formData,
 				method: method,
 				dataType: 'html',
 				headers: [
@@ -152,13 +160,37 @@
 				],
 				processData: true,
 				scriptsRunFirst: false,
+				start: false,
+				preparePost: false,
 				onsuccess: function(response) {
 					self.response = BX.create('div', {html: response});
 					self.response = self.response.querySelector('#'+self.parent.getContainerId());
 					self.xhr = xhr;
 
+					if (self.parent.getParam('HANDLE_RESPONSE_ERRORS'))
+					{
+						var res;
+
+						try
+						{
+							res = JSON.parse(response);
+						} catch(err) {
+							res = {messages: []};
+						}
+
+						if (res.messages.length)
+						{
+							self.parent.arParams['MESSAGES'] = res.messages;
+							self.parent.messages.show();
+
+							self.parent.tableUnfade();
+							return;
+						}
+					}
+
 					if (BX.type.isFunction(then))
 					{
+						self.parent.enableCheckAllCheckboxes();
 						BX.delegate(then, self)(response, xhr);
 					}
 				},
@@ -168,10 +200,13 @@
 
 					if (BX.type.isFunction(error))
 					{
+						self.parent.enableCheckAllCheckboxes();
 						BX.delegate(error, self)(xhr, err);
 					}
 				}
 			});
+
+			xhr.send(formData);
 		}, 0);
 	};
 

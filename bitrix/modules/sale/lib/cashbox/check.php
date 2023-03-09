@@ -3,254 +3,171 @@
 namespace Bitrix\Sale\Cashbox;
 
 use Bitrix\Main;
-use Bitrix\Catalog;
 use Bitrix\Sale\BasketItem;
-use Bitrix\Sale\Cashbox\Internals\CashboxCheckTable;
-use Bitrix\Sale\Cashbox\Internals\Check2CashboxTable;
 use Bitrix\Sale\Cashbox\Internals\CheckRelatedEntitiesTable;
-use Bitrix\Sale\Internals\CollectableEntity;
 use Bitrix\Sale\Order;
+use Bitrix\Sale\PayableBasketItem;
 use Bitrix\Sale\Payment;
-use Bitrix\Sale\PaymentCollection;
 use Bitrix\Sale\PriceMaths;
+use Bitrix\Sale\Registry;
 use Bitrix\Sale\Result;
+use Bitrix\Sale\Helpers\Admin;
 use Bitrix\Sale\Shipment;
-use Bitrix\Sale\ShipmentCollection;
 use Bitrix\Sale\ShipmentItem;
 
 /**
- * Class Check
+ * Class SaleCheck
  * @package Bitrix\Sale\Cashbox
  */
-abstract class Check
+abstract class Check extends AbstractCheck
 {
-	const EVENT_ON_CHECK_PREPARE_DATA = 'OnSaleCheckPrepareData';
+	public const PAYMENT_OBJECT_COMMODITY = 'commodity';
+	public const PAYMENT_OBJECT_EXCISE = 'excise';
+	public const PAYMENT_OBJECT_JOB = 'job';
+	public const PAYMENT_OBJECT_SERVICE = 'service';
+	public const PAYMENT_OBJECT_PAYMENT = 'payment';
+	public const PAYMENT_OBJECT_GAMBLING_BET = 'gambling_bet';
+	public const PAYMENT_OBJECT_GAMBLING_PRIZE = 'gambling_prize';
+	public const PAYMENT_OBJECT_LOTTERY = 'lottery';
+	public const PAYMENT_OBJECT_LOTTERY_PRIZE = 'lottery_prize';
+	public const PAYMENT_OBJECT_INTELLECTUAL_ACTIVITY = 'intellectual_activity';
+	public const PAYMENT_OBJECT_AGENT_COMMISSION = 'agent_commission';
+	public const PAYMENT_OBJECT_COMPOSITE = 'composite';
+	public const PAYMENT_OBJECT_ANOTHER = 'another';
+	public const PAYMENT_OBJECT_PROPERTY_RIGHT = 'property_right';
+	public const PAYMENT_OBJECT_NON_OPERATING_GAIN = 'non-operating_gain';
+	public const PAYMENT_OBJECT_SALES_TAX = 'sales_tax';
+	public const PAYMENT_OBJECT_RESORT_FEE = 'resort_fee';
+	public const PAYMENT_OBJECT_DEPOSIT = 'deposit';
+	public const PAYMENT_OBJECT_EXPENSE = 'expense';
+	public const PAYMENT_OBJECT_PENSION_INSURANCE_IP = 'pension_insurance_ip';
+	public const PAYMENT_OBJECT_PENSION_INSURANCE = 'pension_insurance';
+	public const PAYMENT_OBJECT_MEDICAL_INSURANCE_IP = 'medical_insurance_ip';
+	public const PAYMENT_OBJECT_MEDICAL_INSURANCE = 'medical_insurance';
+	public const PAYMENT_OBJECT_SOCIAL_INSURANCE = 'social_insurance';
+	public const PAYMENT_OBJECT_CASINO_PAYMENT = 'casino_payment';
+	public const PAYMENT_OBJECT_COMMODITY_MARKING_NO_MARKING_EXCISE = 'commodity_marking_no_marking_excise';
+	public const PAYMENT_OBJECT_COMMODITY_MARKING_EXCISE = 'commodity_marking_excise';
+	public const PAYMENT_OBJECT_COMMODITY_MARKING_NO_MARKING = 'commodity_marking_no_marking';
+	public const PAYMENT_OBJECT_COMMODITY_MARKING = 'commodity_marking';
 
-	const PARAM_FISCAL_DOC_NUMBER = 'fiscal_doc_number';
-	const PARAM_FISCAL_DOC_ATTR = 'fiscal_doc_attribute';
-	const PARAM_FISCAL_RECEIPT_NUMBER = 'fiscal_receipt_number';
-	const PARAM_FN_NUMBER = 'fn_number';
-	const PARAM_SHIFT_NUMBER = 'shift_number';
-	const PARAM_REG_NUMBER_KKT = 'reg_number_kkt';
-	const PARAM_DOC_TIME = 'doc_time';
-	const PARAM_DOC_SUM = 'doc_sum';
-	const PARAM_CALCULATION_ATTR = 'calculation_attribute';
-
-	const CALCULATED_SIGN_INCOME = 'income';
-	const CALCULATED_SIGN_CONSUMPTION = 'consumption';
-
-	const SHIPMENT_TYPE_NONE = '';
-	const PAYMENT_TYPE_CASH = 'cash';
-	const PAYMENT_TYPE_ADVANCE = 'advance';
-	const PAYMENT_TYPE_CASHLESS = 'cashless';
-	const PAYMENT_TYPE_CREDIT = 'credit';
-
-	const SUPPORTED_ENTITY_TYPE_PAYMENT = 'payment';
-	const SUPPORTED_ENTITY_TYPE_SHIPMENT = 'shipment';
-	const SUPPORTED_ENTITY_TYPE_ALL = 'all';
-	const SUPPORTED_ENTITY_TYPE_NONE = 'none';
-
-	/** @var array $fields */
-	private $fields = array();
-
-	/** @var array $cashboxList */
-	private $cashboxList = array();
-
-	/** @var CollectableEntity[] $entities */
-	private $entities = array();
+	private const MARKING_TYPE_CODE = '444D';
 
 	/** @var array $relatedEntities */
 	private $relatedEntities = array();
 
 	/**
-	 * @throws Main\NotImplementedException
-	 * @return string
-	 */
-	public static function getType()
-	{
-		throw new Main\NotImplementedException();
-	}
-
-	/**
-	 * @throws Main\NotImplementedException
-	 * @return string
-	 */
-	public static function getCalculatedSign()
-	{
-		throw new Main\NotImplementedException();
-	}
-
-	/**
-	 * @throws Main\NotImplementedException
-	 * @return string
-	 */
-	public static function getName()
-	{
-		throw new Main\NotImplementedException();
-	}
-	
-	/**
-	 * @param string $handler
-	 * @return null|Check
-	 */
-	public static function create($handler)
-	{
-		if (class_exists($handler))
-			return new $handler();
-
-		return null;
-	}
-
-	/**
-	 * Check constructor.
-	 */
-	private function __construct() {}
-
-	/**
-	 * @param $name
-	 * @return mixed
-	 */
-	public function getField($name)
-	{
-		return $this->fields[$name];
-	}
-
-	/**
-	 * @param $name
-	 * @param $value
-	 */
-	public function setField($name, $value)
-	{
-		$this->fields[$name] = $value;
-	}
-
-	/**
-	 * @param array $cashboxList
-	 */
-	public function setAvailableCashbox(array $cashboxList)
-	{
-		$this->cashboxList = $cashboxList;
-	}
-
-	/**
 	 * @param array $entities
-	 * @throws Main\ArgumentNullException
-	 * @throws Main\ArgumentTypeException
-	 * @throws Main\ObjectNotFoundException
-	 */
-	public function setEntities(array $entities)
-	{
-		$this->entities = $entities;
-
-		$orderId = null;
-
-		foreach ($this->entities as $entity)
-		{
-			if ($entity instanceof Payment)
-			{
-				$this->fields['PAYMENT_ID'] = $entity->getId();
-				$this->fields['SUM'] = $entity->getSum();
-				$this->fields['CURRENCY'] = $entity->getField('CURRENCY');
-
-				/** @var PaymentCollection $col */
-				$col = $entity->getCollection();
-				$colOrderId = $col->getOrder()->getId();
-
-				if ($orderId === null)
-					$orderId = $colOrderId;
-				elseif ($orderId != $colOrderId)
-					throw new Main\ArgumentTypeException('entities');
-			}
-			elseif ($entity instanceof Shipment)
-			{
-				$this->fields['SHIPMENT_ID'] = $entity->getId();
-
-				if (!$this->fields['CURRENCY'])
-					$this->fields['CURRENCY'] = $entity->getParentOrder()->getCurrency();
-
-				if ($this->fields['SUM'] <= 0)
-				{
-					$this->fields['SUM'] = $entity->getPrice();
-					$shipmentItemCollection = $entity->getShipmentItemCollection();
-					/** @var ShipmentItem $item */
-					foreach ($shipmentItemCollection as $item)
-					{
-						$basketItem = $item->getBasketItem();
-						$this->fields['SUM'] += PriceMaths::roundPrecision($item->getQuantity() * $basketItem->getPrice());
-					}
-				}
-
-				/** @var ShipmentCollection $col */
-				$col = $entity->getCollection();
-				$colOrderId = $col->getOrder()->getId();
-
-				if ($orderId === null)
-					$orderId = $colOrderId;
-				elseif ($orderId != $colOrderId)
-					throw new Main\ArgumentTypeException('entities');
-			}
-			else
-			{
-				throw new Main\ArgumentTypeException('entities');
-			}
-		}
-
-		$this->fields['ORDER_ID'] = $orderId;
-	}
-
-	/**
-	 * @param array $entities
+	 * @throws Main\NotImplementedException
+	 * @throws Main\NotSupportedException
 	 */
 	public function setRelatedEntities(array $entities)
 	{
+		$this->checkRelatedEntities($entities);
+
 		$this->relatedEntities = $entities;
+
+		foreach ($this->relatedEntities as $type => $entityList)
+		{
+			foreach ($entityList as $entity)
+			{
+				if ($entity instanceof Payment)
+				{
+					$this->fields['SUM'] += $entity->getSum();
+					$this->fields['CURRENCY'] = $entity->getField('CURRENCY');
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param $entities
+	 * @throws Main\NotSupportedException
+	 */
+	protected function checkRelatedEntities($entities)
+	{
+		foreach ($entities as $type => $entityList)
+		{
+			foreach ($entityList as $entity)
+			{
+				if (static::getSupportedRelatedEntityType() === self::SUPPORTED_ENTITY_TYPE_NONE)
+				{
+					throw new Main\NotSupportedException(static::getType().' is not supported any related entities');
+				}
+
+				if (static::getSupportedRelatedEntityType() === self::SUPPORTED_ENTITY_TYPE_PAYMENT
+					&& !($entity instanceof Payment)
+				)
+				{
+					throw new Main\NotSupportedException(static::getType().' is not supported payment as related entity');
+				}
+
+				if (static::getSupportedRelatedEntityType() === self::SUPPORTED_ENTITY_TYPE_SHIPMENT
+					&& !($entity instanceof Shipment)
+				)
+				{
+					throw new Main\NotSupportedException(static::getType().' is not supported shipment as related entity');
+				}
+			}
+		}
 	}
 
 	/**
 	 * @return array
 	 * @throws Main\ArgumentException
 	 * @throws Main\ArgumentNullException
-	 * @throws Main\NotImplementedException
 	 * @throws Main\ObjectPropertyException
 	 * @throws Main\SystemException
 	 */
 	public function getRelatedEntities()
 	{
 		if ($this->relatedEntities)
+		{
 			return $this->relatedEntities;
+		}
 
-		$dbRes = CheckRelatedEntitiesTable::getList(array('filter' => array('CHECK_ID' => $this->getField('ID'))));
-
+		$registry = Registry::getInstance($this->fields['ENTITY_REGISTRY_TYPE']);
 		$order = null;
 
+		$dbRes = CheckRelatedEntitiesTable::getList(array('filter' => array('CHECK_ID' => $this->getField('ID'))));
 		while ($entity = $dbRes->fetch())
 		{
 			if ($order === null)
 			{
-				$orderId = 0;
-
 				if ($entity['ENTITY_TYPE'] === CheckRelatedEntitiesTable::ENTITY_TYPE_PAYMENT)
 				{
-					$dbResPayment = Payment::getList(array(
+					/** @var Payment $paymentClassName */
+					$paymentClassName = $registry->getPaymentClassName();
+					$dbResPayment = $paymentClassName::getList(array(
 						'select' => array('ORDER_ID'),
 						'filter' => array('ID' => $entity['ENTITY_ID'])
 					));
 					if ($data = $dbResPayment->fetch())
-						$orderId = $data['ORDER_ID'];
+					{
+						/** @var Order $orderClass */
+						$orderClass = $registry->getOrderClassName();
+						$order = $orderClass::load($data['ORDER_ID']);
+					}
 				}
 				elseif ($entity['ENTITY_TYPE'] === CheckRelatedEntitiesTable::ENTITY_TYPE_SHIPMENT)
 				{
-					$dbResShipment = Shipment::getList(array(
+					/** @var Shipment $shipmentClassName */
+					$shipmentClassName = $registry->getShipmentClassName();
+					$dbResShipment = $shipmentClassName::getList(array(
 						'select' => array('ORDER_ID'),
 						'filter' => array('ID' => $entity['ENTITY_ID'])
 					));
 					if ($data = $dbResShipment->fetch())
-						$orderId = $data['ORDER_ID'];
+					{
+						/** @var Order $orderClass */
+						$orderClass = $registry->getOrderClassName();
+						$order = $orderClass::load($data['ORDER_ID']);
+					}
 				}
 
-				if ($orderId > 0)
+				if ($order === null)
 				{
-					$order = Order::load($orderId);
+					continue;
 				}
 			}
 
@@ -270,104 +187,41 @@ abstract class Check
 	}
 
 	/**
-	 * @return array|CollectableEntity[]
-	 * @throws Main\SystemException
-	 */
-	public function getEntities()
-	{
-		if ($this->entities)
-			return $this->entities;
-
-		if ($this->fields['ORDER_ID'] > 0)
-		{
-			$orderId = $this->fields['ORDER_ID'];
-		}
-		elseif ($this->fields['PAYMENT_ID'] > 0)
-		{
-			$dbRes = Payment::getList(array('filter' => array('ID' => $this->fields['PAYMENT_ID'])));
-			$data = $dbRes->fetch();
-			$orderId = $data['ORDER_ID'];
-		}
-		elseif ($this->fields['SHIPMENT_ID'] > 0)
-		{
-			$dbRes = Shipment::getList(array('filter' => array('ID' => $this->fields['SHIPMENT_ID'])));
-			$data = $dbRes->fetch();
-			$orderId = $data['ORDER_ID'];
-		}
-		else
-		{
-			throw new Main\SystemException();
-		}
-
-		if ($orderId > 0)
-		{
-			$order = Order::load($orderId);
-			if ($order)
-			{
-				if ($this->fields['PAYMENT_ID'] > 0)
-				{
-					$paymentCollection = $order->getPaymentCollection();
-					if ($paymentCollection)
-					{
-						$payment = $paymentCollection->getItemById($this->fields['PAYMENT_ID']);
-						if ($payment)
-							$this->entities[] = $payment;
-					}
-				}
-
-				if ($this->fields['SHIPMENT_ID'] > 0)
-				{
-					$shipmentCollection = $order->getShipmentCollection();
-					if ($shipmentCollection)
-					{
-						$shipment = $shipmentCollection->getItemById($this->fields['SHIPMENT_ID']);
-						if ($shipment)
-							$this->entities[] = $shipment;
-					}
-				}
-			}
-		}
-
-		return $this->entities;
-	}
-
-	/**
-	 * @return Main\Entity\AddResult|Main\Entity\UpdateResult
-	 * @throws Main\NotImplementedException
-	 * @throws Main\ObjectException
+	 * @return Main\ORM\Data\AddResult|Main\ORM\Data\UpdateResult
 	 * @throws \Exception
 	 */
 	public function save()
 	{
-		if ((int)$this->fields['ID'] > 0)
+		$isNew = (int)$this->fields['ID'] === 0;
+
+		$result = parent::save();
+		if (!$result->isSuccess())
 		{
-			return CashboxCheckTable::update($this->fields['ID'], $this->fields);
+			return $result;
 		}
 
-		$this->fields['TYPE'] = static::getType();
-		$this->fields['DATE_CREATE'] = new Main\Type\DateTime();
-
-		$result = CashboxCheckTable::add($this->fields);
-		$checkId = $result->getId();
-		$this->fields['ID'] = $checkId;
-		foreach ($this->cashboxList as $cashbox)
-			Check2CashboxTable::add(array('CHECK_ID' => $checkId, 'CASHBOX_ID' => $cashbox['ID']));
-
-		foreach ($this->relatedEntities as $checkType => $entities)
+		if ($isNew)
 		{
-			foreach ($entities as $entity)
+			foreach ($this->relatedEntities as $checkType => $entities)
 			{
-				if ($entity instanceof Payment)
-					$entityType = CheckRelatedEntitiesTable::ENTITY_TYPE_PAYMENT;
-				else
-					$entityType = CheckRelatedEntitiesTable::ENTITY_TYPE_SHIPMENT;
+				foreach ($entities as $entity)
+				{
+					if ($entity instanceof Payment)
+					{
+						$entityType = CheckRelatedEntitiesTable::ENTITY_TYPE_PAYMENT;
+					}
+					else
+					{
+						$entityType = CheckRelatedEntitiesTable::ENTITY_TYPE_SHIPMENT;
+					}
 
-				CheckRelatedEntitiesTable::add(array(
-					'CHECK_ID' => $checkId,
-					'ENTITY_ID' => $entity->getId(),
-					'ENTITY_TYPE' => $entityType,
-					'ENTITY_CHECK_TYPE' => $checkType,
-				));
+					CheckRelatedEntitiesTable::add([
+						'CHECK_ID' => $this->fields['ID'],
+						'ENTITY_ID' => $entity->getId(),
+						'ENTITY_TYPE' => $entityType,
+						'ENTITY_CHECK_TYPE' => $checkType,
+					]);
+				}
 			}
 		}
 
@@ -375,115 +229,151 @@ abstract class Check
 	}
 
 	/**
-	 * @param $cashboxId
-	 */
-	public function linkCashbox($cashboxId)
-	{
-		$this->fields['CASHBOX_ID'] = $cashboxId;
-	}
-
-	/**
-	 * @param $settings
-	 */
-	public function init($settings)
-	{
-		$this->fields = $settings;
-	}
-
-	/**
 	 * @return array
-	 * @throws Main\ArgumentException
-	 * @throws Main\ArgumentNullException
-	 * @throws Main\ArgumentOutOfRangeException
-	 * @throws Main\ArgumentTypeException
-	 * @throws Main\LoaderException
-	 * @throws Main\NotImplementedException
-	 * @throws Main\ObjectException
-	 * @throws Main\ObjectPropertyException
-	 * @throws Main\SystemException
 	 */
 	public function getDataForCheck()
 	{
-		$result = array(
+		$result = [
 			'type' => static::getType(),
+			'calculated_sign' => static::getCalculatedSign(),
 			'unique_id' => $this->getField('ID'),
-			'items' => array(),
+			'items' => [],
 			'date_create' => new Main\Type\DateTime()
-		);
+		];
 
-		$entitiesData = $this->extractData();
+		$data = $this->extractData();
 
-		if ($entitiesData)
+		if ($data)
 		{
-			foreach ($entitiesData['PAYMENTS'] as $payment)
+			if (isset($data['ORDER']))
 			{
-				$result['payments'][] = array(
+				$result['order'] = $data['ORDER'];
+			}
+
+			foreach ($data['PAYMENTS'] as $payment)
+			{
+				$item = [
+					'entity' => $payment['ENTITY'],
 					'type' => $payment['TYPE'],
 					'is_cash' => $payment['IS_CASH'],
 					'sum' => $payment['SUM']
-				);
+				];
+
+				if (isset($payment['ADDITIONAL_PARAMS']))
+				{
+					$item['additional_params'] = $payment['ADDITIONAL_PARAMS'];
+				}
+
+				$result['payments'][] = $item;
 			}
 
-			if (isset($entitiesData['PRODUCTS']))
+			if (isset($data['PRODUCTS']))
 			{
-				foreach ($entitiesData['PRODUCTS'] as $product)
+				foreach ($data['PRODUCTS'] as $product)
 				{
-					$item = array(
+					$item = [
+						'entity' => $product['ENTITY'],
 						'name' => $product['NAME'],
 						'base_price' => $product['BASE_PRICE'],
 						'price' => $product['PRICE'],
 						'sum' => $product['SUM'],
 						'quantity' => $product['QUANTITY'],
-						'vat' => $product['VAT']
-					);
+						'measure_code' => $product['MEASURE_CODE'],
+						'vat' => $product['VAT'] ?? 0,
+						'vat_sum' => $product['VAT_SUM'] ?? 0,
+						'payment_object' => $product['PAYMENT_OBJECT'],
+						'properties' => $product['PROPERTIES'],
+					];
+
+					if (isset($product['NOMENCLATURE_CODE']))
+					{
+						$item['nomenclature_code'] = $product['NOMENCLATURE_CODE'];
+					}
+
+					if (isset($product['MARKING_CODE']))
+					{
+						$item['marking_code'] = $product['MARKING_CODE'];
+					}
+
+					if (isset($product['BARCODE']))
+					{
+						$item['barcode'] = $product['BARCODE'];
+					}
 
 					if ($product['DISCOUNT'])
 					{
-						$item['discount'] = array(
+						$item['discount'] = [
 							'discount' => $product['DISCOUNT']['PRICE'],
 							'discount_type' => $product['DISCOUNT']['TYPE'],
-						);
+						];
+					}
+
+					if (isset($product['SUPPLIER_INFO']))
+					{
+						$item['supplier_info'] = [
+							'phones' => $product['SUPPLIER_INFO']['PHONES'] ?? [],
+							'name' => $product['SUPPLIER_INFO']['NAME'] ?? '',
+							'inn' => $product['SUPPLIER_INFO']['INN'] ?? '',
+						];
+					}
+
+					if (isset($product['ADDITIONAL_PARAMS']))
+					{
+						$item['additional_params'] = $product['ADDITIONAL_PARAMS'];
 					}
 
 					$result['items'][] = $item;
 				}
 			}
 
-			if (isset($entitiesData['DELIVERY']))
+			if (isset($data['DELIVERY']))
 			{
-				foreach ($entitiesData['DELIVERY'] as $delivery)
+				foreach ($data['DELIVERY'] as $delivery)
 				{
-					$item = array(
+					$item = [
+						'entity' => $delivery['ENTITY'],
 						'name' => $delivery['NAME'],
 						'base_price' => $delivery['BASE_PRICE'],
 						'price' => $delivery['PRICE'],
 						'sum' => $delivery['SUM'],
 						'quantity' => $delivery['QUANTITY'],
-						'vat' => $delivery['VAT']
-					);
+						'vat' => $delivery['VAT'],
+						'vat_sum' => $delivery['VAT_SUM'],
+						'payment_object' => $delivery['PAYMENT_OBJECT'],
+					];
 
 					if ($delivery['DISCOUNT'])
 					{
-						$item['discount'] = array(
+						$item['discount'] = [
 							'discount' => $delivery['DISCOUNT']['PRICE'],
 							'discount_type' => $delivery['DISCOUNT']['TYPE'],
-						);
+						];
+					}
+
+					if (isset($delivery['ADDITIONAL_PARAMS']))
+					{
+						$item['additional_params'] = $delivery['ADDITIONAL_PARAMS'];
 					}
 
 					$result['items'][] = $item;
 				}
 			}
 
-			if (isset($entitiesData['BUYER']))
+			if (isset($data['BUYER']))
 			{
-				if (isset($entitiesData['BUYER']['EMAIL']))
-					$result['client_email'] = $entitiesData['BUYER']['EMAIL'];
+				if (isset($data['BUYER']['EMAIL']))
+					$result['client_email'] = $data['BUYER']['EMAIL'];
 
-				if (isset($entitiesData['BUYER']['PHONE']))
-					$result['client_phone'] = $entitiesData['BUYER']['PHONE'];
+				if (isset($data['BUYER']['PHONE']))
+					$result['client_phone'] = $data['BUYER']['PHONE'];
 			}
 
-			$result['total_sum'] = $entitiesData['TOTAL_SUM'];
+			if (isset($data['ADDITIONAL_PARAMS']))
+			{
+				$result['additional_params'] = $data['ADDITIONAL_PARAMS'];
+			}
+
+			$result['total_sum'] = $data['TOTAL_SUM'];
 		}
 
 		return $result;
@@ -505,12 +395,17 @@ abstract class Check
 		$result = array();
 
 		$order = null;
+		$discounts = null;
+		$shopPrices = null;
 		$totalSum = 0;
 
 		foreach ($entities as $entity)
 		{
 			if ($order === null)
+			{
 				$order = CheckManager::getOrder($entity);
+				$result['ORDER'] = $order;
+			}
 
 			if ($entity instanceof Payment)
 			{
@@ -518,12 +413,43 @@ abstract class Check
 				$type = $service->getField('IS_CASH') === 'Y' ? static::PAYMENT_TYPE_CASH : static::PAYMENT_TYPE_CASHLESS;
 
 				$result['PAYMENTS'][] = array(
+					'ENTITY' => $entity,
 					'IS_CASH' => $service->getField('IS_CASH'),
 					'TYPE' => $type,
 					'SUM' => $entity->getSum()
 				);
 
 				$totalSum += $entity->getSum();
+
+				if ($this->isShipmentExists())
+				{
+					continue;
+				}
+
+				/** @var PayableBasketItem $payableItem */
+				foreach ($entity->getPayableItemCollection()->getBasketItems() as $payableItem)
+				{
+					/** @var BasketItem $basketItem */
+					$basketItem = $payableItem->getEntityObject();
+
+					$item = $this->extractDataFromBasketItem($basketItem);
+
+					$item['SUM'] = PriceMaths::roundPrecision($basketItem->getPriceWithVat() * $payableItem->getQuantity());
+					$item['QUANTITY'] = (float)$payableItem->getQuantity();
+
+					$result['PRODUCTS'][] = $item;
+				}
+
+				foreach ($entity->getPayableItemCollection()->getShipments() as $payableItem)
+				{
+					$item = $this->extractDataFromShipment($payableItem->getEntityObject());
+					if ($item)
+					{
+						$item['QUANTITY'] = (float)$payableItem->getQuantity();
+
+						$result['DELIVERY'][] = $item;
+					}
+				}
 			}
 			elseif ($entity instanceof Shipment)
 			{
@@ -535,54 +461,59 @@ abstract class Check
 				{
 					$basketItem = $shipmentItem->getBasketItem();
 
-					$item = array(
-						'PRODUCT_ID' => $basketItem->getProductId(),
-						'NAME' => $basketItem->getField('NAME'),
-						'BASE_PRICE' => $basketItem->getBasePrice(),
-						'PRICE' => $basketItem->getPrice(),
-						'SUM' => $basketItem->getFinalPrice(),
-						'QUANTITY' => (float)$shipmentItem->getQuantity(),
-						'VAT' => $this->getProductVatId($basketItem)
-					);
+					$item = $this->extractDataFromBasketItem($basketItem);
 
-					if ($basketItem->isCustomPrice())
+					if ($this->needPrintMarkingCode($basketItem))
 					{
-						$item['BASE_PRICE'] = $basketItem->getPrice();
+						$item['QUANTITY'] = 1;
+						$item['SUM'] = $basketItem->getPriceWithVat();
+
+						$shipmentItemStoreCollection = $shipmentItem->getShipmentItemStoreCollection();
+						if ($shipmentItemStoreCollection)
+						{
+							foreach ($shipmentItemStoreCollection as $itemStore)
+							{
+								$item['NOMENCLATURE_CODE'] = $this->buildTag1162(
+									$itemStore->getMarkingCode(),
+									$basketItem->getMarkingCodeGroup()
+								);
+								$item['BARCODE'] = $itemStore->getBarcode();
+								$item['MARKING_CODE'] = $itemStore->getMarkingCode();
+
+								$result['PRODUCTS'][] = $item;
+							}
+
+							$diff = $shipmentItem->getQuantity() - $shipmentItemStoreCollection->count();
+							if ($diff)
+							{
+								for ($i = 0; $i < $diff; $i++)
+								{
+									$item['NOMENCLATURE_CODE'] = '';
+									$item['MARKING_CODE'] = '';
+
+									$result['PRODUCTS'][] = $item;
+								}
+							}
+						}
 					}
 					else
 					{
-						if ((float)$basketItem->getDiscountPrice() != 0)
-						{
-							$item['DISCOUNT'] = array(
-								'PRICE' => (float)$basketItem->getDiscountPrice(),
-								'TYPE' => 'C',
-							);
-						}
-					}
+						$item['SUM'] = PriceMaths::roundPrecision($basketItem->getPriceWithVat() * $shipmentItem->getQuantity());
+						$item['QUANTITY'] = (float)$shipmentItem->getQuantity();
 
-					$result['PRODUCTS'][] = $item;
+						$shipmentItemStoreCollection = $shipmentItem->getShipmentItemStoreCollection();
+						if (isset($shipmentItemStoreCollection[0]))
+						{
+							$item['BARCODE'] = $shipmentItemStoreCollection[0]->getField('BARCODE');
+						}
+
+						$result['PRODUCTS'][] = $item;
+					}
 				}
 
-				$baseDeliveryPrice = (float)$entity->getField('BASE_PRICE_DELIVERY');
-				if ($baseDeliveryPrice > 0)
+				$item = $this->extractDataFromShipment($entity);
+				if ($item)
 				{
-					$item = array(
-						'NAME' => Main\Localization\Loc::getMessage('SALE_CASHBOX_SELL_DELIVERY'),
-						'BASE_PRICE' => $baseDeliveryPrice,
-						'PRICE' => (float)$entity->getPrice(),
-						'SUM' => (float)$entity->getPrice(),
-						'QUANTITY' => 1,
-						'VAT' => $this->getDeliveryVatId($entity)
-					);
-
-					if (!$entity->isCustomPrice() && (float)$entity->getField('DISCOUNT_PRICE') != 0)
-					{
-						$item['DISCOUNT'] = array(
-							'PRICE' => $entity->getField('DISCOUNT_PRICE'),
-							'TYPE' => 'C',
-						);
-					}
-
 					$result['DELIVERY'][] = $item;
 				}
 			}
@@ -594,46 +525,283 @@ abstract class Check
 
 			$properties = $order->getPropertyCollection();
 			$email = $properties->getUserEmail();
-			if ($email)
+			if ($email && $email->getValue())
+			{
 				$result['BUYER']['EMAIL'] = $email->getValue();
+			}
+
 			$phone = $properties->getPhone();
-			if ($phone)
+			if ($phone && $phone->getValue())
+			{
 				$result['BUYER']['PHONE'] = $phone->getValue();
+			}
+
+			if (!$result['BUYER'])
+			{
+				$result['BUYER']['EMAIL'] = Main\Config\Option::get("main", "email_from", "admin@".$_SERVER['SERVER_NAME']);
+			}
 		}
 
 		$result['TOTAL_SUM'] = $totalSum;
+
+		unset($shopPrices, $discounts);
+
+		return $result;
+	}
+
+	protected function needPrintMarkingCode($basketItem) : bool
+	{
+		return $basketItem->isSupportedMarkingCode();
+	}
+
+	private function isShipmentExists(): bool
+	{
+		foreach ($this->getEntities() as $entity)
+		{
+			if ($entity instanceof Shipment)
+			{
+				return true;
+			}
+		}
+
+		foreach ($this->getRelatedEntities() as $relatedEntities)
+		{
+			foreach ($relatedEntities as $entity)
+			{
+				if ($entity instanceof Shipment)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private function extractDataFromShipment(Shipment $shipment) : array
+	{
+		$priceDelivery = (float)$shipment->getPrice();
+		if ($priceDelivery > 0)
+		{
+			$data = [
+				'ENTITY' => $shipment,
+				'NAME' => Main\Localization\Loc::getMessage('SALE_CASHBOX_CHECK_DELIVERY'),
+				'BASE_PRICE' => (float)$shipment->getField('BASE_PRICE_DELIVERY'),
+				'PRICE' => (float)$shipment->getPrice(),
+				'SUM' => (float)$shipment->getPrice(),
+				'QUANTITY' => 1,
+				'VAT' => $this->getDeliveryVatId($shipment),
+				'PAYMENT_OBJECT' => static::PAYMENT_OBJECT_SERVICE
+			];
+
+			if ($shipment->isCustomPrice())
+			{
+				$data['BASE_PRICE'] = $shipment->getPrice();
+			}
+			else
+			{
+				if ((float)$shipment->getField('DISCOUNT_PRICE') != 0)
+				{
+					$data['DISCOUNT'] = array(
+						'PRICE' => $shipment->getField('DISCOUNT_PRICE'),
+						'TYPE' => 'C',
+					);
+				}
+			}
+
+			return $data;
+		}
+
+		return [];
+	}
+
+	private function extractDataFromBasketItem(BasketItem $basketItem) : array
+	{
+		static $shopPrices = [];
+
+		$order = $basketItem->getBasket()->getOrder();
+
+		if ($order)
+		{
+			$discounts = $order->getDiscount();
+			if (!$shopPrices)
+			{
+				$shopPrices = $discounts->getShowPrices();
+			}
+		}
+
+		$basketCode = $basketItem->getBasketCode();
+		if (!empty($shopPrices['BASKET'][$basketCode]))
+		{
+			$basketItem->setFieldNoDemand('BASE_PRICE', $shopPrices['BASKET'][$basketCode]['SHOW_BASE_PRICE']);
+			$basketItem->setFieldNoDemand('PRICE', $shopPrices['BASKET'][$basketCode]['SHOW_PRICE']);
+			$basketItem->setFieldNoDemand('DISCOUNT_PRICE', $shopPrices['BASKET'][$basketCode]['SHOW_DISCOUNT']);
+		}
+		unset($basketCode);
+
+		$data = [
+			'ENTITY' => $basketItem,
+			'PRODUCT_ID' => $basketItem->getProductId(),
+			'NAME' => $basketItem->getField('NAME'),
+			'BASE_PRICE' => $basketItem->getBasePriceWithVat(),
+			'PRICE' => $basketItem->getPriceWithVat(),
+			'SUM' => $basketItem->getFinalPrice(),
+			'QUANTITY' => (float)$basketItem->getQuantity(),
+			'MEASURE_CODE' => $basketItem->getField('MEASURE_CODE'),
+			'VAT' => $this->getProductVatId($basketItem),
+			'PAYMENT_OBJECT' => $this->getPaymentObject($basketItem),
+		];
+
+		if ($order)
+		{
+			$siteId = $order->getSiteId();
+			$propertiesCodes = ['ARTNUMBER'];
+			$itemProperties = self::getCatalogPropertiesForItem($basketItem->getProductId(), $propertiesCodes, $siteId);
+			$data['PROPERTIES'] = $itemProperties;
+		}
+		else
+		{
+			$data['PROPERTIES'] = [];
+		}
+
+		if ($basketItem->isCustomPrice())
+		{
+			$data['BASE_PRICE'] = $basketItem->getPriceWithVat();
+		}
+		else
+		{
+			if ((float)$basketItem->getDiscountPrice() != 0)
+			{
+				$data['DISCOUNT'] = [
+					'PRICE' => (float)$basketItem->getDiscountPrice(),
+					'TYPE' => 'C',
+				];
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * @param $itemId
+	 * @param $itemPropertiesCodes
+	 * @param $siteId
+	 * @return array
+	 * @throws Main\ArgumentNullException
+	 * @throws Main\LoaderException
+	 */
+	private static function getCatalogPropertiesForItem($itemId, $itemPropertiesCodes, $siteId): array
+	{
+		$propertiesFieldNames = [];
+		foreach ($itemPropertiesCodes as $propertyCode)
+		{
+			$propertiesFieldNames[] = 'PROPERTY_' . $propertyCode;
+		}
+
+		$result = [];
+		$catalogData = Admin\Product::getData([$itemId], $siteId, $propertiesFieldNames);
+		foreach ($catalogData as $item)
+		{
+			foreach ($itemPropertiesCodes as $propertyCode)
+			{
+				if (
+					isset($item['PRODUCT_PROPS_VALUES']['PROPERTY_' .  $propertyCode . '_VALUE'])
+					&& $item['PRODUCT_PROPS_VALUES']['PROPERTY_' . $propertyCode . '_VALUE'] !== '&nbsp'
+				)
+				{
+					$result[$propertyCode] = $item['PRODUCT_PROPS_VALUES']['PROPERTY_' .  $propertyCode . '_VALUE'];
+				}
+			}
+		}
 
 		return $result;
 	}
 
 	/**
-	 * @return array|null
-	 * @throws Main\ArgumentException
-	 * @throws Main\ArgumentNullException
-	 * @throws Main\ArgumentOutOfRangeException
-	 * @throws Main\ArgumentTypeException
-	 * @throws Main\LoaderException
-	 * @throws Main\NotImplementedException
-	 * @throws Main\ObjectPropertyException
-	 * @throws Main\SystemException
+	 * @param string $markingCode
+	 * @param string $markingCodeGroup
+	 * @return string
 	 */
-	protected function extractData()
+	protected function buildTag1162(string $markingCode, string $markingCodeGroup) : string
 	{
-		$result = $this->extractDataInternal();
+		[$gtin, $serial] = $this->parseMarkingCode($markingCode, $markingCodeGroup);
 
-		$event = new Main\Event('sale', static::EVENT_ON_CHECK_PREPARE_DATA, array($result, static::getType()));
-		$event->send();
+		$hex =
+			self::MARKING_TYPE_CODE.
+			$this->convertToBinaryFormat($gtin, 6).
+			$this->convertCharsToHex($serial)
+		;
 
-		if ($event->getResults())
+		return hex2bin($hex);
+	}
+
+	/**
+	 * @param string $code
+	 * @param string $group
+	 * @return array
+	 */
+	private function parseMarkingCode(string $code, string $group) : array
+	{
+		$gtin = mb_substr($code, 2, 14);
+		$serial = mb_substr($code, 18, $this->getSnLength($group));
+
+		return [$gtin, $serial];
+	}
+
+	/**
+	 * @param string $group
+	 * @return int
+	 */
+	private function getSnLength(string $group) : int
+	{
+		if ((string)$group === '9840')
 		{
-			/** @var Main\EventResult $eventResult */
-			foreach ($event->getResults() as $eventResult)
+			return 20;
+		}
+
+		return 13;
+	}
+
+	/**
+	 * @param $string
+	 * @param $size
+	 * @return string
+	 */
+	protected function convertToBinaryFormat($string, $size) : string
+	{
+		$result = '';
+
+		for ($i = 0; $i < $size; $i++)
+		{
+			$hex = dechex(($string >> (8 * $i)) & 0xFF);
+			if (mb_strlen($hex) === 1)
 			{
-				if ($eventResult->getType() !== Main\EventResult::ERROR)
-				{
-					$result = $eventResult->getParameters();
-				}
+				$hex = '0'.$hex;
 			}
+
+			$result = ToUpper($hex).$result;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param $string
+	 * @return string
+	 */
+	protected function convertCharsToHex($string) : string
+	{
+		$result = '';
+
+		for ($i = 0, $len = mb_strlen($string); $i < $len; $i++)
+		{
+			$hex = dechex(ord($string[$i]));
+			if (mb_strlen($hex) === 1)
+			{
+				$hex = '0'.$hex;
+			}
+
+			$result .= ToUpper($hex);
 		}
 
 		return $result;
@@ -646,7 +814,6 @@ abstract class Check
 	 * @throws Main\ArgumentOutOfRangeException
 	 * @throws Main\ArgumentTypeException
 	 * @throws Main\LoaderException
-	 * @throws Main\NotImplementedException
 	 * @throws Main\ObjectPropertyException
 	 * @throws Main\SystemException
 	 */
@@ -695,13 +862,13 @@ abstract class Check
 	 * @return int
 	 * @throws Main\ArgumentNullException
 	 * @throws Main\ArgumentOutOfRangeException
+	 * @throws Main\SystemException
 	 */
 	protected function getDeliveryVatId(Shipment $shipment)
 	{
 		$calcDeliveryTax = Main\Config\Option::get("sale", "COUNT_DELIVERY_TAX", "N");
-		if ($calcDeliveryTax === 'Y')
+		if ($calcDeliveryTax === 'Y' && $service = $shipment->getDelivery())
 		{
-			$service = $shipment->getDelivery();
 			return $service->getVatId();
 		}
 
@@ -725,7 +892,7 @@ abstract class Check
 			$vatId = $this->getVatIdByProductId($basketItem->getProductId());
 			if ($vatId === 0)
 			{
-				$vatRate = (int)($basketItem->getVatRate() * 100);
+				$vatRate = (int)((float)$basketItem->getVatRate() * 100);
 				if ($vatRate > 0)
 				{
 					$vatId = $this->getVatIdByVatRate($vatRate);
@@ -760,47 +927,7 @@ abstract class Check
 	}
 
 	/**
-	 * @param $vatRate
-	 * @return int|mixed
-	 * @throws Main\ArgumentException
-	 * @throws Main\LoaderException
-	 * @throws Main\ObjectPropertyException
-	 * @throws Main\SystemException
-	 */
-	private function getVatIdByVatRate($vatRate)
-	{
-		static $vatList = array();
-
-		if (!$vatList)
-		{
-			if (Main\Loader::includeModule('catalog'))
-			{
-				$dbRes = Catalog\VatTable::getList(array('filter' => array('ACTIVE' => 'Y')));
-				while ($data = $dbRes->fetch())
-				{
-					$vatList[(int)$data['RATE']] = (int)$data['ID'];
-				}
-			}
-		}
-
-		if (!isset($vatList[$vatRate]))
-		{
-			return 0;
-		}
-
-		return $vatList[$vatRate];
-	}
-
-	/**
 	 * @return Result
-	 * @throws Main\ArgumentException
-	 * @throws Main\ArgumentNullException
-	 * @throws Main\ArgumentOutOfRangeException
-	 * @throws Main\ArgumentTypeException
-	 * @throws Main\LoaderException
-	 * @throws Main\NotImplementedException
-	 * @throws Main\ObjectPropertyException
-	 * @throws Main\SystemException
 	 */
 	public function validate()
 	{
@@ -810,14 +937,46 @@ abstract class Check
 
 		if (!isset($data['PRODUCTS']))
 		{
-			$result->addError(new Main\Error(Main\Localization\Loc::getMessage('SALE_CASHBOX_SELL_ERROR_NO_PRODUCTS')));
-			return $result;
+			$result->addError(new Main\Error(Main\Localization\Loc::getMessage('SALE_CASHBOX_CHECK_ERROR_NO_PRODUCTS')));
+		}
+		else
+		{
+			$errors = [];
+
+			foreach ($data['PRODUCTS'] as $product)
+			{
+				if (isset($product['MARKING_CODE']) && $product['MARKING_CODE'] === '')
+				{
+					if (isset($errors[$product['PRODUCT_ID']]))
+					{
+						continue;
+					}
+
+					$errors[$product['PRODUCT_ID']] = new Main\Error(
+						Main\Localization\Loc::getMessage(
+							'SALE_CASHBOX_CHECK_ERROR_NO_NOMENCLATURE_CODE',
+							[
+								'#PRODUCT_NAME#' => $product['NAME']
+							]
+						)
+					);
+				}
+			}
+
+			if ($errors)
+			{
+				$result->addErrors($errors);
+			}
 		}
 
 		if (!$this->isCorrectSum($data))
 		{
-			$result->addError(new Main\Error(Main\Localization\Loc::getMessage('SALE_CASHBOX_SELL_ERROR_CHECK_SUM')));
-			return $result;
+			$result->addError(new Main\Error(Main\Localization\Loc::getMessage('SALE_CASHBOX_CHECK_ERROR_CHECK_SUM')));
+		}
+
+		if (!isset($data['BUYER']) || !$data['BUYER'])
+		{
+			$result->addError(new Main\Error(Main\Localization\Loc::getMessage('SALE_CASHBOX_CHECK_ERROR_NO_BUYER_INFO')));
 		}
 
 		return $result;
@@ -832,19 +991,27 @@ abstract class Check
 		$eps = 0.00001;
 
 		$productSum = 0;
-		foreach ($data['PRODUCTS'] as $item)
-			$productSum += $item['SUM'];
+		if (!empty($data['PRODUCTS']))
+		{
+			foreach ($data['PRODUCTS'] as $item)
+				$productSum += $item['SUM'];
+		}
 
-		if (isset($data['DELIVERY']))
+		if (!empty($data['DELIVERY']))
 		{
 			foreach ($data['DELIVERY'] as $delivery)
+			{
 				$productSum += $delivery['PRICE'];
+			}
 		}
 
 		$paymentSum = 0;
-		foreach ($data['PAYMENTS'] as $payment)
+		if (!empty($data['PAYMENTS']))
 		{
-			$paymentSum += $payment['SUM'];
+			foreach ($data['PAYMENTS'] as $payment)
+			{
+				$paymentSum += $payment['SUM'];
+			}
 		}
 
 		return abs($productSum - $paymentSum) < $eps;
@@ -876,7 +1043,6 @@ abstract class Check
 	 * @throws Main\ArgumentOutOfRangeException
 	 * @throws Main\ArgumentTypeException
 	 * @throws Main\LoaderException
-	 * @throws Main\NotImplementedException
 	 * @throws Main\ObjectPropertyException
 	 * @throws Main\SystemException
 	 */
@@ -889,7 +1055,6 @@ abstract class Check
 
 		if ($event->getResults())
 		{
-			/** @var Main\EventResult $eventResult */
 			foreach ($event->getResults() as $eventResult)
 			{
 				if ($eventResult->getType() !== Main\EventResult::ERROR)
@@ -900,5 +1065,18 @@ abstract class Check
 		}
 
 		return $result;
+	}
+
+	protected function getPaymentObject(BasketItem $basketItem): string
+	{
+		if ($basketItem->isService())
+		{
+			return static::PAYMENT_OBJECT_SERVICE;
+		}
+
+		return $this->needPrintMarkingCode($basketItem)
+			? static::PAYMENT_OBJECT_COMMODITY_MARKING
+			: static::PAYMENT_OBJECT_COMMODITY
+		;
 	}
 }

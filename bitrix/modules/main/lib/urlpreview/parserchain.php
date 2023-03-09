@@ -18,11 +18,13 @@ class ParserChain
 	/**
 	 * @var array Key is host, value - parser class name
 	 */
-	protected  static $metadataParsersByHost = array(
+	protected  static $metadataParsersByHost = [
 		'vk.com' => 'Bitrix\Main\UrlPreview\Parser\Vk',
 		'www.facebook.com' => 'Bitrix\Main\UrlPreview\Parser\Facebook',
 		'www.instagram.com' => 'Bitrix\Main\UrlPreview\Parser\Instagram',
-	);
+		'maps.apple.com' => 'Bitrix\Main\UrlPreview\Parser\AppleMaps',
+		'rutube.ru' => 'Bitrix\Main\UrlPreview\Parser\RuTube',
+	];
 
 	/**
 	 * @param Uri $uri
@@ -54,7 +56,7 @@ class ParserChain
 			if(class_exists($parserClassName))
 			{
 				$parser = new $parserClassName();
-				if(is_a($parser, '\Bitrix\Main\UrlPreview\Parser'))
+				if ($parser instanceof Parser)
 				{
 					$parser->handle($document);
 				}

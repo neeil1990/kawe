@@ -1,13 +1,4 @@
 <?
-/*
-##############################################
-# Bitrix: SiteManager                        #
-# Copyright (c) 2004 - 2006 Bitrix           #
-# http://www.bitrix.ru                       #
-# mailto:admin@bitrix.ru                     #
-##############################################
-*/
-
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/form/prolog.php");
 
@@ -28,18 +19,11 @@ $old_module_version = CForm::IsOldVersion();
 
 $aTabs = array ();
 $aTabs[]=array("DIV" => "edit1", "TAB" => GetMessage("FORM_PROP"), "ICON" => "form_edit", "TITLE" => GetMessage("FORM_PROP_TITLE"));
-#$aTabs[]=array("DIV" => "edit2", "TAB" => GetMessage("FORM_QUESTION"), "ICON" => "form_edit", "TITLE" => GetMessage("FORM_TITLE"));
-#$aTabs[]=array("DIV" => "edit3", "TAB" => GetMessage("FORM_ANSWER"), "ICON" => "form_edit", "TITLE" => GetMessage("FORM_ANSWER_LIST"));
 $aTabs[] = array("DIV" => "edit7", "TAB" => GetMessage("FORM_VAL"), "ICON" => "form_edit", "TITLE" => GetMessage("FORM_VAL_TITLE"));
 $aTabs[]=array("DIV" => "edit6", "TAB" => GetMessage("FORM_COMMENT_TOP"), "ICON" => "form_edit", "TITLE" => GetMessage("FORM_COMMENTS"));
 
-
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 $err_message = null;
-
-/***************************************************************************
-                           GET | POST processing
-***************************************************************************/
 
 $WEB_FORM_ID = intval($WEB_FORM_ID);
 $arForm = CForm::GetByID_admin($WEB_FORM_ID);
@@ -66,14 +50,14 @@ InitBVar($additional);
 if (intval($copy_id)>0 && check_bitrix_sessid() && $F_RIGHT >= 30)
 {
 	$new_id = CFormField::Copy($copy_id);
-	if (strlen($strError)<=0 && intval($new_id)>0)
+	if ($strError == '' && intval($new_id)>0)
 	{
 		LocalRedirect("form_field_edit_simple.php?ID=".$new_id."&additional=".$additional."&WEB_FORM_ID=".$WEB_FORM_ID."&lang=".LANGUAGE_ID ."&strError=".urlencode($strError));
 	}
 }
 
 //get/post processing
-if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $F_RIGHT >= 30 && check_bitrix_sessid())
+if (($save <> '' || $apply <> '') && $REQUEST_METHOD=="POST" && $F_RIGHT >= 30 && check_bitrix_sessid())
 {
 	$arIMAGE = $_FILES["IMAGE_ID"];
 	$arIMAGE["MODULE_ID"] = "form";
@@ -112,17 +96,16 @@ if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $F_RIGHT
 	}
 	elseif (is_array($ANSWER))
 	{
-		reset($ANSWER);
 		$MESSAGE = $_REQUEST["MESSAGE"];
-		while ($e = each($ANSWER))
+		foreach ($ANSWER as $i => $pid)
 		{
-			$i = intval($e[0]);
-			$pid = intval($e[1]);
+			$i = intval($i);
+			$pid = intval($pid);
 			if ($i<0 || $pid<0) continue;
 
 			$arrA = array();
 			$arrA["ID"] = $pid;
-			$arrA["MESSAGE"] = strlen($MESSAGE[$i]) > 0 ? $MESSAGE[$i] : " ";
+			$arrA["MESSAGE"] = $MESSAGE[$i] <> '' ? $MESSAGE[$i] : " ";
 			$arrA["VALUE"] = $VALUE[$i];
 			$arrA["C_SORT"] = $SORT[$i];
 			$arrA["ACTIVE"] = "Y";
@@ -142,13 +125,12 @@ if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $F_RIGHT
 	if (is_array($DELETE))
 	{
 		$i=0;
-		reset($DELETE);
-		while ($e=each($DELETE))
+		foreach ($DELETE as $key => $val)
 		{
-			if ($e[1]=="Y" || ($i>0 && !in_array($FIELD_TYPE,$arTypeList))) // if it's not a list kill all answers except first one
+			if ($val == "Y" || ($i > 0 && !in_array($FIELD_TYPE, $arTypeList))) // if it's not a list kill all answers except first one
 			{
 				$arrA = array();
-				$arrA["ID"] = $e[0];
+				$arrA["ID"] = $key;
 				$arrA["DELETE"] = "Y";
 				$arFields["arANSWER"][] = $arrA;
 			}
@@ -188,7 +170,7 @@ if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $F_RIGHT
 		$sValStructSerialized = $_REQUEST["VAL_STRUCTURE"];
 		if (CheckSerializedData($sValStructSerialized))
 		{
-			$arValStructure = unserialize($sValStructSerialized);
+			$arValStructure = unserialize($sValStructSerialized, ['allowed_classes' => false]);
 
 			if (count($arValStructure) > 0)
 			{
@@ -196,9 +178,9 @@ if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $F_RIGHT
 			}
 		}
 
-		if (strlen($strError)<=0)
+		if ($strError == '')
 		{
-			if (strlen($save)>0) LocalRedirect("form_field_list.php?WEB_FORM_ID=".$WEB_FORM_ID."&additional=". $additional."&lang=".LANGUAGE_ID);
+			if ($save <> '') LocalRedirect("form_field_list.php?WEB_FORM_ID=".$WEB_FORM_ID."&additional=". $additional."&lang=".LANGUAGE_ID);
 			else LocalRedirect("form_field_edit_simple.php?ID=".$ID."&WEB_FORM_ID=".$WEB_FORM_ID."&additional=". $additional."&lang=".LANGUAGE_ID."&".$tabControl->ActiveTabParam());
 		}
 	}
@@ -216,7 +198,7 @@ if (!$rsField || !$rsField->ExtractFields())
 	$str_IN_EXCEL_TABLE = "Y";
 }
 
-if (strlen($strError)>0) $DB->InitTableVarsForEdit("b_form_field", "", "str_");
+if ($strError <> '') $DB->InitTableVarsForEdit("b_form_field", "", "str_");
 
 if ($ID>0) $sDocTitle = str_replace("#ID#", $ID, GetMessage("FORM_EDIT_RECORD"));
 else $sDocTitle = GetMessage("FORM_NEW_RECORD");
@@ -226,9 +208,6 @@ else $sDocTitle = GetMessage("FORM_NEW_RECORD");
 
 $APPLICATION->SetTitle($sDocTitle);
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-/***************************************************************************
-                               HTML form
-****************************************************************************/
 
 $context = new CAdminContextMenuList($arForm['ADMIN_MENU']);
 $context->Show();
@@ -267,7 +246,7 @@ if ($F_RIGHT>=30 && $ID>0)
 }
 
 ####### get answers list
-$rAnswer = CFormAnswer::GetList($ID, $by, $order, array(), $is_filtered);
+$rAnswer = CFormAnswer::GetList($ID);
 $i=0;
 $bWarn=false;
 $arRow=array();
@@ -300,7 +279,7 @@ if ($str_ADDITIONAL=="Y")
 $arCurrentValidators = array();
 if ($ID > 0)
 {
-	$rsCurrentValidators = CFormValidator::GetList($ID, array(), $by="C_SORT", $order="ASC");
+	$rsCurrentValidators = CFormValidator::GetList($ID);
 	while ($arValidator = $rsCurrentValidators->Fetch())
 	{
 		$arCurrentValidators[] = $arValidator;
@@ -335,7 +314,7 @@ $tabControl->Begin();
 //********************
 $tabControl->BeginNextTab();
 ?>
-	<? if (strlen($str_TIMESTAMP_X)>0) : ?>
+	<? if ($str_TIMESTAMP_X <> '') : ?>
 	<tr>
 		<td><?=GetMessage("FORM_TIMESTAMP")?></td>
 		<td><?=$str_TIMESTAMP_X?></td>
@@ -563,16 +542,15 @@ BX.ready(function() {
 	$bResults=false;
 	if (intval($WEB_FORM_ID)>0)
 	{
-		$result = CFormResult::GetList($WEB_FORM_ID, $by, $order, $arFilter, $is_filtered);
+		$result = CFormResult::GetList($WEB_FORM_ID, '', '', $arFilter);
 		if ($result->Fetch()) // form already has results
 		{
 			$bResults=true;
-			reset($arCompat_desc);
-			while($e=each($arCompat_desc))
+			foreach ($arCompat_desc as $val)
 			{
-				if (in_array($ftype,array_keys($e[1])))
+				if (in_array($ftype, array_keys($val)))
 				{
-					$arCompatList=array_keys($e[1]); // list of compatible fields
+					$arCompatList = array_keys($val); // list of compatible fields
 					break;
 				}
 
@@ -581,11 +559,10 @@ BX.ready(function() {
 	}
 
 	$arTypes = CFormAnswer::GetTypeList();
-	reset($arTypes['reference']);
-	while ($e=each($arTypes['reference']))
+	foreach ($arTypes['reference'] as $val)
 	{
-		if (!$ID || !$bResults || in_array($e[1],$arCompatList))
-			print "<option value='$e[1]'".($e[1]==$ftype?" selected=\"selected\"":"").">".$arTypeList_desc[$e[1]]." [".$e[1]."]</option>\n";
+		if (!$ID || !$bResults || in_array($val, $arCompatList))
+			print "<option value='$val'".($val == $ftype?" selected=\"selected\"":"").">".$arTypeList_desc[$val]." [".$val."]</option>\n";
 	}
 	?>
 		</select>
@@ -747,7 +724,7 @@ if (is_array($arCurrentValidators) && count($arCurrentValidators) > 0)
 	}
 }
 
-\Bitrix\Main\Localization\Loc::loadMessages(dirname(__FILE__).'/../form_validator_props.php');
+\Bitrix\Main\Localization\Loc::loadMessages(__DIR__.'/../form_validator_props.php');
 ?>
 	</script>
 	<script>
@@ -809,4 +786,4 @@ $tabControl->End();
 ?>
 </form>
 
-<? require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php"); ?>
+<? require_once ($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

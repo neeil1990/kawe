@@ -16,7 +16,7 @@ class CatalogSectionTab
 {
 	protected static $tabHandlers = array();
 
-	function OnInit($args)
+	public static function OnInit($args)
 	{
 		$result = array();
 
@@ -27,7 +27,7 @@ class CatalogSectionTab
 
 		while($arRes = $res->fetch())
 		{
-			if(strlen($arRes["CATALOG_SECTION_TAB_CLASS_NAME"]) > 0 && class_exists($arRes["CATALOG_SECTION_TAB_CLASS_NAME"]))
+			if($arRes["CATALOG_SECTION_TAB_CLASS_NAME"] <> '' && class_exists($arRes["CATALOG_SECTION_TAB_CLASS_NAME"]))
 			{
 				$tabHandler = new $arRes["CATALOG_SECTION_TAB_CLASS_NAME"];
 
@@ -53,7 +53,7 @@ class CatalogSectionTab
 		return $result;
 	}
 
-	function Action($arArgs)
+	public static function Action($arArgs)
 	{
 		/** @var \CMain $APPLICATION*/
 		global $APPLICATION;
@@ -77,7 +77,7 @@ class CatalogSectionTab
 		return $result;
 	}
 
-	function Check($arArgs)
+	public static function Check($arArgs)
 	{
 		/** @var \CMain $APPLICATION*/
 		global $APPLICATION;
@@ -101,7 +101,7 @@ class CatalogSectionTab
 		return $result;
 	}
 
-	function GetTabs($arArgs)
+	public static function GetTabs($arArgs)
 	{
 		$arTabs = array(
 			array(
@@ -115,7 +115,7 @@ class CatalogSectionTab
 	}
 
 	// arArgs = array("ID" => $ID, "IBLOCK"=>$arIBlock, "IBLOCK_TYPE"=>$arIBTYPE)
-	function ShowTab($divName, $arArgs, $bVarsFromForm)
+	public static function ShowTab($divName, $arArgs, $bVarsFromForm)
 	{
 		if ($divName == "edit_trading_platforms")
 		{
@@ -127,7 +127,7 @@ class CatalogSectionTab
 				$header = '<tr class="heading" id="tr_'.$tradingPlatformCode.'"><td colspan="2">'.$handler->name.'</td></tr>';
 				$body = $handler->showTabSection($divName, $arArgs, $bVarsFromForm);
 
-				if(strlen($body) <= 0)
+				if($body == '')
 					$body = '<tr><td colspan="2">'.Loc::getMessage('SALE_TRADING_PLATFORMS_NOT_ACTIVE').' ('.$siteId = $arArgs["IBLOCK"]["LID"].')</td></tr>';
 
 				$result .= $header.$body;

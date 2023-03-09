@@ -110,6 +110,12 @@ $arComponentParameters = array(
 			"TYPE" => "STRING",
 			"DEFAULT" => '',
 		),
+		"PREFILTER_NAME" => array(
+			"PARENT" => "DATA_SOURCE",
+			"NAME" => GetMessage("CP_BCSF_PREFILTER_NAME"),
+			"TYPE" => "STRING",
+			"DEFAULT" => "smartPreFilter",
+		),
 		"FILTER_NAME" => array(
 			"PARENT" => "DATA_SOURCE",
 			"NAME" => GetMessage("CP_BCSF_FILTER_NAME"),
@@ -198,7 +204,7 @@ if ($catalogIncluded)
 {
 	$arComponentParameters["PARAMETERS"]['HIDE_NOT_AVAILABLE'] = array(
 		'PARENT' => 'DATA_SOURCE',
-		'NAME' => GetMessage('CP_BCSF_HIDE_NOT_AVAILABLE'),
+		'NAME' => GetMessage('CP_BCSF_HIDE_NOT_AVAILABLE_EXT'),
 		'TYPE' => 'CHECKBOX',
 		'DEFAULT' => 'N',
 	);

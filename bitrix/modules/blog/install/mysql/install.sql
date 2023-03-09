@@ -68,7 +68,7 @@ create table b_blog_post
 ,  KEYWORDS varchar(255) null
 ,  PUBLISH_STATUS char(1) not null default 'P'
 ,  CATEGORY_ID varchar(255) null
-,  ATRIBUTE varchar(255) null
+,  ATRIBUTE varchar(255) null   -- deprecated
 ,  ENABLE_TRACKBACK char(1) not null default 'Y'
 ,  ENABLE_COMMENTS char(1) not null default 'Y'
 ,  ATTACH_IMG int null
@@ -88,6 +88,7 @@ create table b_blog_post
 ,  SEO_TITLE varchar(255) null
 ,  SEO_TAGS varchar(255) null
 ,  SEO_DESCRIPTION text null
+,  BACKGROUND_CODE varchar(100) null
 ,  primary key (ID)
 ,  index IX_BLOG_POST_1(BLOG_ID, PUBLISH_STATUS, DATE_PUBLISH)
 ,  index IX_BLOG_POST_2(BLOG_ID, DATE_PUBLISH, PUBLISH_STATUS)
@@ -124,7 +125,7 @@ create table b_blog_comment
 ,  POST_TEXT text not null
 ,  PUBLISH_STATUS char(1) not null default 'P'
 ,  HAS_PROPS varchar(1) default null
-,  SHARE_DEST varchar(255) null
+,  SHARE_DEST text null
 ,  PATH varchar(255) null
 ,  primary key (ID)
 ,  index IX_BLOG_COMM_1(BLOG_ID, POST_ID)
@@ -249,7 +250,8 @@ CREATE TABLE b_blog_socnet_rights (
   ENTITY_ID int(11) NOT NULL,
   ENTITY varchar(45) NOT NULL,
   PRIMARY KEY (ID),
-  index IX_BLOG_SR_1(POST_ID)
+  index IX_BLOG_SR_1(POST_ID),
+  index IX_BLOG_SR_2(ENTITY)
 );
 
 CREATE TABLE b_blog_post_param (

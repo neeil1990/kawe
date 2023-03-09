@@ -8,23 +8,23 @@ define('PUBLIC_AJAX_MODE', true);
 use Bitrix\Main,
 	Bitrix\Main\Localization\Loc,
 	Bitrix\Main\Loader,
-	Bitrix\Catalog;
+	Bitrix\Catalog,
+	Bitrix\Catalog\Access\ActionDictionary,
+	Bitrix\Catalog\Access\AccessController;
 
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
 
 Loc::loadMessages(__FILE__);
 
-$settingIds = array(
-	'default_quantity_trace',
-	'default_can_buy_zero',
-	'default_subscribe'
-);
-$settings = array();
-foreach ($settingIds as $id)
-	$settings[$id] = (string)Main\Config\Option::get('catalog', $id);
-unset($id);
+if (!Loader::includeModule('catalog'))
+{
+	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
+	ShowError(Loc::getMessage('BX_CATALOG_PRODUCT_SETTINGS_REINDEX_ERRORS_MODULE_CATALOG_ABSENT'));
+	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');
+	die();
+}
 
-if (!$USER->CanDoOperation('catalog_settings'))
+if (!AccessController::getCurrent()->check(ActionDictionary::ACTION_CATALOG_SETTINGS_ACCESS))
 {
 	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
 	ShowError(Loc::getMessage('BX_CATALOG_PRODUCT_SETTINGS_ACCESS_DENIED'));
@@ -40,15 +40,17 @@ if (!check_bitrix_sessid())
 	die();
 }
 
-if (!Loader::includeModule('catalog'))
-{
-	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
-	ShowError(Loc::getMessage('BX_CATALOG_PRODUCT_SETTINGS_REINDEX_ERRORS_MODULE_CATALOG_ABSENT'));
-	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');
-	die();
-}
-
 $request = Main\Context::getCurrent()->getRequest();
+
+$settingIds = array(
+	'default_quantity_trace',
+	'default_can_buy_zero',
+	'default_subscribe',
+);
+$settings = array();
+foreach ($settingIds as $id)
+	$settings[$id] = (string)Main\Config\Option::get('catalog', $id);
+unset($id);
 
 if (
 	$request->getRequestMethod() == 'GET'
@@ -94,7 +96,9 @@ elseif (
 	{
 		$newValue = (string)$request[$id];
 		if ($newValue == 'Y' || $newValue == 'N')
+		{
 			$newSettings[$id] = $newValue;
+		}
 		unset($newValue);
 	}
 	unset($id);
@@ -102,6 +106,7 @@ elseif (
 	foreach ($newSettings as $id => $value)
 	{
 		Main\Config\Option::set('catalog', $id, $value, '');
+
 		if ($id === 'default_can_buy_zero')
 			Main\Config\Option::set('catalog', 'allow_negative_amount', $value, '');
 	}
@@ -143,12 +148,21 @@ else
 
 	$oneStepTime = CCatalogProductSettings::getDefaultExecutionTime();
 
-	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
+	if ($_REQUEST["public_mode"] == "Y")
+	{
+		require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_popup_admin.php");
+	}
+	else
+	{
+		require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
+	}
 
 	$tabList = array(
 		array('DIV' => 'productSettingsTab01', 'TAB' => Loc::getMessage('BX_CATALOG_PRODUCT_SETTINGS_TAB'), 'ICON' => 'sale', 'TITLE' => Loc::getMessage('BX_CATALOG_PRODUCT_SETTINGS_TAB_TITLE'))
 	);
 	$tabControl = new CAdminTabControl('productSettings', $tabList, true, true);
+	if ($_REQUEST["public_mode"] == "Y")
+		$tabControl->SetPublicMode();
 	Main\Page\Asset::getInstance()->addJs('/bitrix/js/catalog/step_operations.js');
 
 	?><div id="product_settings_error_div" style="margin:0; display: none;">
@@ -190,10 +204,10 @@ else
 	?>
 	<input type="button" id="product_settings_start_button" value="<? echo Loc::getMessage('BX_CATALOG_PRODUCT_SETTINGS_UPDATE_BTN')?>">
 	<input type="button" id="product_settings_stop_button" value="<? echo Loc::getMessage('BX_CATALOG_PRODUCT_SETTINGS_STOP_BTN')?>" disabled>
+	<div id="reindexReport" style="display: none;"></div>
 	<?
 	$tabControl->End();
 	?></form>
-	<div id="reindexReport" style="display: none;"></div>
 	<?
 	$jsParams = array(
 		'url' => $APPLICATION->GetCurPage(),
@@ -231,5 +245,8 @@ else
 		var jsProductSettings = new BX.Catalog.ProductSettings(<? echo CUtil::PhpToJSObject($jsParams, false, true); ?>);
 	</script>
 	<?
-	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');
+	if ($_REQUEST["public_mode"] != "Y")
+	{
+		require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');
+	}
 }

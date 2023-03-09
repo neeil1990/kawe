@@ -7,7 +7,7 @@ class DateConverter
 {
 	/**
 	 * Creates Date object from Text (return array of result object)
-	 * 
+	 *
 	 * Examples: "end of next week", "tomorrow morning", "friday 25.10"
 	 *
 	 * @param string $text
@@ -17,25 +17,25 @@ class DateConverter
 	public static function decode($text, $limit = 0)
 	{
 		$result = Array();
-		if (strlen($text) <= 0)
+		if ($text == '')
 		{
 			return $result;
 		}
 
 		$metrics = Array();
 		$date = new \Bitrix\Main\Type\DateTime();
-		
-		if ($limit > 0 && strlen($text) > $limit)
+
+		if ($limit > 0 && mb_strlen($text) > $limit)
 		{
-			$text = substr($text, 0, $limit);
+			$text = mb_substr($text, 0, $limit);
 		}
-		
+
 		$originalText = $text;
-		$text = ToLower($text);
-		
+		$text = mb_strtolower($text);
+
 		$workTimeStart = explode('.', \Bitrix\Main\Config\Option::get('calendar', 'work_time_start', '9'));
 		$timeOfStartDate = str_pad(intval($workTimeStart[0]), 2, "0", STR_PAD_LEFT).':'.str_pad(intval($workTimeStart[1]), 2, "0", STR_PAD_LEFT);
-		
+
 		$workTimeEnd = explode('.', \Bitrix\Main\Config\Option::get('calendar', 'work_time_end', '18'));
 		$timeOfEndDate = str_pad(intval($workTimeEnd[0]), 2, "0", STR_PAD_LEFT).':'.str_pad(intval($workTimeEnd[1]), 2, "0", STR_PAD_LEFT);
 
@@ -46,8 +46,8 @@ class DateConverter
 		$pattern = Array();
 		for ($i = 1; $i <= 11; $i++)
 		{
-			$pattern[$i] = ToLower(Loc::getMessage("MAIN_TDC_METRIC_1_".$i));
-			$pattern[$i] = strlen($pattern[$i]) > 0? $pattern[$i]: 'bxt2dmetricskip';
+			$pattern[$i] = mb_strtolower(Loc::getMessage("MAIN_TDC_METRIC_1_".$i));
+			$pattern[$i] = $pattern[$i] <> ''? $pattern[$i]: 'bxt2dmetricskip';
 			$pattern[$i] = str_replace($defaultPregExceptionSearch, $defaultPregExceptionReplace, $pattern[$i]);
 		}
 		if (preg_match_all("/(".implode('|', $pattern).")/", $text, $match, PREG_OFFSET_CAPTURE))
@@ -87,14 +87,14 @@ class DateConverter
 						$matchType = 'MONTH';
 					break;
 				}
-				if (strlen($matchType) > 0)
+				if ($matchType <> '')
 				{
-					$position = defined("BX_UTF")? strlen(\Bitrix\Main\Text\BinaryString::getSubstring($text, 0, $matchPattern[1])): $matchPattern[1];
+					$position = defined("BX_UTF")? mb_strlen(substr($text, 0, $matchPattern[1])) : $matchPattern[1];
 					$matchWord = self::getMatchWord($originalText, $position);
-					
+
 					$metrics[1][] = Array(
 						'TYPE' => $matchType,
-						'COUNT' => strlen($matchWord),
+						'COUNT' => mb_strlen($matchWord),
 						'POSITION' => $position,
 						'MATCH' => $matchWord
 					);
@@ -106,8 +106,8 @@ class DateConverter
 		$pattern = Array();
 		for ($i = 1; $i <= 10; $i++)
 		{
-			$pattern[$i] = ToLower(Loc::getMessage("MAIN_TDC_METRIC_2_".$i));
-			$pattern[$i] = strlen($pattern[$i]) > 0? $pattern[$i]: 'bxt2dmetricskip';
+			$pattern[$i] = mb_strtolower(Loc::getMessage("MAIN_TDC_METRIC_2_".$i));
+			$pattern[$i] = $pattern[$i] <> ''? $pattern[$i]: 'bxt2dmetricskip';
 			$pattern[$i] = str_replace($defaultPregExceptionSearch, $defaultPregExceptionReplace, $pattern[$i]);
 		}
 		if (preg_match_all("/(".implode('|', $pattern).")/", $text, $match, PREG_OFFSET_CAPTURE))
@@ -125,10 +125,10 @@ class DateConverter
 							{
 								if ($metric['TYPE'] == 'WEEK')
 								{
-									$position = defined("BX_UTF") ? strlen(\Bitrix\Main\Text\BinaryString::getSubstring($text, 0, $matchPattern[1])) : $matchPattern[1];
+									$position = defined("BX_UTF")? mb_strlen(substr($text, 0, $matchPattern[1])) : $matchPattern[1];
 									$matchWord = self::getMatchWord($originalText, $position);
 
-									if ($matchPattern[1] < $metric['POSITION'] && $matchPattern[1] + strlen($matchWord) >= $metric['POSITION'] + $metric['COUNT'])
+									if ($matchPattern[1] < $metric['POSITION'] && $matchPattern[1] + mb_strlen($matchWord) >= $metric['POSITION'] + $metric['COUNT'])
 									{
 										unset($metrics[1][$key]);
 										if (count($metrics[1]) == 0)
@@ -163,14 +163,14 @@ class DateConverter
 					break;
 				}
 
-				if (strlen($matchType) > 0)
+				if ($matchType <> '')
 				{
-					$position = defined("BX_UTF")? strlen(\Bitrix\Main\Text\BinaryString::getSubstring($text, 0, $matchPattern[1])): $matchPattern[1];
+					$position = defined("BX_UTF")? mb_strlen(substr($text, 0, $matchPattern[1])) : $matchPattern[1];
 					$matchWord = self::getMatchWord($originalText, $position);
-					
+
 					$metrics[2][] = Array(
 						'TYPE' => $matchType,
-						'COUNT' => strlen($matchWord),
+						'COUNT' => mb_strlen($matchWord),
 						'POSITION' => $position,
 						'MATCH' => $matchWord
 					);
@@ -182,8 +182,8 @@ class DateConverter
 		$pattern = Array();
 		for ($i = 1; $i <= 9; $i++)
 		{
-			$pattern[$i] = ToLower(Loc::getMessage("MAIN_TDC_METRIC_3_".$i));
-			$pattern[$i] = strlen($pattern[$i]) > 0? $pattern[$i]: 'bxt2dmetricskip';
+			$pattern[$i] = mb_strtolower(Loc::getMessage("MAIN_TDC_METRIC_3_".$i));
+			$pattern[$i] = $pattern[$i] <> ''? $pattern[$i]: 'bxt2dmetricskip';
 			$pattern[$i] = str_replace($defaultPregExceptionSearch, $defaultPregExceptionReplace, $pattern[$i]);
 		}
 		if (preg_match_all("/(".implode('|', $pattern).")/", $text, $match, PREG_OFFSET_CAPTURE))
@@ -220,7 +220,7 @@ class DateConverter
 						$matchType = 'THIS';
 					break;
 				}
-				
+
 				if (in_array($matchType, Array('BEFORE', 'AFTER')) && isset($metrics[1]))
 				{
 					foreach ($metrics[1] as $key => $metric)
@@ -234,7 +234,7 @@ class DateConverter
 						}
 						else if (in_array($metric['TYPE'], Array('TOMORROW', 'YESTERDAY')))
 						{
-							if ($metric['POSITION'] == $matchPattern[1]+strlen($matchPattern[0])+1)
+							if ($metric['POSITION'] == $matchPattern[1] + mb_strlen($matchPattern[0])+1)
 							{
 								if ($metric['TYPE'] == 'TOMORROW')
 								{
@@ -250,14 +250,14 @@ class DateConverter
 					}
 				}
 
-				if (strlen($matchType) > 0)
+				if ($matchType <> '')
 				{
-					$position = defined("BX_UTF")? strlen(\Bitrix\Main\Text\BinaryString::getSubstring($text, 0, $matchPattern[1])): $matchPattern[1];
+					$position = defined("BX_UTF")? mb_strlen(substr($text, 0, $matchPattern[1])) : $matchPattern[1];
 					$matchWord = self::getMatchWord($originalText, $position);
-					
+
 					$metrics[3][] = Array(
 						'TYPE' => $matchType,
-						'COUNT' => strlen($matchWord),
+						'COUNT' => mb_strlen($matchWord),
 						'POSITION' => $position,
 						'MATCH' => $matchWord
 					);
@@ -268,13 +268,13 @@ class DateConverter
 		{
 			foreach ($match[0] as $matchPattern)
 			{
-				$position = defined("BX_UTF")? strlen(\Bitrix\Main\Text\BinaryString::getSubstring($text, 0, $matchPattern[1])): $matchPattern[1];
-				$matchWord = self::getMatchWord($originalText, $position);	
-				
+				$position = defined("BX_UTF")? mb_strlen(substr($text, 0, $matchPattern[1])) : $matchPattern[1];
+				$matchWord = self::getMatchWord($originalText, $position);
+
 				$metrics[3][] = Array(
 					'TYPE' => 'HHMM',
 					'VALUE' => $matchPattern[0],
-					'COUNT' => strlen($matchPattern[0]),
+					'COUNT' => mb_strlen($matchPattern[0]),
 					'POSITION' => $position,
 					'MATCH' => $matchWord
 				);
@@ -287,9 +287,9 @@ class DateConverter
 		$patternLength = Array();
 		for ($i = 1; $i <= 3; $i++)
 		{
-			$patternOriginal[$i] = ToLower(Loc::getMessage("MAIN_TDC_METRIC_4_".$i));
-			$patternOriginal[$i] = strlen($patternOriginal[$i]) > 0? $patternOriginal[$i]: 'bxt2dmetricskip';
-			$patternLength[$i] = strlen($patternOriginal[$i]);
+			$patternOriginal[$i] = mb_strtolower(Loc::getMessage("MAIN_TDC_METRIC_4_".$i));
+			$patternOriginal[$i] = $patternOriginal[$i] <> ''? $patternOriginal[$i]: 'bxt2dmetricskip';
+			$patternLength[$i] = mb_strlen($patternOriginal[$i]);
 			if ($patternOriginal[$i] != 'bxt2dmetricskip')
 			{
 				$pattern[$i] = str_replace($defaultPregExceptionSearch, $defaultPregExceptionReplace, $patternOriginal[$i]);
@@ -312,39 +312,39 @@ class DateConverter
 					{
 						continue;
 					}
-					
+
 					$matchType = '';
 					$matchLength = '';
-					switch(strlen($matchPattern[0]))
+					switch(mb_strlen($matchPattern[0]))
 					{
 						case $patternLength[1]:
 							$matchType = 'DDMMYYYY';
-							$matchYear = substr($matchPattern[0], strpos($patternOriginal[1], 'yyyy'), 4);
-							$matchMonth = substr($matchPattern[0], strpos($patternOriginal[1], 'mm'), 2);
-							$matchDay = substr($matchPattern[0], strpos($patternOriginal[1], 'dd'), 2);
+							$matchYear = mb_substr($matchPattern[0], mb_strpos($patternOriginal[1], 'yyyy'), 4);
+							$matchMonth = mb_substr($matchPattern[0], mb_strpos($patternOriginal[1], 'mm'), 2);
+							$matchDay = mb_substr($matchPattern[0], mb_strpos($patternOriginal[1], 'dd'), 2);
 							$matchPattern[0] = $matchYear.'-'.$matchMonth.'-'.$matchDay;
 							$matchLength = $patternLength[1];
-						break;
+							break;
 						case $patternLength[2]:
 							$matchType = 'DDMMYY';
-							$matchYear = substr($matchPattern[0], strpos($patternOriginal[2], 'yy'), 2);
-							$matchMonth = substr($matchPattern[0], strpos($patternOriginal[2], 'mm'), 2);
-							$matchDay = substr($matchPattern[0], strpos($patternOriginal[2], 'dd'), 2);
+							$matchYear = mb_substr($matchPattern[0], mb_strpos($patternOriginal[2], 'yy'), 2);
+							$matchMonth = mb_substr($matchPattern[0], mb_strpos($patternOriginal[2], 'mm'), 2);
+							$matchDay = mb_substr($matchPattern[0], mb_strpos($patternOriginal[2], 'dd'), 2);
 							$matchPattern[0] = '20'.$matchYear.'-'.$matchMonth.'-'.$matchDay;
 							$matchLength = $patternLength[2];
-						break;
+							break;
 						case $patternLength[3]:
 							$matchType = 'DDMM';
-							$matchMonth = substr($matchPattern[0], strpos($patternOriginal[3], 'mm'), 2);
-							$matchDay = substr($matchPattern[0], strpos($patternOriginal[3], 'dd'), 2);
+							$matchMonth = mb_substr($matchPattern[0], mb_strpos($patternOriginal[3], 'mm'), 2);
+							$matchDay = mb_substr($matchPattern[0], mb_strpos($patternOriginal[3], 'dd'), 2);
 							$matchPattern[0] = $date->format('Y').'-'.$matchMonth.'-'.$matchDay;
 							$matchLength = $patternLength[3];
-						break;
+							break;
 					}
-	
-					$position = defined("BX_UTF")? strlen(\Bitrix\Main\Text\BinaryString::getSubstring($text, 0, $matchPattern[1])): $matchPattern[1];
-					$matchWord = substr($originalText, $position, $matchLength);
-					
+
+					$position = defined("BX_UTF")? mb_strlen(substr($text, 0, $matchPattern[1])) : $matchPattern[1];
+					$matchWord = mb_substr($originalText, $position, $matchLength);
+
 					$metrics[4][] = Array(
 						'TYPE' => $matchType,
 						'VALUE' => $matchPattern[0],
@@ -360,8 +360,8 @@ class DateConverter
 		$pattern = Array();
 		for ($i = 1; $i <= 5; $i++)
 		{
-			$pattern[$i] = ToLower(Loc::getMessage("MAIN_TDC_METRIC_5_".$i));
-			$pattern[$i] = strlen($pattern[$i]) > 0? $pattern[$i]: 'bxt2dmetricskip';
+			$pattern[$i] = mb_strtolower(Loc::getMessage("MAIN_TDC_METRIC_5_".$i));
+			$pattern[$i] = $pattern[$i] <> ''? $pattern[$i]: 'bxt2dmetricskip';
 			$pattern[$i] = str_replace($defaultPregExceptionSearch, $defaultPregExceptionReplace, $pattern[$i]);
 		}
 		if (preg_match_all("/(".implode('|', $pattern).")/", $text, $match, PREG_OFFSET_CAPTURE))
@@ -392,7 +392,7 @@ class DateConverter
 							{
 								if ($metric['TYPE'] == 'TODAY')
 								{
-									if ($metric['POSITION'] == $matchPattern[1]+strlen($matchPattern[3]))
+									if ($metric['POSITION'] == $matchPattern[1] + mb_strlen($matchPattern[3]))
 									{
 										$matchType = '';
 									}
@@ -405,22 +405,22 @@ class DateConverter
 						$matchValue = '20:00';
 					break;
 				}
-				if (strlen($matchType) > 0)
+				if ($matchType <> '')
 				{
-					$position = defined("BX_UTF")? strlen(\Bitrix\Main\Text\BinaryString::getSubstring($text, 0, $matchPattern[1])): $matchPattern[1];
+					$position = defined("BX_UTF")? mb_strlen(substr($text, 0, $matchPattern[1])) : $matchPattern[1];
 					$matchWord = self::getMatchWord($originalText, $position);
-					
+
 					$metrics[5][] = Array(
 						'TYPE' => $matchType,
 						'VALUE' => $matchValue,
-						'COUNT' => strlen($matchWord),
+						'COUNT' => mb_strlen($matchWord),
 						'POSITION' => $position,
 						'MATCH' => $matchWord
 					);
 				}
 			}
 		}
-		
+
 		$countOfMetrics = 0;
 		foreach ($metrics as $values)
 		{
@@ -498,7 +498,7 @@ class DateConverter
 		{
 			$useDefault = true;
 		}
-		
+
 		if ($useDefault)
 		{
 			$modificators = isset($metrics[3])? $metrics[3]: array();
@@ -571,10 +571,10 @@ class DateConverter
 
 		$workTimeStart = explode('.', \Bitrix\Main\Config\Option::get('calendar', 'work_time_start', '9'));
 		$timeOfStartDate = str_pad(intval($workTimeStart[0]), 2, "0", STR_PAD_LEFT).':'.str_pad(intval($workTimeStart[1]), 2, "0", STR_PAD_LEFT);
-		
+
 		$workTimeEnd = explode('.', \Bitrix\Main\Config\Option::get('calendar', 'work_time_end', '18'));
 		$timeOfEndDate = str_pad(intval($workTimeEnd[0]), 2, "0", STR_PAD_LEFT).':'.str_pad(intval($workTimeEnd[1]), 2, "0", STR_PAD_LEFT);
-		
+
 		$result = null;
 		switch($type)
 		{
@@ -598,9 +598,9 @@ class DateConverter
 
 				$modificator = '';
 				$metricTime = $timeOfEndDate;
-				
+
 				$metricModificator = self::checkModifierPosition($metric, $metricModificator);
-				
+
 				foreach ($metricModificator as $currentModificator)
 				{
 					if ($metric['TYPE'] == 'WEEK')
@@ -726,7 +726,7 @@ class DateConverter
 						}
 						$modificator = true;
 					}
-					
+
 					if (in_array($currentModificator['TYPE'], Array('MORNING', 'LUNCH', 'EVENING', 'HHMM')))
 					{
 						$metricTime = $currentModificator['VALUE'];
@@ -752,9 +752,9 @@ class DateConverter
 					}
 					else if ($metric['TYPE'] == 'WEEKEND')
 					{
-						if (ToLower($metricDate->format('l')) == 'saturday')
+						if (strtolower($metricDate->format('l')) == 'saturday')
 							$metricDate->add('SUNDAY');
-						else if (ToLower($metricDate->format('l')) != 'sunday')
+						else if (strtolower($metricDate->format('l')) != 'sunday')
 							$metricDate->add('SATURDAY');
 					}
 					else if ($metric['TYPE'] == 'MONTH')
@@ -789,9 +789,9 @@ class DateConverter
 				$metricDate = $defaultDate;
 				$modificator = '';
 				$metricTime = $timeOfEndDate;
-				
+
 				$metricModificator = self::checkModifierPosition($metric, $metricModificator);
-				
+
 				foreach ($metricModificator as $currentModificator)
 				{
 					$metricDate = self::getDateOfDayOfCurrentWeek($metric['TYPE'], $metricDate);
@@ -834,7 +834,7 @@ class DateConverter
 				}
 				if (!$modificator)
 				{
-					$modificator = ToLower($metric['TYPE']) == ToLower($metricDate->format('l'))? 'NEXT ': '';
+					$modificator = strtolower($metric['TYPE']) == strtolower($metricDate->format('l'))? 'NEXT ': '';
 					$metricDate->add($modificator.$metric['TYPE']);
 				}
 
@@ -874,9 +874,9 @@ class DateConverter
 			case 4:
 				$modificator = '';
 				$metricTime = $timeOfEndDate;
-				
+
 				$metricModificator = self::checkModifierPosition($metric, $metricModificator);
-				
+
 				foreach ($metricModificator as $currentModificator)
 				{
 					if (in_array($currentModificator['TYPE'], Array('MORNING', 'LUNCH', 'EVENING', 'HHMM')))
@@ -893,9 +893,9 @@ class DateConverter
 				$metricDate = $defaultDate;
 				$modificator = '';
 				$metricTime = $metric['VALUE'];
-				
+
 				$metricModificator = self::checkModifierPosition($metric, $metricModificator);
-				
+
 				foreach ($metricModificator as $currentModificator)
 				{
 					if ($currentModificator['TYPE'] == 'BEFORE')
@@ -930,12 +930,12 @@ class DateConverter
 						$metricTime = $currentModificator['VALUE'];
 					}
 					$modificator = true;
-				
+
 				}
 
 				if (!$modificator)
 				{
-					$modificator = ToLower($metric['TYPE']) == ToLower($metricDate->format('l'))? 'NEXT ': '';
+					$modificator = strtolower($metric['TYPE']) == strtolower($metricDate->format('l'))? 'NEXT ': '';
 					$metricDate->add($modificator.$metric['TYPE']);
 				}
 
@@ -945,7 +945,7 @@ class DateConverter
 
 		return $result;
 	}
-	
+
 	/**
 	 * Creates Date object of the day of the method week (private function for self::createDateUsingMetrics)
 	 *
@@ -958,7 +958,7 @@ class DateConverter
 	{
 		$date = $date? $date: new \Bitrix\Main\Type\DateTime();
 
-		$nameOfday = strtoupper($nameOfday);
+		$nameOfday = mb_strtoupper($nameOfday);
 		if (!in_array($nameOfday, Array('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY')))
 			return false;
 
@@ -988,33 +988,33 @@ class DateConverter
 	 */
 	private static function getMatchWord($text, $position)
 	{
-		$letters = array_merge(Array(" ", "\n", "\t", "\r"), str_split('"\'-.,?!#$%^&*();:<>\|{}-=^@[]`'));
+		$letters = array_merge(Array(" ", "\n", "\t", "\r"), str_split('"-.,?!#$%^&*();:<>\|{}-=^@[]`'));
 		$spaceFound = self::findFirstOccurrence($text, $letters, $position);
 		if ($spaceFound !== false)
 		{
-			$result = substr($text, $position, $spaceFound-$position);
+			$result = mb_substr($text, $position, $spaceFound - $position);
 		}
 		else
 		{
-			$result = substr($text, $position);
+			$result = mb_substr($text, $position);
 		}
 		return $result;
 	}
-	
+
 	private static function getTextForReplace($text, $metrics, $metricModifier)
 	{
 		$found = false;
-		
+
 		$minStartPosition = null;
 		$maxEndPosition = null;
-		
+
 		if (!empty($metrics))
 		{
 			$minStartPosition = $metrics['POSITION'];
 			$maxEndPosition = $metrics['POSITION'] + $metrics['COUNT'];
 			$found = true;
 		}
-		
+
 		if (is_array($metricModifier))
 		{
 			foreach ($metricModifier as $metrics)
@@ -1038,26 +1038,26 @@ class DateConverter
 				}
 			}
 		}
-		
+
 		if (is_null($minStartPosition) || is_null($maxEndPosition))
 		{
 			$result = false;
 		}
 		else
 		{
-			$result = substr($text, $minStartPosition, $maxEndPosition - $minStartPosition);
-			$result = Array('TEXT' => $result, 'POSITION' => $minStartPosition, 'LENGTH' => strlen($result));
+			$result = mb_substr($text, $minStartPosition, $maxEndPosition - $minStartPosition);
+			$result = Array('TEXT' => $result, 'POSITION' => $minStartPosition, 'LENGTH' => mb_strlen($result));
 		}
-		
+
 		return $result;
 	}
-	
+
 	private static function checkModifierPosition($metrics, $metricModifier)
 	{
 		$newMetrics = $metrics;
-		
+
 		$stackMetrics = Array();
-		
+
 		$while = true;
 		$maxWhile = 100;
 		while ($while && $maxWhile > 0)
@@ -1087,28 +1087,28 @@ class DateConverter
 			}
 			$maxWhile--;
 		}
-		
+
 		return $stackMetrics;
 	}
-	
+
 	private static function findFirstOccurrence($haystack, $needle, $offset=0)
 	{
-		$haystack = substr($haystack, 0, 25+$offset);
+		$haystack = mb_substr($haystack, 0, 25 + $offset);
 		if(!is_array($needle))
 		{
 			$needle = array($needle);
 		}
-		
+
 		$positions = array();
-		foreach($needle as $query) 
+		foreach($needle as $query)
 		{
-			$result = strpos($haystack, $query, $offset);
+			$result = mb_strpos($haystack, $query, $offset);
 			if ($result !== false)
 			{
 				$positions[] = $result;
 			}
 		}
-		
+
 		return empty($positions)? false: min($positions);
 	}
 }

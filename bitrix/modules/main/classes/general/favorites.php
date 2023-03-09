@@ -322,13 +322,13 @@ class CBXFavAdmMenu
 				$tmpMenu["fav_id"] = $arItem["ID"];
 				$tmpMenu["parent_menu"] = "global_menu_desktop";
 
-				if (!isset($tmpMenu['icon']) || strlen($tmpMenu['icon']) <= 0)
+				if (!isset($tmpMenu['icon']) || $tmpMenu['icon'] == '')
 					$tmpMenu['icon'] = 'fav_menu_icon';
 
 				if($this->CheckItemActivity($tmpMenu))
 					$tmpMenu["_active"] = true;
 
-				if(($tmpMenu["_active"] || $this->CheckSubItemActivity($tmpMenu)) && $favOptions["stick"] == "Y")
+				if((isset($tmpMenu["_active"]) && $tmpMenu["_active"] || $this->CheckSubItemActivity($tmpMenu)) && $favOptions["stick"] == "Y")
 					$GLOBALS["BX_FAVORITE_MENU_ACTIVE_ID"] = true;
 
 				$aMenu[] = $tmpMenu;
@@ -357,7 +357,7 @@ class CBXFavAdmMenu
 
 	private function CheckItemActivity($arMenu)
 	{
-		if($arMenu["_active"] == true )
+		if(isset($arMenu["_active"]) && $arMenu["_active"])
 			return true;
 
 		global $adminMenu, $APPLICATION;

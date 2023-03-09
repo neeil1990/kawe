@@ -4,6 +4,7 @@ namespace Bitrix\Seo\Retargeting\Services;
 
 use \Bitrix\Main\Error;
 use \Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Text\Encoding;
 use \Bitrix\Main\Web\Json;
 use \Bitrix\Seo\Retargeting\Response;
 
@@ -14,7 +15,13 @@ class ResponseVkontakte extends Response
 
 	public function parse($data)
 	{
-		$parsed = Json::decode($data);
+		// Need for preserve double UTF-conversion, because VK return JSON answer in result
+		if (is_string($data))
+		{
+			$data = Encoding::convertEncoding($data, SITE_CHARSET, 'UTF-8');
+		}
+
+		$parsed = is_array($data) ? $data : Json::decode($data);
 		if ($parsed['error'])
 		{
 			$errorMessage = $parsed['error']['error_msg'];
@@ -30,6 +37,10 @@ class ResponseVkontakte extends Response
 					);
 					break;
 			}
+
+			$errorMessage = Loc::getMessage('SEO_RETARGETING_SERVICE_RESPONSE_VKONTAKTE_ERROR')
+				. ': '
+				. $errorMessage;
 			$this->addError(new Error($errorMessage, $parsed['error']['error_code']));
 		}
 

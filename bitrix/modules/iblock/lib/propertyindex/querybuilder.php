@@ -223,13 +223,30 @@ class QueryBuilder
 	 */
 	private function fillWhere(&$where, &$hasAdditionalFilters, &$toUnset, &$filter)
 	{
-		$properties = $this->getFilterProperty();
+		$countUnset = count($toUnset);
+		$properties = null;
+		$propertyCodeMap = null;
 		foreach ($filter as $filterKey => $filterValue)
 		{
 			if (preg_match("/^(=)PROPERTY\$/i", $filterKey, $keyDetails) && is_array($filterValue))
 			{
+				if ($properties === null)
+					$properties = $this->getFilterProperty();
+				if ($propertyCodeMap === null)
+				{
+					$propertyCodeMap = $this->getPropertyCodeMap();
+				}
+
 				foreach ($filterValue as $propertyId => $value)
 				{
+					$propertyId = $propertyCodeMap[$propertyId] ?? null;
+					if (
+						$propertyId === null
+						|| !isset($properties[$propertyId])
+					)
+					{
+						continue;
+					}
 					$facetId = $this->storage->propertyIdToFacetId($propertyId);
 					if ($properties[$propertyId] == Storage::DICTIONARY || $properties[$propertyId] == Storage::STRING)
 					{
@@ -249,7 +266,21 @@ class QueryBuilder
 			}
 			elseif (preg_match("/^(=)PROPERTY_(\\d+)\$/i", $filterKey, $keyDetails))
 			{
-				$propertyId = $keyDetails[2];
+				if ($properties === null)
+					$properties = $this->getFilterProperty();
+				if ($propertyCodeMap === null)
+				{
+					$propertyCodeMap = $this->getPropertyCodeMap();
+				}
+
+				$propertyId = $propertyCodeMap[$keyDetails[2]] ?? null;
+				if (
+					$propertyId === null
+					|| !isset($properties[$propertyId])
+				)
+				{
+					continue;
+				}
 				$value = $filterValue;
 				$facetId = $this->storage->propertyIdToFacetId($propertyId);
 				if ($properties[$propertyId] == Storage::DICTIONARY || $properties[$propertyId] == Storage::STRING)
@@ -269,8 +300,23 @@ class QueryBuilder
 			}
 			elseif (preg_match("/^(>=|<=)PROPERTY\$/i", $filterKey, $keyDetails) && is_array($filterValue))
 			{
+				if ($properties === null)
+					$properties = $this->getFilterProperty();
+				if ($propertyCodeMap === null)
+				{
+					$propertyCodeMap = $this->getPropertyCodeMap();
+				}
+
 				foreach ($filterValue as $propertyId => $value)
 				{
+					$propertyId = $propertyCodeMap[$propertyId] ?? null;
+					if (
+						$propertyId === null
+						|| !isset($properties[$propertyId])
+					)
+					{
+						continue;
+					}
 					$facetId = $this->storage->propertyIdToFacetId($propertyId);
 					if ($properties[$propertyId] == Storage::NUMERIC)
 					{
@@ -304,8 +350,23 @@ class QueryBuilder
 			}
 			elseif (preg_match("/^(><)PROPERTY\$/i", $filterKey, $keyDetails) && is_array($filterValue))
 			{
+				if ($properties === null)
+					$properties = $this->getFilterProperty();
+				if ($propertyCodeMap === null)
+				{
+					$propertyCodeMap = $this->getPropertyCodeMap();
+				}
+
 				foreach ($filterValue as $propertyId => $value)
 				{
+					$propertyId = $propertyCodeMap[$propertyId] ?? null;
+					if (
+						$propertyId === null
+						|| !isset($properties[$propertyId])
+					)
+					{
+						continue;
+					}
 					$facetId = $this->storage->propertyIdToFacetId($propertyId);
 					if ($properties[$propertyId] == Storage::NUMERIC)
 					{
@@ -341,7 +402,7 @@ class QueryBuilder
 			}
 			elseif (
 				$this->options["PRICE_FILTER"]
-				&& preg_match("/^(>=|<=)CATALOG_PRICE_(\\d+)\$/i", $filterKey, $keyDetails)
+				&& preg_match("/^(>=|<=)(?:CATALOG_|)PRICE_(\\d+)\$/i", $filterKey, $keyDetails)
 				&& !is_array($filterValue)
 			)
 			{
@@ -359,7 +420,7 @@ class QueryBuilder
 			}
 			elseif (
 				$this->options["PRICE_FILTER"]
-				&& preg_match("/^(><)CATALOG_PRICE_(\\d+)\$/i", $filterKey, $keyDetails)
+				&& preg_match("/^(><)(?:CATALOG_|)PRICE_(\\d+)\$/i", $filterKey, $keyDetails)
 				&& is_array($filterValue)
 			)
 			{
@@ -382,7 +443,7 @@ class QueryBuilder
 				&& is_array($filterValue) && count($filterValue) === 3
 				&& isset($filterValue["LOGIC"]) && $filterValue["LOGIC"] === "OR"
 				&& isset($filterValue["=ID"]) && is_object($filterValue["=ID"])
-				&& preg_match("/^(>=|<=)CATALOG_PRICE_(\\d+)\$/i", key($filterValue[0][0]), $keyDetails)
+				&& preg_match("/^(>=|<=)(?:CATALOG_|)PRICE_(\\d+)\$/i", key($filterValue[0][0]), $keyDetails)
 				&& !is_array(current($filterValue[0][0]))
 			)
 			{
@@ -397,7 +458,7 @@ class QueryBuilder
 					"VALUES" => array($doubleValue),
 				);
 				$toUnset[] = array(&$filter, $filterKey);
-				$toUnset[] = array(&$filter, "CATALOG_SHOP_QUANTITY_1");
+				$toUnset[] = array(&$filter, "CATALOG_SHOP_QUANTITY_".$priceId);
 			}
 			elseif (
 				$this->options["PRICE_FILTER"]
@@ -405,7 +466,7 @@ class QueryBuilder
 				&& is_array($filterValue) && count($filterValue) === 3
 				&& isset($filterValue["LOGIC"]) && $filterValue["LOGIC"] === "OR"
 				&& isset($filterValue["=ID"]) && is_object($filterValue["=ID"])
-				&& preg_match("/^(><)CATALOG_PRICE_(\\d+)\$/i", key($filterValue[0][0]), $keyDetails)
+				&& preg_match("/^(><)(?:CATALOG_|)PRICE_(\\d+)\$/i", key($filterValue[0][0]), $keyDetails)
 				&& is_array(current($filterValue[0][0]))
 			)
 			{
@@ -421,7 +482,7 @@ class QueryBuilder
 					"VALUES" => array($doubleValueMin, $doubleValueMax),
 				);
 				$toUnset[] = array(&$filter, $filterKey);
-				$toUnset[] = array(&$filter, "CATALOG_SHOP_QUANTITY_1");
+				$toUnset[] = array(&$filter, "CATALOG_SHOP_QUANTITY_".$priceId);
 			}
 			elseif (
 				$filterKey !== "IBLOCK_ID"
@@ -430,6 +491,13 @@ class QueryBuilder
 			)
 			{
 				$hasAdditionalFilters = true;
+			}
+		}
+		if ($hasAdditionalFilters)
+		{
+			while (count($toUnset) > $countUnset)
+			{
+				array_pop($toUnset);
 			}
 		}
 	}
@@ -450,7 +518,7 @@ class QueryBuilder
 		{
 			foreach ($value as $val)
 			{
-				if (strlen($val) > 0)
+				if ((string)$val <> '')
 				{
 					if ($lookup)
 					{
@@ -458,12 +526,12 @@ class QueryBuilder
 					}
 					else
 					{
-						$result[] = intval($val);
+						$result[] = (int)$val;
 					}
 				}
 			}
 		}
-		elseif (strlen($value) > 0)
+		elseif ((string)$value <> '')
 		{
 			if ($lookup)
 			{
@@ -471,7 +539,7 @@ class QueryBuilder
 			}
 			else
 			{
-				$result[] = intval($value);
+				$result[] = (int)$value;
 			}
 		}
 
@@ -485,8 +553,9 @@ class QueryBuilder
 	 *
 	 * @return integer[]
 	 */
-	private function getFilterProperty()
+	private function getFilterProperty(): array
 	{
+		//TODO: remove this code to \Bitrix\Iblock\Model\Property
 		if (!isset($this->propertyFilter))
 		{
 			$this->propertyFilter = array();
@@ -510,5 +579,52 @@ class QueryBuilder
 			}
 		}
 		return $this->propertyFilter;
+	}
+
+	private function getPropertyCodeMap(): array
+	{
+		$result = [];
+
+		$iterator = \Bitrix\Iblock\PropertyTable::getList([
+			'select' => [
+				'ID',
+				'CODE',
+			],
+			'filter' => [
+				'=IBLOCK_ID' => $this->facet->getIblockId(),
+			],
+		]);
+		while ($row = $iterator->fetch())
+		{
+			$id = (int)$row['ID'];
+			$result[$id] = $id;
+			$row['CODE'] = (string)$row['CODE'];
+			if ($row['CODE'] !== '')
+			{
+				$result[$row['CODE']] = $id;
+			}
+		}
+		unset($iterator);
+
+		$skuIblockId = $this->facet->getSkuIblockId();
+		if ($skuIblockId > 0)
+		{
+			$iterator = \Bitrix\Iblock\PropertyTable::getList([
+				'select' => [
+					'ID',
+				],
+				'filter' => [
+					'=IBLOCK_ID' => $skuIblockId,
+				],
+			]);
+			while ($row = $iterator->fetch())
+			{
+				$id = (int)$row['ID'];
+				$result[$id] = $id;
+			}
+			unset($iterator);
+		}
+
+		return $result;
 	}
 }

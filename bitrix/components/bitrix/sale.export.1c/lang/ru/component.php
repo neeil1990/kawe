@@ -58,7 +58,9 @@ $MESS["CRM_PACKAGE_DELIVERY_SERVICE_ITEM_MEASURE_796"] = "Штука";
 $MESS["CC_BSC1_PS_ON_STATUS_PAYMENT_ORDER_ERROR"] = "Необходимо выполнить настройку поля 'Платежная система для автоматической оплаты заказа по статусу оплаты заказа от 1С' на странице настройки интеграции";
 $MESS["CC_BSC1_SALE_ALLOW_DEDUCTION_ON_DELIVERY_ERROR"] = "На странице настройки модуля Интернет магазина необходимо отключить автоматизацию процесса - Разрешать отгрузку при разрешении доставки";
 $MESS["CC_BSC1_CONVERT_SALE"] = "Частичные отгрузки доступны только для сконвертированного модуля магазина";
-$MESS["CC_BSC1_USE_STORE_SALE"] = "Необходимо выключить складской учет и резервирование";
+$MESS["CC_BSC1_USE_STORE_SALE_1"] = "Необходимо выключить складской учёт и резервирование";
+$MESS["CC_BSC1_CRM_SCHEME_NOT_SUPPORTED"] = "Обмен с CRM не поддерживается. Установите последнюю версию модуля 1С";
+$MESS["CC_BSC1_DOCUMENT_XML_EMPTY"] = "Ошибка обработки документа. Документ пустой";
 $MESS["CC_BSC1_COM_INFO"] = "КоммерческаяИнформация";
 $MESS["CC_BSC1_COM_INFO_VARSION"] = "ВерсияСхемы";
 $MESS["CC_BSC1_DOCUMENT"] = "Документ";
@@ -79,6 +81,8 @@ $MESS["CC_BSC1_SUMM"] = "Сумма";
 $MESS["CC_BSC1_COMMENT"] = "Комментарий";
 $MESS["CC_BSC1_REK_VALUES"] = "ЗначенияРеквизитов";
 $MESS["CC_BSC1_REK_VALUE"] = "ЗначениеРеквизита";
+$MESS["SALE_EXPORT_SUBORDINATES"] = "ПодчиненныеДокументы";
+$MESS["SALE_EXPORT_SUBORDINATE"] = "ПодчиненныйДокумент";
 $MESS["CC_BSC1_NAME"] = "Наименование";
 $MESS["CC_BSC1_VALUE"] = "Значение";
 $MESS["CC_BSC1_ITEMS"] = "Товары";
@@ -97,6 +101,14 @@ $MESS["CC_BSC1_ID"] = "Ид";
 $MESS["CC_BSC1_TAXES"] = "Налоги";
 $MESS["CC_BSC1_TAX"] = "Налог";
 $MESS["CC_BSC1_TAX_VALUE"] = "Ставка";
+
+$MESS["CC_BSC1_MARKING_GROUP"] = "ГруппаМаркировки";
+$MESS["CC_BSC1_MARKING_GROUP_CODE"] = "Код";
+
+$MESS["CC_BSC1_MARKINGS"] = "Маркировки";
+$MESS["CC_BSC1_MARKING"] = "Маркировка";
+$MESS["CC_BSC1_MARKING_BARCODE"] = "Штрихкод";
+
 $MESS["CC_BSC1_IN_PRICE"] = "УчтеноВСумме";
 $MESS["CC_BSC1_SERVICE"] = "Услуга";
 $MESS["CC_BSC1_CANCELED"] = "ПометкаУдаления";
@@ -151,6 +163,7 @@ $MESS["CC_BSC1_DI_DS"] = "СлужбыДоставки";
 $MESS["CC_BSC1_DI_ELEMENT"] = "Элемент";
 $MESS["CC_BSC1_DI_ID"] = "Ид";
 $MESS["CC_BSC1_DI_NAME"] = "Название";
+$MESS["CC_BSC1_DI_IS_CASH"] = "ТипОплаты";
 $MESS["CP_BCI1_CHANGE_STATUS_FROM_1C"] = "Менять статусы заказов по информации из 1С";
 $MESS["CC_BSC1_1C_STATUS_ID"] = "Статуса заказа ИД";
 ?>

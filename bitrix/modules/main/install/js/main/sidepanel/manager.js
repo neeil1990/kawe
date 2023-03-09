@@ -6,22 +6,32 @@
  * @typedef {object} BX.SidePanel.Options
  * @property {function} [contentCallback]
  * @property {number} [width]
+ * @property {string} [title]
  * @property {boolean} [cacheable=true]
  * @property {boolean} [autoFocus=true]
  * @property {boolean} [printable=true]
  * @property {boolean} [allowChangeHistory=true]
+ * @property {boolean} [allowChangeTitle]
+ * @property {boolean} [hideControls=false]
  * @property {string} [requestMethod]
  * @property {object} [requestParams]
  * @property {string} [loader]
+ * @property {string} [contentClassName]
  * @property {object} [data]
  * @property {string} [typeLoader] - option for compatibility
  * @property {number} [animationDuration]
+ * @property {number} [customLeftBoundary]
+ * @property {number} [customRightBoundary]
+ * @property {number} [customTopBoundary]
+ * @property {object} [label]
+ * @property {boolean} [newWindowLabel]
+ * @property {boolean} [copyLinkLabel]
  * @property {?object.<string, function>} [events]
  */
 
 /**
  * @typedef {object} BX.SidePanel.Link
- * @property {string} href - URL
+ * @property {string} url - URL
  * @property {string} target - Target Attribute
  * @property {Element} anchor - Dom Node
  * @property {array} [matches] - RegExp Matches
@@ -56,9 +66,10 @@ Object.defineProperty(BX.SidePanel, "Instance", {
 	enumerable: false,
 	get: function() {
 
-		if (window.top !== window)
+		var topWindow = BX.PageObject.getRootWindow();
+		if (topWindow !== window)
 		{
-			return window.top.BX.SidePanel.Instance;
+			return topWindow.BX.SidePanel.Instance;
 		}
 
 		if (instance === null)
@@ -78,7 +89,7 @@ Object.defineProperty(BX.SidePanel, "Instance", {
 BX.SidePanel.Manager = function(options)
 {
 	this.anchorRules = [];
-	this.anchorHandler = null;
+	this.anchorBinding = true;
 
 	this.openSliders = [];
 	this.lastOpenSlider = null;
@@ -88,17 +99,25 @@ BX.SidePanel.Manager = function(options)
 	this.hacksApplied = false;
 
 	this.pageUrl = this.getCurrentUrl();
+	this.pageTitle = this.getCurrentTitle();
+	this.titleChanged = false;
 
+	this.fullScreenSlider = null;
+
+	this.handleAnchorClick = this.handleAnchorClick.bind(this);
 	this.handleDocumentKeyDown = this.handleDocumentKeyDown.bind(this);
 	this.handleWindowResize = BX.throttle(this.handleWindowResize, 300, this);
 	this.handleWindowScroll = this.handleWindowScroll.bind(this);
 	this.handleTouchMove = this.handleTouchMove.bind(this);
 
-	this.handleSliderOpen = this.handleSliderOpen.bind(this);
+	this.handleSliderOpenStart = this.handleSliderOpenStart.bind(this);
 	this.handleSliderOpenComplete = this.handleSliderOpenComplete.bind(this);
+	this.handleSliderCloseStart = this.handleSliderCloseStart.bind(this);
 	this.handleSliderCloseComplete = this.handleSliderCloseComplete.bind(this);
 	this.handleSliderLoad = this.handleSliderLoad.bind(this);
 	this.handleSliderDestroy = this.handleSliderDestroy.bind(this);
+	this.handleEscapePress = this.handleEscapePress.bind(this);
+	this.handleFullScreenChange = this.handleFullScreenChange.bind(this);
 
 	BX.addCustomEvent("SidePanel:open", this.open.bind(this));
 	BX.addCustomEvent("SidePanel:close", this.close.bind(this));
@@ -176,20 +195,44 @@ BX.SidePanel.Manager.prototype =
 		}
 		else
 		{
+			if (typeof(options) === "undefined")
+			{
+				var rule = this.getUrlRule(url);
+				options = rule && rule.options ? rule.options : options;
+			}
+
 			var sliderClass = BX.SidePanel.Manager.getSliderClass();
 			slider = new sliderClass(url, options);
 
-			var zIndex = topSlider ? topSlider.getZindex() + 1 : slider.getZindex();
-			var offset = topSlider ? Math.min(topSlider.getOffset() + this.getMinOffset(), this.getMaxOffset()) : 0;
+			var offset = null;
+			if (slider.getWidth() === null && slider.getCustomLeftBoundary() === null)
+			{
+				offset = 0;
+				var lastOffset = this.getLastOffset();
+				if (topSlider && lastOffset !== null)
+				{
+					offset = Math.min(lastOffset + this.getMinOffset(), this.getMaxOffset());
+				}
+			}
 
-			slider.setZindex(zIndex);
 			slider.setOffset(offset);
 
-			BX.addCustomEvent(slider, "SidePanel.Slider:onOpen", this.handleSliderOpen);
-			BX.addCustomEvent(slider, "SidePanel.Slider:onOpenComplete", this.handleSliderOpenComplete);
-			BX.addCustomEvent(slider, "SidePanel.Slider:onCloseComplete", this.handleSliderCloseComplete);
+			if (topSlider && topSlider.getCustomRightBoundary() !== null)
+			{
+				const rightBoundary = slider.calculateRightBoundary();
+				if (rightBoundary > topSlider.getCustomRightBoundary())
+				{
+					slider.setCustomRightBoundary(topSlider.getCustomRightBoundary());
+				}
+			}
+
+			BX.addCustomEvent(slider, "SidePanel.Slider:onOpenStart", this.handleSliderOpenStart);
+			BX.addCustomEvent(slider, "SidePanel.Slider:onBeforeOpenComplete", this.handleSliderOpenComplete);
+			BX.addCustomEvent(slider, "SidePanel.Slider:onCloseStart", this.handleSliderCloseStart);
+			BX.addCustomEvent(slider, "SidePanel.Slider:onBeforeCloseComplete", this.handleSliderCloseComplete);
 			BX.addCustomEvent(slider, "SidePanel.Slider:onLoad", this.handleSliderLoad);
 			BX.addCustomEvent(slider, "SidePanel.Slider:onDestroy", this.handleSliderDestroy);
+			BX.addCustomEvent(slider, "SidePanel.Slider:onEscapePress", this.handleEscapePress);
 		}
 
 		if (!this.isOpen())
@@ -341,12 +384,43 @@ BX.SidePanel.Manager.prototype =
 
 	/**
 	 * @public
+	 */
+	reload: function()
+	{
+		var topSlider = this.getTopSlider();
+		if (topSlider)
+		{
+			topSlider.reload();
+		}
+	},
+
+	/**
+	 * @public
 	 * @returns {BX.SidePanel.Slider|null}
 	 */
 	getTopSlider: function()
 	{
 		var count = this.openSliders.length;
 		return this.openSliders[count - 1] ? this.openSliders[count - 1] : null;
+	},
+
+	getPreviousSlider: function(currentSlider)
+	{
+		var previousSlider = null;
+		var openSliders = this.getOpenSliders();
+		currentSlider = currentSlider || this.getTopSlider();
+
+		for (var i = openSliders.length - 1; i >= 0; i--)
+		{
+			var slider = openSliders[i];
+			if (slider === currentSlider)
+			{
+				previousSlider = openSliders[i - 1] ? openSliders[i - 1] : null;
+				break;
+			}
+		}
+
+		return previousSlider;
 	},
 
 	/**
@@ -374,6 +448,7 @@ BX.SidePanel.Manager.prototype =
 	/**
 	 * @public
 	 * @param {Window} window
+	 * @return {BX.SidePanel.Slider|null}
 	 */
 	getSliderByWindow: function(window)
 	{
@@ -492,13 +567,37 @@ BX.SidePanel.Manager.prototype =
 	},
 
 	/**
+	 * @private
+	 * @return {?number}
+	 */
+	getLastOffset: function()
+	{
+		var openSliders = this.getOpenSliders();
+		for (var i = openSliders.length - 1; i >= 0; i--)
+		{
+			var slider = openSliders[i];
+			if (slider.getOffset() !== null)
+			{
+				return slider.getOffset();
+			}
+		}
+
+		return null;
+	},
+
+	/**
 	 * @public
 	 * @param {string} url
 	 * @returns {string}
 	 */
 	refineUrl: function(url)
 	{
-		return BX.util.remove_url_param(url, ["IFRAME", "IFRAME_TYPE"]);
+		if (BX.type.isNotEmptyString(url) && url.match(/IFRAME/))
+		{
+			return BX.util.remove_url_param(url, ["IFRAME", "IFRAME_TYPE"]);
+		}
+
+		return url;
 	},
 
 	/**
@@ -521,7 +620,136 @@ BX.SidePanel.Manager.prototype =
 
 	/**
 	 * @public
-	 * @param {string|window|BX.SidePanel.Slider} source
+	 * @returns {string}
+	 */
+	getPageTitle: function()
+	{
+		return this.pageTitle;
+	},
+
+	/**
+	 * @public
+	 * @returns {string}
+	 */
+	getCurrentTitle: function()
+	{
+		var title = document.title;
+		if (BX.IM)
+		{
+			title = title.replace(/^\([0-9]+\) /, ""); //replace a messenger counter.
+		}
+
+		return title;
+	},
+
+	enterFullScreen: function()
+	{
+		if (!this.getTopSlider() || this.getFullScreenSlider())
+		{
+			return;
+		}
+
+		var container = document.body;
+		if (container.requestFullscreen)
+		{
+			BX.bind(document, "fullscreenchange", this.handleFullScreenChange);
+			container.requestFullscreen();
+		}
+		else if (container.webkitRequestFullScreen)
+		{
+			BX.bind(document, "webkitfullscreenchange", this.handleFullScreenChange);
+			container.webkitRequestFullScreen();
+		}
+		else if (container.msRequestFullscreen)
+		{
+			BX.bind(document, "MSFullscreenChange", this.handleFullScreenChange);
+			container.msRequestFullscreen();
+		}
+		else if (container.mozRequestFullScreen)
+		{
+			BX.bind(document, "mozfullscreenchange", this.handleFullScreenChange);
+			container.mozRequestFullScreen();
+		}
+		else
+		{
+			console.log("Slider: Full Screen mode is not supported.");
+		}
+	},
+
+	exitFullScreen: function()
+	{
+		if (!this.getFullScreenSlider())
+		{
+			return;
+		}
+
+		if (document.exitFullscreen)
+		{
+			document.exitFullscreen();
+		}
+		else if (document.webkitExitFullscreen)
+		{
+			document.webkitExitFullscreen();
+		}
+		else if (document.msExitFullscreen)
+		{
+			document.msExitFullscreen();
+		}
+		else if (document.mozCancelFullScreen)
+		{
+			document.mozCancelFullScreen();
+		}
+	},
+
+	getFullScreenElement: function()
+	{
+		return (
+			document.fullscreenElement ||
+			document.webkitFullscreenElement ||
+			document.mozFullScreenElement ||
+			document.msFullscreenElement ||
+			null
+		);
+	},
+
+	getFullScreenSlider: function()
+	{
+		return this.fullScreenSlider;
+	},
+
+	handleFullScreenChange: function(event)
+	{
+		if (this.getFullScreenElement())
+		{
+			this.fullScreenSlider = this.getTopSlider();
+			BX.addClass(this.fullScreenSlider.getOverlay(), "side-panel-fullscreen");
+
+			this.fullScreenSlider.fireEvent("onFullScreenEnter");
+		}
+		else
+		{
+			if (this.getFullScreenSlider())
+			{
+				BX.removeClass(this.getFullScreenSlider().getOverlay(), "side-panel-fullscreen");
+				this.fullScreenSlider.fireEvent("onFullScreenExit");
+				this.fullScreenSlider = null;
+			}
+
+			BX.unbind(document, event.type, this.handleFullScreenChange);
+			window.scrollTo(0, this.pageScrollTop);
+
+			setTimeout(function() {
+				this.adjustLayout();
+				var event = document.createEvent("Event");
+				event.initEvent("resize", true, true);
+				window.dispatchEvent(event);
+			}.bind(this), 1000);
+		}
+	},
+
+	/**
+	 * @public
+	 * @param {string|Window|BX.SidePanel.Slider} source
 	 * @param {string} eventId
 	 * @param {object} data
 	 */
@@ -568,7 +796,7 @@ BX.SidePanel.Manager.prototype =
 
 	/**
 	 * @public
-	 * @param {string|window|BX.SidePanel.Slider} source
+	 * @param {string|Window|BX.SidePanel.Slider} source
 	 * @param {string} eventId
 	 * @param {object} data
 	 */
@@ -598,7 +826,7 @@ BX.SidePanel.Manager.prototype =
 			});
 
 			slider.firePageEvent(event);
-			slider.fireFrameEvent(event)
+			slider.fireFrameEvent(event);
 		}
 
 		event = new BX.SidePanel.MessageEvent({
@@ -613,7 +841,7 @@ BX.SidePanel.Manager.prototype =
 
 	/**
 	 * @public
-	 * @param {string|window|BX.SidePanel.Slider} source
+	 * @param {string|Window|BX.SidePanel.Slider} source
 	 * @param {string} eventId
 	 * @param {object} data
 	 */
@@ -634,7 +862,6 @@ BX.SidePanel.Manager.prototype =
 
 		BX.onCustomEvent(window, event.getFullName(), [event]);
 	},
-
 
 	/**
 	 * @private
@@ -662,42 +889,126 @@ BX.SidePanel.Manager.prototype =
 	{
 		parameters = parameters || {};
 
-		if (BX.type.isArray(parameters.rules))
+		if (BX.type.isArray(parameters.rules) && parameters.rules.length)
 		{
-			this.anchorRules = this.anchorRules.concat(parameters.rules);
-		}
+			if (this.anchorRules.length === 0)
+			{
+				window.document.addEventListener("click", this.handleAnchorClick, true);
+			}
 
-		if (!this.anchorHandler)
-		{
-			this.anchorHandler = this.handleAnchorClick.bind(this);
-			window.document.addEventListener("click", this.anchorHandler, true);
+			if (!(parameters.rules instanceof Object))
+			{
+				console.error(
+					"BX.SitePanel: anchor rules were created in a different context. " +
+					"This might be a reason for a memory leak."
+				);
+
+				console.trace();
+			}
+
+			parameters.rules.forEach((function(rule) {
+				if (BX.type.isArray(rule.condition))
+				{
+					for (var m = 0; m < rule.condition.length; m++)
+					{
+						if (BX.type.isString(rule.condition[m]))
+						{
+							rule.condition[m] = new RegExp(rule.condition[m], "i");
+						}
+					}
+				}
+
+				rule.options = BX.type.isPlainObject(rule.options) ? rule.options : {};
+				if (BX.type.isNotEmptyString(rule.loader) && !BX.type.isNotEmptyString(rule.options.loader))
+				{
+					rule.options.loader = rule.loader;
+					delete rule.loader;
+				}
+
+				this.anchorRules.push(rule);
+			}).bind(this));
 		}
+	},
+
+	/**
+	 * @public
+	 */
+	isAnchorBinding: function()
+	{
+		return this.anchorBinding;
+	},
+
+	/**
+	 * @public
+	 */
+	enableAnchorBinding: function()
+	{
+		this.anchorBinding = true;
+	},
+
+	/**
+	 * @public
+	 */
+	disableAnchorBinding: function()
+	{
+		this.anchorBinding = false;
 	},
 
 	/**
 	 * @private
 	 * @param {BX.SidePanel.Event} event
 	 */
-	handleSliderOpen: function(event)
+	handleSliderOpenStart: function(event)
 	{
 		if (!event.isActionAllowed())
 		{
 			return;
 		}
 
-		if (this.getTopSlider())
+		var slider = event.getSlider();
+		if (slider.isDestroyed())
 		{
-			this.getTopSlider().hideCloseBtn();
-			this.getTopSlider().hidePrintBtn();
+			return;
 		}
 
-		var slider = event.getSlider();
+		if (this.getTopSlider())
+		{
+			this.exitFullScreen();
+
+			this.getTopSlider().hideOverlay();
+
+			var sameWidth = (
+				this.getTopSlider().getOffset() === slider.getOffset() &&
+				this.getTopSlider().getWidth() === slider.getWidth() &&
+				this.getTopSlider().getCustomLeftBoundary() === slider.getCustomLeftBoundary()
+			);
+
+			if (!sameWidth)
+			{
+				this.getTopSlider().showShadow();
+			}
+
+			this.getTopSlider().hideOrDarkenCloseBtn();
+			this.getTopSlider().hidePrintBtn();
+			this.getTopSlider().hideExtraLabels();
+		}
+		else
+		{
+			slider.setOverlayAnimation(true);
+		}
+
 		this.addOpenSlider(slider);
+
+		this.getOpenSliders().forEach(function(slider, index, openSliders) {
+			slider.getLabel().moveAt(openSliders.length - index - 1); //move down
+		}, this);
+
 		this.losePageFocus();
 
 		if (!this.opened)
 		{
 			this.pageUrl = this.getCurrentUrl();
+			this.pageTitle = this.getCurrentTitle();
 		}
 
 		this.opened = true;
@@ -712,6 +1023,46 @@ BX.SidePanel.Manager.prototype =
 	handleSliderOpenComplete: function(event)
 	{
 		this.setBrowserHistory(event.getSlider());
+		this.updateBrowserTitle();
+	},
+
+	/**
+	 * @private
+	 * @param {BX.SidePanel.Event} event
+	 */
+	handleSliderCloseStart: function(event)
+	{
+		if (!event.isActionAllowed())
+		{
+			return;
+		}
+
+		if (event.getSlider() && event.getSlider().isDestroyed())
+		{
+			return;
+		}
+
+		var previousSlider = this.getPreviousSlider();
+		var topSlider = this.getTopSlider();
+
+		this.exitFullScreen();
+
+		this.getOpenSliders().forEach(function(slider, index, openSliders) {
+			slider.getLabel().moveAt(openSliders.length - index - 2); //move up
+		}, this);
+
+		if (previousSlider)
+		{
+			previousSlider.unhideOverlay();
+			previousSlider.hideShadow();
+			previousSlider.showOrLightenCloseBtn();
+
+			if (topSlider)
+			{
+				topSlider.hideOverlay();
+				topSlider.hideShadow();
+			}
+		}
 	},
 
 	/**
@@ -737,11 +1088,19 @@ BX.SidePanel.Manager.prototype =
 	{
 		var slider = event.getSlider();
 
-		BX.removeCustomEvent(slider, "SidePanel.Slider:onOpen", this.handleSliderOpen);
-		BX.removeCustomEvent(slider, "SidePanel.Slider:onOpenComplete", this.handleSliderOpenComplete);
-		BX.removeCustomEvent(slider, "SidePanel.Slider:onCloseComplete", this.handleSliderCloseComplete);
+		BX.removeCustomEvent(slider, "SidePanel.Slider:onOpenStart", this.handleSliderOpenStart);
+		BX.removeCustomEvent(slider, "SidePanel.Slider:onBeforeOpenComplete", this.handleSliderOpenComplete);
+		BX.removeCustomEvent(slider, "SidePanel.Slider:onCloseStart", this.handleSliderCloseStart);
+		BX.removeCustomEvent(slider, "SidePanel.Slider:onBeforeCloseComplete", this.handleSliderCloseComplete);
 		BX.removeCustomEvent(slider, "SidePanel.Slider:onLoad", this.handleSliderLoad);
 		BX.removeCustomEvent(slider, "SidePanel.Slider:onDestroy", this.handleSliderDestroy);
+		BX.removeCustomEvent(slider, "SidePanel.Slider:onEscapePress", this.handleEscapePress);
+
+		var frameWindow = event.getSlider().getFrameWindow();
+		if (frameWindow)
+		{
+			frameWindow.document.removeEventListener("click", this.handleAnchorClick, true);
+		}
 
 		if (slider === this.getLastOpenSlider())
 		{
@@ -749,6 +1108,17 @@ BX.SidePanel.Manager.prototype =
 		}
 
 		this.cleanUpClosedSlider(slider);
+	},
+
+	handleEscapePress: function(event)
+	{
+		if (this.isOnTop() && this.getTopSlider())
+		{
+			if (this.getTopSlider().canCloseByEsc())
+			{
+				this.getTopSlider().close();
+			}
+		}
 	},
 
 	/**
@@ -759,9 +1129,20 @@ BX.SidePanel.Manager.prototype =
 	{
 		this.removeOpenSlider(slider);
 
+		slider.unhideOverlay();
+		slider.hideShadow();
+
+		this.getOpenSliders().forEach(function(slider, index, openSliders) {
+			slider.getLabel().moveAt(openSliders.length - index - 1); //update position
+		}, this);
+
 		if (this.getTopSlider())
 		{
-			this.getTopSlider().showCloseBtn();
+			this.getTopSlider().showOrLightenCloseBtn();
+			this.getTopSlider().unhideOverlay();
+			this.getTopSlider().hideShadow();
+			this.getTopSlider().showExtraLabels();
+
 			if (this.getTopSlider().isPrintable())
 			{
 				this.getTopSlider().showPrintBtn();
@@ -780,6 +1161,7 @@ BX.SidePanel.Manager.prototype =
 		}
 
 		this.resetBrowserHistory();
+		this.updateBrowserTitle();
 	},
 
 	/**
@@ -791,15 +1173,16 @@ BX.SidePanel.Manager.prototype =
 		var frameWindow = event.getSlider().getFrameWindow();
 		if (frameWindow)
 		{
-			frameWindow.document.addEventListener("click", this.handleAnchorClick.bind(this), true);
+			frameWindow.document.addEventListener("click", this.handleAnchorClick, true);
 		}
 
 		this.setBrowserHistory(event.getSlider());
+		this.updateBrowserTitle();
 	},
 
 	/**
 	 * @private
-	 * @param {string|window|BX.SidePanel.Slider} source
+	 * @param {string|Window|BX.SidePanel.Slider} source
 	 * @param {object} data
 	 */
 	handlePostMessageCompatible: function(source, data)
@@ -809,7 +1192,7 @@ BX.SidePanel.Manager.prototype =
 
 	/**
 	 * @private
-	 * @param {string|window|BX.SidePanel.Slider} source
+	 * @param {string|Window|BX.SidePanel.Slider} source
 	 */
 	getSliderFromSource: function(source)
 	{
@@ -915,6 +1298,7 @@ BX.SidePanel.Manager.prototype =
 		var scrollWidth = window.innerWidth - document.documentElement.clientWidth;
 		document.body.style.paddingRight = scrollWidth + "px";
 		BX.addClass(document.body, "side-panel-disable-scrollbar");
+		this.pageScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 	},
 
 	/**
@@ -972,6 +1356,7 @@ BX.SidePanel.Manager.prototype =
 	 */
 	handleWindowScroll: function()
 	{
+		window.scrollTo(0, this.pageScrollTop);
 		this.adjustLayout();
 	},
 
@@ -1044,30 +1429,26 @@ BX.SidePanel.Manager.prototype =
 	 */
 	handleAnchorClick: function(event)
 	{
+		if (!this.isAnchorBinding())
+		{
+			return;
+		}
+
 		var link = this.extractLinkFromEvent(event);
+
 		if (!link || BX.data(link.anchor, "slider-ignore-autobinding"))
 		{
 			return;
 		}
 
+		if (BX.data(event.target, "slider-ignore-autobinding"))
+		{
+			return;
+		}
+
 		var rule = this.getUrlRule(link.url, link);
-		if (!rule)
-		{
-			return;
-		}
 
-		if (rule.allowCrossDomain !== true && BX.ajax.isCrossDomain(link.url))
-		{
-			return;
-		}
-
-		if (rule.mobileFriendly !== true && BX.browser.IsMobile())
-		{
-			return;
-		}
-
-		var isValidLink = BX.type.isFunction(rule.validate) ? rule.validate(link) : this.isValidLink(link);
-		if (!isValidLink)
+		if (!this.isValidLink(rule, link))
 		{
 			return;
 		}
@@ -1079,17 +1460,44 @@ BX.SidePanel.Manager.prototype =
 		else
 		{
 			event.preventDefault();
-
-			var options = BX.type.isPlainObject(rule.options) ? rule.options : {};
-			if (!BX.type.isNotEmptyString(options.loader) && BX.type.isNotEmptyString(rule.loader))
-			{
-				options.loader = rule.loader;
-			}
-
-			this.open(link.url, options);
+			this.open(link.url, rule.options);
 		}
 	},
+	/**
+	 * @public
+	 * @param {string} url
+	 */
+	emulateAnchorClick: function(url)
+	{
+		var link = {
+			url : url,
+			anchor : null,
+			target : null
+		};
+		var rule = this.getUrlRule(url, link);
 
+		if (!this.isValidLink(rule, link))
+		{
+			BX.reload(url);
+		}
+		else if (BX.type.isFunction(rule.handler))
+		{
+			rule.handler(
+				new Event(
+					"slider",
+					{
+						"bubbles" : false,
+						"cancelable" : true
+					}
+				),
+				link
+			);
+		}
+		else
+		{
+			this.open(link.url, rule.options);
+		}
+	},
 	/**
 	 * @private
 	 * @param {string} href
@@ -1114,11 +1522,6 @@ BX.SidePanel.Manager.prototype =
 
 			for (var m = 0; m < rule.condition.length; m++)
 			{
-				if (BX.type.isString(rule.condition[m]))
-				{
-					rule.condition[m] = new RegExp(rule.condition[m], "i");
-				}
-
 				var matches = href.match(rule.condition[m]);
 				if (matches && !this.hasStopParams(href, rule.stopParameters))
 				{
@@ -1134,16 +1537,35 @@ BX.SidePanel.Manager.prototype =
 
 		return null;
 	},
-
 	/**
 	 * @private
+	 * @param {BX.SidePanel.Rule} rule
 	 * @param {BX.SidePanel.Link} link
 	 * @returns {boolean}
 	 */
-	isValidLink: function(link)
+	isValidLink: function(rule, link)
 	{
+		if (!rule)
+		{
+			return false;
+		}
+
+		if (rule.allowCrossDomain !== true && BX.ajax.isCrossDomain(link.url))
+		{
+			return false;
+		}
+
+		if (rule.mobileFriendly !== true && BX.browser.IsMobile())
+		{
+			return false;
+		}
+
+		if (BX.type.isFunction(rule.validate) && !rule.validate(link))
+		{
+			return false;
+		}
+
 		return true;
-		// return link.target !== "_blank" && link.target !== "_top";
 	},
 
 	/**
@@ -1163,6 +1585,9 @@ BX.SidePanel.Manager.prototype =
 		}
 	},
 
+	/**
+	 * @private
+	 */
 	resetBrowserHistory: function()
 	{
 		var topSlider = null;
@@ -1182,6 +1607,54 @@ BX.SidePanel.Manager.prototype =
 		{
 			window.history.replaceState({}, "", url);
 		}
+	},
+
+	/**
+	 * @public
+	 */
+	updateBrowserTitle: function()
+	{
+		var title = null;
+		var openSliders = this.getOpenSliders();
+		for (var i = openSliders.length - 1; i >= 0; i--)
+		{
+			title = this.getBrowserTitle(openSliders[i]);
+			if (BX.type.isNotEmptyString(title))
+			{
+				break;
+			}
+		}
+
+		if (BX.type.isNotEmptyString(title))
+		{
+			document.title = title;
+			this.titleChanged = true;
+		}
+		else if (this.titleChanged)
+		{
+			document.title = this.getPageTitle();
+			this.titleChanged = false;
+		}
+	},
+
+	/**
+	 * @private
+	 * @param {BX.SidePanel.Slider} slider
+	 */
+	getBrowserTitle: function(slider)
+	{
+		if (!slider || !slider.canChangeTitle() || !slider.isOpen() || !slider.isLoaded())
+		{
+			return null;
+		}
+
+		var title = slider.getTitle();
+		if (!title && !slider.isSelfContained())
+		{
+			title = slider.getFrameWindow() ? slider.getFrameWindow().document.title : null;
+		}
+
+		return BX.type.isNotEmptyString(title) ? title : null;
 	},
 
 	/**

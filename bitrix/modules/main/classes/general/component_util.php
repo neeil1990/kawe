@@ -17,12 +17,21 @@ class CComponentUtil
 
 		if ($lang != "en" && $lang != "ru")
 		{
-			if (file_exists(($fname = $_SERVER["DOCUMENT_ROOT"].$filePath."/lang/".LangSubst($lang)."/".$fileName)))
-				__IncludeLang($fname);
+			$subst_lang = LangSubst($lang);
+			$fname = $_SERVER["DOCUMENT_ROOT"].$filePath."/lang/".$subst_lang."/".$fileName;
+			$fname = \Bitrix\Main\Localization\Translation::convertLangPath($fname, $subst_lang);
+			if (file_exists($fname))
+			{
+				__IncludeLang($fname, false, true);
+			}
 		}
 
-		if (file_exists(($fname = $_SERVER["DOCUMENT_ROOT"].$filePath."/lang/".$lang."/".$fileName)))
-			__IncludeLang($fname);
+		$fname = $_SERVER["DOCUMENT_ROOT"].$filePath."/lang/".$lang."/".$fileName;
+		$fname = \Bitrix\Main\Localization\Translation::convertLangPath($fname, $lang);
+		if (file_exists($fname))
+		{
+			__IncludeLang($fname, false, true);
+		}
 	}
 
 	public static function PrepareVariables(&$arData)
@@ -36,18 +45,18 @@ class CComponentUtil
 
 			foreach ($arData as $dataKey => $dataValue)
 			{
-				if (SubStr($dataKey, 0, strlen("SEF_URL_TEMPLATES_")) == "SEF_URL_TEMPLATES_")
+				if (mb_substr($dataKey, 0, mb_strlen("SEF_URL_TEMPLATES_")) == "SEF_URL_TEMPLATES_")
 				{
-					$arData["SEF_URL_TEMPLATES"][SubStr($dataKey, strlen("SEF_URL_TEMPLATES_"))] = $dataValue;
+					$arData["SEF_URL_TEMPLATES"][mb_substr($dataKey, mb_strlen("SEF_URL_TEMPLATES_"))] = $dataValue;
 					unset($arData[$dataKey]);
 
 					if (preg_match_all("'(\\?|&)(.+?)=#([^#]+?)#'is", $dataValue, $arMatches, PREG_SET_ORDER))
 					{
 						foreach ($arMatches as $arMatch)
-							$arData["VARIABLE_ALIASES"][SubStr($dataKey, strlen("SEF_URL_TEMPLATES_"))][$arMatch[3]] = $arMatch[2];
+							$arData["VARIABLE_ALIASES"][mb_substr($dataKey, mb_strlen("SEF_URL_TEMPLATES_"))][$arMatch[3]] = $arMatch[2];
 					}
 				}
-				elseif (SubStr($dataKey, 0, strlen("VARIABLE_ALIASES_")) == "VARIABLE_ALIASES_")
+				elseif (mb_substr($dataKey, 0, mb_strlen("VARIABLE_ALIASES_")) == "VARIABLE_ALIASES_")
 				{
 					unset($arData[$dataKey]);
 				}
@@ -60,13 +69,13 @@ class CComponentUtil
 
 			foreach ($arData as $dataKey => $dataValue)
 			{
-				if (SubStr($dataKey, 0, strlen("SEF_URL_TEMPLATES_")) == "SEF_URL_TEMPLATES_")
+				if (mb_substr($dataKey, 0, mb_strlen("SEF_URL_TEMPLATES_")) == "SEF_URL_TEMPLATES_")
 				{
 					unset($arData[$dataKey]);
 				}
-				elseif (SubStr($dataKey, 0, strlen("VARIABLE_ALIASES_")) == "VARIABLE_ALIASES_")
+				elseif (mb_substr($dataKey, 0, mb_strlen("VARIABLE_ALIASES_")) == "VARIABLE_ALIASES_")
 				{
-					$arData["VARIABLE_ALIASES"][SubStr($dataKey, strlen("VARIABLE_ALIASES_"))] = $dataValue;
+					$arData["VARIABLE_ALIASES"][mb_substr($dataKey, mb_strlen("VARIABLE_ALIASES_"))] = $dataValue;
 					unset($arData[$dataKey]);
 				}
 			}
@@ -75,7 +84,7 @@ class CComponentUtil
 
 	public static function __ShowError($errorMessage)
 	{
-		if (strlen($errorMessage) > 0)
+		if ($errorMessage <> '')
 			echo "<font color=\"#FF0000\">".$errorMessage."</font>";
 	}
 
@@ -92,13 +101,13 @@ class CComponentUtil
 			$arTree["#"][$arPath["ID"]] = array();
 			$arTree["#"][$arPath["ID"]]["@"] = array();
 			$arTree["#"][$arPath["ID"]]["@"]["NAME"] = "";
-			$arTree["#"][$arPath["ID"]]["@"]["SORT"] = IntVal($arPath["SORT"]);
+			$arTree["#"][$arPath["ID"]]["@"]["SORT"] = intval($arPath["SORT"]);
 			if ($level == 1 && in_array($arPath["ID"], $arBXTopComponentCatalogLevel))
 			{
-				$arTree["#"][$arPath["ID"]]["@"]["NAME"] = GetMessage("VRT_COMP_CAT_".StrToUpper($arPath["ID"]));
-				$arTree["#"][$arPath["ID"]]["@"]["SORT"] = IntVal($arBXTopComponentCatalogLevelSort[array_search($arPath["ID"], $arBXTopComponentCatalogLevel)]);
+				$arTree["#"][$arPath["ID"]]["@"]["NAME"] = GetMessage("VRT_COMP_CAT_".mb_strtoupper($arPath["ID"]));
+				$arTree["#"][$arPath["ID"]]["@"]["SORT"] = intval($arBXTopComponentCatalogLevelSort[array_search($arPath["ID"], $arBXTopComponentCatalogLevel)]);
 			}
-			if (strlen($arTree["#"][$arPath["ID"]]["@"]["NAME"]) <= 0)
+			if ($arTree["#"][$arPath["ID"]]["@"]["NAME"] == '')
 				$arTree["#"][$arPath["ID"]]["@"]["NAME"] = $arPath["NAME"];
 			if ($arTree["#"][$arPath["ID"]]["@"]["SORT"] <= 0)
 				$arTree["#"][$arPath["ID"]]["@"]["SORT"] = 100;
@@ -162,7 +171,7 @@ class CComponentUtil
 							if (CComponentUtil::isComponent($componentFolder."/".$file))
 							{
 								// It's component
-								if ($filterNamespace !== false && strlen($filterNamespace) > 0)
+								if ($filterNamespace !== false && $filterNamespace <> '')
 									continue;
 								if ($arNameFilter !== false && !CComponentUtil::CheckComponentName($file, $arNameFilter))
 									continue;
@@ -198,7 +207,7 @@ class CComponentUtil
 											$arComponent["COMPLEX"] = "Y";
 										else
 											$arComponent["COMPLEX"] = "N";
-										$arComponent["SORT"] = IntVal($arComponentDescription["SORT"]);
+										$arComponent["SORT"] = intval($arComponentDescription["SORT"]);
 										if ($arComponent["SORT"] <= 0)
 											$arComponent["SORT"] = 100;
 
@@ -219,7 +228,7 @@ class CComponentUtil
 							else
 							{
 								// It's not a component
-								if ($filterNamespace !== false && (strlen($filterNamespace) <= 0 || $filterNamespace != $file))
+								if ($filterNamespace !== false && ($filterNamespace == '' || $filterNamespace != $file))
 									continue;
 
 								if ($handle1 = opendir($_SERVER["DOCUMENT_ROOT"].$componentFolder."/".$file))
@@ -266,7 +275,7 @@ class CComponentUtil
 															$arComponent["COMPLEX"] = "Y";
 														else
 															$arComponent["COMPLEX"] = "N";
-														$arComponent["SORT"] = IntVal($arComponentDescription["SORT"]);
+														$arComponent["SORT"] = intval($arComponentDescription["SORT"]);
 														if ($arComponent["SORT"] <= 0)
 															$arComponent["SORT"] = 100;
 
@@ -301,9 +310,9 @@ class CComponentUtil
 
 	public static function __TreeFolderCompare($a, $b)
 	{
-		if ($a["@"]["SORT"] < $b["@"]["SORT"] || $a["@"]["SORT"] == $b["@"]["SORT"] && StrToLower($a["@"]["NAME"]) < StrToLower($b["@"]["NAME"]))
+		if ($a["@"]["SORT"] < $b["@"]["SORT"] || $a["@"]["SORT"] == $b["@"]["SORT"] && mb_strtolower($a["@"]["NAME"]) < mb_strtolower($b["@"]["NAME"]))
 			return -1;
-		elseif ($a["@"]["SORT"] > $b["@"]["SORT"] || $a["@"]["SORT"] == $b["@"]["SORT"] && StrToLower($a["@"]["NAME"]) > StrToLower($b["@"]["NAME"]))
+		elseif ($a["@"]["SORT"] > $b["@"]["SORT"] || $a["@"]["SORT"] == $b["@"]["SORT"] && mb_strtolower($a["@"]["NAME"]) > mb_strtolower($b["@"]["NAME"]))
 			return 1;
 		else
 			return 0;
@@ -313,9 +322,9 @@ class CComponentUtil
 	{
 		if ($a["COMPLEX"] == "Y" && $b["COMPLEX"] == "Y" || $a["COMPLEX"] != "Y" && $b["COMPLEX"] != "Y")
 		{
-			if ($a["SORT"] < $b["SORT"] || $a["SORT"] == $b["SORT"] && StrToLower($a["TITLE"]) < StrToLower($b["TITLE"]))
+			if ($a["SORT"] < $b["SORT"] || $a["SORT"] == $b["SORT"] && mb_strtolower($a["TITLE"]) < mb_strtolower($b["TITLE"]))
 				return -1;
-			elseif ($a["SORT"] > $b["SORT"] || $a["SORT"] == $b["SORT"] && StrToLower($a["TITLE"]) > StrToLower($b["TITLE"]))
+			elseif ($a["SORT"] > $b["SORT"] || $a["SORT"] == $b["SORT"] && mb_strtolower($a["TITLE"]) > mb_strtolower($b["TITLE"]))
 				return 1;
 			else
 				return 0;
@@ -392,7 +401,7 @@ class CComponentUtil
 
 		static $cache = array();
 
-		if(strLen($componentName) <= 0)
+		if($componentName == '')
 		{
 			$arComponentDescription = false;
 		}
@@ -402,7 +411,7 @@ class CComponentUtil
 				return $cache[$componentName];
 
 			$path2Comp = CComponentEngine::MakeComponentPath($componentName);
-			if(strLen($path2Comp) <= 0)
+			if($path2Comp == '')
 			{
 				$arComponentDescription = false;
 			}
@@ -449,11 +458,11 @@ class CComponentUtil
 	{
 		$arComponentParameters = array();
 		$componentName = trim($componentName);
-		if (strlen($componentName) <= 0)
+		if ($componentName == '')
 			return false;
 
 		$path2Comp = CComponentEngine::MakeComponentPath($componentName);
-		if (strlen($path2Comp) <= 0)
+		if ($path2Comp == '')
 			return false;
 
 		$componentPath = getLocalPath("components".$path2Comp);
@@ -490,7 +499,7 @@ class CComponentUtil
 		{
 			if (!IsSet($arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"]))
 				$arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"] = 1000+$i;
-			$arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"] = IntVal($arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"]);
+			$arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"] = intval($arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"]);
 			if ($arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"] <= 0)
 				$arComponentParameters["GROUPS"][$arParamKeys[$i]]["SORT"] = 1000+$i;
 		}
@@ -541,7 +550,7 @@ class CComponentUtil
 							"NAME" => GetMessage("COMP_PROP_CACHE_TIME"),
 							"TYPE" => "STRING",
 							"MULTIPLE" => "N",
-							"DEFAULT" => IntVal($arSavedParams["CACHE_TIME"]["DEFAULT"]),
+							"DEFAULT" => intval($arSavedParams["CACHE_TIME"]["DEFAULT"]),
 							"COLS" => 5
 						);
 						$arComponentParameters["PARAMETERS"]["CACHE_NOTES"] = array(
@@ -681,7 +690,7 @@ class CComponentUtil
 					);
 				}
 			}
-			elseif (IsSet($arComponentParameters["PARAMETERS"][$arParamKeys[$i]]["PARENT"]) && strlen($arComponentParameters["PARAMETERS"][$arParamKeys[$i]]["PARENT"]) > 0)
+			elseif (IsSet($arComponentParameters["PARAMETERS"][$arParamKeys[$i]]["PARENT"]) && $arComponentParameters["PARAMETERS"][$arParamKeys[$i]]["PARENT"] <> '')
 			{
 				if ($arComponentParameters["PARAMETERS"][$arParamKeys[$i]]["PARENT"] == "URL_TEMPLATES")
 				{
@@ -882,7 +891,7 @@ class CComponentUtil
 
 		if(
 			(CPageOption::GetOptionString("main","tips_creation","no")=="allowed")
-			&& (strpos($componentPath, "/forum")!==false)
+			&& (mb_strpos($componentPath, "/forum") !== false)
 		)
 		{
 			//Create directories
@@ -910,7 +919,7 @@ class CComponentUtil
 				fclose($handle);
 				$lang_file_modified = false;
 				//Bug fix
-				if(strpos($lang_contents, "\$MESS['")!==false)
+				if(mb_strpos($lang_contents, "\$MESS['") !== false)
 				{
 					$lang_contents = str_replace("\$MESS['", "\$MESS ['", $lang_contents);
 					$lang_file_modified = true;
@@ -918,7 +927,7 @@ class CComponentUtil
 				//Check out parameters
 				foreach($arComponentParameters["PARAMETERS"] as $strName=>$arParameter)
 				{
-					if(strpos($lang_contents, "\$MESS ['${strName}_TIP'] = ")===false)
+					if(mb_strpos($lang_contents, "\$MESS ['${strName}_TIP'] = ") === false)
 					{
 						$lang_contents = str_replace("?>", "\$MESS ['${strName}_TIP'] = \"".str_replace("\$", "\\\$", str_replace('"','\\"',$arParameter["NAME"]))."\";\n?>", $lang_contents);
 						$lang_file_modified = true;
@@ -952,17 +961,17 @@ class CComponentUtil
 		$arTemplateParameters = array();
 
 		$componentName = trim($componentName);
-		if (strlen($componentName) <= 0)
+		if ($componentName == '')
 			return $arTemplateParameters;
 
-		if (strlen($templateName) <= 0)
+		if ($templateName == '')
 			$templateName = ".default";
 
-		if(!preg_match("#[A-Za-z0-9_.-]#i", $templateName))
+		if(preg_match("#[^a-z0-9_.-]#i", $templateName))
 			return $arTemplateParameters;
 
 		$path2Comp = CComponentEngine::MakeComponentPath($componentName);
-		if (strlen($path2Comp) <= 0)
+		if ($path2Comp == '')
 			return $arTemplateParameters;
 
 		$componentPath = getLocalPath("components".$path2Comp);
@@ -1013,11 +1022,11 @@ class CComponentUtil
 		$arTemplatesList = array();
 
 		$componentName = trim($componentName);
-		if (strlen($componentName) <= 0)
+		if ($componentName == '')
 			return $arTemplatesList;
 
 		$path2Comp = CComponentEngine::MakeComponentPath($componentName);
-		if (strlen($path2Comp) <= 0)
+		if ($path2Comp == '')
 			return $arTemplatesList;
 
 		$componentPath = getLocalPath("components".$path2Comp);
@@ -1119,14 +1128,14 @@ class CComponentUtil
 		global $APPLICATION;
 
 		$componentName = trim($componentName);
-		if (strlen($componentName) <= 0)
+		if ($componentName == '')
 		{
 			$APPLICATION->ThrowException(GetMessage("comp_util_err1"), "EMPTY_COMPONENT_NAME");
 			return false;
 		}
 
 		$path2Comp = CComponentEngine::MakeComponentPath($componentName);
-		if (strlen($path2Comp) <= 0)
+		if ($path2Comp == '')
 		{
 			$APPLICATION->ThrowException(str_replace("#NAME#", $componentName, GetMessage("comp_util_err2")), "ERROR_NOT_COMPONENT");
 			return false;
@@ -1141,22 +1150,21 @@ class CComponentUtil
 		}
 
 		$newNamespace = trim($newNamespace);
-		if (strlen($newNamespace) > 0)
+		if ($newNamespace <> '')
 		{
-			$newNamespaceTmp = preg_replace("#[^A-Za-z0-9_.-]#i", "", $newNamespace);
-			if ($newNamespace != $newNamespaceTmp)
+			if (preg_match("#[^a-z0-9_.-]#i", $newNamespace))
 			{
 				$APPLICATION->ThrowException(str_replace("#NAME#", $newNamespace, GetMessage("comp_util_err3")), "ERROR_NEW_NAMESPACE");
 				return false;
 			}
 		}
 
-		if (strlen($newName) <= 0)
+		if ($newName == '')
 			$newName = false;
 
 		if ($newName !== false)
 		{
-			if (!preg_match("#^([A-Za-z0-9_-]+\\.)*([A-Za-z0-9_-]+)$#i", $newName))
+			if (!preg_match("#^([a-z0-9_-]+\\.)*([a-z0-9_-]+)$#i", $newName))
 			{
 				$APPLICATION->ThrowException(str_replace("#NAME#", $newName, GetMessage("comp_util_err4")), "ERROR_NEW_NAME");
 				return false;
@@ -1165,10 +1173,10 @@ class CComponentUtil
 
 		$namespace = "";
 		$name = $componentName;
-		if (($pos = strpos($componentName, ":")) !== false)
+		if (($pos = mb_strpos($componentName, ":")) !== false)
 		{
-			$namespace = substr($componentName, 0, $pos);
-			$name = substr($componentName, $pos + 1);
+			$namespace = mb_substr($componentName, 0, $pos);
+			$name = mb_substr($componentName, $pos + 1);
 		}
 
 		if ($namespace == $newNamespace
@@ -1184,7 +1192,7 @@ class CComponentUtil
 			$componentNameNew = $newNamespace.":".$name;
 
 		$path2CompNew = CComponentEngine::MakeComponentPath($componentNameNew);
-		if (strlen($path2CompNew) <= 0)
+		if ($path2CompNew == '')
 		{
 			$APPLICATION->ThrowException(str_replace("#NAME#", $componentNameNew, GetMessage("comp_util_err2")), "ERROR_NOT_COMPONENT");
 			return false;
@@ -1217,14 +1225,14 @@ class CComponentUtil
 		global $APPLICATION;
 
 		$componentName = trim($componentName);
-		if (strlen($componentName) <= 0)
+		if ($componentName == '')
 		{
 			$APPLICATION->ThrowException(GetMessage("comp_util_err1"), "EMPTY_COMPONENT_NAME");
 			return false;
 		}
 
 		$path2Comp = CComponentEngine::MakeComponentPath($componentName);
-		if (strlen($path2Comp) <= 0)
+		if ($path2Comp == '')
 		{
 			$APPLICATION->ThrowException(str_replace("#NAME#", $componentName, GetMessage("comp_util_err2")), "ERROR_NOT_COMPONENT");
 			return false;
@@ -1238,17 +1246,16 @@ class CComponentUtil
 			return false;
 		}
 
-		if (strlen($templateName) <= 0)
+		if ($templateName == '')
 			$templateName = ".default";
 
-		$templateNameTmp = preg_replace("#[^A-Za-z0-9_.-]#i", "", $templateName);
-		if ($templateNameTmp != $templateName)
+		if (preg_match("#[^a-z0-9_.-]#i", $templateName))
 		{
 			$APPLICATION->ThrowException(str_replace("#NAME#", $templateName, GetMessage("comp_util_err7")), "ERROR_BAD_TEMPLATE_NAME");
 			return false;
 		}
 
-		if (strlen($siteTemplate) <= 0)
+		if ($siteTemplate == '')
 			$siteTemplate = false;
 
 		if ($siteTemplate != false)
@@ -1272,7 +1279,7 @@ class CComponentUtil
 			return false;
 		}
 
-		if (strlen($newSiteTemplate) <= 0)
+		if ($newSiteTemplate == '')
 		{
 			$APPLICATION->ThrowException(GetMessage("comp_util_err10"), "ERROR_EMPTY_SITE_TEMPL");
 			return false;
@@ -1298,8 +1305,7 @@ class CComponentUtil
 		else
 			$templateNameNew = $templateName;
 
-		$templateNameNewTmp = preg_replace("#[^A-Za-z0-9_.-]#i", "", $templateNameNew);
-		if ($templateNameNewTmp != $templateNameNew)
+		if (preg_match("#[^a-z0-9_.-]#i", $templateNameNew))
 		{
 			$APPLICATION->ThrowException(str_replace("#NAME#", $templateNameNew, GetMessage("comp_util_err7")), "ERROR_BAD_TEMPLATE_NAME");
 			return false;
@@ -1434,40 +1440,29 @@ class CComponentUtil
 		return $DB->DateFormatToPHP(CSite::GetDateFormat("FULL"));
 	}
 
-	public static function GetDateTimeFormatted($timestamp, $dateTimeFormat = false, $offset = 0)
+	public static function GetDateTimeFormatted($timestamp, $dateTimeFormat = false, $offset = 0, $hideToday = false)
 	{
-		static $arFormatWOYear = array();
-		static $arFormatTime = array();
-		static $defaultDateTimeFormat = false;
-
-		if (
-			empty($dateTimeFormat)
-			|| $dateTimeFormat == "FULL"
-		)
+		if (is_array($timestamp))
 		{
-			if (!$defaultDateTimeFormat)
-			{
-				$defaultDateTimeFormat = $GLOBALS["DB"]->DateFormatToPHP(FORMAT_DATETIME);
-			}
-			$dateTimeFormat = $defaultDateTimeFormat;
+			$params = $timestamp;
+			$timestamp = (isset($params['TIMESTAMP']) ? $params['TIMESTAMP'] : false);
+			$offset = (isset($params['TZ_OFFSET']) ? intval($params['TZ_OFFSET']) : 0);
+			$hideToday = (isset($params['HIDE_TODAY']) ? $params['HIDE_TODAY'] : false);
 		}
-		$dateTimeFormat = preg_replace('/[\/.,\s:][s]/', '', $dateTimeFormat);
 
-		if (empty($arFormatWOYear[$dateTimeFormat]))
+		if (empty($timestamp))
 		{
-			$arFormatWOYear[$dateTimeFormat] = preg_replace('/[\/.,\s-][Yyo]/', '', $dateTimeFormat);
+			return '';
 		}
-		$dateTimeFormatWOYear = $arFormatWOYear[$dateTimeFormat];
 
-		if (empty($arFormatTime[$dateTimeFormat]))
-		{
-			$arFormatTime[$dateTimeFormat] = preg_replace(array('/[dDjlFmMnYyo]/', '/^[\/.,\s\-]+/', '/[\/.,\s\-]+$/'), '', $dateTimeFormat);
-		}
-		$timeFormat = $arFormatTime[$dateTimeFormat];
+		$culture = \Bitrix\Main\Context::getCurrent()->getCulture();
+		$timeFormat = $culture->getShortTimeFormat();
+		$dateTimeFormat = $culture->getLongDateFormat().' '.$timeFormat;
+		$dateTimeFormatWOYear = $culture->getDayMonthFormat().' '.$timeFormat;
 
-		$arFormat = Array(
+		$arFormat = array(
 			"tomorrow" => "tomorrow, ".$timeFormat,
-			"today" => "today, ".$timeFormat,
+			"today" => ($hideToday ? $timeFormat : "today, ".$timeFormat),
 			"yesterday" => "yesterday, ".$timeFormat,
 			"" => (
 				date("Y", $timestamp) == date("Y")
@@ -1476,11 +1471,6 @@ class CComponentUtil
 			)
 		);
 
-		return (
-			strcasecmp(LANGUAGE_ID, 'EN') !== 0
-			&& strcasecmp(LANGUAGE_ID, 'DE') !== 0
-				? ToLower(FormatDate($arFormat, $timestamp, (time() + $offset)))
-				: FormatDate($arFormat, $timestamp, (time() + $offset))
-		);
+		return FormatDate($arFormat, $timestamp, (time() + $offset));
 	}
 }

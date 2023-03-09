@@ -16,9 +16,7 @@ $oSort = new CAdminSorting($sTableID, "COUNT", "DESC");
 $lAdmin = new CAdminList($sTableID, $oSort);
 
 $ref = $ref_id = array();
-$v1 = "sort";
-$v2 = "asc";
-$rs = CSite::GetList($v1, $v2);
+$rs = CSite::GetList();
 while ($ar = $rs->Fetch())
 {
 	$ref[] = $ar["ID"];
@@ -53,7 +51,7 @@ else
 	$arFilter["ID"] = $find_id;
 
 $arFilter[">=TIMESTAMP_X"] = $find_date1;
-$arFilter["<=TIMESTAMP_X"] = $find_date2;
+$arFilter["<=TIMESTAMP_X"] = $find_date2 && search_isShortDate($find_date2)? ConvertTimeStamp(AddTime(MakeTimeStamp($find_date2), 1, "D"), "FULL"): $find_date2;
 $arFilter["=SITE_ID"] = $find_site_id;
 
 if($_REQUEST["find_phrase_exact_match"] == "Y")
@@ -74,7 +72,7 @@ else
 $arFilter["=URL_TO_404"] = $find_url_to_404;
 
 foreach($arFilter as $key => $value)
-	if(!strlen($value))
+	if($value == '')
 		unset($arFilter[$key]);
 $arFilter["!PHRASE"] = false;
 

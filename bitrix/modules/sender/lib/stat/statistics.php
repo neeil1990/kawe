@@ -9,14 +9,16 @@ namespace Bitrix\Sender\Stat;
 
 use Bitrix\Main\Context;
 use Bitrix\Main\Entity\ExpressionField;
+use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Type\Date;
 use Bitrix\Main\UserTable;
-use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Web\Uri;
+use Bitrix\Sender\Entity;
 use Bitrix\Sender\MailingChainTable;
-use Bitrix\Sender\PostingTable;
-use Bitrix\Sender\PostingClickTable;
-use Bitrix\Sender\PostingReadTable;
 use Bitrix\Sender\MailingSubscriptionTable;
+use Bitrix\Sender\Message;
+use Bitrix\Sender\PostingClickTable;
+use Bitrix\Sender\PostingTable;
 
 Loc::loadMessages(__FILE__);
 
@@ -169,12 +171,22 @@ class Statistics
 			$list = $this->filter->getNames();
 			foreach ($list as $name)
 			{
-				if (!isset($userOptionFilters[$name]) || !$userOptionFilters[$name])
+				if (
+					!isset($userOptionFilters[$name])
+					|| !$userOptionFilters[$name]
+					|| !$this->checkFilterValue($userOptionFilters[$name])
+				)
 				{
 					continue;
 				}
-				$this->filter->set($name, (string) $userOptionFilters[$name]);
-				$isFilterSet = true;
+				try
+				{
+					$this->filter->set($name, (string) $userOptionFilters[$name]);
+					$isFilterSet = true;
+				}
+				catch (\Exception $e)
+				{
+				}
 			}
 		}
 
@@ -184,6 +196,12 @@ class Statistics
 		}
 
 		return $this;
+	}
+
+	private function checkFilterValue($filter)
+	{
+		return $filter === null
+			|| is_scalar($filter);
 	}
 
 	protected function saveFilterToUserOption()
@@ -254,7 +272,7 @@ class Statistics
 	protected static function formatNumber($number, $num = 1)
 	{
 		$formatted = number_format($number, $num, '.', ' ');
-		$formatted = substr($formatted, -($num + 1)) == '.' . str_repeat('0', $num) ? substr($formatted, 0, -2) : $formatted;
+		$formatted = mb_substr($formatted, -($num + 1)) == '.'.str_repeat('0', $num)? mb_substr($formatted, 0, -2) : $formatted;
 		return $formatted;
 	}
 
@@ -275,8 +293,9 @@ class Statistics
 	protected function getMappedFilter()
 	{
 		$filter = array(
-			'!STATUS' => PostingTable::STATUS_NEW,
-			'=MAILING.IS_TRIGGER' => 'N'
+			'!=STATUS' => PostingTable::STATUS_NEW,
+			'=MAILING.IS_TRIGGER' => 'N',
+			'=MAILING_CHAIN.MESSAGE_CODE' => Message\iBase::CODE_MAIL
 		);
 
 		$fieldsMap = array(
@@ -414,21 +433,43 @@ class Statistics
 		));
 		while ($item = $listDb->fetch())
 		{
-			foreach ($item as $name => $value)
-			{
-				if (substr($name, 0, 4) == 'SEND')
-				{
-					$base = $item['SEND_ALL'];
-				}
-				else
-				{
-					$base = $item['SEND_SUCCESS'];
-				}
-				$list[] = self::getCounterCalculation($name, $value, $base);
-			}
+			$list = array_merge($list, $this->createListFromItem($item));
 		}
 
 		$this->counters = $list;
+		return $list;
+	}
+
+	public function initFromArray($postingData)
+	{
+		$item = [
+			'SEND_ALL' => (int)$postingData['COUNT_SEND_ALL'],
+			'SEND_ERROR' => (int)$postingData['COUNT_SEND_ERROR'],
+			'SEND_SUCCESS' => (int)$postingData['COUNT_SEND_SUCCESS'],
+			'READ' => (int)$postingData['COUNT_READ'],
+			'CLICK' => (int)$postingData['COUNT_CLICK'],
+			'UNSUB' => (int)$postingData['COUNT_UNSUB']
+		];
+		$this->counters = $this->createListFromItem($item);
+
+		return $this;
+	}
+
+	protected function createListFromItem($item)
+	{
+		$list = [];
+		foreach ($item as $name => $value)
+		{
+			if (mb_substr($name, 0, 4) == 'SEND')
+			{
+				$base = $item['SEND_ALL'];
+			}
+			else
+			{
+				$base = $item['SEND_SUCCESS'];
+			}
+			$list[] = self::getCounterCalculation($name, $value, $base);
+		}
 		return $list;
 	}
 
@@ -500,6 +541,44 @@ class Statistics
 			$list[] = $click;
 		}
 
+		// TODO: temporary block! Remove
+		if (!empty($list))
+		{
+			$letter = Entity\Letter::createInstanceByPostingId($this->filter->get('postingId'));
+			$linkParams = $letter->getMessage()->getConfiguration()->get('LINK_PARAMS');
+			if (!$linkParams)
+			{
+				return $list;
+			}
+
+			$parametersTmp = [];
+			parse_str($linkParams, $parametersTmp);
+			if (!is_array($parametersTmp) || empty($parametersTmp))
+			{
+				return $list;
+			}
+			$linkParams = array_keys($parametersTmp);
+
+			$groupedList = [];
+			foreach ($list as $index => $item)
+			{
+				$item['URL'] = (new Uri($item['URL']))
+					->deleteParams($linkParams, true)
+					->getUri();
+				$item['URL'] = urldecode($item['URL']);
+				if (!isset($groupedList[$item['URL']]))
+				{
+					$groupedList[$item['URL']] = 0;
+				}
+				$groupedList[$item['URL']] += $item['CNT'];
+			}
+			$list = [];
+			foreach ($groupedList as $url => $cnt)
+			{
+				$list[] = ['URL' => $url, 'CNT' => $cnt];
+			}
+		}
+
 		return $list;
 	}
 
@@ -518,7 +597,7 @@ class Statistics
 				'CNT' => 0,
 				'CNT_DISPLAY' => 0,
 				'DAY_HOUR' => $i,
-				'DAY_HOUR_DISPLAY' => (strlen($i) == 1 ? '0' : '') . $i . ':00',
+				'DAY_HOUR_DISPLAY' => (mb_strlen($i) == 1 ? '0' : '') . $i . ':00',
 			);
 		}
 
@@ -636,15 +715,18 @@ class Statistics
 		$filter = $this->getMappedFilter();
 		$listDb = PostingTable::getList(array(
 			'select' => array(
-				'DATE_SENT',
+				'MAX_DATE_SENT',
 				'CHAIN_ID' => 'MAILING_CHAIN_ID',
 				'TITLE' => 'MAILING_CHAIN.TITLE',
-				'SUBJECT' => 'MAILING_CHAIN.SUBJECT',
 				'MAILING_ID',
 				'MAILING_NAME' => 'MAILING.NAME',
 			),
 			'filter' => $filter,
-			'order' => array('DATE_SENT' => 'DESC'),
+			'runtime' => array(
+				new ExpressionField('MAX_DATE_SENT', 'MAX(%s)', 'DATE_SENT'),
+			),
+			//'group' => array('CHAIN_ID', 'TITLE', 'SUBJECT', 'MAILING_ID', 'MAILING_NAME'),
+			'order' => array('MAX_DATE_SENT' => 'DESC'),
 			'limit' => $limit,
 			'cache' => array('ttl' => $this->getCacheTtl(), 'cache_joins' => true)
 		));
@@ -652,9 +734,9 @@ class Statistics
 		while ($item = $listDb->fetch())
 		{
 			$dateSentFormatted = '';
-			if ($item['DATE_SENT'])
+			if ($item['MAX_DATE_SENT'])
 			{
-				$dateSentFormatted = \FormatDate('x', $item['DATE_SENT']->getTimestamp());
+				$dateSentFormatted = \FormatDate('x', $item['MAX_DATE_SENT']->getTimestamp());
 			}
 
 			$list[] = array(
@@ -662,7 +744,7 @@ class Statistics
 				'NAME' => $item['TITLE'] ? $item['TITLE'] : $item['SUBJECT'],
 				'MAILING_ID' => $item['MAILING_ID'],
 				'MAILING_NAME' => $item['MAILING_NAME'],
-				'DATE_SENT' => (string) $item['DATE_SENT'],
+				'DATE_SENT' => (string) $item['MAX_DATE_SENT'],
 				'DATE_SENT_FORMATTED' => $dateSentFormatted,
 			);
 		}
@@ -727,10 +809,12 @@ class Statistics
 	protected function getAuthorList()
 	{
 		$listDb = MailingChainTable::getList(array(
-			'select' => array('CREATED_BY'),
-			'group' => array('CREATED_BY'),
+			'select' => ['CREATED_BY', 'MAX_DATE_INSERT'],
+			'group' => ['CREATED_BY'],
+			'runtime' => [new ExpressionField('MAX_DATE_INSERT', 'MAX(%s)', 'DATE_INSERT'),],
 			'limit' => 100,
-			'cache' => array('ttl' => $this->getCacheTtl(), 'cache_joins' => true)
+			'order' => ['MAX_DATE_INSERT' => 'DESC'],
+			'cache' => ['ttl' => $this->getCacheTtl(), 'cache_joins' => true]
 		));
 		$userList = array();
 		while ($item = $listDb->fetch())

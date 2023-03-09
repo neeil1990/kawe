@@ -13,17 +13,16 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/vote/include.php");
 ClearVars();
 IncludeModuleLangFile(__FILE__);
 $err_mess = "File: ".__FILE__."<br>Line: ";
-define("HELP_FILE","vote_user_votes.php");
 
 /********************************************************************
 				Actions 
 ********************************************************************/
 $EVENT_ID = intval($EVENT_ID);
 
-if ($REQUEST_METHOD=="GET" && (strlen($save)>0 || $apply)&& $VOTE_RIGHT=="W" && $EVENT_ID>0 && check_bitrix_sessid())
+if ($REQUEST_METHOD=="GET" && ($save <> '' || $apply)&& $VOTE_RIGHT=="W" && $EVENT_ID>0 && check_bitrix_sessid())
 {
 	CVoteEvent::SetValid($EVENT_ID, $valid);
-	if (strlen($save)>0) 
+	if ($save <> '')
 		LocalRedirect("vote_user_votes.php?lang=".LANGUAGE_ID);
 }
 
@@ -92,7 +91,7 @@ $tabControl->BeginNextTab();
 		<td  ><?=GetMessage("VOTE_VOTE")?></b></font></td>
 		<td ><?
 		?>[<a class="tablebodylink" href="vote_edit.php?lang=<?=LANGUAGE_ID?>&ID=<?=$arVote["ID"]?>" class="tablebodytext"><?=$arVote["ID"]?></a>]&nbsp;<?
-		if (strlen($arVote["TITLE"])>0) echo $arVote["TITLE"];
+		if ($arVote["TITLE"] <> '') echo $arVote["TITLE"];
 		elseif ($arVote["DESCRIPTION_TYPE"]=="html")
 			echo TruncateText(strip_tags($arVote["~DESCRIPTION"]),200);
 		else
@@ -152,7 +151,7 @@ $tabControl->End();
 				Header 
 ********************************************************************/
 
-		if (strlen($arVote["TITLE"])>0):
+		if ($arVote["TITLE"] <> ''):
 		?><font class="h2"><b><?echo $arVote["TITLE"];?></b></font><br><img src="/bitrix/images/1.gif" width="1" height="6" border=0 alt=""><?
 		endif;
 		?><font class="smalltext"><?
@@ -193,13 +192,12 @@ $tabControl->End();
 		<p>
 		<table cellspacing="0" cellpadding="10" class="tablebody" width="100%">
 			<?
-			while (list($key,$arQuestion)=each($arQuestions)):
+			foreach ($arQuestions as $key => $arQuestion):
 				$QUESTION_ID = $arQuestion["ID"];
 
 				if (!array_key_exists($QUESTION_ID, $arAnswers))
 					continue;
 
-				reset($arAnswers[$QUESTION_ID]);
 				$show_multiselect = "N";
 				$show_dropdown = "N";
 			?>
@@ -211,7 +209,7 @@ $tabControl->End();
 							<td valign="center" width="100%"><font class="text"><b><?=$arQuestion["QUESTION"]?></b></font></td>
 						</tr>
 						<? 
-						while (list($key,$arAnswer)=each($arAnswers[$QUESTION_ID])) : 
+						foreach ($arAnswers[$QUESTION_ID] as $key => $arAnswer):
 						?>
 						<tr>
 							<td colspan=2><?
@@ -258,21 +256,21 @@ $tabControl->End();
 								case 4:
 									$field_name = "vote_field_".$arAnswer["ID"];
 									$value = CVoteEvent::GetAnswer($EVENT_ID,$arAnswer["ID"]);
-									?><?if (strlen(trim($arAnswer["MESSAGE"]))>0):?><font class="text"><?=$arAnswer["MESSAGE"]?></font><br><?endif?><input type="text" name="<?=$field_name?>" value="<?=htmlspecialcharsbx($value)?>" size="<?=$arAnswer["FIELD_WIDTH"]?>" <?=$arAnswer["FIELD_PARAM"]?>><?
+									?><?if (trim($arAnswer["MESSAGE"]) <> ''):?><font class="text"><?=$arAnswer["MESSAGE"]?></font><br><?endif?><input type="text" name="<?=$field_name?>" value="<?=htmlspecialcharsbx($value)?>" size="<?=$arAnswer["FIELD_WIDTH"]?>" <?=$arAnswer["FIELD_PARAM"]?>><?
 									break;
 								case 5:
 									$field_name = "vote_memo_".$arAnswer["ID"];
 									$text = CVoteEvent::GetAnswer($EVENT_ID,$arAnswer["ID"]);
-									?><font class="text"><?if (strlen(trim($arAnswer["MESSAGE"]))>0) echo $arAnswer["MESSAGE"]."<br>"?></font><textarea name="<?=$field_name?>" <?=$arAnswer["FIELD_PARAM"]?> cols="<?=$arAnswer["FIELD_WIDTH"]?>" rows="<?=$arAnswer["FIELD_HEIGHT"]?>"><?=htmlspecialcharsbx($text)?></textarea><?
+									?><font class="text"><?if (trim($arAnswer["MESSAGE"]) <> '') echo $arAnswer["MESSAGE"]."<br>"?></font><textarea name="<?=$field_name?>" <?=$arAnswer["FIELD_PARAM"]?> cols="<?=$arAnswer["FIELD_WIDTH"]?>" rows="<?=$arAnswer["FIELD_HEIGHT"]?>"><?=htmlspecialcharsbx($text)?></textarea><?
 									break;
 							endswitch;
 							?></td>
 						</tr>
-						<? endwhile; ?>
+						<? endforeach; ?>
 					</table>
 				</td>
 			</tr>
-			<?endwhile?>
+			<?endforeach;?>
 		</table></td>
 	</tr>
 </table>

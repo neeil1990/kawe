@@ -127,7 +127,7 @@ class OrderUserProperties
 
 		if ($userId <= 0)
 		{
-			$result->addError(new Error("EMPTY USER ID"));
+			return $result->addError(new Error("EMPTY USER ID"));
 		}
 		else
 		{
@@ -152,6 +152,10 @@ class OrderUserProperties
 					'DATE_UPDATE' => 'USER_PROPERTY.DATE_UPDATE',
 					'MULTIPLE' => 'PROPERTY.MULTIPLE',
 					'TYPE' => 'PROPERTY.TYPE',
+				),
+				'order' => array(
+					'USER_PROPERTY.DATE_UPDATE' => 'DESC',
+					'USER_PROPERTY.NAME' => 'ASC'
 				)
 			)
 		);
@@ -160,7 +164,7 @@ class OrderUserProperties
 		{
 			if (($propValue['MULTIPLE'] === 'Y' || $propValue['TYPE'] === 'FILE')
 				&& CheckSerializedData($propValue['VALUE'])
-				&& ($serialisedValue = @unserialize($propValue['VALUE'])) !== false)
+				&& ($serialisedValue = @unserialize($propValue['VALUE'], ['allowed_classes' => false])) !== false)
 			{
 				$propValue['VALUE'] = $serialisedValue;
 			}

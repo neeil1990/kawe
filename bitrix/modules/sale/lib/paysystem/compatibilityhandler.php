@@ -6,12 +6,16 @@ use Bitrix\Main\Application;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Request;
-use Bitrix\Main\Type\DateTime;
+use Bitrix\Main\Type;
 use Bitrix\Sale\Payment;
 use Bitrix\Main\IO;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class CompatibilityHandler
+ * @package Bitrix\Sale\PaySystem
+ */
 class CompatibilityHandler extends ServiceHandler implements ICheckable
 {
 	/**
@@ -61,7 +65,7 @@ class CompatibilityHandler extends ServiceHandler implements ICheckable
 			$content = $this->includeFile('payment.php');
 
 			$buffer = ob_get_contents();
-			if (strlen($buffer) > 0)
+			if ($buffer <> '')
 				$content = $buffer;
 
 			$result->setTemplate($content);
@@ -98,7 +102,7 @@ class CompatibilityHandler extends ServiceHandler implements ICheckable
 			$content = $this->includeFile('payment.php');
 
 			$buffer = ob_get_contents();
-			if (strlen($buffer) > 0)
+			if ($buffer <> '')
 				$content = $buffer;
 
 			$result->setTemplate($content);
@@ -312,10 +316,7 @@ class CompatibilityHandler extends ServiceHandler implements ICheckable
 		return false;
 	}
 
-	/**
-	 * @return array
-	 */
-	public function getDescription()
+	protected function includeDescription(): array
 	{
 		$data = array();
 
@@ -337,6 +338,11 @@ class CompatibilityHandler extends ServiceHandler implements ICheckable
 				if ($codes)
 					$data = array('NAME' => $psTitle, 'SORT' => 100, 'CODES' => $codes);
 			}
+		}
+
+		if (isset($data["CODES"]) && is_array($data["CODES"]))
+		{
+			$data["CODES"] = $this->filterDescriptionCodes($data["CODES"]);
 		}
 
 		return $data;
@@ -377,6 +383,21 @@ class CompatibilityHandler extends ServiceHandler implements ICheckable
 						'SORT' => $property['SORT'],
 					);
 				}
+				else if ($property['TYPE'] == 'CHECKBOX')
+				{
+					$arPSCorrespondence[$i] = array(
+						'NAME' => $property['NAME'],
+						'INPUT' => array(
+							'TYPE' => 'Y/N'
+						),
+						'SORT' => $property['SORT'],
+					);
+
+					if (isset($property['VALUE']))
+					{
+						$arPSCorrespondence[$i]['VALUE'] = $property['VALUE'];
+					}
+				}
 
 				if (array_key_exists('DESCR', $property))
 					$arPSCorrespondence[$i]['DESCRIPTION'] = $property['DESCR'];
@@ -399,7 +420,7 @@ class CompatibilityHandler extends ServiceHandler implements ICheckable
 		$data = array(
 			'ORDER' => array(
 				'ACCOUNT_NUMBER' => 'A1',
-				'DATE_INSERT' => new DateTime(),
+				'DATE_INSERT' => new Type\DateTime(),
 				'CURRENCY' => 'RUB',
 				'SHOULD_PAY' => 2000,
 				'PRICE' => 2000,

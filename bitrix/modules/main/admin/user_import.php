@@ -24,15 +24,12 @@ if(!$USER->CanDoOperation('edit_php'))
 $filename = $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/admin/sample.csv";
 if(isset($_REQUEST["getSample"]) && $_REQUEST["getSample"] == "csv" && is_file($filename))
 {
-	if(CModule::IncludeModule("compression"))
-		Ccompress::DisableCompression();
-
 	$file = @fopen($filename, "rb");
 	$contents = @fread($file, filesize($filename));
 	fclose($file);
 
 	header("Content-Type: application/octet-stream");
-	header("Content-Length: ".strlen($contents));
+	header("Content-Length: ".mb_strlen($contents));
 	header("Content-Disposition: attachment; filename=\"sample.csv\"");
 	header("Expires: 0");
 	header("Cache-Control: no-cache, must-revalidate");
@@ -74,10 +71,11 @@ $ldapServer = (isset($_REQUEST["ldapServer"]) ? intval($_REQUEST["ldapServer"]) 
 $attachIBlockID = (isset($_REQUEST["attachIBlockID"]) && intval($_REQUEST["attachIBlockID"]) > 0 ? intval($_REQUEST["attachIBlockID"]) : 0);
 
 $create1cUser = (isset($_REQUEST["create1cUser"]) && $_REQUEST["create1cUser"] == "Y" ? "Y" : "N");
-$newUserLogin = (isset($_REQUEST["newUserLogin"]) && strlen($_REQUEST["newUserLogin"]) > 0 ? $_REQUEST["newUserLogin"] : "");
-$newUserPass = (isset($_REQUEST["newUserPass"]) && strlen($_REQUEST["newUserPass"]) > 0 ? $_REQUEST["newUserPass"] : "");
-$newUserConfirmPass = (isset($_REQUEST["newUserConfirmPass"]) && strlen($_REQUEST["newUserConfirmPass"]) > 0 ? $_REQUEST["newUserConfirmPass"] : "");
-$newUserEmail = (isset($_REQUEST["newUserEmail"]) && strlen($_REQUEST["newUserEmail"]) > 0 ? $_REQUEST["newUserEmail"] : "");
+$newUserLogin = (isset($_REQUEST["newUserLogin"]) && $_REQUEST["newUserLogin"] <> '' ? $_REQUEST["newUserLogin"] : "");
+$newUserPass = (isset($_REQUEST["newUserPass"]) && $_REQUEST["newUserPass"] <> '' ? $_REQUEST["newUserPass"] : "");
+$newUserConfirmPass = (isset($_REQUEST["newUserConfirmPass"]) && $_REQUEST["newUserConfirmPass"] <> '' ? $_REQUEST["newUserConfirmPass"] : "");
+$newUserEmail = (isset($_REQUEST["newUserEmail"]) && $_REQUEST["newUserEmail"] <> '' ? $_REQUEST["newUserEmail"] : "");
+$newUserGroups = isset($_REQUEST['newUserGroups']) && is_array($_REQUEST['newUserGroups']) ? $_REQUEST['newUserGroups'] : array();
 
 //Step
 $tabStep = (isset($_REQUEST["tabStep"]) && intval($_REQUEST["tabStep"]) > 1 ? intval($_REQUEST["tabStep"]) : 1);
@@ -103,13 +101,13 @@ function _OnUserAdd(&$arFields, &$userID)
 	$arFields["ID"] = $arFields["USER_ID"] = $userID;
 	$arFields["URL_LOGIN"] = urlencode($arFields["LOGIN"]);
 
-	if (isset($arFields["EXTERNAL_AUTH_ID"]) && strlen($arFields["EXTERNAL_AUTH_ID"]) > 0 && strlen($GLOBALS["eventLdapLangID"]) > 0)
+	if (isset($arFields["EXTERNAL_AUTH_ID"]) && $arFields["EXTERNAL_AUTH_ID"] <> '' && $GLOBALS["eventLdapLangID"] <> '')
 	{
 		$arFields["BACK_URL"] = "/";
 		$event = new CEvent;
 		$event->Send("LDAP_USER_CONFIRM", $GLOBALS["eventLdapLangID"], $arFields);
 	}
-	elseif ($GLOBALS["sendEmail"] == "Y" && $arFields["EMAIL"] <> '' && $arFields["EMAIL"] <> $GLOBALS["defaultUserEmail"] && strlen($GLOBALS["eventLangID"]) > 0)
+	elseif ($GLOBALS["sendEmail"] == "Y" && $arFields["EMAIL"] <> '' && $arFields["EMAIL"] <> $GLOBALS["defaultUserEmail"] && $GLOBALS["eventLangID"] <> '')
 	{
 		$event = new CEvent;
 		$event->Send("USER_INVITE", $GLOBALS["eventLangID"], $arFields);
@@ -205,48 +203,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $tabStep > 2 && check_bitrix_sessid(
 			"CONFIRM_PASSWORD" => $newUserConfirmPass,
 		);
 
-		$userID = $user->Add($arFields);
-		if (intval($userID) > 1)
+		$arGroups = array();
+
+		if (!empty($newUserGroups))
 		{
-			$arGroups = explode(",",COption::GetOptionString("intranet", "1C_USER_IMPORT_GROUP_PERMISSIONS", ""));
-			foreach ($arGroups as $index => $groupID)
-			{
-				$dbGroup = CGroup::GetByID($groupID);
-				$arGroup = $dbGroup->Fetch();
-				if (!$arGroup || $arGroup["ID"] == 1)
-					unset($arGroups[$index]);
-			}
+			$arGroups = array_column(
+				\Bitrix\Main\GroupTable::getList(array(
+					'select' => array('ID'),
+					'filter' => array('@ID' => $newUserGroups),
+				))->fetchAll(),
+				'ID'
+			);
+		}
 
-			if (empty($arGroups))
-			{
-				$dbGroup = CGroup::GetList($by="c_sort", $order="desc", array("STRING_ID" => "1C_USER_IMPORT_GROUP"));
-				if ($arExistGroup = $dbGroup->Fetch())
-				{
-					$groupID = $arExistGroup["ID"];
-				}
-				else
-				{
-					$group = new CGroup;
-					$arFields = array(
-						"ACTIVE" => "Y",
-						"NAME" => GetMessage("USER_IMPORT_GROUP_PERM_NAME"),
-						"STRING_ID" => "1C_USER_IMPORT_GROUP",
-					);
-
-					$groupID = $group->Add($arFields);
-				}
-
-				if ($groupID > 0)
-				{
-					$arGroups = array($groupID);
-					COption::SetOptionString("intranet", "1C_USER_IMPORT_GROUP_PERMISSIONS", $groupID);
-				}
-			}
-
-			CUser::SetUserGroup($userID, $arGroups);
+		if (empty($arGroups))
+		{
+			$strError = getMessage('USER_IMPORT_1C_USER_GROUP_EMPTY');
 		}
 		else
-			$strError = $user->LAST_ERROR;
+		{
+			$userID = $user->add($arFields);
+			if (intval($userID) > 1)
+			{
+				\CUser::setUserGroup($userID, $arGroups);
+			}
+			else
+			{
+				$strError = $user->LAST_ERROR;
+			}
+		}
 	}
 
 	if ($strError !== false)
@@ -403,7 +388,7 @@ endif;
 		<td>
 			<select name="userGroups[]" style="width:300px" size="7" multiple="multiple">
 			<?
-			$dbGroup = CGroup::GetList($by="name", $order="asc", array());
+			$dbGroup = CGroup::GetList("name", "asc");
 			while ($arGroup = $dbGroup->GetNext()):?>
 				<option value="<?=$arGroup["ID"]?>"<?if (in_array($arGroup["ID"], $userGroups)):?> selected<?endif?>><?=$arGroup["NAME"]?></option>
 			<?endwhile?>
@@ -476,7 +461,7 @@ if(CModule::IncludeModule("iblock")):
 			<label for="eventLdapLangID" id="eventLdapLangLabel"><?=GetMessage("USER_IMPORT_EMAIL_TEMPLATE1")?>:</label>
 			<select id="eventLdapLangID" name="eventLdapLangID" style="width:300px;" <?if ($ldapServer < 1):?>disabled="disabled"<?endif?>>
 			<?
-			$dbSites = CSite::GetList($by="name", $order="asc", array());
+			$dbSites = CSite::GetList("name", "asc");
 			while ($arSite = $dbSites->Fetch()):
 			?>
 					<option value="<?=htmlspecialcharsbx($arSite["LID"])?>" <?if ($eventLdapLangID == $arSite["LID"]):?> selected<?endif?>><?=htmlspecialcharsbx($arSite["NAME"])?> (<?=htmlspecialcharsbx($arSite["LID"])?>)</option>
@@ -496,7 +481,7 @@ if(CModule::IncludeModule("iblock")):
 			<label for="event-lang" id="eventLangLabel"><?=GetMessage("USER_IMPORT_EMAIL_TEMPLATE1")?>:</label>
 			<select id="event-lang" name="eventLangID" style="width:300px;">
 			<?
-			$dbSites = CSite::GetList($by="name", $order="asc", array());
+			$dbSites = CSite::GetList("name", "asc");
 			while ($arSite = $dbSites->Fetch()):
 			?>
 					<option value="<?=htmlspecialcharsbx($arSite["LID"])?>" <?if ($eventLangID == $arSite["LID"]):?> selected<?endif?>><?=htmlspecialcharsbx($arSite["NAME"])?> (<?=htmlspecialcharsbx($arSite["LID"])?>)</option>
@@ -652,7 +637,7 @@ if(CModule::IncludeModule("iblock")):
 <?elseif ($tabStep == 2 && $dataSource == "1c"):?>
 	<tr>
 		<td></td>
-		<td><input type="checkbox" name="create1cUser" id="create-1c-user" value="Y"<?if($create1cUser == "Y"):?> checked<?endif?> onclick="EnableNewUserFields(this.checked)" /><label for="create-1c-user"><?=GetMessage("USER_IMPORT_CREATE_1C_USER")?></label>
+		<td><input type="checkbox" name="create1cUser" id="create-1c-user" value="Y"<?if($create1cUser == "Y"):?> checked<?endif?> onclick="EnableNewUserFields(this.checked)" /> <label for="create-1c-user"><?=GetMessage("USER_IMPORT_CREATE_1C_USER")?></label>
 		</td>
 	</tr>
 	<tr class="adm-detail-required-field">
@@ -672,7 +657,17 @@ if(CModule::IncludeModule("iblock")):
 		<td><label disabled="true" id="newUserEmailLabel"><?=GetMessage("USER_IMPORT_1C_USER_EMAIL")?>:</label></td>
 		<td><input name="newUserEmail" size="30" maxlength="50" value="<?=htmlspecialcharsEx($newUserEmail)?>" type="text"></td>
 	</tr>
-
+	<tr class="adm-detail-required-field">
+		<td class="adm-detail-valign-top"><label disabled="true" id="newUserGroupsLabel"><?=getMessage('USER_IMPORT_1C_USER_GROUP') ?>:</label></td>
+		<td>
+			<select name="newUserGroups[]" style="width: 300px; " size="7" multiple="multiple">
+				<? $groupRes = \CGroup::getList('name', 'asc'); ?>
+				<? while ($item = $groupRes->fetch()): ?>
+					<option value="<?=intval($item['ID']) ?>"><?=htmlspecialcharsbx($item['NAME']) ?></option>
+				<? endwhile ?>
+			</select>
+		</td>
+	</tr>
 <?endif;
 $tabControl->EndTab();
 $tabControl->BeginNextTab();
@@ -818,11 +813,12 @@ function EnableNewUserFields(enabled)
 	form.elements["newUserPass"].disabled = !enabled;
 	form.elements["newUserConfirmPass"].disabled = !enabled;
 	form.elements["newUserEmail"].disabled = !enabled;
+	form.elements["newUserGroups[]"].disabled = !enabled;
 
 	var newUserLoginLabel = document.getElementById("newUserLoginLabel");
 	var newUserPassLabel = document.getElementById("newUserPassLabel");
 	var newUserConfirmPassLabel = document.getElementById("newUserConfirmPassLabel");
-	var newUserEmailLabel = document.getElementById("newUserEmailLabel");
+	var newUserGroupsLabel = document.getElementById("newUserGroupsLabel");
 
 	if (enabled)
 	{
@@ -830,7 +826,8 @@ function EnableNewUserFields(enabled)
 		newUserPassLabel.setAttribute("disabled", "false");
 		newUserConfirmPassLabel.setAttribute("disabled", "false");
 		newUserEmailLabel.setAttribute("disabled", "false");
-		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = false;
+		newUserGroupsLabel.setAttribute("disabled", "false");
+		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = newUserGroupsLabel.disabled = false;
 	}
 	else
 	{
@@ -838,7 +835,8 @@ function EnableNewUserFields(enabled)
 		newUserPassLabel.setAttribute("disabled", "true");
 		newUserConfirmPassLabel.setAttribute("disabled", "true");
 		newUserEmailLabel.setAttribute("disabled", "true");
-		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = true;
+		newUserGroupsLabel.setAttribute("disabled", "true");
+		newUserLoginLabel.disabled = newUserPassLabel.disabled = newUserConfirmPassLabel.disabled = newUserEmailLabel.disabled = newUserGroupsLabel.disabled = true;
 	}
 }
 

@@ -1,4 +1,5 @@
-<?if(!defined("B_PROLOG_INCLUDED")||B_PROLOG_INCLUDED!==true)die();
+<?php
+if(!defined("B_PROLOG_INCLUDED")||B_PROLOG_INCLUDED!==true)die();
 /**
  * @var array $arParams
  * @var array $arResult
@@ -38,7 +39,7 @@ if ($arParams["ALLOW_UPLOAD"] == "N" && empty($arResult['FILES']))
 	return "";
 $cnt = count($arResult['FILES']);
 $id = CUtil::JSEscape($arParams['CONTROL_ID']);
-if ($arParams['MULTIPLE'] == 'Y' && substr($arParams['INPUT_NAME'], -2) !== "[]")
+if ($arParams['MULTIPLE'] == 'Y' && mb_substr($arParams['INPUT_NAME'], -2) !== "[]")
 	$arParams['INPUT_NAME'] .= "[]";
 $thumbForUploaded = <<<HTML
 <div class="webform-field-item-wrap"><span class="webform-field-upload-icon webform-field-upload-icon-#ext#"><img src="#preview_url#" onerror="BX.remove(this);" /></span>
@@ -57,7 +58,7 @@ HTML;
 		{
 			$ext = GetFileExtension($file['ORIGINAL_NAME']);
 			$isImage = CFile::IsImage($file["ORIGINAL_NAME"], $file["CONTENT_TYPE"]);
-			$t = ($isImage ? CFile::ResizeImageGet($file, array( "width" => 100, "height" => 100 ), BX_RESIZE_IMAGE_EXACT, false) : array("src" => "/bitrix/images/1.gif"));
+			$t = ($isImage ? CFile::ResizeImageGet($file, array( "width" => 100, "height" => 100 ), BX_RESIZE_IMAGE_EXACT, false, false, true) : array("src" => "/bitrix/images/1.gif"));
 			?><li class="saved"><?=str_replace(
 				array("#input_name#", "#file_id#", "#name#", "#size#", "#url#", "#url_delete#", "#preview_url#", "#ext#"),
 				array($arParams['INPUT_NAME'],

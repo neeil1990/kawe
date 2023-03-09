@@ -1,5 +1,8 @@
 <?php
-use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Loader,
+	Bitrix\Main\Localization\Loc,
+	Bitrix\Sale\PaySystem;
+
 
 Loc::loadMessages(__FILE__);
 
@@ -15,9 +18,27 @@ if (IsModuleInstalled('bitrix24'))
 	$description['REFERRER'] = Loc::getMessage('SALE_HPS_YANDEX_REFERRER');
 }
 
+$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_TRUE;
+
+$portalZone = Loader::includeModule('intranet') ? CIntranetUtils::getPortalZone() : "";
+$licensePrefix = Loader::includeModule('bitrix24') ? \CBitrix24::getLicensePrefix() : "";
+
+if (Loader::includeModule('bitrix24'))
+{
+	if ($licensePrefix !== 'ru')
+	{
+		$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+	}
+}
+elseif (Loader::includeModule('intranet') && $portalZone !== 'ru')
+{
+	$isAvailable = PaySystem\Manager::HANDLER_AVAILABLE_FALSE;
+}
+
 $data = array(
 	'NAME' => Loc::getMessage('SALE_HPS_YANDEX'),
 	'SORT' => 500,
+	'IS_AVAILABLE' => $isAvailable,
 	'CODES' => array(
 		"YANDEX_SHOP_ID" => array(
 			"NAME" => Loc::getMessage("SALE_HPS_YANDEX_SHOP_ID"),
@@ -71,6 +92,10 @@ $data = array(
 			"INPUT" => array(
 				'TYPE' => 'Y/N'
 			),
+			'DEFAULT' => array(
+				"PROVIDER_KEY" => "INPUT",
+				"PROVIDER_VALUE" => "Y",
+			)
 		),
 		"PS_IS_TEST" => array(
 			"NAME" => Loc::getMessage("SALE_HPS_YANDEX_IS_TEST"),

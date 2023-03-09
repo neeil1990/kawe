@@ -1,6 +1,9 @@
 <?
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
+use Bitrix\Main\Loader;
+use Bitrix\Sender\Recipient;
+
 /** @global CMain $APPLICATION */
 /** @global CUser $USER */
 
@@ -15,9 +18,9 @@ if(!isset($arParams["CACHE_TIME"]))
 if($arParams["CACHE_TYPE"] == "N" || ($arParams["CACHE_TYPE"] == "A" && COption::GetOptionString("main", "component_cache_on", "Y") == "N"))
 	$arParams["CACHE_TIME"] = 0;
 
-$arParams["SHOW_HIDDEN"] = $arParams["SHOW_HIDDEN"]=="Y";
-$arParams["CONFIRMATION"] = $arParams["CONFIRMATION"]!="N";
-$arParams["USE_PERSONALIZATION"] = $arParams["USE_PERSONALIZATION"]!="N";
+$arParams["SHOW_HIDDEN"] = ($arParams["SHOW_HIDDEN"] ?? '') == "Y";
+$arParams["CONFIRMATION"] = ($arParams["CONFIRMATION"] ?? '') != "N";
+$arParams["USE_PERSONALIZATION"] = ($arParams["USE_PERSONALIZATION"] ?? '') != "N";
 
 $subscr_EMAIL = '';
 $arResult["~FORM_ACTION"] = $APPLICATION->GetCurPageParam('', array('sender_subscription'));
@@ -42,7 +45,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET')
 
 	if(isset($_GET['tag']) && isset($_GET['sender_subscription']) && $_GET['sender_subscription']=='confirm')
 	{
-		if(!CModule::IncludeModule("sender"))
+		if(!Loader::includeModule("sender"))
 		{
 			$obCache->AbortDataCache();
 			ShowError(GetMessage("SENDER_SUBSCR_MODULE_NOT_INSTALLED"));
@@ -78,7 +81,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && check_bitrix_sessid() && isset($_POST
 {
 	if(check_email($_POST["SENDER_SUBSCRIBE_EMAIL"], true))
 	{
-		if(!CModule::IncludeModule("sender"))
+		if(!Loader::includeModule("sender"))
 		{
 			$obCache->AbortDataCache();
 			ShowError(GetMessage("SENDER_SUBSCR_MODULE_NOT_INSTALLED"));
@@ -108,7 +111,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && check_bitrix_sessid() && isset($_POST
 				$arExistedSubscription = array();
 				$subscriptionDb = \Bitrix\Sender\MailingSubscriptionTable::getSubscriptionList(array(
 					'select' => array('EXISTED_MAILING_ID' => 'MAILING.ID'),
-					'filter' => array('=CONTACT.EMAIL' => strtolower($_POST["SENDER_SUBSCRIBE_EMAIL"]), '!MAILING.ID' => null),
+					'filter' => array(
+						'=CONTACT.TYPE_ID' => Recipient\Type::EMAIL,
+						'=CONTACT.CODE' => mb_strtolower($_POST["SENDER_SUBSCRIBE_EMAIL"]),
+						'!MAILING.ID' => null
+					),
 				));
 				while(($subscription = $subscriptionDb->fetch()))
 				{
@@ -122,7 +129,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && check_bitrix_sessid() && isset($_POST
 			else
 			{
 				// do not send if no selected mailings and subscriber existed
-				$contactDb = \Bitrix\Sender\ContactTable::getList(array('filter' => array('=EMAIL' => strtolower($_POST["SENDER_SUBSCRIBE_EMAIL"]))));
+				$contactDb = \Bitrix\Sender\ContactTable::getList(array('filter' => array(
+					'=TYPE_ID' => Recipient\Type::EMAIL,
+					'=CODE' => mb_strtolower($_POST["SENDER_SUBSCRIBE_EMAIL"]),
+				)));
 				if($contact = $contactDb->fetch())
 					$sendEmailToSubscriber = false;
 			}
@@ -144,7 +154,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && check_bitrix_sessid() && isset($_POST
 		}
 		else
 		{
-			\Bitrix\Sender\Subscription::add($_POST["SENDER_SUBSCRIBE_EMAIL"], $mailingIdList, SITE_ID);
+			\Bitrix\Sender\Subscription::add($_POST["SENDER_SUBSCRIBE_EMAIL"], $mailingIdList);
 			$APPLICATION->set_cookie("SENDER_SUBSCR_EMAIL", $_POST["SENDER_SUBSCRIBE_EMAIL"], $cookieLifeTime);
 			$arResult['MESSAGE'] = array('TYPE' => 'NOTE', 'CODE' => 'message_success');
 			$subscr_EMAIL = $_POST["SENDER_SUBSCRIBE_EMAIL"];
@@ -186,7 +196,7 @@ if($arParams["USE_PERSONALIZATION"])
 	{
 		$subscr_EMAIL = $APPLICATION->get_cookie('SENDER_SUBSCR_EMAIL');
 	}
-	$subscr_EMAIL = strtolower(strlen($subscr_EMAIL) > 0? $subscr_EMAIL : $USER->GetParam("EMAIL"));
+	$subscr_EMAIL = mb_strtolower($subscr_EMAIL <> ''? $subscr_EMAIL : $USER->GetParam("EMAIL"));
 
 	if(isset($_SESSION['SENDER_SUBSCRIBE_LIST']) && is_array($_SESSION['SENDER_SUBSCRIBE_LIST']))
 	{
@@ -195,7 +205,7 @@ if($arParams["USE_PERSONALIZATION"])
 	}
 	else
 	{
-		if(!CModule::IncludeModule("sender"))
+		if(!Loader::includeModule("sender"))
 		{
 			$obCache->AbortDataCache();
 			ShowError(GetMessage("SENDER_SUBSCR_MODULE_NOT_INSTALLED"));
@@ -205,8 +215,12 @@ if($arParams["USE_PERSONALIZATION"])
 		if($subscr_EMAIL <> "")
 		{
 			$subscriptionDb = \Bitrix\Sender\MailingSubscriptionTable::getSubscriptionList(array(
-				'select' => array('ID' => 'CONTACT_ID', 'EMAIL' => 'CONTACT.EMAIL', 'EXISTED_MAILING_ID' => 'MAILING.ID'),
-				'filter' => array('=CONTACT.EMAIL' => $subscr_EMAIL, '!MAILING.ID' => null),
+				'select' => array('ID' => 'CONTACT_ID', 'EMAIL' => 'CONTACT.CODE', 'EXISTED_MAILING_ID' => 'MAILING.ID'),
+				'filter' => array(
+					'=CONTACT.TYPE_ID' => Recipient\Type::EMAIL,
+					'=CONTACT.CODE' => $subscr_EMAIL,
+					'!MAILING.ID' => null
+				),
 			));
 			while(($subscription = $subscriptionDb->fetch()))
 			{
@@ -235,7 +249,7 @@ $obCache = new CPHPCache;
 $strCacheID = LANG.$arParams["SHOW_HIDDEN"];
 if($obCache->StartDataCache($arParams["CACHE_TIME"], $strCacheID, "/".SITE_ID.$this->GetRelativePath()))
 {
-	if(!CModule::IncludeModule("sender"))
+	if(!Loader::includeModule("sender"))
 	{
 		$obCache->AbortDataCache();
 		ShowError(GetMessage("SENDER_SUBSCR_MODULE_NOT_INSTALLED"));
@@ -253,9 +267,9 @@ else
 	$mailingList = $obCache->GetVars();
 }
 
-if(strlen($_REQUEST["SENDER_SUBSCRIBE_EMAIL"])>0)
+if(($_REQUEST["SENDER_SUBSCRIBE_EMAIL"] ?? '') <> '')
 	$arResult["EMAIL"] = htmlspecialcharsbx($_REQUEST["SENDER_SUBSCRIBE_EMAIL"]);
-elseif(strlen($arSubscription["EMAIL"])>0)
+elseif($arSubscription["EMAIL"] <> '')
 	$arResult["EMAIL"] = htmlspecialcharsbx($arSubscription["EMAIL"]);
 else
 	$arResult["EMAIL"] = "";

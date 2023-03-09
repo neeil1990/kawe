@@ -1,14 +1,8 @@
 <?
-/*
-##############################################
-# Bitrix: SiteManager                        #
-# Copyright (c) 2004 Bitrix                  #
-# http://www.bitrix.ru                       #
-# mailto:admin@bitrix.ru                     #
-##############################################
-*/
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+
+\Bitrix\Main\Loader::includeModule('sale');
 
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions == "D")
@@ -32,7 +26,7 @@ $arColor = Array("08738C", "C6B59C", "0000FF", "FF0000", "FFFF00", "F7C684" ,"8C
 IncludeModuleLangFile(__FILE__);
 
 $arSite = array();
-$dbSite = CSite::GetList($by1="sort", $order1="desc", Array("ACTIVE" => "Y"));
+$dbSite = CSite::GetList("sort", "desc", Array("ACTIVE" => "Y"));
 while($arSites = $dbSite->GetNext())
 {
 	$arSite[$arSites["LID"]] = $arSites["NAME"];
@@ -99,7 +93,7 @@ if(empty($filter_site_id) || !is_array($filter_site_id))
 
 $arCurrency = Array();
 $arCurrencyInfo = Array();
-$dbCur = CCurrency::GetList(($b="sort"), ($order1="asc"), LANGUAGE_ID);
+$dbCur = CCurrency::GetList("sort", "asc", LANGUAGE_ID);
 while($arCur = $dbCur->GetNext())
 {
 	$arCurrencyInfo[$arCur["CURRENCY"]] = $arCur["FULL_NAME"];
@@ -125,7 +119,7 @@ if (!empty($filter_find) && is_array($filter_find))
 
 foreach($filter_site_id as $v)
 {
-	if(strlen($arAvCur[$v]) > 0 && strlen($arCurrencyInfo[$arAvCur[$v]]) > 0)
+	if($arAvCur[$v] <> '' && $arCurrencyInfo[$arAvCur[$v]] <> '')
 	{
 		$arCurrency[$arAvCur[$v]] = $arCurrencyInfo[$arAvCur[$v]];
 

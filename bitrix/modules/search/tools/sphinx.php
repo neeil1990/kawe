@@ -845,7 +845,7 @@ class CSearchSphinx extends CSearchFullText
 
 		foreach($arFilter as $field=>$val)
 		{
-			$field = strtoupper($field);
+			$field = mb_strtoupper($field);
 			if(
 				is_array($val)
 				&& count($val) == 1
@@ -889,15 +889,15 @@ class CSearchSphinx extends CSearchFullText
 					$arWhere[] = "param2_id <> ".sprintf("%u", crc32($val));
 				break;
 			case "DATE_CHANGE":
-				if(strlen($val) > 0)
+				if($val <> '')
 					$arWhere[] = "date_change >= ".intval(MakeTimeStamp($val)-CTimeZone::GetOffset());
 				break;
 			case "<=DATE_CHANGE":
-				if(strlen($val) > 0)
+				if($val <> '')
 					$arWhere[] = "date_change <= ".intval(MakeTimeStamp($val)-CTimeZone::GetOffset());
 				break;
 			case ">=DATE_CHANGE":
-				if(strlen($val) > 0)
+				if($val <> '')
 					$arWhere[] = "date_change >= ".intval(MakeTimeStamp($val)-CTimeZone::GetOffset());
 				break;
 			case "SITE_ID":
@@ -974,7 +974,7 @@ class CSearchSphinx extends CSearchFullText
 				}
 				else
 				{
-					AddMessage2Log("field: $field; val: ".print_r($val, 1));
+					//AddMessage2Log("field: $field; val: ".print_r($val, 1));
 				}
 				break;
 			}
@@ -1027,8 +1027,8 @@ class CSearchSphinx extends CSearchFullText
 		$this->flagsUseRatingSort = 0;
 		foreach($aSort as $key => $ord)
 		{
-			$ord = strtoupper($ord) <> "ASC"? "DESC": "ASC";
-			$key = strtolower($key);
+			$ord = mb_strtoupper($ord) <> "ASC"? "DESC": "ASC";
+			$key = mb_strtolower($key);
 			switch($key)
 			{
 				case "date_change":
@@ -1127,36 +1127,42 @@ class CSearchSphinx extends CSearchFullText
 
 	protected function canConnect()
 	{
-		return function_exists("mysql_connect") || function_exists("mysqli_connect");
+		return function_exists("mysqli_connect");
 	}
-	
+
 	protected function internalConnect($connectionIndex, &$error)
 	{
 		$error = "";
-		if (function_exists("mysql_connect"))
-		{
-			$result = @mysql_connect($connectionIndex);
-			if (!$result)
-				$error = mysql_error();
-		}
-		elseif (function_exists("mysqli_connect"))
+		if (function_exists("mysqli_connect"))
 		{
 			$result = mysqli_init();
 
-			if (strpos($connectionIndex, ":") !== false)
+			if (mb_strpos($connectionIndex, ":") !== false)
 			{
 				list($host, $port) = explode(":", $connectionIndex, 2);
+				$port = intval($port);
 			}
 			else
 			{
 				$host = $connectionIndex;
-				$port = '';
+				$port = 0;
 			}
 
-			if (!$result->real_connect($host, '', '', '', $port))
+			if ($port > 0)
 			{
-				$error = mysqli_connect_error();
-				$result = false;
+				if (!$result->real_connect($host, '', '', '', $port))
+				{
+					$error = mysqli_connect_error();
+					$result = false;
+				}
+			}
+			else
+			{
+				if (!$result->real_connect($host, '', '', ''))
+				{
+					$error = mysqli_connect_error();
+					$result = false;
+				}
 			}
 		}
 		else
@@ -1167,14 +1173,10 @@ class CSearchSphinx extends CSearchFullText
 
 		return $result;
 	}
-	
+
 	public function query($query)
 	{
-		if (is_resource($this->db))
-		{
-			$result = mysql_query($query, $this->db);
-		}
-		elseif (is_object($this->db))
+		if (is_object($this->db))
 		{
 			$result = $this->db->query($query);
 		}
@@ -1184,14 +1186,10 @@ class CSearchSphinx extends CSearchFullText
 		}
 		return $result;
 	}
-	
+
 	public function fetch($queryResult)
 	{
-		if (is_resource($this->db))
-		{
-			$result = mysql_fetch_array($queryResult, MYSQL_ASSOC);
-		}
-		elseif (is_object($this->db))
+		if (is_object($this->db))
 		{
 			$result = mysqli_fetch_assoc($queryResult);
 		}
@@ -1204,11 +1202,7 @@ class CSearchSphinx extends CSearchFullText
 
 	public function getError()
 	{
-		if (is_resource($this->db))
-		{
-			$result = "[".mysql_errno($this->db)."] ".mysql_error($this->db);
-		}
-		elseif (is_object($this->db))
+		if (is_object($this->db))
 		{
 			$result = "[".$this->db->errno."] ".$this->db->error;
 		}
@@ -1270,31 +1264,58 @@ class CSearchSphinxFormatter extends CSearchFormatter
 	function formatRow($r)
 	{
 		$DB = CDatabase::GetModuleConnection('search');
-		$rs = $DB->Query("
-			select
-				sc.ID
-				,sc.MODULE_ID
-				,sc.ITEM_ID
-				,sc.TITLE
-				,sc.TAGS
-				,sc.BODY
-				,sc.PARAM1
-				,sc.PARAM2
-				,sc.UPD
-				,sc.DATE_FROM
-				,sc.DATE_TO
-				,sc.URL
-				,sc.CUSTOM_RANK
-				,".$DB->DateToCharFunction("sc.DATE_CHANGE")." as FULL_DATE_CHANGE
-				,".$DB->DateToCharFunction("sc.DATE_CHANGE", "SHORT")." as DATE_CHANGE
-				,scsite.SITE_ID
-				,scsite.URL SITE_URL
-				".(BX_SEARCH_VERSION > 1? ",sc.USER_ID": "")."
-			from b_search_content sc
-			INNER JOIN b_search_content_site scsite ON sc.ID=scsite.SEARCH_CONTENT_ID
-			where ID = ".$r["id"]."
-			and scsite.SITE_ID = '".$DB->ForSql($this->sphinx->SITE_ID)."'
-		");
+		if ($this->sphinx->SITE_ID)
+		{
+			$rs = $DB->Query("
+				select
+					sc.ID
+					,sc.MODULE_ID
+					,sc.ITEM_ID
+					,sc.TITLE
+					,sc.TAGS
+					,sc.BODY
+					,sc.PARAM1
+					,sc.PARAM2
+					,sc.UPD
+					,sc.DATE_FROM
+					,sc.DATE_TO
+					,sc.URL
+					,sc.CUSTOM_RANK
+					,".$DB->DateToCharFunction("sc.DATE_CHANGE")." as FULL_DATE_CHANGE
+					,".$DB->DateToCharFunction("sc.DATE_CHANGE", "SHORT")." as DATE_CHANGE
+					,scsite.SITE_ID
+					,scsite.URL SITE_URL
+					".(BX_SEARCH_VERSION > 1? ",sc.USER_ID": "")."
+				from b_search_content sc
+				INNER JOIN b_search_content_site scsite ON sc.ID=scsite.SEARCH_CONTENT_ID
+				where ID = ".$r["id"]."
+				and scsite.SITE_ID = '".$DB->ForSql($this->sphinx->SITE_ID)."'
+			");
+		}
+		else
+		{
+			$rs = $DB->Query("
+				select
+					sc.ID
+					,sc.MODULE_ID
+					,sc.ITEM_ID
+					,sc.TITLE
+					,sc.TAGS
+					,sc.BODY
+					,sc.PARAM1
+					,sc.PARAM2
+					,sc.UPD
+					,sc.DATE_FROM
+					,sc.DATE_TO
+					,sc.URL
+					,sc.CUSTOM_RANK
+					,".$DB->DateToCharFunction("sc.DATE_CHANGE")." as FULL_DATE_CHANGE
+					,".$DB->DateToCharFunction("sc.DATE_CHANGE", "SHORT")." as DATE_CHANGE
+					".(BX_SEARCH_VERSION < 1? ",sc.LID as SITE_ID": "")."
+				from b_search_content sc
+				where ID = ".$r["id"]."
+			");
+		}
 		$r = $rs->Fetch();
 		if ($r)
 		{

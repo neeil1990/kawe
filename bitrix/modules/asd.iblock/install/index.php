@@ -1,12 +1,14 @@
 <?php
 
-global $MESS;
-$PathInstall = str_replace('\\', '/', __FILE__);
-$PathInstall = substr($PathInstall, 0, strlen($PathInstall)-strlen('/index.php'));
-IncludeModuleLangFile($PathInstall.'/install.php');
-include($PathInstall.'/version.php');
+use Bitrix\Main\Event;
+use Bitrix\Main\EventManager;
+use Bitrix\Main\EventResult;
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\ModuleManager;
 
-if (class_exists('asd_iblock')) return;
+if (class_exists('asd_iblock')) {
+	return;
+}
 
 class asd_iblock extends CModule {
 
@@ -18,76 +20,111 @@ class asd_iblock extends CModule {
 	public $PARTNER_NAME;
 	public $PARTNER_URI;
 	public $MODULE_GROUP_RIGHTS = 'N';
-	public $NEED_MAIN_VERSION = '';
-	public $NEED_MODULES = array();
 
 	public function __construct() {
 
 		$arModuleVersion = array();
 
-		$path = str_replace('\\', '/', __FILE__);
-		$path = substr($path, 0, strlen($path) - strlen('/index.php'));
-		include($path.'/version.php');
+		include(__DIR__.'/version.php');
 
 		if (is_array($arModuleVersion) && array_key_exists('VERSION', $arModuleVersion)) {
 			$this->MODULE_VERSION = $arModuleVersion['VERSION'];
 			$this->MODULE_VERSION_DATE = $arModuleVersion['VERSION_DATE'];
 		}
 
-		$this->PARTNER_NAME = GetMessage("ASD_PARTNER_NAME");
+		$this->PARTNER_NAME = Loc::getMessage("ASD_PARTNER_NAME");
 		$this->PARTNER_URI = 'http://www.d-it.ru/solutions/modules/';
 
-		$this->MODULE_NAME = GetMessage('ASD_IBLOCK_MODULE_NAME');
-		$this->MODULE_DESCRIPTION = GetMessage('ASD_IBLOCK_MODULE_DESCRIPTION');
+		$this->MODULE_NAME = Loc::getMessage('ASD_IBLOCK_MODULE_NAME');
+		$this->MODULE_DESCRIPTION = Loc::getMessage('ASD_IBLOCK_MODULE_DESCRIPTION');
 	}
 
 	public function DoInstall() {
-		if (is_array($this->NEED_MODULES) && !empty($this->NEED_MODULES)) {
-			foreach ($this->NEED_MODULES as $module) {
-				if (!IsModuleInstalled($module)) {
-					$this->ShowForm('ERROR', GetMessage('ASD_NEED_MODULES', array('#MODULE#' => $module)));
-				}
-			}
+		if (!$this->checkSystemRequirements()) {
+			return;
 		}
 
-		if (strlen($this->NEED_MAIN_VERSION)<=0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION)>=0) {
-			RegisterModuleDependences('main', 'OnAdminListDisplay', 'asd.iblock', 'CASDiblockInterface', 'OnAdminListDisplayHandler');
-			RegisterModuleDependences('main', 'OnBeforeProlog', 'asd.iblock', 'CASDiblockAction', 'OnBeforePrologHandler');
-			RegisterModuleDependences('main', 'OnAdminContextMenuShow', 'asd.iblock', 'CASDiblockInterface', 'OnAdminContextMenuShowHandler');
-			RegisterModuleDependences('main', 'OnAdminTabControlBegin', 'asd.iblock', 'CASDiblockInterface', 'OnAdminTabControlBeginHandler');
-			RegisterModuleDependences('iblock', 'OnAfterIBlockUpdate', 'asd.iblock', 'CASDiblockAction', 'OnAfterIBlockUpdateHandler');
-			RegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckbox', 'GetUserTypeDescription');
-			RegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckboxNum', 'GetUserTypeDescription');
-			RegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropPalette', 'GetUserTypeDescription');
-			RegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropSection', 'GetUserTypeDescription');
-			CopyDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/asd.iblock/install/js/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/js/', true, true);
-			CopyDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/asd.iblock/install/panel/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/panel/', true, true);
-			CopyDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/asd.iblock/install/tools/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/tools/', true, true);
-			RegisterModule('asd.iblock');
-			$this->ShowForm('OK', GetMessage('MOD_INST_OK'));
-		} else {
-			$this->ShowForm('ERROR', GetMessage('ASD_NEED_RIGHT_VER', array('#NEED#' => $this->NEED_MAIN_VERSION)));
-		}
+		$eventManager = EventManager::getInstance();
+		$eventManager->registerEventHandlerCompatible('main', 'OnAdminListDisplay', 'asd.iblock', 'CASDiblockInterface', 'OnAdminListDisplayHandler');
+		$eventManager->registerEventHandlerCompatible('main', 'OnAdminContextMenuShow', 'asd.iblock', 'CASDiblockInterface', 'OnAdminContextMenuShow');
+		$eventManager->registerEventHandlerCompatible('main', 'OnAdminSubListDisplay', 'asd.iblock', 'CASDiblockInterface', 'OnAdminSubListDisplayHandler');
+		$eventManager->registerEventHandlerCompatible('main', 'OnBeforeProlog', 'asd.iblock', 'CASDiblockAction', 'OnBeforePrologHandler');
+		$eventManager->registerEventHandlerCompatible('main', 'OnAdminContextMenuShow', 'asd.iblock', 'CASDiblockInterface', 'OnAdminContextMenuShowHandler');
+		$eventManager->registerEventHandlerCompatible('main', 'OnAdminTabControlBegin', 'asd.iblock', 'CASDiblockInterface', 'OnAdminTabControlBeginHandler');
+		$eventManager->registerEventHandlerCompatible('iblock', 'OnAfterIBlockUpdate', 'asd.iblock', 'CASDiblockAction', 'OnAfterIBlockUpdateHandler');
+		$eventManager->registerEventHandlerCompatible('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckbox', 'GetUserTypeDescription');
+		$eventManager->registerEventHandlerCompatible('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckboxNum', 'GetUserTypeDescription');
+		$eventManager->registerEventHandlerCompatible('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropPalette', 'GetUserTypeDescription');
+		$eventManager->registerEventHandlerCompatible('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropSection', 'GetUserTypeDescription');
+		unset($eventManager);
+
+		CopyDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/asd.iblock/install/admin/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/', true, true);
+		CopyDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/asd.iblock/install/js/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/js/', true, true);
+		CopyDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/asd.iblock/install/panel/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/panel/', true, true);
+		CopyDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/asd.iblock/install/tools/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/tools/', true, true);
+		ModuleManager::registerModule('asd.iblock');
+		$this->ShowForm('OK', Loc::getMessage('ASD_MOD_INST_OK'));
 	}
 
 	public function DoUninstall() {
-		UnRegisterModuleDependences('main', 'OnAdminListDisplay', 'asd.iblock', 'CASDiblockInterface', 'OnAdminListDisplayHandler');
-		UnRegisterModuleDependences('main', 'OnBeforeProlog', 'asd.iblock', 'CASDiblockAction', 'OnBeforePrologHandler');
-		UnRegisterModuleDependences('main', 'OnAdminContextMenuShow', 'asd.iblock', 'CASDiblockInterface', 'OnAdminContextMenuShowHandler');
-		UnRegisterModuleDependences('main', 'OnAdminTabControlBegin', 'asd.iblock', 'CASDiblockInterface', 'OnAdminTabControlBeginHandler');
-		UnRegisterModuleDependences('iblock', 'OnAfterIBlockUpdate', 'asd.iblock', 'CASDiblockAction', 'OnAfterIBlockUpdateHandler');
-		UnRegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckbox', 'GetUserTypeDescription');
-		UnRegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckboxNum', 'GetUserTypeDescription');
-		UnRegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropPalette', 'GetUserTypeDescription');
-		UnRegisterModuleDependences('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropSection', 'GetUserTypeDescription');
+		$result = true;
+		$event = new Event($this->MODULE_ID, 'OnModuleUnInstall');
+		$event->send();
+		$resultList = $event->getResults();
+		if (!empty($resultList) && is_array($resultList)) {
+			$errors = [];
+			/** @var EventResult $eventResult */
+			foreach ($resultList as $eventResult) {
+				if ($eventResult->getType() === EventResult::ERROR) {
+					$errors[] = Loc::getMessage(
+						'ASD_ERR_MODULE_UNINSTALL_BLOCKED',
+						['#MODULE_ID#' => (string)$eventResult->getModuleId()]
+					);
+				}
+			}
+			unset($eventResult);
+			if (!empty($errors)) {
+				$this->ShowForm('ERROR', implode('; ', $errors));
+				$result = false;
+			}
+			unset($errors);
+		}
+		unset($resultList, $event);
+		if (!$result) {
+			return;
+		}
+
+		$eventManager = EventManager::getInstance();
+		$eventManager->unRegisterEventHandler('main', 'OnAdminListDisplay', 'asd.iblock', 'CASDiblockInterface', 'OnAdminListDisplayHandler');
+		$eventManager->unRegisterEventHandler('main', 'OnAdminContextMenuShow', 'asd.iblock', 'CASDiblockInterface', 'OnAdminContextMenuShow');
+		$eventManager->unRegisterEventHandler('main', 'OnAdminSubListDisplay', 'asd.iblock', 'CASDiblockInterface', 'OnAdminSubListDisplayHandler');
+		$eventManager->unRegisterEventHandler('main', 'OnBeforeProlog', 'asd.iblock', 'CASDiblockAction', 'OnBeforePrologHandler');
+		$eventManager->unRegisterEventHandler('main', 'OnAdminContextMenuShow', 'asd.iblock', 'CASDiblockInterface', 'OnAdminContextMenuShowHandler');
+		$eventManager->unRegisterEventHandler('main', 'OnAdminTabControlBegin', 'asd.iblock', 'CASDiblockInterface', 'OnAdminTabControlBeginHandler');
+		$eventManager->unRegisterEventHandler('iblock', 'OnAfterIBlockUpdate', 'asd.iblock', 'CASDiblockAction', 'OnAfterIBlockUpdateHandler');
+		$eventManager->unRegisterEventHandler('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckbox', 'GetUserTypeDescription');
+		$eventManager->unRegisterEventHandler('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropCheckboxNum', 'GetUserTypeDescription');
+		$eventManager->unRegisterEventHandler('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropPalette', 'GetUserTypeDescription');
+		$eventManager->unRegisterEventHandler('iblock', 'OnIBlockPropertyBuildList', 'asd.iblock', 'CASDiblockPropSection', 'GetUserTypeDescription');
+		unset($eventManager);
+
+		DeleteDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/asd.iblock/install/admin", $_SERVER['DOCUMENT_ROOT']."/bitrix/admin");
 		DeleteDirFilesEx('/bitrix/js/asd.iblock/');
 		DeleteDirFilesEx('/bitrix/panel/asd.iblock/');
 		DeleteDirFilesEx('/bitrix/tools/asd.iblock/');
-		UnRegisterModule('asd.iblock');
-		$this->ShowForm('OK', GetMessage('MOD_UNINST_OK'));
+
+		ModuleManager::unRegisterModule('asd.iblock');
+		$this->ShowForm('OK', Loc::getMessage('ASD_MOD_UNINST_OK'));
 	}
 
 	private function ShowForm($type, $message, $buttonName='') {
+		global $APPLICATION;
+
+		$buttonName = (string)$buttonName;
+		if ($buttonName == '') {
+			$buttonName = Loc::getMessage('ASD_MOD_BACK');
+		}
+
 		$keys = array_keys($GLOBALS);
 		for($i=0, $intCount = count($keys); $i < $intCount; $i++) {
 			if($keys[$i]!='i' && $keys[$i]!='GLOBALS' && $keys[$i]!='strTitle' && $keys[$i]!='filepath') {
@@ -95,22 +132,70 @@ class asd_iblock extends CModule {
 			}
 		}
 
-		$PathInstall = str_replace('\\', '/', __FILE__);
-		$PathInstall = substr($PathInstall, 0, strlen($PathInstall)-strlen('/index.php'));
-		IncludeModuleLangFile($PathInstall.'/install.php');
-
-		$APPLICATION->SetTitle(GetMessage('ASD_IBLOCK_MODULE_NAME'));
+		$APPLICATION->SetTitle(Loc::getMessage('ASD_IBLOCK_MODULE_NAME'));
 		include($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
-		echo CAdminMessage::ShowMessage(array('MESSAGE' => $message, 'TYPE' => $type));
+		$message = new CAdminMessage(array('MESSAGE' => $message, 'TYPE' => $type));
+		echo $message->Show();
+		unset($message);
 		?>
 		<form action="<?= $APPLICATION->GetCurPage()?>" method="get">
 		<p>
 			<input type="hidden" name="lang" value="<? echo LANGUAGE_ID; ?>" />
-			<input type="submit" value="<?= strlen($buttonName) ? $buttonName : GetMessage('MOD_BACK')?>" />
+			<input type="submit" value="<?=$buttonName; ?>" />
 		</p>
 		</form>
 		<?
 		include($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');
 		die();
+	}
+
+	protected function checkSystemRequirements(): bool
+	{
+		$result = true;
+		foreach ($this->getRequiredModules() as $moduleId => $needVersion)
+		{
+			if (!ModuleManager::isModuleInstalled($moduleId))
+			{
+				$this->ShowForm('ERROR', Loc::getMessage('ASD_NEED_MODULES', ['#MODULE#' => $moduleId]));
+				$result = false;
+				continue;
+			}
+			if (is_string($needVersion))
+			{
+				$currentVersion = ModuleManager::getVersion($moduleId);
+				if ($currentVersion === false)
+				{
+					$this->ShowForm('ERROR', Loc::getMessage(
+						'ASD_ERR_MODULE_VERSION_ABSENT',
+						['#MODULE_ID#' => $moduleId]
+					));
+					$result = false;
+				}
+				elseif (!version_compare($currentVersion, $needVersion, '>='))
+				{
+					$this->ShowForm('ERROR', Loc::getMessage(
+						'ASD_ERR_MODULE_MIN_VERSION',
+						[
+							'#MODULE_ID#' => $moduleId,
+							'#VERSION#' => $needVersion
+						]
+					));
+					$result = false;
+				}
+				unset($currentVersion);
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getRequiredModules(): array
+	{
+		return [
+			'main' => '14.0.3',
+			'iblock' => '16.0.1'
+		];
 	}
 }

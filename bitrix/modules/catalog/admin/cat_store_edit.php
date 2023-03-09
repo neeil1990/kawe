@@ -1,214 +1,366 @@
-<?
+<?php
+
+use Bitrix\Catalog\Access\AccessController;
+use Bitrix\Catalog\Access\ActionDictionary;
+use Bitrix\Main\Application;
+use Bitrix\Main\Context;
+use Bitrix\Main\Loader;
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\ModuleManager;
+use Bitrix\Main\Engine\CurrentUser;
+use Bitrix\Main\UI\FileInput;
+use Bitrix\Main\Web;
+use Bitrix\Catalog;
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
 global $APPLICATION;
 global $DB;
-global $USER;
 global $USER_FIELD_MANAGER;
 
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_store')))
-	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
-CModule::IncludeModule("catalog");
-$bReadOnly = !$USER->CanDoOperation('catalog_store');
+/** @global CAdminPage $adminPage */
+global $adminPage;
+/** @global CAdminSidePanelHelper $adminSidePanelHelper */
+global $adminSidePanelHelper;
 
-if($ex = $APPLICATION->GetException())
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$listUrl = $selfFolderUrl."cat_store_list.php?lang=".LANGUAGE_ID;
+$listUrl = $adminSidePanelHelper->editUrlToPublicPage($listUrl);
+
+$currentUser = CurrentUser::get();
+
+$request = Context::getCurrent()->getRequest();
+if ($request->isAjaxRequest())
 {
-	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-	$strError = $ex->GetString();
-	ShowError($strError);
-	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
-	die();
+	$request->addFilter(new Web\PostDecodeFilter());
 }
 
-$id = (isset($_REQUEST['ID']) ? (int)$_REQUEST['ID'] : 0);
+$id = (int)($request->get('ID') ?? 0);
 if ($id < 0)
-	$id = 0;
-
-if(!CBXFeatures::IsFeatureEnabled('CatMultiStore'))
 {
-	$dbResultList = CCatalogStore::GetList(array());
-	if(($arResult = $dbResultList->Fetch()) && $id != $arResult["ID"])
+	$id = 0;
+}
+
+
+Loader::includeModule("catalog");
+/** @var AccessController $accessController */
+$accessController = AccessController::getCurrent();
+if (
+	!(
+		$accessController->check(ActionDictionary::ACTION_CATALOG_READ)
+		|| $accessController->checkByValue(ActionDictionary::ACTION_STORE_MODIFY, $id)
+	)
+)
+{
+	$APPLICATION->AuthForm(Loc::getMessage("ACCESS_DENIED"));
+}
+
+$isCloud = ModuleManager::isModuleInstalled('bitrix24');
+
+$canModify = AccessController::getCurrent()->check(ActionDictionary::ACTION_STORE_MODIFY);
+
+if (!Catalog\Config\Feature::isMultiStoresEnabled())
+{
+	if (Catalog\Config\State::isExceededStoreLimit())
 	{
 		require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-		ShowError(GetMessage("CAT_FEATURE_NOT_ALLOW"));
+		ShowError(Loc::getMessage("CAT_FEATURE_NOT_ALLOW"));
 		require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
 		die();
 	}
 }
 
-IncludeModuleLangFile(__FILE__);
-ClearVars();
+$defaultValues = [
+	'ID' => 0,
+	'TITLE' => '',
+	'ACTIVE' => 'Y',
+	'ADDRESS' => '',
+	'DESCRIPTION' => '',
+	'GPS_N' => '',
+	'GPS_S' => '',
+	'IMAGE_ID' => '',
+	'LOCATION_ID' => '',
+	'DATE_MODIFY' => '',
+	'DATE_CREATE' => '',
+	'USER_ID' => 0,
+	'MODIFIED_BY' => 0,
+	'PHONE' => '',
+	'SCHEDULE' => '',
+	'XML_ID' => '',
+	'SORT' => 100,
+	'EMAIL' => '',
+	'ISSUING_CENTER' => 'Y',
+	'SHIPPING_CENTER' => 'N',
+	'SITE_ID' => '',
+	'CODE' => '',
+	'IS_DEFAULT' => Catalog\StoreTable::getDefaultStoreId() === null ? 'Y' : 'N',
+];
+
+$fields = $defaultValues;
+if ($id > 0)
+{
+	$fields = Catalog\StoreTable::getRowById($id);
+	if ($fields === null)
+	{
+		$id = 0;
+		$fields = $defaultValues;
+	}
+}
+
+$aTabs = [
+	[
+		'DIV' => 'edit1',
+		'TAB' => Loc::getMessage('STORE_TAB_COMMON'),
+		'ICON' => 'catalog',
+		'TITLE' => Loc::getMessage('STORE_TAB_COMMON_DESCR')
+	],
+	[
+		'DIV' => 'edit2',
+		'TAB' => Loc::getMessage('STORE_TAB_UF'),
+		'ICON' => 'catalog',
+		'TITLE' => Loc::getMessage('STORE_TAB_UF_DESCR'),
+	],
+];
+
+$tabControl = new CAdminTabControl("tabControl", $aTabs);
 
 $errorMessage = '';
 $bVarsFromForm = false;
 
-$userId = (int)$USER->GetID();
+$userId = (int)$currentUser->getId();
 
-$entityId = "CAT_STORE";
+$entityId = Catalog\StoreTable::getUfId();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && strlen($_REQUEST["Update"]) > 0 && !$bReadOnly && check_bitrix_sessid())
+if (
+	$request->isPost()
+	&& $request->getPost('Update') === 'Y'
+	&& $canModify
+	&& check_bitrix_sessid()
+)
 {
-	$arPREVIEW_PICTURE = $_FILES["IMAGE_ID"];
-	$arPREVIEW_PICTURE["del"] = $IMAGE_ID_del;
-	$arPREVIEW_PICTURE["MODULE_ID"] = "catalog";
-	$ISSUING_CENTER = ($_POST["ISSUING_CENTER"] == 'Y') ? 'Y' : 'N';
-	$SHIPPING_CENTER = ($_POST["SHIPPING_CENTER"] == 'Y') ? 'Y' : 'N';
-	$fileId = 0;
-	$isImage = CFile::CheckImageFile($arPREVIEW_PICTURE);
-
-	if (trim($ADDRESS) == '')
-		$errorMessage .= GetMessage("ADDRESS_EMPTY")."<br>";
-
-	if (strlen($isImage) == 0 && (strlen($arPREVIEW_PICTURE["name"]) > 0 || strlen($arPREVIEW_PICTURE["del"]) > 0))
+	$currentAction = '';
+	if ($request->getPost('save') !== null)
 	{
-		$fileId = CFile::SaveFile($arPREVIEW_PICTURE, "catalog");
+		$currentAction = 'save';
 	}
-	elseif (strlen($isImage) > 0)
+	elseif ($request->getPost('apply') !== null)
 	{
-		$errorMessage .= $isImage."<br>";
+		$currentAction = 'apply';
 	}
+	$saveAction = $currentAction === 'save';
+	$applyAction = $currentAction === 'apply';
 
-	$arFields = array(
-		"TITLE" => (isset($_POST['TITLE']) ? $_POST['TITLE'] : ''),
-		"SORT" => (isset($_POST['CSTORE_SORT']) ? (int)$_POST['CSTORE_SORT'] : 0),
-		"ACTIVE" => (isset($_POST['ACTIVE']) && $_POST['ACTIVE'] == 'Y' ? 'Y' : 'N'),
-		"ADDRESS" => (isset($_POST['ADDRESS']) ? $_POST['ADDRESS'] : ''),
-		"DESCRIPTION" => (isset($_POST['DESCRIPTION']) ? $_POST['DESCRIPTION'] : ''),
-		"GPS_N" => (isset($_POST['GPS_N']) ? str_replace(',', '.', $_POST['GPS_N']) : ''),
-		"GPS_S" => (isset($_POST['GPS_S']) ? str_replace(',', '.', $_POST['GPS_S']) : ''),
-		"PHONE" => (isset($_POST['PHONE']) ? $_POST['PHONE'] : ''),
-		"SCHEDULE" => (isset($_POST['SCHEDULE']) ? $_POST['SCHEDULE'] : ''),
-		"XML_ID" => (isset($_POST['XML_ID']) ? $_POST['XML_ID'] : ''),
-		"USER_ID" => $userId,
-		"MODIFIED_BY" => $userId,
-		"EMAIL" => (isset($_POST["EMAIL"]) ? $_POST["EMAIL"] : ''),
-		"ISSUING_CENTER" => $ISSUING_CENTER,
-		"SHIPPING_CENTER" => $SHIPPING_CENTER,
-		"SITE_ID" => $_POST["SITE_ID"],
-		"CODE" => isset($_POST['CODE']) ? $_POST['CODE'] : false
-	);
-
-	$USER_FIELD_MANAGER->EditFormAddFields($entityId, $arFields);
-
-	if (intval($fileId) > 0)
-		$arFields["IMAGE_ID"] = intval($fileId);
-	elseif ($fileId === "NULL")
-		$arFields["IMAGE_ID"] = "null";
-
-	$DB->StartTransaction();
-
-	if ($errorMessage == '')
+	if ($saveAction || $applyAction)
 	{
+		$postFields = [
+			'MODIFIED_BY' => $userId,
+		];
+
+		$stringList = [
+			'TITLE',
+			'ACTIVE',
+			'ADDRESS',
+			'DESCRIPTION',
+			'PHONE',
+			'SCHEDULE',
+			'XML_ID',
+			'EMAIL',
+			'ISSUING_CENTER',
+			'CODE',
+		];
+		if (CCatalogStoreControlUtil::isAllowShowShippingCenter())
+		{
+			$stringList[] = 'SHIPPING_CENTER';
+		}
+		if (!$isCloud)
+		{
+			$stringList[] = 'SITE_ID';
+		}
+		foreach ($stringList as $fieldId)
+		{
+			$value = $request->getPost($fieldId);
+			if (is_string($value))
+			{
+				$postFields[$fieldId] = $value;
+			}
+		}
+		if ($isCloud)
+		{
+			$postFields['SITE_ID'] = '';
+		}
+
+		$coordinateList = [
+			'GPS_N',
+			'GPS_S',
+		];
+		foreach ($coordinateList as $fieldId)
+		{
+			$value = $request->getPost($fieldId);
+			if (is_string($value))
+			{
+				$postFields[$fieldId] = str_replace(',', '.', $value);
+			}
+		}
+
+		$numberList = [
+			'SORT',
+		];
+		foreach ($numberList as $fieldId)
+		{
+			$value = $request->getPost($fieldId);
+			if (is_string($value))
+			{
+				$value = (int)$value;
+				if ($value > 0)
+				{
+					$postFields[$fieldId] = $value;
+				}
+			}
+		}
+
+		$postFields['IMAGE_ID'] = CIBlock::makeFileArray(
+			$request->getPost('IMAGE_ID'),
+			$request->getPost('IMAGE_ID_del') === 'Y'
+		);
+
+		$USER_FIELD_MANAGER->EditFormAddFields($entityId, $postFields);
+
+		$conn = Application::getConnection();
+		$conn->startTransaction();
+
 		if ($id > 0)
 		{
-			$res = CCatalogStore::Update($id, $arFields);
+			$res = CCatalogStore::Update($id, $postFields);
 		}
 		else
 		{
-			$res = CCatalogStore::Add($arFields);
+			$postFields['USER_ID'] = $userId;
+			$res = CCatalogStore::Add($postFields);
 			if ($res)
+			{
 				$id = (int)$res;
+			}
 		}
 		if (!$res)
 		{
 			if ($ex = $APPLICATION->GetException())
-				$errorMessage .= $ex->GetString()."<br>";
+			{
+				$errorMessage .= $ex->GetString() . "<br>";
+			}
 			else
-				$errorMessage .= GetMessage('STORE_SAVE_ERROR').'<br>';
+			{
+				$errorMessage .= Loc::getMessage('STORE_SAVE_ERROR') . '<br>';
+			}
 		}
 		else
 		{
-			$ufUpdated = $USER_FIELD_MANAGER->Update($entityId, $id, $arFields);
+			$ufUpdated = $USER_FIELD_MANAGER->Update($entityId, $id, $postFields);
 		}
-	}
-	if ($errorMessage == '')
-	{
-		$DB->Commit();
 
-		if (strlen($_REQUEST["apply"]) <= 0)
-			LocalRedirect("/bitrix/admin/cat_store_list.php?lang=".LANGUAGE_ID."&".GetFilterParams("filter_", false));
+		if ($errorMessage == '')
+		{
+			$conn->commitTransaction();
+
+			if ($saveAction)
+			{
+				$adminSidePanelHelper->sendSuccessResponse("base", ["ID" => $id]);
+				$adminSidePanelHelper->localRedirect($listUrl);
+				LocalRedirect($listUrl);
+			}
+			if ($applyAction)
+			{
+				$applyUrl = $selfFolderUrl . "cat_store_edit.php?lang=" . LANGUAGE_ID . "&ID=" . $id
+					. '&' . $tabControl->ActiveTabParam()
+				;
+				$applyUrl = $adminSidePanelHelper->setDefaultQueryParams($applyUrl);
+				$adminSidePanelHelper->sendSuccessResponse("apply", ["reloadUrl" => $applyUrl]);
+				LocalRedirect($applyUrl);
+			}
+		}
 		else
-			LocalRedirect("/bitrix/admin/cat_store_edit.php?lang=".LANGUAGE_ID."&ID=".$id."&".GetFilterParams("filter_", false));
-	}
-	else
-	{
-		$bVarsFromForm = true;
-		$DB->Rollback();
+		{
+			$bVarsFromForm = true;
+			$conn->rollbackTransaction();
+			$adminSidePanelHelper->sendJsonErrorResponse($errorMessage);
+			$fields = $postFields;
+		}
 	}
 }
 
 if ($id > 0)
-	$APPLICATION->SetTitle(str_replace("#ID#", $id, GetMessage("STORE_TITLE_UPDATE")));
-else
-	$APPLICATION->SetTitle(GetMessage("STORE_TITLE_ADD"));
-
-require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
-$str_ACTIVE = "Y";
-
-if($id > 0)
 {
-	$arSelect = array(
-		"ID",
-		"ACTIVE",
-		"TITLE",
-		"ADDRESS",
-		"DESCRIPTION",
-		"GPS_N",
-		"GPS_S",
-		"IMAGE_ID",
-		"LOCATION_ID",
-		"PHONE",
-		"SCHEDULE",
-		"XML_ID",
-		"SORT",
-		"EMAIL",
-		"ISSUING_CENTER",
-		"SHIPPING_CENTER",
-		"SITE_ID",
-		"CODE"
-	);
-
-	$dbResult = CCatalogStore::GetList(array(), array('ID' => $id), false, false, $arSelect);
-	if (!$dbResult->ExtractFields("str_"))
-		$id = 0;
+	$APPLICATION->SetTitle(str_replace("#ID#", $id, Loc::getMessage("STORE_TITLE_UPDATE")));
+}
+else
+{
+	$APPLICATION->SetTitle(Loc::getMessage("STORE_TITLE_ADD"));
 }
 
-if ($bVarsFromForm)
-	$DB->InitTableVarsForEdit("b_catalog_store", "", "str_");
-
-if(isset($str_ADDRESS))
-	$str_ADDRESS = (trim($str_ADDRESS) != '') ? $str_ADDRESS : '';
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
 $aMenu = array(
 	array(
-		"TEXT" => GetMessage("STORE_LIST"),
+		"TEXT" => Loc::getMessage("STORE_LIST"),
 		"ICON" => "btn_list",
-		"LINK" => "/bitrix/admin/cat_store_list.php?lang=".LANG."&".GetFilterParams("filter_", false)
+		"LINK" => $listUrl
 	)
 );
 
-if ($id > 0 && !$bReadOnly)
+if ($id > 0 && $canModify)
 {
-	$aMenu[] = array("SEPARATOR" => "Y");
+	$aMenu[] = ["SEPARATOR" => "Y"];
 
-	$aMenu[] = array(
-		"TEXT" => GetMessage("STORE_NEW"),
-		"ICON" => "btn_new",
-		"LINK" => "/bitrix/admin/cat_store_edit.php?lang=".LANG."&".GetFilterParams("filter_", false)
-	);
-
-	$aMenu[] = array(
-		"TEXT" => GetMessage("STORE_DELETE"),
-		"ICON" => "btn_delete",
-		"LINK" => "javascript:if(confirm('".GetMessage("STORE_DELETE_CONFIRM")."')) window.location='/bitrix/admin/cat_store_list.php?action=delete&ID[]=".$id."&lang=".LANG."&".bitrix_sessid_get()."#tb';",
-		"WARNING" => "Y"
-	);
+	if (Catalog\Config\State::isAllowedNewStore())
+	{
+		$aMenu[] = [
+			"TEXT" => Loc::getMessage("STORE_NEW"),
+			"ICON" => "btn_new",
+			"LINK" => $adminSidePanelHelper->editUrlToPublicPage(
+				$selfFolderUrl . "cat_store_edit.php?lang=" . LANGUAGE_ID
+			),
+		];
+	}
+	else
+	{
+		$helpLink = Catalog\Config\Feature::getMultiStoresHelpLink();
+		if (!empty($helpLink))
+		{
+			$aMenu[] = [
+				"TEXT" => Loc::getMessage("STORE_NEW"),
+				"ICON" => "btn_lock",
+				$helpLink['TYPE'] => $helpLink['LINK'],
+			];
+		}
+		unset($helpLink);
+	}
+	if ($fields['IS_DEFAULT'] !== 'Y')
+	{
+		$deleteUrl = $selfFolderUrl
+			. "cat_store_list.php?action=delete&ID[]=" . $id
+			. "&lang=" . LANGUAGE_ID
+			. "&" . bitrix_sessid_get() . "#tb"
+		;
+		if ($adminSidePanelHelper->isPublicFrame())
+		{
+			$deleteUrl = $adminSidePanelHelper->editUrlToPublicPage($deleteUrl);
+		}
+		$aMenu[] = [
+			"TEXT" => Loc::getMessage("STORE_DELETE"),
+			"ICON" => "btn_delete",
+			"LINK" => "javascript:if(confirm('"
+				. CUtil::JSEscape(Loc::getMessage("STORE_DELETE_CONFIRM"))
+				. "')) top.window.location='"
+				. $deleteUrl
+				. "';",
+			"WARNING" => "Y"
+		];
+	}
 }
 $context = new CAdminContextMenu($aMenu);
 $context->Show();
 $arSitesShop = array();
 $arSitesTmp = array();
-$rsSites = CSite::GetList($_REQUEST["by"] = "id", $_REQUEST["order"] = "asc", Array("ACTIVE" => "Y"));
+$rsSites = CSite::GetList("id", "asc", Array("ACTIVE" => "Y"));
 while($arSite = $rsSites->GetNext())
 {
 	$site = COption::GetOptionString("sale", "SHOP_SITE_".$arSite["ID"], "");
@@ -219,175 +371,251 @@ while($arSite = $rsSites->GetNext())
 	$arSitesTmp[] = array("ID" => $arSite["ID"], "NAME" => $arSite["NAME"]);
 }
 
-$rsCount = count($arSitesShop);
-if ($rsCount <= 0)
+if (empty($arSitesShop))
 {
 	$arSitesShop = $arSitesTmp;
-	$rsCount = count($arSitesShop);
 }
 
-CAdminMessage::ShowMessage($errorMessage);?>
+$defaultStore = ($id > 0 && $fields['IS_DEFAULT'] === 'Y');
+if ($errorMessage !== '')
+{
+	CAdminMessage::ShowMessage($errorMessage);
+}
 
-<form enctype="multipart/form-data" method="POST" action="<?echo $APPLICATION->GetCurPage()?>?" name="store_edit">
-	<?echo GetFilterHiddens("filter_");?>
+$actionUrl = $APPLICATION->GetCurPage();
+$actionUrl = $adminSidePanelHelper->setDefaultQueryParams($actionUrl);
+
+$userFieldUrl = $selfFolderUrl."userfield_edit.php?lang=".LANGUAGE_ID."&ENTITY_ID=".$entityId;
+$userFieldUrl = $adminSidePanelHelper->editUrlToPublicPage($userFieldUrl);
+$userFieldUrl .= "&back_url=".urlencode($APPLICATION->GetCurPageParam('', array('bxpublic'))."&tabControl_active_tab=user_fields_tab");
+?>
+<form enctype="multipart/form-data" method="POST" action="<?=$actionUrl?>" name="store_edit">
+	<?php
+	echo GetFilterHiddens("filter_");?>
 	<input type="hidden" name="Update" value="Y">
-	<input type="hidden" name="lang" value="<?echo LANGUAGE_ID; ?>">
-	<input type="hidden" name="ID" value="<?echo $id ?>">
-	<?=bitrix_sessid_post()?><?
-	$aTabs = array(
-		array("DIV" => "edit1", "TAB" => GetMessage("STORE_TAB"), "ICON" => "catalog", "TITLE" => GetMessage("STORE_TAB_DESCR")),
-	);
-
-	$tabControl = new CAdminTabControl("tabControl", $aTabs);
+	<input type="hidden" name="lang" value="<?php
+	echo LANGUAGE_ID; ?>">
+	<input type="hidden" name="ID" value="<?php
+	echo $id ?>">
+	<?=bitrix_sessid_post()?><?php
 	$tabControl->Begin();
 
 	$tabControl->BeginNextTab();
-	?>
-	<tr>
-		<td align="left" colspan="2">
-			<a href="/bitrix/admin/userfield_edit.php?lang=<?=LANGUAGE_ID;?>&amp;ENTITY_ID=<?=$entityId;?>&amp;back_url=<?echo urlencode($APPLICATION->GetCurPageParam('', array('bxpublic'))."&tabControl_active_tab=user_fields_tab")?>"><?=GetMessage("STORE_E_USER_FIELDS_ADD_HREF");?></a>
-		</td>
-	</tr>
-	<?if ($id > 0):?>
+	if ($id > 0): ?>
 	<tr>
 		<td>ID:</td>
 		<td><?= $id ?></td>
 	</tr>
-	<?endif;?>
+	<?php
+	endif;
+	if ($id > 0): ?>
 	<tr>
-		<td width="40%"><?= GetMessage("STORE_ACTIVE") ?>:</td>
-		<td width="60%">
-			<input type="checkbox" name="ACTIVE" value="Y" <?if(($str_ACTIVE == 'Y') || ($id == 0)) echo "checked";?> size="50" />
-		</td>
-	</tr>
-	<tr>
-		<td width="40%"><?= GetMessage("ISSUING_CENTER") ?>:</td>
-		<td width="60%">
-			<input type="checkbox" name="ISSUING_CENTER" value="Y" <?if(($str_ISSUING_CENTER == 'Y') || $id == 0) echo "checked";?> size="50" />
-		</td>
-	</tr>
-	<tr>
-		<td width="40%"><?= GetMessage("SHIPPING_CENTER") ?>:</td>
-		<td width="60%">
-			<input type="checkbox" name="SHIPPING_CENTER" value="Y" <?if(($str_SHIPPING_CENTER == 'Y') || $id == 0) echo "checked";?> size="50" />
-		</td>
-	</tr>
-	<tr>
-		<td><?= GetMessage("STORE_SITE_ID") ?>:</td>
+		<td style="width: 40%;"><?= Loc::getMessage("STORE_FIELD_IS_DEFAULT") ?>:</td>
 		<td>
-			<select id="SITE_ID" style="max-width: 300px; width: 300px;" name="SITE_ID" <?=($bReadOnly) ? " disabled" : ""?>>
-			<option value=""><?=GetMessage("STORE_SELECT_SITE_ID")?></option>
-			<? foreach($arSitesShop as $key => $val)
-			{
-				$selected = ($val['ID'] == $str_SITE_ID) ? 'selected' : '';
-				echo "<option ".$selected." value=".htmlspecialcharsbx($val['ID']).">".htmlspecialcharsbx($val["NAME"]." (".$val["ID"].")")."</option>";
-			}
+			<?php echo ($defaultStore ? Loc::getMessage('STORE_MESS_YES') : Loc::getMessage('STORE_MESS_NO')); ?>
+		</td>
+	</tr>
+	<?php
+	endif;
+	?>
+	<tr>
+		<td width="40%"><?= Loc::getMessage("STORE_ACTIVE") ?>:</td>
+		<td width="60%"><?php
+			if ($defaultStore):
+				echo ($fields['ACTIVE'] === 'Y' ? Loc::getMessage('STORE_MESS_YES') : Loc::getMessage('STORE_MESS_NO'));
+				?>
+				<input type="hidden" name="ACTIVE" value="Y">
+				<?php
+			else:
+				?>
+				<input type="hidden" name="ACTIVE" value="N">
+				<input type="checkbox" name="ACTIVE" value="Y"<?=($fields['ACTIVE'] === 'Y' ? ' checked' : ''); ?>>
+				<?php
+			endif;
 			?>
-			</select>
 		</td>
 	</tr>
 	<tr>
-		<td><?= GetMessage("STORE_TITLE") ?>:</td>
+		<td width="40%"><?= Loc::getMessage("ISSUING_CENTER") ?>:</td>
+		<td width="60%">
+			<input type="hidden" name="ISSUING_CENTER" value="N">
+			<input type="checkbox" name="ISSUING_CENTER" value="Y"<?=($fields['ISSUING_CENTER'] === 'Y' ? ' checked' : ''); ?>>
+		</td>
+	</tr>
+	<?php
+	if (CCatalogStoreControlUtil::isAllowShowShippingCenter()):
+	?>
+	<tr>
+		<td width="40%"><?= Loc::getMessage("SHIPPING_CENTER") ?>:</td>
+		<td width="60%">
+			<input type="hidden" name="SHIPPING_CENTER" value="N">
+			<input type="checkbox" name="SHIPPING_CENTER" value="Y"<?=($fields['SHIPPING_CENTER'] === 'Y' ? ' checked' : ''); ?>>
+		</td>
+	</tr>
+	<?php
+	endif;
+	if ($isCloud):
+		if ((string)$fields['SITE_ID'] !== ''):
+		?>
+		<tr>
+			<td><?= Loc::getMessage("STORE_SITE_ID") ?>:</td>
+			<td><?php
+				echo Loc::getMessage('STORE_ERR_DEFAULT_STORE_WITH_SITE');
+				?><input name="SITE_ID" value="">
+			</td>
+		</tr>
+		<?php
+		endif;
+	else:
+		if (!$defaultStore || (string)$fields['SITE_ID'] !== ''):
+		?>
+		<tr>
+			<td><?= Loc::getMessage("STORE_SITE_ID") ?>:</td>
+			<td><?php
+				if (!$defaultStore):
+				?>
+				<select id="SITE_ID" style="max-width: 300px; width: 300px;" name="SITE_ID">
+				<option value=""><?=Loc::getMessage("STORE_FOR_ALL_SITES")?></option>
+				<?php
+				foreach($arSitesShop as $key => $val)
+				{
+					$selected = ($val['ID'] === $fields['SITE_ID']) ? 'selected' : '';
+					echo "<option ".$selected." value=".htmlspecialcharsbx($val['ID']).">".htmlspecialcharsbx($val["NAME"]." (".$val["ID"].")")."</option>";
+				}
+				?>
+				</select>
+				<?php
+				else:
+					echo Loc::getMessage('STORE_ERR_DEFAULT_STORE_WITH_SITE');
+					?>
+					<input name="SITE_ID" value="">
+					<?php
+				endif;
+				?>
+			</td>
+		</tr>
+		<?php
+		endif;
+	endif;
+	?>
+	<tr>
+		<td><?= Loc::getMessage("STORE_TITLE") ?>:</td>
 		<td>
-			<input type="text" style="width:300px" name="TITLE" value="<?=$str_TITLE?>" />
+			<input type="text" style="width:300px" name="TITLE" value="<?=htmlspecialcharsbx((string)$fields['TITLE']);?>">
 		</td>
 	</tr>
 	<tr>
-		<td><?= GetMessage("STORE_CODE") ?>:</td>
+		<td><?= Loc::getMessage("STORE_CODE") ?>:</td>
 		<td>
-			<input type="text" style="width:300px" name="CODE" value="<?=$str_CODE?>">
+			<input type="text" style="width:300px" name="CODE" value="<?=htmlspecialcharsbx((string)$fields['CODE']);?>">
 		</td>
 	</tr>
 	<tr class="adm-detail-required-field">
-		<td  class="adm-detail-valign-top"><?= GetMessage("STORE_ADDRESS") ?>:</td>
+		<td class="adm-detail-valign-top"><?= Loc::getMessage("STORE_ADDRESS") ?>:</td>
 		<td>
-			<textarea cols="35" rows="3" class="typearea" name="ADDRESS"><?= $str_ADDRESS ?></textarea>
+			<textarea cols="35" rows="3" class="typearea" name="ADDRESS"><?=htmlspecialcharsEx((string)$fields['ADDRESS']); ?></textarea>
 		</td>
 	</tr>
 	<tr>
-		<td  class="adm-detail-valign-top"><?= GetMessage("STORE_DESCR") ?>:</td>
+		<td  class="adm-detail-valign-top"><?= Loc::getMessage("STORE_DESCR") ?>:</td>
 		<td>
-			<textarea cols="35" rows="3" class="typearea" name="DESCRIPTION"><?= $str_DESCRIPTION ?></textarea>
+			<textarea cols="35" rows="3" class="typearea" name="DESCRIPTION"><?=htmlspecialcharsEx((string)$fields['DESCRIPTION']); ?></textarea>
 		</td>
 	</tr>
 	<tr>
-		<td><?= GetMessage("STORE_PHONE") ?>:</td>
+		<td><?= Loc::getMessage("STORE_PHONE") ?>:</td>
 		<td>
-			<input type="text" name="PHONE" value="<?=$str_PHONE?>" size="45" />
+			<input type="text" style="width:300px" name="PHONE" value="<?=htmlspecialcharsbx($fields['PHONE']); ?>">
 		</td>
 	</tr>
 	<tr>
-		<td><?= GetMessage("STORE_SCHEDULE") ?>:</td>
+		<td><?= Loc::getMessage("STORE_SCHEDULE") ?>:</td>
 		<td>
-			<input type="text" style="width:300px" name="SCHEDULE" value="<?=$str_SCHEDULE?>"/>
+			<input type="text" style="width:300px" name="SCHEDULE" value="<?=htmlspecialcharsbx($fields['SCHEDULE']); ?>">
 		</td>
 	</tr>
 	<tr>
 		<td><?= "Email" ?>:</td>
 		<td>
-			<input type="text" style="width:300px" name="EMAIL" value="<?=$str_EMAIL?>"/>
+			<input type="text" style="width:300px" name="EMAIL" value="<?=htmlspecialcharsbx($fields['EMAIL']); ?>">
 		</td>
 	</tr>
 	<tr>
-		<td><?= GetMessage("STORE_GPS_N") ?>:</td>
-		<td><input type="text" name="GPS_N" value="<?=$str_GPS_N?>" size="15" />
+		<td><?= Loc::getMessage("STORE_GPS_N") ?>:</td>
+		<td><input type="text" name="GPS_N" value="<?=htmlspecialcharsbx($fields['GPS_N']); ?>" size="15">
 		</td>
 	</tr>
 	<tr>
-		<td><?= GetMessage("STORE_GPS_S") ?>:</td>
-		<td><input type="text" name="GPS_S" value="<?=$str_GPS_S?>" size="15" />
+		<td><?= Loc::getMessage("STORE_GPS_S") ?>:</td>
+		<td><input type="text" name="GPS_S" value="<?=htmlspecialcharsbx($fields['GPS_S']); ?>" size="15">
 		</td>
 
 	</tr>
 	<tr>
-		<td><?= GetMessage("STORE_XML_ID") ?>:</td>
-		<td><input type="text" name="XML_ID" value="<?=$str_XML_ID?>" size="45" />
+		<td><?= Loc::getMessage("STORE_XML_ID") ?>:</td>
+		<td><input type="text" name="XML_ID" value="<?=htmlspecialcharsbx($fields['XML_ID']); ?>">
 		</td>
 	</tr>
 	<tr>
-		<td width="40%"><?= GetMessage("CSTORE_SORT") ?>:</td>
+		<td width="40%"><?= Loc::getMessage("CSTORE_SORT") ?>:</td>
 		<td width="60%">
-			<input type="text" name="CSTORE_SORT" value="<?=$str_SORT?>" size="5" />
+			<input type="text" name="SORT" value="<?=htmlspecialcharsbx($fields['SORT']); ?>" size="5">
 		</td>
 	</tr>
 	<tr>
-		<td><?echo GetMessage("STORE_IMAGE")?>:</td>
+		<td><?= Loc::getMessage("STORE_IMAGE")?>:</td>
 		<td>
-			<?echo CFile::InputFile("IMAGE_ID", 20, $str_IMAGE_ID, false, 0, "IMAGE", "", 0);?><br>
-			<?
-			if($str_IMAGE_ID)
-			{
-				echo CFile::ShowImage($str_IMAGE_ID, 200, 200, "border=0", "", true);
-			}
+			<?php
+			$fileConfig = [
+				'name' => 'IMAGE_ID',
+				'description' => false,
+				'allowUpload' => FileInput::UPLOAD_IMAGES,
+				'allowUploadExt' => '',
+				'maxCount' => 1,
+				'upload' => $canModify,
+				'medialib' => false,
+				'fileDialog' => $canModify,
+				'cloud' => false,
+				'delete' => $canModify,
+			];
+
+			$fileInput = FileInput::createInstance($fileConfig);
+			$showFiles = ['IMAGE_ID' => $fields['IMAGE_ID']];
+
+			echo $fileInput->show($showFiles, $bVarsFromForm);
 			?>
 		</td>
 	</tr>
-	<?
+	<?php
+	$tabControl->BeginNextTab();
+	?>
+	<tr>
+		<td align="left" colspan="2">
+			<a href="<?=$userFieldUrl?>"><?=Loc::getMessage("STORE_USER_FIELDS_ADD");?></a>
+		</td>
+	</tr>
+	<?php
 		$arUserFields = $USER_FIELD_MANAGER->GetUserFields($entityId, $id, LANGUAGE_ID);
 		foreach($arUserFields as $FIELD_NAME => $arUserField)
 		{
-			$arUserField["VALUE_ID"] = intval($id);
-			$strLabel = $arUserField["EDIT_FORM_LABEL"]? $arUserField["EDIT_FORM_LABEL"]: $arUserField["FIELD_NAME"];
+			$arUserField["VALUE_ID"] = $id;
+			$strLabel = $arUserField["EDIT_FORM_LABEL"]?: $arUserField["FIELD_NAME"];
 			$arUserField["EDIT_FORM_LABEL"] = $strLabel;
 
-			echo $USER_FIELD_MANAGER->GetEditFormHTML($bVarsFromForm, $GLOBALS[$FIELD_NAME], $arUserField);
+			$form_value = $GLOBALS[$FIELD_NAME] ?? null;
 
-			$form_value = $GLOBALS[$FIELD_NAME];
-			if(!$bVarsFromForm)
-				$form_value = $arUserField["VALUE"];
-			elseif($arUserField["USER_TYPE"]["BASE_TYPE"]=="file")
-				$form_value = $GLOBALS[$arUserField["FIELD_NAME"]."_old_id"];
+			echo $USER_FIELD_MANAGER->GetEditFormHTML($bVarsFromForm, $form_value, $arUserField);
 		}
 
 	$tabControl->EndTab();
-
-	$tabControl->Buttons(
-		array(
-			"disabled" => $bReadOnly,
-			"back_url" => "/bitrix/admin/cat_store_list.php?lang=".LANG."&".GetFilterParams("filter_", false)
-		)
-	);
+	$tabControl->Buttons([
+		"disabled" => !$canModify,
+		"back_url" => $listUrl
+	]);
 	$tabControl->End();
 	?>
 </form>
-<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");
+<?php
+Catalog\Config\Feature::initUiHelpScope();
+
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_admin.php");

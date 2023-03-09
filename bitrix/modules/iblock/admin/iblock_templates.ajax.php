@@ -1,10 +1,10 @@
 <?php
-define('STOP_STATISTICS', true);
-define('NO_AGENT_CHECK', true);
-define('DisableEventsCheck', true);
-define('BX_SECURITY_SHOW_MESSAGE', true);
-define("PUBLIC_AJAX_MODE", true);
-define("NOT_CHECK_PERMISSIONS", true);
+const STOP_STATISTICS = true;
+const NO_AGENT_CHECK = true;
+const DisableEventsCheck = true;
+const BX_SECURITY_SHOW_MESSAGE = true;
+const PUBLIC_AJAX_MODE = true;
+const NOT_CHECK_PERMISSIONS = true;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/iblock/admin_tools.php");
@@ -39,7 +39,7 @@ if (check_bitrix_sessid())
 		);
 		foreach ($_POST as $key => $value)
 		{
-			if (substr($key, 0, 3) === "UF_")
+			if (mb_substr($key, 0, 3) === "UF_")
 				$arFields[$key] = $value;
 		}
 	}
@@ -102,13 +102,13 @@ if (check_bitrix_sessid())
 				),
 			);
 		}
-		
+
 		if ($_REQUEST["ENTITY_TYPE"] === "E")
 		{
 			$html = ' ';
 			$firstSection = 0;
 			$inSelect = false;
-			$sections = array_filter($_POST["IBLOCK_SECTION"], "strlen");
+			$sections = $_POST["IBLOCK_SECTION"]? array_filter($_POST["IBLOCK_SECTION"], "strlen"): array();
 			$html .= '<select name="IBLOCK_ELEMENT_SECTION_ID" id="IBLOCK_ELEMENT_SECTION_ID" onchange="InheritedPropertiesTemplates.updateInheritedPropertiesValues(false, true)">';
 			if ($sections)
 			{
@@ -149,7 +149,7 @@ if (check_bitrix_sessid())
 				"IBLOCK_CODE" => CIBlock::GetArrayById($_REQUEST["IBLOCK_ID"], "CODE"),
 				"IBLOCK_EXTERNAL_ID" => CIBlock::GetArrayById($_REQUEST["IBLOCK_ID"], "XML_ID"),
 				"IBLOCK_SECTION_ID" => $inSelect? $section_id: $firstSection,
-				
+
 			);
 
 			if ($arIBlock["CANONICAL_PAGE_URL"])

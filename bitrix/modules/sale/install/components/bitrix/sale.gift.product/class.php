@@ -1,6 +1,7 @@
 <?php
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\SystemException;
+use Bitrix\Sale;
 
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 
@@ -41,7 +42,7 @@ class CSaleGiftProductComponent extends CCatalogViewedProductsComponent
 	protected function initGiftManager()
 	{
 		global $USER;
-		$userId = $USER instanceof CAllUser? $USER->getId() : null;
+		$userId = $USER instanceof CUser? $USER->getId() : null;
 		$this->giftManager = \Bitrix\Sale\Discount\Gift\Manager::getInstance()->setUserId($userId);
 	}
 
@@ -124,7 +125,7 @@ class CSaleGiftProductComponent extends CCatalogViewedProductsComponent
 			$urlTemplate,
 			array($this->arParams['PRODUCT_ID_VARIABLE'], $this->arParams['ACTION_VARIABLE'], '')
 		);
-		$this->arParams[$keyTemplate] .= (stripos($this->arParams[$keyTemplate], '?') === false ? '?' : '&');
+		$this->arParams[$keyTemplate] .= (mb_stripos($this->arParams[$keyTemplate], '?') === false ? '?' : '&');
 
 		$this->urlTemplates['~' . $keyTemplate] = $this->arParams[$keyTemplate].$this->arParams['ACTION_VARIABLE'].'='.self::ACTION_BUY.'&'.$this->arParams['PRODUCT_ID_VARIABLE'].'=';
 		$this->urlTemplates[$keyTemplate] = htmlspecialcharsbx($this->urlTemplates['~' . $keyTemplate]);
@@ -157,8 +158,13 @@ class CSaleGiftProductComponent extends CCatalogViewedProductsComponent
 				'QUANTITY' => true,
 			));
 
+			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+
+			/** @var Sale\Basket $basketClass */
+			$basketClass = $registry->getBasketClassName();
+
 			$collections = $this->giftManager->getCollectionsByProduct(
-				\Bitrix\Sale\Basket::loadItemsForFUser(\Bitrix\Sale\Fuser::getId(), SITE_ID), $potentialBuy
+				$basketClass::loadItemsForFUser(\Bitrix\Sale\Fuser::getId(), SITE_ID), $potentialBuy
 			);
 		}
 

@@ -76,10 +76,10 @@ class Monitoring
 		if (!extension_loaded('rrd'))
 			throw new \Exception("Extension rrd not loaded!");
 
-		if(strlen($hostname) <= 0)
+		if($hostname == '')
 			throw new \Bitrix\Main\ArgumentNullException("hostname");
 
-		if(strlen($roleId) <= 0)
+		if($roleId == '')
 			throw new \Bitrix\Main\ArgumentNullException("roleId");
 
 		$role = RolesData::getRole($roleId);
@@ -87,7 +87,7 @@ class Monitoring
 		if(empty($role))
 			throw new \Exception("Role with id = ".$roleId." was not defined.");
 
-		if(!isset($role["LOADBAR_INFO"]) || strlen($role["LOADBAR_INFO"]) <= 0)
+		if(!isset($role["LOADBAR_INFO"]) || $role["LOADBAR_INFO"] == '')
 			throw new \Exception("Role ".$roleId." has no correctly defined LOADBAR_INFO param .");
 
 		$rrdFile = str_replace('##HOSTNAME##', $hostname, $role["LOADBAR_INFO"]);
@@ -106,10 +106,10 @@ class Monitoring
 
 	public static function getInfoTableCategory($hostname, $categoryId)
 	{
-		if(strlen($hostname) <= 0)
+		if($hostname == '')
 			throw new \Bitrix\Main\ArgumentNullException("hostname");
 
-		if(strlen($categoryId) <= 0)
+		if($categoryId == '')
 			throw new \Bitrix\Main\ArgumentNullException("paramId");
 
 		$categories = self::getInfoTableCategoriesList($hostname);
@@ -190,13 +190,13 @@ class Monitoring
 
 	public static function getValue($hostname, $categoryId, $param)
 	{
-		if(strlen($hostname) <= 0)
+		if($hostname == '')
 			throw new \Bitrix\Main\ArgumentNullException("hostname");
 
-		if(strlen($categoryId) <= 0)
+		if($categoryId == '')
 			throw new \Bitrix\Main\ArgumentNullException("categoryId");
 
-		if(strlen($param) <= 0)
+		if($param == '')
 			throw new \Bitrix\Main\ArgumentNullException("param");
 
 		$arCat = static::getInfoTableCategory($hostname, $categoryId);
@@ -295,14 +295,9 @@ class Monitoring
 
 		$data = \rrd_graph( "/dev/null", $arOpts);
 
-		if(isset($item["DATA_FUNC"]))
+		if(isset($item["DATA_FUNC"]) && is_callable($item["DATA_FUNC"]))
 		{
-			$func = create_function('$data', $item["DATA_FUNC"]);
-
-			if(is_callable($func))
-			{
-				$result = $func($data);
-			}
+			$result = $item["DATA_FUNC"]($data);
 		}
 		else
 		{
@@ -339,7 +334,7 @@ class Monitoring
 			$shellAdapter = new ShellAdapter();
 			$execRes = $shellAdapter->syncExec("sudo -u root /usr/bin/ansible ".$hostname." -m setup");
 			$serversData = $shellAdapter->getLastOutput();
-			$serversData = substr($serversData, strpos($serversData, "{"));
+			$serversData = mb_substr($serversData, mb_strpos($serversData, "{"));
 
 			if($execRes)
 			{
@@ -444,13 +439,13 @@ class Monitoring
 				continue;
 
 			$name = $child->getName();
-			$pos1 = strpos($name, "-if_");
-			$pos2 = strpos($name, "-up-");
+			$pos1 = mb_strpos($name, "-if_");
+			$pos2 = mb_strpos($name, "-up-");
 
 			if($pos1 !== false && $pos2 !== false)
 			{
 				$pos1 += 4;
-				$dev = substr($name, $pos1, $pos2-$pos1);
+				$dev = mb_substr($name, $pos1, $pos2 - $pos1);
 
 				$result[$dev] = array(
 					"NAME" => $dev." ".Loc::getMessage("SCALE_MONITORING_NET_PARAMS"),
@@ -463,17 +458,24 @@ class Monitoring
 						"PRINT:vin:%1.2lf",
 						"PRINT:vout:%1.2lf"
 					),
-					"DATA_FUNC" => '
-					$result = false;
-					if(isset($data["calcpr"][0]) && isset($data["calcpr"][1]))
-					{
-						$result = \Bitrix\Scale\Monitoring::formatSize($data["calcpr"][0]/600).
-							"&nbsp;/&nbsp;".
-							\Bitrix\Scale\Monitoring::formatSize($data["calcpr"][1]/600)."&nbsp;'.Helper::nbsp(Loc::getMessage("SCALE_MONITORING_NET_SEC")).'";
-					}
-					return $result;'
+					"DATA_FUNC" => '\Bitrix\Scale\Monitoring::formatNetParamsValue'
 				);
 			}
+		}
+
+		return $result;
+	}
+
+	protected static function formatNetParamsValue(array $data)
+	{
+		$result = false;
+
+		if(isset($data['calcpr'][0], $data['calcpr'][1]))
+		{
+			$result = static::formatSize((int)$data['calcpr'][0]/600) .
+				'&nbsp;/&nbsp;' .
+				static::formatSize((int)$data['calcpr'][1]/600).'&nbsp;' .
+				Helper::nbsp(Loc::getMessage('SCALE_MONITORING_NET_SEC'));
 		}
 
 		return $result;
@@ -495,12 +497,12 @@ class Monitoring
 				continue;
 
 			$name = $child->getName();
-			$pos1 = strpos($name, "-diskstats_utilization-");
-			$pos2 = strpos($name, "-util-");
+			$pos1 = mb_strpos($name, "-diskstats_utilization-");
+			$pos2 = mb_strpos($name, "-util-");
 			if($pos1 !== false && $pos2 !== false)
 			{
 				$pos1 += 23; //strlen("-diskstats_utilization-")
-				$dev = substr($name, $pos1, $pos2-$pos1);
+				$dev = mb_substr($name, $pos1, $pos2 - $pos1);
 
 				$result[$dev] = array(
 					"NAME" => $dev." ".Loc::getMessage("SCALE_MONITORING_HDDACT_PARAMS"),
@@ -515,15 +517,7 @@ class Monitoring
 								"PRINT:vr:%1.2lf",
 								"PRINT:vw:%1.2lf"
 							),
-							"DATA_FUNC" => '
-								$result = false;
-								if(isset($data["calcpr"][0]) && isset($data["calcpr"][1]))
-								{
-									$result = \Bitrix\Scale\Monitoring::formatSize($data["calcpr"][0]/600).
-										"&nbsp;/&nbsp;".
-										\Bitrix\Scale\Monitoring::formatSize($data["calcpr"][1]/600)."&nbsp;'.Loc::getMessage("SCALE_MONITORING_NET_SEC").'";
-								}
-								return $result;'
+							"DATA_FUNC" => '\Bitrix\Scale\Monitoring::formatHddsUtilizationValue'
 						),
 						array(
 							"RRD" => $hostname."-diskstats_utilization-".$dev."-util-g.rrd",
@@ -534,6 +528,21 @@ class Monitoring
 					)
 				);
 			}
+		}
+
+		return $result;
+	}
+
+	protected static function formatHddsUtilizationValue(array $data)
+	{
+		$result = false;
+		
+		if(isset($data['calcpr'][0], $data['calcpr'][1]))
+		{
+			$result = static::formatSize((int)$data['calcpr'][0]/600) .
+				'&nbsp;/&nbsp;' .
+				static::formatSize((int)$data['calcpr'][1]/600) .
+				'&nbsp;'.Loc::getMessage('SCALE_MONITORING_NET_SEC');
 		}
 
 		return $result;

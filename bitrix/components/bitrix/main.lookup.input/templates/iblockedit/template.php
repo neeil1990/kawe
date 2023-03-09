@@ -8,6 +8,8 @@
  */
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
+use Bitrix\Main\Context;
+
 if ((defined('BX_PUBLIC_MODE')) && (1 == BX_PUBLIC_MODE))
 {
 	$APPLICATION->SetAdditionalCSS($this->GetFolder().'/style.css');
@@ -22,6 +24,14 @@ $control_id = $arParams['CONTROL_ID'];
 $textarea_id = (!empty($arParams['INPUT_NAME_STRING']) ? $arParams['INPUT_NAME_STRING'] : 'visual_'.$control_id);
 $boolStringValue = (isset($arParams['INPUT_VALUE_STRING']) && $arParams['INPUT_VALUE_STRING'] != '');
 $INPUT_VALUE = array();
+
+$mliFieldClass = '';
+if ($arParams['MAIN_UI_FILTER'] == 'Y')
+{
+	$mliLayoutClass = 'mli-layout-ui-filter';
+	$mliFieldClass = 'mli-field-ui-filter';
+}
+
 if ($boolStringValue)
 {
 	$arTokens = preg_split('/(?<=])[\n;,]+/', $arParams['~INPUT_VALUE_STRING']);
@@ -38,7 +48,7 @@ if ($boolStringValue)
 		}
 	}
 }
-?><div class="mli-layout" id="layout_<?=$control_id?>">
+?><div class="mli-layout <?=$mliLayoutClass?>" id="layout_<?=$control_id?>">
 <div style="display:none" id="value_container_<?=$control_id?>">
 <?if ($INPUT_VALUE):?>
 	<?foreach ($INPUT_VALUE as $value):?>
@@ -49,24 +59,30 @@ if ($boolStringValue)
 <?endif;?>
 </div>
 <?
-if($arParams["MULTIPLE"]=="Y")
+if($arParams["MULTIPLE"]=="Y" && $arParams['MAIN_UI_FILTER'] !== 'Y')
 {
 	?><textarea name="<?=$textarea_id?>" id="<?=$textarea_id?>" class="mli-field"><? echo ($boolStringValue ? htmlspecialcharsbx($arParams['INPUT_VALUE_STRING']) : '');?></textarea><?
 }
 else
 {
-	?><input autocomplete="off" type="text" name="<?=$textarea_id?>" id="<?=$textarea_id?>" value="<? echo ($boolStringValue ? htmlspecialcharsbx($arParams['INPUT_VALUE_STRING']) : '');?>" class="mli-field" /><?
+	?><input autocomplete="off" type="text" name="<?=$textarea_id?>" id="<?=$textarea_id?>" value="<? echo ($boolStringValue ? htmlspecialcharsbx($arParams['INPUT_VALUE_STRING']) : '');?>" class="mli-field <?=$mliFieldClass?>" /><?
 }
 ?></div><?
+
+$request = Context::getCurrent()->getRequest();
+
 $arAjaxParams = array(
 	"IBLOCK_ID" => $arParams["IBLOCK_ID"],
 	'WITHOUT_IBLOCK' => $arParams['WITHOUT_IBLOCK'],
 	"lang" => LANGUAGE_ID,
-	"site" => SITE_ID,
-	"admin" => (defined('ADMIN_SECTION') && ADMIN_SECTION === true ? 'Y' : 'N'),
+	"admin" => ($request->isAdminSection() ? 'Y' : 'N'),
 	'TYPE' => $arParams['TYPE'],
 	'RESULT_COUNT' => $arParams['RESULT_COUNT']
 );
+if (!$request->isAdminSection())
+{
+	$arAjaxParams["site"] = SITE_ID;
+}
 if ($arParams['BAN_SYM'] != '')
 {
 	$arAjaxParams['BAN_SYM'] = $arParams['BAN_SYM'];
@@ -83,6 +99,8 @@ $arSelectorParams = array(
 	'VALUE' => $INPUT_VALUE,
 	'VISUAL' => array(
 		'ID' => $textarea_id,
+		'MAIN_UI_FILTER' => $arParams['MAIN_UI_FILTER'],
+		'MULTIPLE' => $arParams['MULTIPLE'],
 		'MAX_HEIGHT' => $arParams['MAX_HEIGHT'],
 		'MIN_HEIGHT' => $arParams['MIN_HEIGHT'],
 		'START_TEXT' => $arParams['START_TEXT'],

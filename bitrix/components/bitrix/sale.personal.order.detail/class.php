@@ -89,6 +89,11 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	 */
 	protected $order = null;
 
+	/**
+	 * @var Sale\Registry registry
+	 */
+	protected $registry = null;
+
 	protected $dbResult = array();
 
 	/**
@@ -224,17 +229,17 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	{
 		global $APPLICATION;
 
-		$this->tryParseInt($arParams["CACHE_TIME"], 3600, true);
+		self::tryParseInt($arParams["CACHE_TIME"], 3600, true);
 
 		$arParams['CACHE_GROUPS'] = (isset($arParams['CACHE_GROUPS']) && $arParams['CACHE_GROUPS'] == 'N' ? 'N' : 'Y');
 
-		$this->tryParseString($arParams["PATH_TO_LIST"], $APPLICATION->GetCurPage());
-		$this->tryParseString($arParams["PATH_TO_PAYMENT"], "payment.php");
+		self::tryParseString($arParams["PATH_TO_LIST"], $APPLICATION->GetCurPage());
+		self::tryParseString($arParams["PATH_TO_PAYMENT"], "payment.php");
 
-		$this->tryParseString($arParams["PATH_TO_CANCEL"], $APPLICATION->GetCurPage()."?"."ID=#ID#");
-		$arParams["PATH_TO_CANCEL"] .= (strpos($arParams["PATH_TO_CANCEL"], "?") === false ? "?" : "&");
+		self::tryParseString($arParams["PATH_TO_CANCEL"], $APPLICATION->GetCurPage()."?"."ID=#ID#");
+		$arParams["PATH_TO_CANCEL"] .= (mb_strpos($arParams["PATH_TO_CANCEL"], "?") === false ? "?" : "&");
 
-		$this->tryParseString($arParams["ACTIVE_DATE_FORMAT"], "d.m.Y");
+		self::tryParseString($arParams["ACTIVE_DATE_FORMAT"], "d.m.Y");
 
 		// fields & props to select from IBlock
 		if(!is_array($arParams["CUSTOM_SELECT_PROPS"]))
@@ -243,14 +248,14 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 			$this->tryParseArray($arParams["CUSTOM_SELECT_PROPS"]);
 
 		// resample sizes
-		$this->tryParseInt($arParams["PICTURE_WIDTH"], 110);
-		$this->tryParseInt($arParams["PICTURE_HEIGHT"], 110);
+		self::tryParseInt($arParams["PICTURE_WIDTH"], 110);
+		self::tryParseInt($arParams["PICTURE_HEIGHT"], 110);
 
 		// resample type for images
 		if(!in_array($arParams['RESAMPLE_TYPE'], array(BX_RESIZE_IMAGE_EXACT, BX_RESIZE_IMAGE_PROPORTIONAL, BX_RESIZE_IMAGE_PROPORTIONAL_ALT)))
 			$arParams['RESAMPLE_TYPE'] = BX_RESIZE_IMAGE_PROPORTIONAL;
 
-		$this->tryParseBoolean($arParams['AUTH_FORM_IN_TEMPLATE']);
+		self::tryParseBoolean($arParams['AUTH_FORM_IN_TEMPLATE']);
 
 		if (empty($arParams['REFRESH_PRICES']))
 		{
@@ -276,7 +281,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		{
 			$arParams['HIDE_USER_INFO'] = array();
 		}
-		
+
 		return $arParams;
 	}
 
@@ -290,7 +295,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		foreach($fld as $k => &$item)
 		{
 			$item = trim($item);
-			if(!strlen($item))
+			if($item == '')
 				unset($fld[$k]);
 		}
 
@@ -324,7 +329,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	public static function tryParseString(&$fld, $default)
 	{
 		$fld = trim((string)$fld);
-		if(!strlen($fld) && isset($default))
+		if(!mb_strlen($fld) && isset($default))
 			$fld = htmlspecialcharsbx($default);
 
 		return $fld;
@@ -359,7 +364,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	 */
 	protected function loadOptions()
 	{
-		$this->options['USE_ACCOUNT_NUMBER'] = Config\Option::get("sale", "account_number_template", "") !== "";
+		$this->options['USE_ACCOUNT_NUMBER'] = \Bitrix\Sale\Integration\Numerator\NumeratorOrder::isUsedNumeratorForOrder();
 		$this->options['WEIGHT_UNIT'] = Config\Option::get("sale", "weight_unit", "", SITE_ID);
 		$this->options['WEIGHT_K'] = Config\Option::get("sale", "weight_koef", 1, SITE_ID);
 	}
@@ -381,7 +386,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	{
 		$this->requestData["ID"] = urldecode(urldecode($this->arParams["ID"]));
 
-		if (!strlen($this->requestData["ID"]))
+		if ($this->requestData["ID"] == '')
 			$this->doCaseOrderIdNotSet();
 	}
 
@@ -397,7 +402,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 			foreach($this->arParams['CUSTOM_SELECT_PROPS'] as $prop)
 			{
-				if (strpos($prop, 'PROPERTY_') !== false)
+				if (mb_strpos($prop, 'PROPERTY_') !== false)
 				{
 					$propId = str_replace('PROPERTY_', '', $prop);
 
@@ -428,8 +433,9 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	 */
 	protected function obtainTaxes(&$cached)
 	{
+		$taxClassName = $this->registry->getTaxClassName();
 		/** @var Sale\Tax $tax */
-		$tax = Sale\Tax::load($this->order);
+		$tax = $taxClassName::load($this->order);
 		$cached['TAX_LIST'] = $tax->getTaxList();
 	}
 
@@ -497,8 +503,22 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		$basket = array();
 		$basketN = $this->order->getBasket();
 
-		$basketItemsList = $basketN->getBasketItems();
+		$discounts = $this->order->getDiscount();
+		$showPrices = $discounts->getShowPrices();
 
+		foreach ($showPrices['BASKET'] as $basketCode => $data)
+		{
+			$basketItem = $basketN->getItemByBasketCode($basketCode);
+			if ($basketItem instanceof Sale\BasketItemBase)
+			{
+				$basketItem->setFieldNoDemand('BASE_PRICE', $data['SHOW_BASE_PRICE']);
+				$basketItem->setFieldNoDemand('PRICE', $data['SHOW_PRICE']);
+				$basketItem->setFieldNoDemand('DISCOUNT_PRICE', $data['SHOW_DISCOUNT']);
+			}
+		}
+		unset($basketItem, $basketCode, $data);
+
+		$basketItemsList = $basketN->getBasketItems();
 		/**  @var Sale\BasketItem $basketItem*/
 		foreach ($basketItemsList as $basketItem)
 		{
@@ -527,6 +547,8 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 			}
 
 			$basketValues['FORMATED_SUM'] = SaleFormatCurrency($basketValues["PRICE"] * $basketValues['QUANTITY'], $basketValues["CURRENCY"]);
+			$basketValues['FORMATED_BASE_SUM'] = SaleFormatCurrency($basketValues["BASE_PRICE"] * $basketValues['QUANTITY'], $basketValues["CURRENCY"]);
+			$basketValues['FORMATED_DISCOUNT_SUM'] = SaleFormatCurrency($basketValues["BASE_PRICE"] * $basketValues['QUANTITY'] - $basketValues["PRICE"] * $basketValues['QUANTITY'], $basketValues["CURRENCY"]);
 
 			$basket[$basketValues['ID']] = $basketValues;
 		}
@@ -540,71 +562,92 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	/**
 	 * Function fills all required data about basket item properties
 	 *
-	 * @param mixed[] $arBasketItems 		List of basket items
-	 * @return mixed[] Basket items
+	 * @param array $basketItems 		List of basket items
+	 * @return array Basket items
 	 */
-	public function obtainBasketProps(&$arBasketItems)
+	public function obtainBasketProps(&$basketItems)
 	{
 		// prepare some indexes
-		$arElementIds = array(); // a collection of PRODUCT_IDs and parent PRODUCT_IDs
-		$arSku2Parent = array(); // a mapping SKU PRODUCT_IDs to PARENT PRODUCT_IDs
-		$arParents = array(); // also
-		$arSkuProps = array();
+		$productIds =  // a collection of PRODUCT_IDs and parent PRODUCT_IDs
+		$skuParentMap =  // a mapping SKU PRODUCT_IDs to PARENT PRODUCT_IDs
+		$parentList =  // also
+		$skuPropertyCodes = [];
 
-		if(self::isNonemptyArray($arBasketItems))
+		if(self::isNonemptyArray($basketItems))
 		{
-			foreach($arBasketItems as &$arItem)
+			foreach($basketItems as &$item)
 			{
-				if ($arItem['PARENT'])
+				$productId = (int)$item["PRODUCT_ID"];
+				if ($item['PARENT'])
 				{
-					$arElementIds[] = $arItem['PARENT']["ID"];
-					$arSku2Parent[$arItem["PRODUCT_ID"]] = (int)$arItem['PARENT']["ID"];
-
-					$arParents[$arItem["PRODUCT_ID"]]["PRODUCT_ID"] = (int)$arItem['PARENT']["ID"];
-					$arParents[$arItem["PRODUCT_ID"]]["IBLOCK_ID"] = (int)$arItem['PARENT']["IBLOCK_ID"];
+					$parentId = (int)$item['PARENT']["ID"];
+					$productIds[] = $parentId;
+					$skuParentMap[$productId] = $parentId;
+					$parentList[$productId] = [
+						"PRODUCT_ID" => $parentId,
+						"IBLOCK_ID" => (int)$item['PARENT']["IBLOCK_ID"]
+					];
 				}
 
-				$arElementIds[] = (int)$arItem["PRODUCT_ID"];
-				if (is_array($arItem['PROPS']))
+				$productIds[] = $productId;
+
+				if (is_array($item['PROPS']))
 				{
-					foreach ($arItem['PROPS'] as $prop)
+					foreach ($item['PROPS'] as $property)
 					{
-						if (!empty($prop['CODE']) && !in_array($prop['CODE'], $arSkuProps))
+						if (!empty($property['CODE']) && !in_array($property['CODE'], $skuPropertyCodes))
 						{
-							$arSkuProps[] = $prop['CODE'];
+							$skuPropertyCodes[] = $property['CODE'];
 						}
 					}
 				}
 			}
 
+			foreach ($this->arParams['CUSTOM_SELECT_PROPS'] as $customProperty)
+			{
+				if (mb_strpos($customProperty, "PROPERTY_") !== false)
+				{
+					$code = str_replace('PROPERTY_', '', $customProperty);
+					if (!in_array($code , $skuPropertyCodes))
+					{
+						$skuPropertyCodes[] = $code;
+					}
+				}
+			}
+
 			// fetching iblock props
-			$this->obtainBasketPropsElement($arBasketItems, $arElementIds, $arSku2Parent);
+			$this->obtainBasketPropsElement($basketItems, $productIds, $skuParentMap);
 
 			// fetching sku props, if any
-			$this->obtainBasketPropsSKU($arBasketItems, $arSkuProps, $arParents);
+			$this->obtainBasketPropsSKU($basketItems, $skuPropertyCodes, $parentList);
 		}
 
-		return $arBasketItems;
+		return $basketItems;
 	}
 
 	/**
 	 * For each basket items it fills information about properties stored in
 	 *
-	 * @param mixed[] $arBasketItems		List of basket items
-	 * @param mixed[] $arElementIds			Array of element id
-	 * @param mixed[] $arSku2Parent			Mapping between sku ids and their parent ids
+	 * @param array $basketItems		List of basket items.
+	 * @param array $elementIds			Array of element id.
+	 * @param array $skuParentMap			Mapping between sku ids and their parent ids.
 	 * @return void
 	 */
-	public function obtainBasketPropsElement(&$arBasketItems, $arElementIds, $arSku2Parent)
+	public function obtainBasketPropsElement(&$basketItems, $elementIds, $skuParentMap)
 	{
-		$arImgFields = array("PREVIEW_PICTURE", "DETAIL_PICTURE");
+		$imgFields = array("PREVIEW_PICTURE", "DETAIL_PICTURE");
+		$productPropertySelect = array_merge(['ID', 'IBLOCK_ID'], $imgFields);
+		if (is_array($this->arParams['CUSTOM_SELECT_PROPS']))
+		{
+			$productPropertySelect = array_merge($productPropertySelect, $this->arParams['CUSTOM_SELECT_PROPS']);
+		}
 
 		// get BASKET product properties data (from iblocks): id, pictures and some any PROPERTY_*
-		$productProperties = $this->obtainProductProps($arElementIds, array_merge(array("ID"), $arImgFields, $this->arParams['CUSTOM_SELECT_PROPS']));
+		$productProperties = $this->obtainProductProps($elementIds, $productPropertySelect);
 
-		if (self::isNonemptyArray($arBasketItems))
+		if (self::isNonemptyArray($basketItems))
 		{
-			foreach ($arBasketItems as &$item)
+			foreach ($basketItems as &$item)
 			{
 				// catalog-specific logic farther
 				if(!$this->cameFromCatalog($item))
@@ -612,12 +655,13 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 					continue;
 				}
 
+				$productId = (int)$item["PRODUCT_ID"];
 				// merge items with properties we obtained by calling $this->obtainProductProps(): pictures and PROPERTY_*
-				if (array_key_exists($item["PRODUCT_ID"], $productProperties) && is_array($productProperties[$item["PRODUCT_ID"]]))
+				if (array_key_exists($productId, $productProperties) && is_array($productProperties[$productId]))
 				{
-					foreach ($productProperties[$item["PRODUCT_ID"]] as $key => $value)
+					foreach ($productProperties[$productId] as $key => $value)
 					{
-						if (strpos($key, "PROPERTY_") !== false || in_array($key, $arImgFields))
+						if (mb_strpos($key, "PROPERTY_") !== false || in_array($key, $imgFields))
 						{
 							$item[$key] = $value;
 						}
@@ -625,17 +669,18 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 				}
 
 				// if we have SKU product with parent...
-				if (array_key_exists($item["PRODUCT_ID"], $arSku2Parent)) // if sku element doesn't have value of some property - we'll show parent element value instead
+				if (array_key_exists($productId, $skuParentMap)) // if sku element doesn't have value of some property - we'll show parent element value instead
 				{
-					$arFieldsToFill = array_merge($this->arParams['CUSTOM_SELECT_PROPS'], $arImgFields); // fields to be filled with parents' values if empty
+					$arFieldsToFill = array_merge($this->arParams['CUSTOM_SELECT_PROPS'], $imgFields); // fields to be filled with parents' values if empty
 					foreach ($arFieldsToFill as $field)
 					{
-						if(!strlen($field)) continue;
+						if($field == '')
+							continue;
+						$field = mb_strtoupper($field);
+						$fieldVal = (in_array($field, $imgFields)) ? $field : $field."_VALUE";
+						$parentId = $skuParentMap[$item["PRODUCT_ID"]];
 
-						$fieldVal = (in_array($field, $arImgFields)) ? $field : $field."_VALUE";
-						$parentId = $arSku2Parent[$item["PRODUCT_ID"]];
-
-						if ((!isset($item[$fieldVal]) || (isset($item[$fieldVal]) && strlen($item[$fieldVal]) == 0))
+						if ((!isset($item[$fieldVal]) || (isset($item[$fieldVal]) && $item[$fieldVal] == ''))
 							&& (isset($productProperties[$parentId][$fieldVal]) && !empty($productProperties[$parentId][$fieldVal]))) // can be array or string
 						{
 							$item[$fieldVal] = $productProperties[$parentId][$fieldVal];
@@ -644,16 +689,9 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 				}
 
 				// resampling picture
-				if(intval($item["DETAIL_PICTURE"]))
-				{
-					$pict = $item["DETAIL_PICTURE"];
-				}
-				else
-				{
-					$pict = $item["PREVIEW_PICTURE"];
-				}
+				$pict = $this->getPictureId($item);
 
-				if($pict)
+				if ($pict)
 				{
 					$arImage = CFile::GetFileArray($pict);
 					if ($arImage && ($this->arParams['PICTURE_WIDTH'] || $this->arParams['PICTURE_HEIGHT']))
@@ -677,6 +715,26 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	}
 
 	/**
+	 * @param $item
+	 * @return int
+	 */
+	protected function getPictureId($item): int
+	{
+		$result = 0;
+
+		if ((int)$item['DETAIL_PICTURE'] > 0)
+		{
+			$result = $item['DETAIL_PICTURE'];
+		}
+		elseif ((int)$item['PREVIEW_PICTURE'] > 0)
+		{
+			$result = $item['PREVIEW_PICTURE'];
+		}
+
+		return (int)$result;
+	}
+
+	/**
 	 * Creates an array of iBlock properties for the elements with certain IDs
 	 *
 	 * @param mixed[] $elementIdList 		$arElementIds Array of element id.
@@ -692,6 +750,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 			return array();
 
 		$productDataList = array();
+		$iblockIds = [];
 
 		$productDataRow = \CIBlockElement::GetList(
 			array("SORT" => "ASC"),
@@ -706,6 +765,77 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		while ($product = $productDataRow->GetNext())
 		{
 			$productDataList[$product['ID']] = $product;
+			$iblockIds[] = $product['IBLOCK_ID'];
+		}
+
+		$propertyCodes = [];
+		foreach ($select as $selectName)
+		{
+			if (mb_strpos($selectName, 'PROPERTY_') !== false)
+			{
+				$propertyCodes[] = str_replace('PROPERTY_', '', $selectName);
+			}
+		}
+
+		if (!empty($iblockIds) && !empty($propertyCodes))
+		{
+			$iblockIds = array_unique($iblockIds);
+			$directProperties = [];
+			foreach ($iblockIds as $iblockId)
+			{
+				$propertyData = CIBlockProperty::GetList(
+					array('SORT' => 'ASC', 'ID' => 'ASC'),
+					array(
+						'IBLOCK_ID' => $iblockId,
+						'ACTIVE' => 'Y',
+						'PROPERTY_TYPE' => \Bitrix\Iblock\PropertyTable::TYPE_STRING,
+						'USER_TYPE' => 'directory'
+					)
+				);
+
+				while ($property = $propertyData->Fetch())
+				{
+					if (in_array($property['CODE'], $propertyCodes))
+					{
+						if ($this->useHL)
+						{
+							$hlBlockResult = HL\HighloadBlockTable::getList([
+								"filter" => [
+									"TABLE_NAME" => $property["USER_TYPE_SETTINGS"]["TABLE_NAME"]
+								]
+							]);
+							$hlBlock = $hlBlockResult->fetch();
+
+							if ($hlBlock)
+							{
+								$values = [];
+								$entity = HL\HighloadBlockTable::compileEntity($hlBlock);
+								$entityDataClass = $entity->getDataClass();
+								$directoryData = $entityDataClass::getList();
+								while ($element = $directoryData->fetch())
+								{
+									$values[$element['UF_XML_ID']] = $element['UF_NAME'];
+								}
+								$property['VALUES'] = $values;
+							}
+							$directProperties[] = $property;
+						}
+					}
+				}
+			}
+
+			if (!empty($directProperties))
+			{
+				foreach ($productDataList as &$product)
+				{
+					foreach ($directProperties as $property)
+					{
+						$currentValue = $product["PROPERTY_{$property['CODE']}_VALUE"];
+						$product["~PROPERTY_{$property['CODE']}_VALUE"] =
+						$product["PROPERTY_{$property['CODE']}_VALUE"] = $property['VALUES'][$currentValue];
+					}
+				}
+			}
 		}
 
 		return $productDataList;
@@ -714,217 +844,122 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	/**
 	 * For each basket items it fills information about SKU properties stored in
 	 *
-	 * @param mixed[] $arBasketItems		List of basket items
-	 * @param mixed[] $arSkuProps		Sku properties to search for
-	 * @param mixed[] $arParents		Specially formed array, see code below
+	 * @param array $basketItems		List of basket items
+	 * @param array $skuPropertyCodes		Sku properties to search for
+	 * @param array $parentList		Specially formed array, see code below
 	 * @return void
 	 */
-	public function obtainBasketPropsSKU(&$arBasketItems, $arSkuProps, $arParents)
+	public function obtainBasketPropsSKU(&$basketItems, $skuPropertyCodes, $parentList)
 	{
-		$arRes = array();
-		$arSkuIblockID = array();
+		$skuIblocks = array();
 
-		if (self::isNonemptyArray($arBasketItems) && self::isNonemptyArray($arParents))
+		if (self::isNonemptyArray($basketItems) && self::isNonemptyArray($parentList))
 		{
-			foreach ($arBasketItems as &$arItem)
+			foreach ($basketItems as &$item)
 			{
 				// catalog-specific logic farther
-				if(!$this->cameFromCatalog($arItem))
+				if(!$this->cameFromCatalog($item))
 					continue;
 
-				if (array_key_exists($arItem["PRODUCT_ID"], $arParents))
+				if (array_key_exists($item["PRODUCT_ID"], $parentList))
 				{
-					$arSKU = \CCatalogSku::GetInfoByProductIBlock($arParents[$arItem["PRODUCT_ID"]]["IBLOCK_ID"]);
+					$skuInfo = \CCatalogSku::GetInfoByProductIBlock($parentList[$item["PRODUCT_ID"]]["IBLOCK_ID"]);
 
-					if (!array_key_exists($arSKU["IBLOCK_ID"], $arSkuIblockID))
-						$arSkuIblockID[$arSKU["IBLOCK_ID"]] = $arSKU;
+					if (!array_key_exists($skuInfo["IBLOCK_ID"], $skuIblocks))
+					{
+						$skuIblocks[$skuInfo["IBLOCK_ID"]] = $skuInfo;
+					}
 
-					$arItem["IBLOCK_ID"] = $arSKU["IBLOCK_ID"];
-					$arItem["SKU_PROPERTY_ID"] = $arSKU["SKU_PROPERTY_ID"];
+					$item["IBLOCK_ID"] = $skuInfo["IBLOCK_ID"];
+					$item["SKU_PROPERTY_ID"] = $skuInfo["SKU_PROPERTY_ID"];
 				}
 			}
-			unset($arItem);
+			unset($item);
 
 			if($this->useIBlock)
 			{
-				if(!self::isNonemptyArray($arSkuProps))
+				if(!self::isNonemptyArray($skuPropertyCodes))
 				{
-					$arSkuProps = array();
+					$skuPropertyCodes = [];
 				}
 
-				foreach ($arSkuIblockID as $skuIblockId => $arSKU)
+				$skuProperties = $this->getSkuPropertyData(array_keys($skuIblocks), $skuPropertyCodes);
+				$selectFields = ['ID'];
+				foreach ($skuPropertyCodes as $code)
 				{
-					// possible props values
-					$rsProps = CIBlockProperty::GetList(
-						array('SORT' => 'ASC', 'ID' => 'ASC'),
-						array('IBLOCK_ID' => $skuIblockId, 'ACTIVE' => 'Y')
-					);
-
-					while ($arProp = $rsProps->Fetch())
-					{
-						if ($arProp['PROPERTY_TYPE'] == 'L' || $arProp['PROPERTY_TYPE'] == 'E'
-							|| ($arProp['PROPERTY_TYPE'] == 'S' && $arProp['USER_TYPE'] == 'directory'))
-						{
-							if ($arProp['XML_ID'] == 'CML2_LINK')
-								continue;
-
-							if (!in_array($arProp['CODE'], $arSkuProps))
-								continue;
-
-							$arRes[$skuIblockId][$arProp['ID']] = array(
-								'ID' => $arProp['ID'],
-								'CODE' => $arProp['CODE'],
-								'NAME' => $arProp['NAME'],
-								'TYPE' => $arProp['PROPERTY_TYPE'],
-								'VALUES' => array()
-							);
-
-							if ($arProp['PROPERTY_TYPE'] == 'L')
-							{
-								$arValues = array();
-								$rsPropEnums = CIBlockProperty::GetPropertyEnum($arProp['ID']);
-								while ($arEnum = $rsPropEnums->Fetch())
-								{
-									$arValues[$arEnum['ID']] = array(
-										'ID' => $arEnum['ID'],
-										'NAME' => $arEnum['VALUE'],
-										'PICT' => false
-									);
-								}
-
-								$arRes[$skuIblockId][$arProp['ID']]['VALUES'] = $arValues;
-							}
-							elseif ($arProp['PROPERTY_TYPE'] == 'E')
-							{
-								$arValues = array();
-								$rsPropEnums = Iblock\ElementTable::getList(
-									array(
-										'order' => array('SORT' => 'ASC'),
-										'filter' => array('IBLOCK_ID' => $arProp['LINK_IBLOCK_ID'], 'ACTIVE' => 'Y'),
-										'select' => array('ID', 'NAME', 'PREVIEW_PICTURE')
-									)
-								);
-
-								while ($arEnum = $rsPropEnums->fetch())
-								{
-									$arEnum['PREVIEW_PICTURE'] = CFile::GetFileArray($arEnum['PREVIEW_PICTURE']);
-
-									if (!is_array($arEnum['PREVIEW_PICTURE']))
-										continue;
-
-									$productImg = CFile::ResizeImageGet($arEnum['PREVIEW_PICTURE'], array('width'=>80, 'height'=>80), BX_RESIZE_IMAGE_PROPORTIONAL, false, false);
-
-									$arEnum['PREVIEW_PICTURE']['SRC'] = $productImg['src'];
-
-									$arValues[$arEnum['ID']] = array(
-										'ID' => $arEnum['ID'],
-										'NAME' => $arEnum['NAME'],
-										'SORT' => $arEnum['SORT'],
-										'PICT' => $arEnum['PREVIEW_PICTURE']
-									);
-								}
-
-								$arRes[$skuIblockId][$arProp['ID']]['VALUES'] = $arValues;
-							}
-							elseif ($arProp['PROPERTY_TYPE'] == 'S' && $arProp['USER_TYPE'] == 'directory')
-							{
-								$arValues = array();
-								if ($this->useHL)
-								{
-									$hlBlockResult = HL\HighloadBlockTable::getList(array("filter" => array("TABLE_NAME" => $arProp["USER_TYPE_SETTINGS"]["TABLE_NAME"])));
-
-									$hlBlock = $hlBlockResult->fetch();
-
-									if ($hlBlock)
-									{
-										$entity = HL\HighloadBlockTable::compileEntity($hlBlock);
-										$entity_data_class = $entity->getDataClass();
-										$rsData = $entity_data_class::getList();
-
-										while ($arData = $rsData->fetch())
-										{
-											$arValues[$arData['ID']] = array(
-												'ID' => $arData['ID'],
-												'NAME' => $arData['UF_NAME'],
-												'SORT' => $arData['UF_SORT'],
-												'FILE' => $arData['UF_FILE'],
-												'PICT' => '',
-												'XML_ID' => $arData['UF_XML_ID']
-											);
-										}
-
-										$arRes[$skuIblockId][$arProp['ID']]['VALUES'] = $arValues;
-									}
-								}
-							}
-						}
-					}
+					$selectFields[] = "PROPERTY_".$code;
 				}
-
-				foreach ($arBasketItems as &$arItem) // for each item in the basket
+				foreach ($basketItems as &$item) // for each item in the basket
 				{
 					// catalog-specific logic farther: iblocks, catalogs and other friends
-					if(!$this->cameFromCatalog($arItem))
+					if(!$this->cameFromCatalog($item))
 						continue;
 
-					$arSelectSkuProps = array();
-
-					foreach ($arSkuProps as $prop)
-						$arSelectSkuProps[] = "PROPERTY_".$prop;
-
-					if (isset($arItem["IBLOCK_ID"]) && intval($arItem["IBLOCK_ID"]) > 0 && array_key_exists($arItem["IBLOCK_ID"], $arRes))
+					$productId = $item['PRODUCT_ID'];
+					if ((int)($item["IBLOCK_ID"]) > 0 && array_key_exists($item["IBLOCK_ID"], $skuProperties))
 					{
-						$arItem["SKU_DATA"] = $arRes[$arItem["IBLOCK_ID"]];
+						$skuItemData = $skuProperties[$item["IBLOCK_ID"]];
+						$item["SKU_DATA"] = $skuItemData;
 
-						$arUsedValues = array();
+						$usedValues = array();
 						$arTmpRes = array();
 
-						$arOfFilter = array(
-							"IBLOCK_ID" => $arItem["IBLOCK_ID"],
-							"PROPERTY_".$arSkuIblockID[$arItem["IBLOCK_ID"]]["SKU_PROPERTY_ID"] => $arParents[$arItem["PRODUCT_ID"]]["PRODUCT_ID"]
+						$filter = array(
+							"IBLOCK_ID" => $item["IBLOCK_ID"],
+							"PROPERTY_".$skuIblocks[$item["IBLOCK_ID"]]["SKU_PROPERTY_ID"] => $parentList[$productId]["PRODUCT_ID"]
 						);
 
 						$rsOffers = CIBlockElement::GetList(
 							array(),
-							$arOfFilter,
+							$filter,
 							false,
 							false,
-							array_merge(array("ID"), $arSelectSkuProps)
+							$selectFields
 						);
 
 						while ($arOffer = $rsOffers->fetch())
 						{
-							foreach ($arSkuProps as $prop)
+							foreach ($skuPropertyCodes as $code)
 							{
-								if (!empty($arOffer["PROPERTY_".$prop."_VALUE"]) &&
-									(!is_array($arUsedValues[$arItem["PRODUCT_ID"]][$prop]) || !in_array($arOffer["PROPERTY_".$prop."_VALUE"], $arUsedValues[$arItem["PRODUCT_ID"]][$prop])))
-									$arUsedValues[$arItem["PRODUCT_ID"]][$prop][] = $arOffer["PROPERTY_".$prop."_VALUE"];
+								$value = $usedValues[$productId][$code];
+								if (empty($arOffer["PROPERTY_".$code."_VALUE"]))
+								{
+									continue;
+								}
+
+								if (!is_array($value) || !in_array($arOffer["PROPERTY_".$code."_VALUE"], $value))
+								{
+									$usedValues[$productId][$code][] = $arOffer["PROPERTY_".$code."_VALUE"];
+								}
 							}
 						}
 
-						if (!empty($arUsedValues))
+						if (!empty($usedValues))
 						{
 							// add only used values to the item SKU_DATA
-							foreach ($arRes[$arItem["IBLOCK_ID"]] as $propId => $arProp)
+							foreach ($skuItemData as $propertyId => $property)
 							{
-								if (!array_key_exists($arProp["CODE"], $arUsedValues[$arItem["PRODUCT_ID"]]))
+								if (!array_key_exists($property["CODE"], $usedValues[$productId]))
 									continue;
 
 								$propValues = array();
 								$skuType = '';
-								foreach ($arProp["VALUES"] as $valId => $arValue)
+								foreach ($property["VALUES"] as $valId => $arValue)
 								{
 									// properties of various type have different values in the used values data
-									if (($arProp["TYPE"] == "L" && in_array($arValue["NAME"], $arUsedValues[$arItem["PRODUCT_ID"]][$arProp["CODE"]]))
-										|| ($arProp["TYPE"] == "E" && in_array($arValue["ID"], $arUsedValues[$arItem["PRODUCT_ID"]][$arProp["CODE"]]))
-										|| ($arProp["TYPE"] == "S" && in_array($arValue["XML_ID"], $arUsedValues[$arItem["PRODUCT_ID"]][$arProp["CODE"]]))
+									if (($property["TYPE"] == "L" && in_array($arValue["NAME"], $usedValues[$productId][$property["CODE"]]))
+										|| ($property["TYPE"] == "E" && in_array($arValue["ID"], $usedValues[$productId][$property["CODE"]]))
+										|| ($property["TYPE"] == "S" && in_array($arValue["XML_ID"], $usedValues[$productId][$property["CODE"]]))
 									)
 									{
-										if ($arProp["TYPE"] == "S")
+										if ($property["TYPE"] == "S")
 										{
 											$arTmpFile = CFile::GetFileArray($arValue["FILE"]);
 											$tmpImg = CFile::ResizeImageGet($arTmpFile, array('width'=>30, 'height'=>30), BX_RESIZE_IMAGE_PROPORTIONAL, true);
-											$arValue['PICT'] = array_change_key_case($tmpImg, CASE_UPPER);
+											if (is_array($tmpImg))
+											{
+												$arValue['PICT'] = array_change_key_case($tmpImg, CASE_UPPER);
+											}
 
 											$skuType = 'image';
 										}
@@ -935,35 +970,35 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 									}
 								}
 
-								$arTmpRes['n'.$propId] = array(
-									'CODE' => $arProp["CODE"],
-									'NAME' => $arProp["NAME"],
+								$arTmpRes['n'.$propertyId] = array(
+									'CODE' => $property["CODE"],
+									'NAME' => $property["NAME"],
 									'SKU_TYPE' => $skuType,
 									'VALUES' => $propValues
 								);
 							}
 						}
 
-						$arItem["SKU_DATA"] = $arTmpRes;
+						$item["SKU_DATA"] = $arTmpRes;
 					}
 
-					if(self::isNonemptyArray($arItem['PROPS']))
+					if(self::isNonemptyArray($item['PROPS']))
 					{
-						foreach($arItem['PROPS'] as $v => $prop) // for each property of basket item
+						foreach($item['PROPS'] as $v => $prop) // for each property of basket item
 						{
 							// search for sku property that matches current one
 							// establishing match based on codes even if the code may not set
 							$code = $prop['CODE'];
-							$arItem["PROPERTY_{$code}_VALUE"] = $prop['VALUE'];
+							$item["PROPERTY_{$code}_VALUE"] = $prop['VALUE'];
 
-							if(self::isNonemptyArray($arItem['SKU_DATA']))
+							if(self::isNonemptyArray($item['SKU_DATA']))
 							{
-								foreach($arItem['SKU_DATA'] as $spIndex => $skuProp)
+								foreach($item['SKU_DATA'] as $spIndex => $skuProp)
 								{
 									if($skuProp['CODE'] == $code) // if match found
 									{
-										$arItem['PROPS'][$v]['SKU_PROP'] = $spIndex;
-										$arItem['PROPS'][$v]['SKU_TYPE'] = $skuProp['SKU_TYPE'];
+										$item['PROPS'][$v]['SKU_PROP'] = $spIndex;
+										$item['PROPS'][$v]['SKU_TYPE'] = $skuProp['SKU_TYPE'];
 
 										if(self::isNonemptyArray($skuProp['VALUES']))
 										{
@@ -976,7 +1011,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 												if($match)
 												{
-													$arItem['PROPS'][$v]['SKU_VALUE'] = $spValue;
+													$item['PROPS'][$v]['SKU_VALUE'] = $spValue;
 													break;
 												}
 											}
@@ -989,6 +1024,137 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param array $skuIblockIds
+	 * @param array $skuPropertyCodes
+	 *
+	 * @return array
+	 */
+	protected function getSkuPropertyData(array $skuIblockIds, array $skuPropertyCodes)
+	{
+		$result = [];
+		foreach ($skuIblockIds as $skuIblockId)
+		{
+			// possible props values
+			$propertyData = CIBlockProperty::GetList(
+				array('SORT' => 'ASC', 'ID' => 'ASC'),
+				array('IBLOCK_ID' => $skuIblockId, 'ACTIVE' => 'Y')
+			);
+
+			while ($property = $propertyData->Fetch())
+			{
+				$propertyType = $property['PROPERTY_TYPE'];
+				if (
+					$propertyType !== \Bitrix\Iblock\PropertyTable::LISTBOX
+					&& $propertyType !== \Bitrix\Iblock\PropertyTable::TYPE_ELEMENT
+					&& !($propertyType == \Bitrix\Iblock\PropertyTable::TYPE_STRING && $property['USER_TYPE'] == 'directory')
+				)
+				{
+					continue;
+				}
+
+				if ($property['XML_ID'] == 'CML2_LINK')
+					continue;
+
+				if (!in_array($property['CODE'], $skuPropertyCodes))
+					continue;
+
+				$resultItem = [
+					'ID' => $property['ID'],
+					'CODE' => $property['CODE'],
+					'NAME' => $property['NAME'],
+					'TYPE' => $propertyType,
+					'VALUES' => []
+				];
+
+				if ($propertyType == \Bitrix\Iblock\PropertyTable::LISTBOX)
+				{
+					$values = array();
+					$enumsData = CIBlockProperty::GetPropertyEnum($property['ID']);
+					while ($enum = $enumsData->Fetch())
+					{
+						$values[$enum['ID']] = array(
+							'ID' => $enum['ID'],
+							'NAME' => $enum['VALUE'],
+							'PICT' => false
+						);
+					}
+
+					$resultItem['VALUES'] = $values;
+				}
+				elseif ($property['PROPERTY_TYPE'] == \Bitrix\Iblock\PropertyTable::TYPE_ELEMENT)
+				{
+					$arValues = array();
+					$rsPropEnums = Iblock\ElementTable::getList(
+						array(
+							'order' => array('SORT' => 'ASC'),
+							'filter' => array('IBLOCK_ID' => $property['LINK_IBLOCK_ID'], 'ACTIVE' => 'Y'),
+							'select' => array('ID', 'NAME', 'PREVIEW_PICTURE')
+						)
+					);
+
+					while ($arEnum = $rsPropEnums->fetch())
+					{
+						$arEnum['PREVIEW_PICTURE'] = CFile::GetFileArray($arEnum['PREVIEW_PICTURE']);
+
+						if (!is_array($arEnum['PREVIEW_PICTURE']))
+							continue;
+
+						$productImg = CFile::ResizeImageGet($arEnum['PREVIEW_PICTURE'], array('width'=>80, 'height'=>80), BX_RESIZE_IMAGE_PROPORTIONAL, false, false);
+
+						$arEnum['PREVIEW_PICTURE']['SRC'] = $productImg['src'];
+
+						$arValues[$arEnum['ID']] = array(
+							'ID' => $arEnum['ID'],
+							'NAME' => $arEnum['NAME'],
+							'SORT' => $arEnum['SORT'],
+							'PICT' => $arEnum['PREVIEW_PICTURE']
+						);
+					}
+
+					$resultItem['VALUES'] = $arValues;
+				}
+				elseif ($property['PROPERTY_TYPE'] == \Bitrix\Iblock\PropertyTable::TYPE_STRING)
+				{
+					$values = [];
+					if ($this->useHL)
+					{
+						$hlBlockResult = HL\HighloadBlockTable::getList([
+							"filter" => [
+								"TABLE_NAME" => $property["USER_TYPE_SETTINGS"]["TABLE_NAME"]
+							]
+						]);
+						$hlBlock = $hlBlockResult->fetch();
+
+						if ($hlBlock)
+						{
+							$entity = HL\HighloadBlockTable::compileEntity($hlBlock);
+							$entityDataClass = $entity->getDataClass();
+							$directoryData = $entityDataClass::getList();
+							while ($element = $directoryData->fetch())
+							{
+								$values[$element['ID']] = array(
+									'ID' => $element['ID'],
+									'NAME' => $element['UF_NAME'],
+									'SORT' => $element['UF_SORT'],
+									'FILE' => $element['UF_FILE'],
+									'PICT' => '',
+									'XML_ID' => $element['UF_XML_ID']
+								);
+							}
+							$resultItem['VALUES'] = $values;
+						}
+					}
+				}
+
+				$result[$skuIblockId][$property['ID']] = $resultItem;
+				unset($resultItem);
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -1123,9 +1289,10 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 	protected function loadOrder($id)
 	{
+		$orderClassName = $this->registry->getOrderClassName();
 		if ($this->options['USE_ACCOUNT_NUMBER'])
 		{
-			$this->order = Sale\Order::loadByAccountNumber($id);
+			$this->order = $orderClassName::loadByAccountNumber($id);
 		}
 
 		if ($this->order)
@@ -1134,7 +1301,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		}
 		elseif ((int)$id > 0)
 		{
-			$this->order = Sale\Order::load($id);
+			$this->order = $orderClassName::load($id);
 		}
 	}
 
@@ -1167,22 +1334,14 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 		$this->requestData["ID"] = $this->order->getId();
 
-		$orderValues = $this->order->getFieldValues();
-
-		if (empty($orderValues))
-		{
-			throw new Main\SystemException(
-				str_replace("#ID#", $this->requestData["ID"], Localization\Loc::getMessage("SPOD_NO_ORDER")),
-				self::E_ORDER_NOT_FOUND
-			);
-		}
+		$orderFields = $this->order->getFieldValues();
 
 		if (
 			is_array($this->arParams['RESTRICT_CHANGE_PAYSYSTEM'])
-			&& in_array($orderValues['STATUS_ID'], $this->arParams['RESTRICT_CHANGE_PAYSYSTEM'])
+			&& in_array($orderFields['STATUS_ID'], $this->arParams['RESTRICT_CHANGE_PAYSYSTEM'])
 		)
 		{
-			$orderValues['LOCK_CHANGE_PAYSYSTEM'] = 'Y';
+			$orderFields['LOCK_CHANGE_PAYSYSTEM'] = 'Y';
 		}
 
 		$shipmentOrder = array();
@@ -1218,34 +1377,49 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 				}
 			}
 
-			if ($shipmentFields["DELIVERY_ID"] > 0 && strlen($shipmentFields["TRACKING_NUMBER"]))
+			if ($shipmentFields["DELIVERY_ID"] > 0 && mb_strlen($shipmentFields["TRACKING_NUMBER"]))
 			{
 				$shipmentFields["TRACKING_URL"] = $trackingManager->getTrackingUrl($shipmentFields["DELIVERY_ID"], $shipmentFields["TRACKING_NUMBER"]);
 			}
-			
+			$currency = $shipmentFields["CURRENCY"];
+			if (empty($currency))
+			{
+				$currency = $this->order->getCurrency();
+			}
+			$shipmentFields["PRICE_DELIVERY_FORMATTED"] = SaleFormatCurrency($shipmentFields['PRICE_DELIVERY'], $currency);
+			$this->formatDate($shipmentFields);
 			$shipmentOrder[] = $shipmentFields;
 		}
 
-		$orderValues['SHIPMENT'] = $shipmentOrder;
+		$orderFields['SHIPMENT'] = $shipmentOrder;
 
 		$paymentOrder = array();
 
 		$paymentCollection = $this->order->getPaymentCollection();
-
+		$dateFormat = $this->arParams['ACTIVE_DATE_FORMAT'];
 		/** @var \Bitrix\Sale\Payment $payment*/
 		foreach ($paymentCollection as $payment)
 		{
 			$paymentFields = $payment->getFieldValues();
 			$paymentFields['PAY_SYSTEM_NAME'] = htmlspecialcharsbx($paymentFields['PAY_SYSTEM_NAME']);
 			$paymentFields['CHECK_DATA'] = CheckManager::getCheckInfo($payment);
+			if ($paymentFields['DATE_PAID'] instanceof Main\Type\Date)
+			{
+				$paymentFields['DATE_PAID_FORMATTED'] = $paymentFields['DATE_PAID']->format($dateFormat);
+			}
+			if ($paymentFields['DATE_BILL'] instanceof Main\Type\Date)
+			{
+				$paymentFields['DATE_BILL_FORMATTED'] = $paymentFields['DATE_BILL']->format($dateFormat);
+			}
+			$this->formatDate($paymentFields);
 			$paymentOrder[$paymentFields['ID']] = $paymentFields;
 		}
-		
-		$orderValues['PAYMENT'] = $paymentOrder;
 
-		$orderValues['IS_ALLOW_PAY'] = $this->order->isAllowPay() ? 'Y' : 'N';
+		$orderFields['PAYMENT'] = $paymentOrder;
 
-		$this->dbResult = $orderValues;
+		$orderFields['IS_ALLOW_PAY'] = $this->order->isAllowPay() ? 'Y' : 'N';
+
+		$this->dbResult = $orderFields;
 	}
 
 	/**
@@ -1304,7 +1478,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 				$payment["PAY_SYSTEM"]['NAME'] = htmlspecialcharsbx($payment["PAY_SYSTEM"]['NAME']);
 				$payment["PAY_SYSTEM"]["SRC_LOGOTIP"] = CFile::GetPath($payment["PAY_SYSTEM"]['LOGOTIP']);
 			}
-			if ($payment["PAID"] != "Y" && $this->dbResult["CANCELED"] != "Y" &&  $this->dbResult["ALLOW_PAY"] != "N")
+			if ($payment["PAID"] != "Y" && $this->dbResult["CANCELED"] != "Y" &&  $this->dbResult["IS_ALLOW_PAY"] != "N")
 			{
 				$payment['BUFFERED_OUTPUT'] = '';
 				$payment['ERROR'] = '';
@@ -1325,8 +1499,8 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 						$handlerFolder = Sale\PaySystem\Manager::getPathToHandlerFolder($service->getField('ACTION_FILE'));
 						$pathToAction = Main\Application::getDocumentRoot().$handlerFolder;
 						$pathToAction = str_replace("\\", "/", $pathToAction);
-						while (substr($pathToAction, strlen($pathToAction) - 1, 1) == "/")
-							$pathToAction = substr($pathToAction, 0, strlen($pathToAction) - 1);
+						while (mb_substr($pathToAction, mb_strlen($pathToAction) - 1, 1) == "/")
+							$pathToAction = mb_substr($pathToAction, 0, mb_strlen($pathToAction) - 1);
 						if (file_exists($pathToAction))
 						{
 							if (is_dir($pathToAction) && file_exists($pathToAction."/payment.php"))
@@ -1409,13 +1583,15 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 			{
 				$cachedData = array();
 
+				$personTypeClassName = $this->registry->getPersonTypeClassName();
 				// Person type
-				$cachedData['PERSON_TYPE'] = Sale\PersonType::load($this->dbResult['LID']);
+				$cachedData['PERSON_TYPE'] = $personTypeClassName::load($this->dbResult['LID']);
 
 				// Save statuses for Filter form
 				$cachedData['STATUS'] = array();
 
-				$listStatusNames = Sale\OrderStatus::getAllStatusesNames(LANGUAGE_ID);
+				$orderStatusClassName = $this->registry->getOrderStatusClassName();
+				$listStatusNames = $orderStatusClassName::getAllStatusesNames(LANGUAGE_ID);
 
 				foreach($listStatusNames as $key => $data)
 				{
@@ -1534,7 +1710,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 			{
 				continue;
 			}
-			
+
 			foreach ($shipment['ITEMS'] as $i => &$item)
 			{
 				if (isset($basket[$item['BASKET_ID']]))
@@ -1566,6 +1742,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		{
 			foreach ($this->dbResult['BASKET'] as &$arItem)
 			{
+				$this->dbResult['BASE_PRODUCT_SUM'] += $arItem["BASE_PRICE"] * $arItem['QUANTITY'];
 				$this->dbResult['PRODUCT_SUM'] += $arItem["PRICE"] * $arItem['QUANTITY'];
 				$arItem["QUANTITY"] = doubleval($arItem["QUANTITY"]);
 				$this->dbResult["ORDER_WEIGHT"] += $arItem["WEIGHT"] * $arItem["QUANTITY"];
@@ -1597,13 +1774,13 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	 */
 	protected function formatResultUrls()
 	{
-		if ( $this->arResult["CAN_CANCEL"] === "Y")
+		if ($this->arResult["CAN_CANCEL"] === "Y")
 		{
 			$this->arResult["URL_TO_CANCEL"] = CComponentEngine::makePathFromTemplate($this->arParams["PATH_TO_CANCEL"], array("ID" => urlencode(urlencode( $this->arResult["ACCOUNT_NUMBER"])))).'CANCEL=Y';
 		}
 		if (empty ($this->arParams["PATH_TO_COPY"]))
 		{
-			$urlSign = (strstr($this->arParams["PATH_TO_LIST"], "?")) ? '&' : "?";
+			$urlSign = (mb_strstr($this->arParams["PATH_TO_LIST"], "?")) ? '&' : "?";
 			$this->arResult["URL_TO_COPY"] = CComponentEngine::makePathFromTemplate($this->arParams["PATH_TO_LIST"].$urlSign.'ID=#ID#', array("ID" => urlencode(urlencode( $this->arResult["ACCOUNT_NUMBER"]))))."&amp;COPY_ORDER=Y";
 		}
 		else
@@ -1612,6 +1789,8 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		}
 		$this->arResult["URL_TO_LIST"] = $this->arParams["PATH_TO_LIST"];
 		$this->arResult["SITE_ID"] =  $this->arResult["LID"];
+
+		$this->arResult["RETURN_URL"] = (new Sale\PaySystem\Context())->getUrl();
 	}
 
 	/**
@@ -1625,6 +1804,13 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		$arResult["PRICE_FORMATED"] = SaleFormatCurrency($arResult["PRICE"], $arResult["CURRENCY"]);
 
 		$arResult["PRODUCT_SUM_FORMATED"] = SaleFormatCurrency($arResult["PRODUCT_SUM"], $arResult["CURRENCY"]);
+		$arResult["BASE_PRODUCT_SUM_FORMATED"] = SaleFormatCurrency($arResult["BASE_PRODUCT_SUM"], $arResult["CURRENCY"]);
+		$arResult["PRODUCT_SUM_DISCOUNT_FORMATED"] = '';
+		$discountSum = $arResult["BASE_PRODUCT_SUM"] - $arResult["PRODUCT_SUM"];
+		if ($discountSum > 0)
+		{
+			$arResult["PRODUCT_SUM_DISCOUNT_FORMATED"] = SaleFormatCurrency($discountSum, $arResult["CURRENCY"]);
+		}
 
 		$arResult["PRICE_DELIVERY_FORMATED"] = SaleFormatCurrency($arResult['PRICE_DELIVERY'], $arResult["CURRENCY"]);
 		foreach ($arResult['PAYMENT'] as &$payment)
@@ -1642,7 +1828,24 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 		if (doubleval($arResult["DISCOUNT_VALUE"]))
 			$arResult["DISCOUNT_VALUE_FORMATED"] = SaleFormatCurrency($arResult["DISCOUNT_VALUE"], $arResult["CURRENCY"]);
-		$arResult["CAN_CANCEL"] = (($arResult["CANCELED"]!="Y" && $arResult["STATUS_ID"]!="F" && $arResult["PAYED"]!="Y") ? "Y" : "N");
+
+		if ($this->arParams['DISALLOW_CANCEL'] === 'Y')
+		{
+			$arResult["CAN_CANCEL"] = 'N';
+		}
+		else
+		{
+			$arResult["CAN_CANCEL"] = (($arResult["CANCELED"]!="Y" && $arResult["STATUS_ID"]!="F" && $arResult["PAYED"]!="Y") ? "Y" : "N");
+		}
+
+		if (doubleval($arResult["SUM_PAID"]))
+			$arResult["SUM_PAID_FORMATED"] = SaleFormatCurrency($arResult["SUM_PAID"], $arResult["CURRENCY"]);
+
+		if ($arResult["SUM_PAID"] !== $arResult["PRICE"])
+		{
+			$arResult["SUM_REST"] = $arResult["PRICE"] - $arResult["SUM_PAID"];
+			$arResult["SUM_REST_FORMATED"] = SaleFormatCurrency($arResult["SUM_REST"], $arResult["CURRENCY"]);
+		}
 	}
 
 	/**
@@ -1655,9 +1858,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 		if (!empty($arResult["STATUS"]))
 		{
-			$arResult["STATUS"]["NAME"] = htmlspecialcharsEx($arResult["STATUS"]["NAME"]);
-			if (doubleval($arResult["SUM_PAID"]))
-				$arResult["SUM_PAID_FORMATED"] = SaleFormatCurrency($arResult["SUM_PAID"], $arResult["CURRENCY"]);
+			$arResult["STATUS"]["NAME"] = htmlspecialcharsbx($arResult["STATUS"]["NAME"]);
 		}
 	}
 
@@ -1683,8 +1884,8 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 		if (!empty($arResult["PERSON_TYPE"]))
 		{
-			$arResult["PERSON_TYPE"]["NAME"] = htmlspecialcharsEx($arResult["PERSON_TYPE"]["NAME"]);
-			$arResult["USER"]["PERSON_TYPE_NAME"] = htmlspecialcharsEx($arResult["PERSON_TYPE"]["NAME"]);
+			$arResult["PERSON_TYPE"]["NAME"] = htmlspecialcharsbx($arResult["PERSON_TYPE"]["NAME"]);
+			$arResult["USER"]["PERSON_TYPE_NAME"] = htmlspecialcharsbx($arResult["PERSON_TYPE"]["NAME"]);
 
 		}
 	}
@@ -1698,7 +1899,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		$arResult =& $this->arResult;
 
 		if (!empty($arResult["PAY_SYSTEM"]))
-			$arResult["PAY_SYSTEM"]["NAME"] = htmlspecialcharsEx($arResult["PAY_SYSTEM"]["NAME"]);
+			$arResult["PAY_SYSTEM"]["NAME"] = htmlspecialcharsbx($arResult["PAY_SYSTEM"]["NAME"]);
 	}
 
 	/**
@@ -1708,16 +1909,16 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	protected function formatResultDeliverySystem()
 	{
 		$arResult =& $this->arResult;
-
-		$deliveryStatusList = Sale\DeliveryStatus::getAllStatusesNames(LANGUAGE_ID);
+		$deliveryStatusClassName = $this->registry->getDeliveryStatusClassName();
+		$deliveryStatusList = $deliveryStatusClassName::getAllStatusesNames(LANGUAGE_ID);
 
 		foreach ($arResult['SHIPMENT'] as &$shipment)
 		{
 			if (!empty($shipment["DELIVERY_ID"]))
 			{
-				$shipment["DELIVERY"]["NAME"] = htmlspecialcharsEx($shipment["DELIVERY"]["NAME"]);
+				$shipment["DELIVERY"]["NAME"] = htmlspecialcharsbx($shipment["DELIVERY"]["NAME"]);
 				$shipment["DELIVERY"]["SRC_LOGOTIP"] = CFile::GetPath($shipment["DELIVERY"]['LOGOTIP']);
-				if (!strlen($shipment["DELIVERY"]["SRC_LOGOTIP"]))
+				if ($shipment["DELIVERY"]["SRC_LOGOTIP"] == '')
 				{
 					$shipment["DELIVERY"]["SRC_LOGOTIP"] = '/bitrix/images/sale/logo-default-d.gif';
 				}
@@ -1752,7 +1953,8 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	protected function formatResultBasket()
 	{
 		$arResult =& $this->arResult;
-
+		$arResult["DISCOUNT_VALUE"] = 0;
+		$discountClassName = $this->registry->getDiscountClassName();
 		if(self::isNonemptyArray($arResult['BASKET']))
 		{
 			foreach ($arResult["BASKET"] as $k => $arBasket)
@@ -1763,8 +1965,12 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 
 				if (doubleval($arBasket["DISCOUNT_PRICE"]))
 				{
-					$arBasket["DISCOUNT_PRICE_PERCENT"] = Sale\PriceMaths::roundPrecision($arBasket["DISCOUNT_PRICE"]*100 / ($arBasket["DISCOUNT_PRICE"] + $arBasket["PRICE"]));
-					$arBasket["DISCOUNT_PRICE_PERCENT_FORMATED"] = Sale\BasketItem::formatQuantity($arBasket["DISCOUNT_PRICE_PERCENT"])."%";
+					$arResult["DISCOUNT_VALUE"] += ($arBasket["DISCOUNT_PRICE"] * $arBasket["QUANTITY"]);
+					$arBasket["DISCOUNT_PRICE_PERCENT"] = $discountClassName::calculateDiscountPercent(
+						$arBasket["BASE_PRICE"],
+						$arBasket["DISCOUNT_PRICE"]
+					);
+					$arBasket["DISCOUNT_PRICE_PERCENT_FORMATED"] = $arBasket["DISCOUNT_PRICE_PERCENT"]."%";
 					$arResult['SHOW_DISCOUNT_TAB'] = 'Y';
 				}
 
@@ -1824,15 +2030,15 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		$this->arResult = $this->dbResult;
 
 		$this->formatDate($this->arResult);
-		$this->formatResultPrices();
 		$this->formatResultStatus();
-		$this->formatResultUrls();
 		$this->formatResultUser();
 		$this->formatResultPerson();
 		$this->formatResultDeliverySystem();
 		$this->formatResultWeight();
 		$this->formatResultBasket();
 		$this->formatResultTaxes();
+		$this->formatResultPrices();
+		$this->formatResultUrls();
 	}
 
 	/**
@@ -1841,19 +2047,25 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	 */
 	protected function formatResultErrors()
 	{
-		$errors = array();
+		$errors = [];
 		if (!empty($this->errorsFatal))
+		{
 			$errors['FATAL'] = $this->errorsFatal;
+			// backward compatiblity
+			if (is_array($this->errorsFatal))
+			{
+				$error = reset($this->errorsFatal);
+				$this->arResult['ERROR_MESSAGE'] = $error;
+			}
+		}
+
 		if (!empty($this->errorsNonFatal))
 			$errors['NONFATAL'] = $this->errorsNonFatal;
 
 		if (!empty($errors))
+		{
 			$this->arResult['ERRORS'] = $errors;
-
-		// backward compatiblity
-		$error = each($this->errorsFatal);
-		if (!empty($error))
-			$this->arResult['ERROR_MESSAGE'] = $error['value'];
+		}
 	}
 
 	/**
@@ -1868,6 +2080,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 			$this->checkRequiredModules();
 
 			$this->loadOptions();
+			$this->setRegistry();
 			$this->checkAuthorized();
 			$this->processRequest();
 
@@ -1878,12 +2091,23 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 		}
 		catch(Exception $e)
 		{
-			$this->errorsFatal[htmlspecialcharsEx($e->getCode())] = htmlspecialcharsEx($e->getMessage());
+			$this->errorsFatal[htmlspecialcharsbx($e->getCode())] = htmlspecialcharsbx($e->getMessage());
 		}
 
 		$this->formatResultErrors();
 
 		$this->includeComponentTemplate();
+	}
+
+	/**
+	 * Return current class registry
+	 *
+	 * @param mixed[] array that date conversion performs in
+	 * @return void
+	 */
+	protected function setRegistry()
+	{
+		$this->registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
 	}
 
 	/**
@@ -1893,12 +2117,14 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	 */
 	protected function formatDate(&$arr)
 	{
-		if (strlen($this->arParams['ACTIVE_DATE_FORMAT']))
+		if($this->arParams['ACTIVE_DATE_FORMAT'] <> '')
 		{
-			foreach ($this->orderDateFields2Convert as $fld)
+			foreach($this->orderDateFields2Convert as $fld)
 			{
-				if (!empty($arr[$fld]))
+				if(!empty($arr[$fld]))
+				{
 					$arr[$fld."_FORMATED"] = CIBlockFormatProperties::DateFormat($this->arParams['ACTIVE_DATE_FORMAT'], MakeTimeStamp($arr[$fld]));
+				}
 			}
 		}
 	}
@@ -1914,6 +2140,7 @@ class CBitrixPersonalOrderDetailComponent extends CBitrixComponent
 	}
 
 	/**
+	 * @deprecated
 	 * The callback that changes body encoding when nescessary. Feature doesn`t work here and in the previous version of the component. Left for backward compatibility.
 	 * @param string $content page content
 	 * @return void

@@ -996,7 +996,7 @@ var PDFViewerApplication = {
     renderer: 'canvas',
     enhanceTextSelection: false,
     renderInteractiveForms: false,
-    enablePrintAutoRotate: false
+    enablePrintAutoRotate: true
   },
   isViewerEmbedded: window.parent !== window,
   url: '',
@@ -1743,6 +1743,7 @@ var PDFViewerApplication = {
     var eventBus = this.eventBus,
         _boundEvents = this._boundEvents;
 
+    this.unbindEvents();
     _boundEvents.beforePrint = this.beforePrint.bind(this);
     _boundEvents.afterPrint = this.afterPrint.bind(this);
     eventBus.on('resize', webViewerResize);
@@ -4265,7 +4266,7 @@ var PDFViewer = function () {
     this.removePageBorders = options.removePageBorders || false;
     this.enhanceTextSelection = options.enhanceTextSelection || false;
     this.renderInteractiveForms = options.renderInteractiveForms || false;
-    this.enablePrintAutoRotate = options.enablePrintAutoRotate || false;
+    this.enablePrintAutoRotate = options.enablePrintAutoRotate || true;
     this.renderer = options.renderer || _ui_utils.RendererType.CANVAS;
     this.l10n = options.l10n || _ui_utils.NullL10n;
     this.defaultRenderingQueue = !options.renderingQueue;
@@ -8388,7 +8389,7 @@ var SecondaryToolbar = function () {
 
     this.toolbar = options.toolbar;
     this.toggleButton = options.toggleButton;
-    this.toolbarButtonContainer = options.toolbarButtonContainer;
+    this.buttonContainer = options.toolbarButtonContainer;
     this.buttons = [{
       element: options.presentationModeButton,
       eventName: 'presentationmode',
@@ -8572,7 +8573,7 @@ var SecondaryToolbar = function () {
       if (this.containerHeight === this.previousContainerHeight) {
         return;
       }
-      this.toolbarButtonContainer.setAttribute('style', 'max-height: ' + (this.containerHeight - _ui_utils.SCROLLBAR_PADDING) + 'px;');
+      this.buttonContainer.setAttribute('style', 'max-height: ' + (this.containerHeight - _ui_utils.SCROLLBAR_PADDING) + 'px;');
       this.previousContainerHeight = this.containerHeight;
     }
   }, {
@@ -9054,7 +9055,7 @@ function getDefaultPreferences() {
       "enhanceTextSelection": false,
       "renderer": "canvas",
       "renderInteractiveForms": false,
-      "enablePrintAutoRotate": false,
+      "enablePrintAutoRotate": true,
       "disablePageMode": false,
       "disablePageLabels": false
     });

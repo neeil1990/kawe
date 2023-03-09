@@ -1,10 +1,11 @@
-<?
+<?php
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/general/user.php");
 
 class CSaleUserAccount extends CAllSaleUserAccount
 {
 	//********** SELECT **************//
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 
@@ -36,7 +37,7 @@ class CSaleUserAccount extends CAllSaleUserAccount
 		return false;
 	}
 
-	function GetByUserID($userID, $currency)
+	public static function GetByUserID($userID, $currency)
 	{
 		global $DB;
 
@@ -74,7 +75,7 @@ class CSaleUserAccount extends CAllSaleUserAccount
 		return false;
 	}
 
-	function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
+	public static function GetList($arOrder = array(), $arFilter = array(), $arGroupBy = false, $arNavStartParams = false, $arSelectFields = array())
 	{
 		global $DB;
 
@@ -110,9 +111,9 @@ class CSaleUserAccount extends CAllSaleUserAccount
 				"SELECT ".$arSqls["SELECT"]." ".
 				"FROM b_sale_user_account UA ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!1!=".htmlspecialcharsbx($strSql)."<br>";
@@ -128,11 +129,11 @@ class CSaleUserAccount extends CAllSaleUserAccount
 			"SELECT ".$arSqls["SELECT"]." ".
 			"FROM b_sale_user_account UA ".
 			"	".$arSqls["FROM"]." ";
-		if (strlen($arSqls["WHERE"]) > 0)
+		if ($arSqls["WHERE"] <> '')
 			$strSql .= "WHERE ".$arSqls["WHERE"]." ";
-		if (strlen($arSqls["GROUPBY"]) > 0)
+		if ($arSqls["GROUPBY"] <> '')
 			$strSql .= "GROUP BY ".$arSqls["GROUPBY"]." ";
-		if (strlen($arSqls["ORDERBY"]) > 0)
+		if ($arSqls["ORDERBY"] <> '')
 			$strSql .= "ORDER BY ".$arSqls["ORDERBY"]." ";
 
 		if (is_array($arNavStartParams) && intval($arNavStartParams["nTopCount"])<=0)
@@ -141,16 +142,16 @@ class CSaleUserAccount extends CAllSaleUserAccount
 				"SELECT COUNT('x') as CNT ".
 				"FROM b_sale_user_account UA ".
 				"	".$arSqls["FROM"]." ";
-			if (strlen($arSqls["WHERE"]) > 0)
+			if ($arSqls["WHERE"] <> '')
 				$strSql_tmp .= "WHERE ".$arSqls["WHERE"]." ";
-			if (strlen($arSqls["GROUPBY"]) > 0)
+			if ($arSqls["GROUPBY"] <> '')
 				$strSql_tmp .= "GROUP BY ".$arSqls["GROUPBY"]." ";
 
 			//echo "!2.1!=".htmlspecialcharsbx($strSql_tmp)."<br>";
 
 			$dbRes = $DB->Query($strSql_tmp, false, "File: ".__FILE__."<br>Line: ".__LINE__);
 			$cnt = 0;
-			if (strlen($arSqls["GROUPBY"]) <= 0)
+			if ($arSqls["GROUPBY"] == '')
 			{
 				if ($arRes = $dbRes->Fetch())
 					$cnt = $arRes["CNT"];
@@ -180,16 +181,16 @@ class CSaleUserAccount extends CAllSaleUserAccount
 		return $dbRes;
 	}
 
-	function Add($arFields)
+	public static function Add($arFields)
 	{
 		global $DB;
 
 		$arFields1 = array();
 		foreach ($arFields as $key => $value)
 		{
-			if (substr($key, 0, 1)=="=")
+			if (mb_substr($key, 0, 1) == "=")
 			{
-				$arFields1[substr($key, 1)] = $value;
+				$arFields1[mb_substr($key, 1)] = $value;
 				unset($arFields[$key]);
 			}
 		}
@@ -210,9 +211,9 @@ class CSaleUserAccount extends CAllSaleUserAccount
 
 		foreach ($arFields1 as $key => $value)
 		{
-			if (strlen($arInsert[0])>0) $arInsert[0] .= ", ";
+			if ($arInsert[0] <> '') $arInsert[0] .= ", ";
 			$arInsert[0] .= $key;
-			if (strlen($arInsert[1])>0) $arInsert[1] .= ", ";
+			if ($arInsert[1] <> '') $arInsert[1] .= ", ";
 			$arInsert[1] .= $value;
 		}
 
@@ -231,7 +232,7 @@ class CSaleUserAccount extends CAllSaleUserAccount
 		return $ID;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 
@@ -242,9 +243,9 @@ class CSaleUserAccount extends CAllSaleUserAccount
 		$arFields1 = array();
 		foreach ($arFields as $key => $value)
 		{
-			if (substr($key, 0, 1)=="=")
+			if (mb_substr($key, 0, 1) == "=")
 			{
-				$arFields1[substr($key, 1)] = $value;
+				$arFields1[mb_substr($key, 1)] = $value;
 				unset($arFields[$key]);
 			}
 		}
@@ -267,7 +268,7 @@ class CSaleUserAccount extends CAllSaleUserAccount
 
 		foreach ($arFields1 as $key => $value)
 		{
-			if (strlen($strUpdate)>0) $strUpdate .= ", ";
+			if ($strUpdate <> '') $strUpdate .= ", ";
 			$strUpdate .= $key."=".$value." ";
 		}
 

@@ -15,6 +15,8 @@
 	<?
 	}
 
+	\Bitrix\Main\UI\Extension::load(['ui.design-tokens', 'ui.fonts.opensans']);
+
 	$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/js/report/css/report.css');
 	$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/js/report/construct.js');
 
@@ -134,6 +136,11 @@ AAAAElFTkSuQmCC") no-repeat scroll 0 0 transparent;
 	.adm-filter-box-sizing { width: auto; }
 	.reports-title-label { padding-top: 20px; }
 	#bx-admin-prefix .popup-window-close-icon { background-color: inherit; right: 0; top: 0; }
+
+	.report-period-hidden {
+		margin-top: 10px;
+	}
+	.report-period-hidden > input[type=checkbox] { margin: 0; }
 </style>
 
 <script type="text/javascript">
@@ -292,6 +299,14 @@ AAAAElFTkSuQmCC") no-repeat scroll 0 0 transparent;
 			OnReportIntervalChange(BX('report-interval-filter'));
 		});
 	</script>
+	<div class="report-period-hidden">
+		<input type="hidden" name="period_hidden" value="N">
+		<input type="checkbox" <?=($arResult['preSettings']['period']['hidden'] === 'Y')?'checked="checked" ':''?>
+			class="reports-checkbox" id="report-period-hidden-checkbox" name="period_hidden" value="Y" />
+		<span class="reports-limit-res-select-lable">
+			<label for="report-period-hidden-checkbox"><?=GetMessage('REPORT_PERIOD_HIDDEN')?></label>
+		</span>
+	</div>
 </div>
 
 <!-- select -->
@@ -361,17 +376,17 @@ AAAAElFTkSuQmCC") no-repeat scroll 0 0 transparent;
 						BX('reports-add_col-popup-cont'),
 						{tag:'input', attr:{type:'checkbox', name:'<?=CUtil::JSEscape($selElem['name'])?>'}}, true
 					),
-					'<?=strlen($selElem['aggr']) ? CUtil::JSEscape($selElem['aggr']) : ''?>',
-					'<?=strlen($selElem['alias']) ? CUtil::JSEscape($selElem['alias']) : ''?>',
+					'<?=$selElem['aggr'] <> ''? CUtil::JSEscape($selElem['aggr']) : ''?>',
+					'<?=$selElem['alias'] <> ''? CUtil::JSEscape($selElem['alias']) : ''?>',
 					<?=$num?>,
 					<?=($selElem['grouping']) ? 'true' : 'false'?>,
 					<?=($selElem['grouping_subtotal']) ? 'true' : 'false'?>);
 				<? endforeach; ?>
 
 		<? foreach ($arResult['preSettings']['select'] as $num => $selElem): ?>
-				<? if (strlen($selElem['prcnt'])): ?>
-					setPrcntView(<?=$num?>, '<?=CUtil::JSEscape($selElem['prcnt'])?>');
-					<? endif; ?>
+				<? if ($selElem['prcnt'] <> ''): ?>
+			setPrcntView(<?=$num?>, '<?=CUtil::JSEscape($selElem['prcnt'])?>');
+			<? endif; ?>
 				<? endforeach; ?>
 
 		<? if (array_key_exists("sort", $arResult["preSettings"])): ?>
@@ -484,9 +499,7 @@ AAAAElFTkSuQmCC") no-repeat scroll 0 0 transparent;
 <div class="reports-preview-table-report" id="reports-preview-table-report">
 	<span class="reports-prev-table-title"><?=GetMessage('REPORT_SCHEME_PREVIEW')?></span>
 
-	<div class="reports-list">
-		<div class="reports-list-left-corner"></div>
-		<div class="reports-list-right-corner"></div>
+	<div class="reports-list-preview">
 		<table cellspacing="0" class="report-list-table">
 			<tr>
 				<th></th>
@@ -963,14 +976,24 @@ AAAAElFTkSuQmCC") no-repeat scroll 0 0 transparent;
 	</div>
 </div>
 
-<!-- choose filter column popup -->
+<!-- choose filter column popup --><?php
+$refChooseParam = call_user_func([$arParams['REPORT_HELPER_CLASS'], 'getFiltrableColumnGroups']);
+if (!is_array($refChooseParam) || empty($refChooseParam))
+{
+	$refChooseParam = true;
+}
+?>
 <div class="reports-add_col-popup-cont reports-add_filcol-popup-cont" id="reports-add_filcol-popup-cont" style="display:none;">
 	<div class="reports-add_col-popup-title">
 		<?=GetMessage('REPORT_POPUP_FILTER_TITLE'.'_'.call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'getOwnerId')))?>
 	</div>
 	<div class="popup-window-hr popup-window-buttons-hr"><i></i></div>
 	<div class="reports-add_col-popup">
-		<?=call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'buildHTMLSelectTreePopup'), $arResult['fieldsTree'], true)?>
+		<?php echo call_user_func(
+			[$arParams['REPORT_HELPER_CLASS'], 'buildHTMLSelectTreePopup'],
+			$arResult['fieldsTree'],
+			$refChooseParam
+		); ?>
 	</div>
 </div>
 
@@ -1004,32 +1027,6 @@ AAAAElFTkSuQmCC") no-repeat scroll 0 0 transparent;
 		<? endforeach; ?>
 	</select>
 	<? endforeach; ?>
-</div>
-
-<!-- filter value control examples for UF enumerations -->
-<div id="report-filter-value-control-examples-ufenums" style="display: none">
-	<?
-	if (is_array($arResult['ufEnumerations'])):
-		foreach ($arResult['ufEnumerations'] as $ufId => $enums):
-			foreach ($enums as $fieldKey => $enum):
-	?>
-	<span name="report-filter-value-control-<?=($ufId.'_'.$fieldKey)?>">
-		<select class="reports-filter-select" name="value">
-			<option value=""><?=GetMessage('REPORT_IGNORE_FILTER_VALUE')?></option>
-			<?
-			foreach ($enum as $itemId => $itemInfo):
-			?>
-			<option value="<?=$itemId?>"><?=$itemInfo['VALUE']?></option>
-			<?
-			endforeach;
-			?>
-		</select>
-	</span>
-	<?
-			endforeach;
-		endforeach;
-	endif;
-	?>
 </div>
 
 <!-- filter value control examples -->

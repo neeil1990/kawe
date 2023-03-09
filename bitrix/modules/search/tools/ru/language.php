@@ -11,7 +11,8 @@ class CSearchLanguageRu extends CSearchLanguage
 			"hi" => "Ё            ".
 				"ЙЦУКЕНГШЩЗХЪ".
 				"ФЫВАПРОЛДЖЭ".
-				"ЯЧСМИТЬБЮ "
+				"ЯЧСМИТЬБЮ ",
+			"trigram_charset" => "cp1251",
 		);
 	}
 	function GetBigrammLetterFreq()

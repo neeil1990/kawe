@@ -412,7 +412,7 @@ foreach ($catalogs as $catalog)
 
 $arComponentParameters["PARAMETERS"]['HIDE_NOT_AVAILABLE'] = array(
 	'PARENT' => 'DATA_SOURCE',
-	'NAME' => GetMessage('SRP_HIDE_NOT_AVAILABLE'),
+	'NAME' => GetMessage('SRP_HIDE_NOT_AVAILABLE_EXT'),
 	'TYPE' => 'CHECKBOX',
 	'DEFAULT' => 'N',
 );
@@ -429,9 +429,7 @@ if (Loader::includeModule('currency'))
 	if (isset($arCurrentValues['CONVERT_CURRENCY']) && 'Y' == $arCurrentValues['CONVERT_CURRENCY'])
 	{
 		$arCurrencyList = array();
-		$by = 'SORT';
-		$order = 'ASC';
-		$rsCurrencies = CCurrency::GetList($by, $order);
+		$rsCurrencies = CCurrency::GetList('sort', 'asc');
 		while ($arCurrency = $rsCurrencies->Fetch())
 		{
 			$arCurrencyList[$arCurrency['CURRENCY']] = $arCurrency['CURRENCY'];

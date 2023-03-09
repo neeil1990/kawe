@@ -8,7 +8,7 @@ function perfmonErrorHandler($errno, $errstr, $errfile, $errline)
 	static $arExclude = array(
 		"/modules/main/classes/general/cache.php:150" => true,
 	);
-	$uni_file_name = str_replace("\\", "/", substr($errfile, strlen($_SERVER["DOCUMENT_ROOT"].BX_ROOT)));
+	$uni_file_name = str_replace("\\", "/", mb_substr($errfile, mb_strlen($_SERVER["DOCUMENT_ROOT"].BX_ROOT)));
 	$bRecord = false;
 	switch ($errno)
 	{
@@ -17,8 +17,8 @@ function perfmonErrorHandler($errno, $errstr, $errfile, $errline)
 		break;
 	case E_NOTICE:
 		if (
-			(strpos($errstr, "Undefined index:") === false)
-			&& (strpos($errstr, "Undefined offset:") === false)
+			(mb_strpos($errstr, "Undefined index:") === false)
+			&& (mb_strpos($errstr, "Undefined offset:") === false)
 			&& !array_key_exists($uni_file_name.":".$errline, $arExclude)
 		)
 			$bRecord = true;
@@ -60,13 +60,11 @@ class CPerfomanceKeeper
 				$perfmonErrors = array();
 				if (COption::GetOptionString("perfmon", "warning_log") === "Y")
 					set_error_handler("perfmonErrorHandler");
-
-				register_shutdown_function(array("CPerfomanceKeeper", "writeToDatabase"));
 			}
 		}
 	}
 
-	function setDebugModeOn()
+	public static function setDebugModeOn()
 	{
 		global $DB, $APPLICATION;
 
@@ -80,7 +78,7 @@ class CPerfomanceKeeper
 		$APPLICATION->ShowIncludeStat = true;
 	}
 
-	function restoreDebugMode()
+	public static function restoreDebugMode()
 	{
 		global $DB, $APPLICATION;
 
@@ -112,10 +110,11 @@ class CPerfomanceKeeper
 		if (defined("PERFMON_STARTED"))
 		{
 			self::restoreDebugMode();
+			CPerfomanceKeeper::writeToDatabase();
 		}
 	}
 
-	function writeToDatabase()
+	public static function writeToDatabase()
 	{
 		$START_EXEC_CURRENT_TIME = microtime();
 
@@ -272,19 +271,16 @@ class CPerfomanceKeeper
 	public static function SetPageTimes($START_EXEC_CURRENT_TIME, &$arFields)
 	{
 		list($usec, $sec) = explode(" ", $START_EXEC_CURRENT_TIME);
-		$CURRENT_TIME = $sec + $usec;
+		$CURRENT_TIME = (float)$sec + (float)$usec;
 
 		if (defined("START_EXEC_PROLOG_BEFORE_1"))
 		{
-			list($usec, $sec) = explode(" ", START_EXEC_PROLOG_BEFORE_1);
-			$PROLOG_BEFORE_1 = $sec + $usec;
+			$PROLOG_BEFORE_1 = (float)START_EXEC_PROLOG_BEFORE_1;
 
 			if (defined("START_EXEC_AGENTS_1") && defined("START_EXEC_AGENTS_2"))
 			{
-				list($usec, $sec) = explode(" ", START_EXEC_AGENTS_2);
-				$AGENTS_2 = $sec + $usec;
-				list($usec, $sec) = explode(" ", START_EXEC_AGENTS_1);
-				$AGENTS_1 = $sec + $usec;
+				$AGENTS_2 = (float)START_EXEC_AGENTS_2;
+				$AGENTS_1 = (float)START_EXEC_AGENTS_1;
 				$arFields["~AGENTS_TIME"] = $AGENTS_2 - $AGENTS_1;
 			}
 			else
@@ -295,9 +291,9 @@ class CPerfomanceKeeper
 			if (defined("START_EXEC_EVENTS_1") && defined("START_EXEC_EVENTS_2"))
 			{
 				list($usec, $sec) = explode(" ", START_EXEC_EVENTS_2);
-				$EVENTS_2 = $sec + $usec;
+				$EVENTS_2 = (float)$sec + (float)$usec;
 				list($usec, $sec) = explode(" ", START_EXEC_EVENTS_1);
-				$EVENTS_1 = $sec + $usec;
+				$EVENTS_1 = (float)$sec + (float)$usec;
 				$arFields["~EVENTS_TIME"] = $EVENTS_2 - $EVENTS_1;
 			}
 			else
@@ -305,36 +301,43 @@ class CPerfomanceKeeper
 				$arFields["~EVENTS_TIME"] = 0;
 			}
 
-			if (defined("START_EXEC_PROLOG_AFTER_1"))
+			if (defined("START_EXEC_PROLOG_AFTER_1") && defined("START_EXEC_PROLOG_AFTER_2"))
 			{
-				list($usec, $sec) = explode(" ", START_EXEC_PROLOG_AFTER_1);
-				$PROLOG_AFTER_1 = $sec + $usec;
-				list($usec, $sec) = explode(" ", START_EXEC_PROLOG_AFTER_2);
-				$PROLOG_AFTER_2 = $sec + $usec;
+				$PROLOG_AFTER_1 = (float)START_EXEC_PROLOG_AFTER_1;
+				$PROLOG_AFTER_2 = (float)START_EXEC_PROLOG_AFTER_2;
 				$arFields["~PROLOG_AFTER_TIME"] = $PROLOG_AFTER_2 - $PROLOG_AFTER_1;
 
 				$arFields["~PROLOG_BEFORE_TIME"] = $PROLOG_AFTER_1 - $PROLOG_BEFORE_1;
 
 				$arFields["~PROLOG_TIME"] = round($PROLOG_AFTER_2 - $PROLOG_BEFORE_1 - $arFields["~AGENTS_TIME"], 4);
 
-				list($usec, $sec) = explode(" ", START_EXEC_EPILOG_BEFORE_1);
-				$EPILOG_BEFORE_1 = $sec + $usec;
-
-				$arFields["~WORK_AREA_TIME"] = $EPILOG_BEFORE_1 - $PROLOG_AFTER_2;
-
-				if (defined("START_EXEC_EPILOG_AFTER_1"))
+				if (defined("START_EXEC_EPILOG_BEFORE_1"))
 				{
-					list($usec, $sec) = explode(" ", START_EXEC_EPILOG_AFTER_1);
-					$EPILOG_AFTER_1 = $sec + $usec;
-					$arFields["~EPILOG_BEFORE_TIME"] = $EPILOG_AFTER_1 - $EPILOG_BEFORE_1;
-					$arFields["~EPILOG_AFTER_TIME"] = $CURRENT_TIME - $EPILOG_AFTER_1 - $arFields["~EVENTS_TIME"];
+					$EPILOG_BEFORE_1 = (float)START_EXEC_EPILOG_BEFORE_1;
+
+					$arFields["~WORK_AREA_TIME"] = $EPILOG_BEFORE_1 - $PROLOG_AFTER_2;
+
+					if (defined("START_EXEC_EPILOG_AFTER_1"))
+					{
+						$EPILOG_AFTER_1 = (float)START_EXEC_EPILOG_AFTER_1;
+						$arFields["~EPILOG_BEFORE_TIME"] = $EPILOG_AFTER_1 - $EPILOG_BEFORE_1;
+						$arFields["~EPILOG_AFTER_TIME"] = $CURRENT_TIME - $EPILOG_AFTER_1 - $arFields["~EVENTS_TIME"];
+					}
+					else
+					{
+						$arFields["~EPILOG_BEFORE_TIME"] = 0;
+						$arFields["~EPILOG_AFTER_TIME"] = 0;
+					}
+
+					$arFields["~EPILOG_TIME"] = $CURRENT_TIME - $EPILOG_BEFORE_1;
 				}
 				else
 				{
+					$arFields["~WORK_AREA_TIME"] = $CURRENT_TIME - $PROLOG_AFTER_2;
 					$arFields["~EPILOG_BEFORE_TIME"] = 0;
+					$arFields["~EPILOG_AFTER_TIME"] = 0;
+					$arFields["~EPILOG_TIME"] = 0;
 				}
-
-				$arFields["~EPILOG_TIME"] = $CURRENT_TIME - $EPILOG_BEFORE_1;
 			}
 
 			$arFields["~PAGE_TIME"] = $CURRENT_TIME - $PROLOG_BEFORE_1;
@@ -345,7 +348,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function removeQueries(&$arQueryDebug, &$arIncludeDebug, $slow_sql_time, $preserveComponents = false)
+	public static function removeQueries(&$arQueryDebug, &$arIncludeDebug, $slow_sql_time, $preserveComponents = false)
 	{
 		if (is_array($arQueryDebug))
 		{
@@ -387,7 +390,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function countQueries(&$query_count, &$query_time, $arQueryDebug, $arIncludeDebug)
+	public static function countQueries(&$query_count, &$query_time, $arQueryDebug, $arIncludeDebug)
 	{
 		$query_count = 0;
 		$query_time = 0.0;
@@ -414,7 +417,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function countComponents(&$comps_count, &$comps_time, $arIncludeDebug)
+	public static function countComponents(&$comps_count, &$comps_time, $arIncludeDebug)
 	{
 		$comps_count = 0;
 		$comps_time = 0.0;
@@ -429,7 +432,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function removeCaches($large_cache_size, &$arCacheDebug, &$arIncludeDebug)
+	public static function removeCaches($large_cache_size, &$arCacheDebug, &$arIncludeDebug)
 	{
 		if (is_array($arCacheDebug))
 		{
@@ -476,7 +479,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function countCache($arCacheDebug, &$cache_count)
+	public static function countCache($arCacheDebug, &$cache_count)
 	{
 		if (is_array($arCacheDebug))
 		{
@@ -485,7 +488,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function findCaller($trace, &$module_id, &$comp_id)
+	public static function findCaller($trace, &$module_id, &$comp_id)
 	{
 		$module_id = false;
 		$comp_id = false;
@@ -493,7 +496,7 @@ class CPerfomanceKeeper
 		{
 			if (array_key_exists("file", $arCallInfo))
 			{
-				$file = strtolower(str_replace("\\", "/", $arCallInfo["file"]));
+				$file = mb_strtolower(str_replace("\\", "/", $arCallInfo["file"]));
 
 				if (
 					!$module_id
@@ -522,7 +525,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function saveQueries($HIT_ID, $COMP_ID, $arQueryDebug, &$NN)
+	public static function saveQueries($HIT_ID, $COMP_ID, $arQueryDebug, &$NN)
 	{
 		global $DB;
 
@@ -544,14 +547,14 @@ class CPerfomanceKeeper
 
 			if ($SQL_ID && COption::GetOptionString("perfmon", "sql_backtrace") === "Y")
 			{
-				$pl = strlen(rtrim($_SERVER["DOCUMENT_ROOT"], "/"));
+				$pl = mb_strlen(rtrim($_SERVER["DOCUMENT_ROOT"], "/"));
 				foreach ($arQueryInfo["TRACE"] as $i => $arCallInfo)
 				{
 					$DB->Add("b_perf_sql_backtrace", array(
 						"ID" => 1,
 						"SQL_ID" => $SQL_ID,
 						"NN" => $i,
-						"FILE_NAME" => substr($arCallInfo["file"], $pl),
+						"FILE_NAME" => mb_substr($arCallInfo["file"], $pl),
 						"LINE_NO" => $arCallInfo["line"],
 						"CLASS_NAME" => $arCallInfo["class"],
 						"FUNCTION_NAME" => $arCallInfo["function"],
@@ -561,7 +564,7 @@ class CPerfomanceKeeper
 		}
 	}
 
-	function saveCaches($HIT_ID, $COMP_ID, $arCacheDebug, &$NN)
+	public static function saveCaches($HIT_ID, $COMP_ID, $arCacheDebug, &$NN)
 	{
 		global $DB;
 

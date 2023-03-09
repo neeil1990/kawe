@@ -24,8 +24,7 @@ $formParams = Array(
 		'id' => $component->createEditorId(),
 		"documentCSS" => "body {color:#434343;}",
 		'ctrlEnterHandler' => 'blogCommentCtrlEnterHandler',
-		"fontFamily" => "'Helvetica Neue', Helvetica, Arial, sans-serif",
-		"fontSize" => "12px",
+		"fontSize" => "14px",
 		"bInitByJS" => true,
 		"height" => 80,
 		'bSetDefaultCodeView' => $arParams['EDITOR_CODE_DEFAULT'],
@@ -161,7 +160,6 @@ BX.ready(function(){
 
 	if (!!window["UC"]["f<?=$component->createPostFormId()?>"].eventNode)
 	{
-		BX.addCustomEvent(window["UC"]["f<?=$component->createPostFormId()?>"].eventNode, 'OnUCFormClear', __blogOnUCFormClear);
 		BX.addCustomEvent(window["UC"]["f<?=$component->createPostFormId()?>"].eventNode, 'OnUCFormAfterShow', __blogOnUCFormAfterShow);
 		BX.addCustomEvent(window["UC"]["f<?=$component->createPostFormId()?>"].eventNode, 'OnClickBeforeSubmit', __blogOnClickBeforeSubmit);
 		BX.addCustomEvent(window["UC"]["f<?=$component->createPostFormId()?>"].eventNode, 'OnUCFormSubmit', __blogOnUCFormSubmit);

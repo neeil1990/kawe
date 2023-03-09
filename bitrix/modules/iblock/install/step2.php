@@ -28,14 +28,14 @@ function CheckIBlockType($ID, $SECTIONS = "Y")
 			"SECTIONS" => $SECTIONS,
 			"LANG" => array(),
 		);
-		$rsLanguages = CLanguage::GetList(($by="sort"), ($order="asc"));
+		$rsLanguages = CLanguage::GetList();
 		while($arLanguage = $rsLanguages->Fetch())
 		{
 			$MY_MESS = IncludeModuleLangFile(__FILE__, $arLanguage["LID"], true);
 			$arFields["LANG"][$arLanguage["LID"]] =  array(
-				"NAME" => $MY_MESS["IBLOCK_INSTALL_".strtoupper($ID)."_NAME"],
-				"SECTION_NAME" => $MY_MESS["IBLOCK_INSTALL_".strtoupper($ID)."_SECTIONS_NAME"],
-				"ELEMENT_NAME" => $MY_MESS["IBLOCK_INSTALL_".strtoupper($ID)."_ELEMENTS_NAME"],
+				"NAME" => $MY_MESS["IBLOCK_INSTALL_".mb_strtoupper($ID)."_NAME"],
+				"SECTION_NAME" => $MY_MESS["IBLOCK_INSTALL_".mb_strtoupper($ID)."_SECTIONS_NAME"],
+				"ELEMENT_NAME" => $MY_MESS["IBLOCK_INSTALL_".mb_strtoupper($ID)."_ELEMENTS_NAME"],
 			);
 		}
 		$result = $obType->Add($arFields);
@@ -56,7 +56,7 @@ if($obModule->errors===false)
 		//$MY_MESS['IBLOCK_INSTALL_NEWS_ELEMENTS_NAME']
 		//$MY_MESS['IBLOCK_INSTALL_NEWS_SECTION_NAME']
 		//$MY_MESS['IBLOCK_INSTALL_NEWS_ELEMENT_NAME']
-		$sites = CSite::GetList($by, $order, Array("ACTIVE"=>"Y"));
+		$sites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 		while($site = $sites->Fetch())
 		{
 			$MY_MESS = IncludeModuleLangFile(__FILE__, $site["LANGUAGE_ID"], true);
@@ -85,7 +85,7 @@ if($obModule->errors===false)
 				$obBlockProperty->Add($arFields);
 			}
 
-			if(strlen($news_dir)>0)
+			if($news_dir <> '')
 			{
 				$source = $_SERVER['DOCUMENT_ROOT']."/bitrix/modules/iblock/install/public/news/";
 				$target = $site['ABS_DOC_ROOT'].$site["DIR"].$news_dir."/";
@@ -134,7 +134,7 @@ if($obModule->errors===false)
 		//$MY_MESS['IBLOCK_INSTALL_CATALOG_ELEMENTS_NAME']
 		//$MY_MESS['IBLOCK_INSTALL_CATALOG_SECTION_NAME']
 		//$MY_MESS['IBLOCK_INSTALL_CATALOG_ELEMENT_NAME']
-		$sites = CSite::GetList($by, $order, Array("ACTIVE"=>"Y"));
+		$sites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 		while($site = $sites->Fetch())
 		{
 			$MY_MESS = IncludeModuleLangFile(__FILE__, $site["LANGUAGE_ID"], true);
@@ -167,7 +167,7 @@ if($obModule->errors===false)
 				$obBlockProperty->Add($arFields);
 			}
 
-			if(strlen($catalog_dir)>0)
+			if($catalog_dir <> '')
 			{
 				$source = $_SERVER['DOCUMENT_ROOT']."/bitrix/modules/iblock/install/public/catalog/";
 				$target = $site['ABS_DOC_ROOT'].$site["DIR"].$catalog_dir."/";
@@ -221,7 +221,7 @@ else:
 	CAdminMessage::ShowNote(GetMessage("MOD_INST_OK"));
 endif;
 
-if($obModule->errors===false && $news == "Y" && strlen($news_dir) > 0):
+if($obModule->errors===false && $news == "Y" && $news_dir <> ''):
 ?>
 <p><?=GetMessage("IBLOCK_DEMO_DIR")?></p>
 <table border="0" cellspacing="0" cellpadding="3">
@@ -230,13 +230,17 @@ if($obModule->errors===false && $news == "Y" && strlen($news_dir) > 0):
 		<td align="center"><p><b><?=GetMessage("IBLOCK_LINK")?></b></p></td>
 	</tr>
 	<?
-	$sites = CSite::GetList($by, $order, Array("ACTIVE"=>"Y"));
+	$sites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 	while($site = $sites->Fetch())
 	{
+		$server = '';
+		if ($site["SERVER_NAME"] <> '')
+			$server .= "http://".$site["SERVER_NAME"];
+		$url = $site["DIR"].$news_dir.'/';
 		?>
 		<tr>
-			<td width="0%"><p>[<?=$site["ID"]?>] <?=htmlspecialcharsbx($site["NAME"]); ?></p></td>
-			<td width="0%"><p><a href="<?if(strlen($site["SERVER_NAME"])>0) echo "http://".$site["SERVER_NAME"];?><?=$site["DIR"].$news_dir?>/"><?=$site["DIR"].$news_dir?>/</a></p></td>
+			<td width="0%"><p>[<?=$site["ID"]?>] <?echo htmlspecialcharsbx($site["NAME"]);?></p></td>
+			<td width="0%"><p><a href="<?echo htmlspecialcharsbx($server.$url);?>"><?echo htmlspecialcharsEx($url);?></a></p></td>
 		</tr>
 		<?
 	}
@@ -245,7 +249,7 @@ if($obModule->errors===false && $news == "Y" && strlen($news_dir) > 0):
 <?
 endif;
 
-if($obModule->errors===false && $catalog == "Y" && strlen($catalog_dir) > 0):
+if($obModule->errors===false && $catalog == "Y" && $catalog_dir <> ''):
 ?>
 <p><?=GetMessage("IBLOCK_DEMO_DIR")?></p>
 <table border="0" cellspacing="0" cellpadding="3">
@@ -254,13 +258,13 @@ if($obModule->errors===false && $catalog == "Y" && strlen($catalog_dir) > 0):
 		<td align="center"><p><b><?=GetMessage("IBLOCK_LINK")?></b></p></td>
 	</tr>
 	<?
-	$sites = CSite::GetList($by, $order, Array("ACTIVE"=>"Y"));
+	$sites = CSite::GetList('', '', Array("ACTIVE"=>"Y"));
 	while($site = $sites->Fetch())
 	{
 		?>
 		<tr>
 			<td width="0%"><p>[<?=$site["ID"]?>] <?=htmlspecialcharsbx($site["NAME"])?></p></td>
-			<td width="0%"><p><a href="<?if(strlen($site["SERVER_NAME"])>0) echo "http://".$site["SERVER_NAME"];?><?=$site["DIR"].$catalog_dir?>/"><?=$site["DIR"].$catalog_dir?>/</a></p></td>
+			<td width="0%"><p><a href="<?if($site["SERVER_NAME"] <> '') echo "http://".$site["SERVER_NAME"];?><?=$site["DIR"].$catalog_dir?>/"><?=$site["DIR"].$catalog_dir?>/</a></p></td>
 		</tr>
 		<?
 	}

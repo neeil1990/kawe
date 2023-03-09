@@ -1,8 +1,10 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
+
 class CFilemanUtils
 {
-	function InitScript($Params)
+	public static function InitScript($Params)
 	{
 		CUtil::InitJSCore(array('ajax', 'window'));
 
@@ -20,7 +22,7 @@ class CFilemanUtils
 			$arLangArray[] = 'pack';
 
 		$arSites = Array();
-		$dbSitesList = CSite::GetList($b = "SORT", $o = "asc");
+		$dbSitesList = CSite::GetList();
 		while($arSite = $dbSitesList->GetNext())
 		{
 			$arSites[] = array(
@@ -236,7 +238,7 @@ class CFilemanUtils
 		<?
 	}
 
-	function AppendLangMessages($Config)
+	public static function AppendLangMessages($Config)
 	{
 		$arLangMess = array();
 		if (in_array('search', $Config))
@@ -337,7 +339,7 @@ var FM_MESS = {0:0<?foreach($arLangMess as $m1 => $m2){echo ', '.$m1." : '".adds
 		endif;
 	}
 
-	function BuildDialogContent($site)
+	public static function BuildDialogContent($site)
 	{
 		global $APPLICATION;
 		$actUri = $APPLICATION->GetCurPage()."?search=Y&ssess=".CFilemanSearch::GetSearchSess();
@@ -692,7 +694,7 @@ CAdminFileDialog::ShowScript(Array
 		</div><?
 	}
 
-	function Request($action, $site)
+	public static function Request($action, $site)
 	{
 		global $USER;
 		if (!$USER->CanDoOperation('fileman_view_file_structure'))
@@ -719,8 +721,8 @@ CAdminFileDialog::ShowScript(Array
 					"bSubdir" => $_POST['subdir'],
 					"dateFrom" => $_POST['date_from'],
 					"dateTo" => $_POST['date_to'],
-					"sizeFrom" => intVal($_POST['size_from']),
-					"sizeTo" => intVal($_POST['size_to']),
+					"sizeFrom" => intval($_POST['size_from']),
+					"sizeTo" => intval($_POST['size_to']),
 					"entire" => $_POST['entire'],
 					"bCaseSens" => $_POST['case_sens'],
 					"bDirsToo" => $_POST['dirs_too'],
@@ -791,7 +793,7 @@ CAdminFileDialog::ShowScript(Array
 
 				if (isset($_POST["packTo"]))
 				{
-					if (substr($_POST["packTo"], 0, 1) == "/")
+					if (mb_substr($_POST["packTo"], 0, 1) == "/")
 						$pack_to = $_POST["packTo"];
 					else
 						$pack_to = "/".$_POST["packTo"];
@@ -924,7 +926,7 @@ CAdminFileDialog::ShowScript(Array
 
 				if (isset($_POST["packTo"]))
 				{
-					if (substr($_POST["packTo"], 0, 1) == "/")
+					if (mb_substr($_POST["packTo"], 0, 1) == "/")
 						$pack_to = $_POST["packTo"];
 					else
 						$pack_to = "/".$_POST["packTo"];
@@ -997,27 +999,27 @@ CAdminFileDialog::ShowScript(Array
 		}
 	}
 
-	function GetTimeout()
+	public static function GetTimeout()
 	{
 		return COption::GetOptionString("fileman", "search_time_step", 5);
 	}
 
-	function NormalizePath($path)
+	public static function NormalizePath($path)
 	{
 		$path = CFileMan::SecurePathVar(Rel2Abs("/", $path));
 		$path = rtrim($path, '/');
 		return $path;
 	}
 
-	function TrimPath($path, $docRoot = false)
+	public static function TrimPath($path, $docRoot = false)
 	{
 		if ($docRoot === false)
 			$docRoot = $_SERVER["DOCUMENT_ROOT"];
-		$l = strlen($docRoot);
-		return strlen($path) > $l ? substr($path, $l) : '/';
+		$l = mb_strlen($docRoot);
+		return mb_strlen($path) > $l? mb_substr($path, $l) : '/';
 	}
 
-	function GetLastPathes()
+	public static function GetLastPathes()
 	{
 		$arPathes = CFileMan::GetLastPathes();
 		$arRes = array(
@@ -1029,7 +1031,7 @@ CAdminFileDialog::ShowScript(Array
 		return $arRes;
 	}
 
-	function GetModifyTime($path)
+	public static function GetModifyTime($path)
 	{
 		$path = CBXVirtualIoFileSystem::ConvertCharset($path);
 
@@ -1046,7 +1048,7 @@ CAdminFileDialog::ShowScript(Array
 //
 class CFilemanSearch
 {
-	function Init($Params)
+	public function Init($Params)
 	{
 		$this->maxFileOpenSize = 1024 * COption::GetOptionString("fileman", "search_max_open_file_size", 1024);
 		$this->maxResultCount = COption::GetOptionString("fileman", "search_max_res_count", false);
@@ -1064,7 +1066,7 @@ class CFilemanSearch
 		}
 
 		$this->sSess = $this->Params['ssess'] ? $this->Params['ssess'] : false;
-		$this->bReplace = $this->Params['bReplace'] && strlen($this->Params['phrase']) > 0;
+		$this->bReplace = $this->Params['bReplace'] && $this->Params['phrase'] <> '';
 
 		if ($this->bReplace)
 		{
@@ -1156,7 +1158,7 @@ class CFilemanSearch
 		}
 	}
 
-	function Search($file)
+	public function Search($file)
 	{
 		global $APPLICATION, $USER;
 
@@ -1194,14 +1196,14 @@ class CFilemanSearch
 		{
 			if (!$this->Params['bCaseSens'])
 			{
-				$name = strtolower($name);
-				$this->Params['fileName'] = strtolower($this->Params['fileName']);
+				$name = mb_strtolower($name);
+				$this->Params['fileName'] = mb_strtolower($this->Params['fileName']);
 			}
 
 			// Simple find in file name
-			if (strpos($this->Params['fileName'], "*") === false)
+			if (mb_strpos($this->Params['fileName'], "*") === false)
 			{
-				if (strpos($name, $this->Params['fileName']) === false)
+				if (mb_strpos($name, $this->Params['fileName']) === false)
 					return;
 			}
 			else // name pattern with "*"
@@ -1251,12 +1253,12 @@ class CFilemanSearch
 			$phrase = $this->Params['phrase'];
 			$fileContent = str_replace("\r\n","\n", $fTmp->GetContents());
 			$origFileContent = $fileContent;
-			$isPHP = CFileman::IsPHP($fileContent) || HasScriptExtension($path) || substr($name, 0, 1) == ".";
+			$isPHP = CFileman::IsPHP($fileContent) || HasScriptExtension($path) || mb_substr($name, 0, 1) == ".";
 
 			if (!$this->Params['bCaseSens'])
 			{
-				$phrase = strtolower($phrase);
-				$fileContent = strtolower($fileContent);
+				$phrase = mb_strtolower($phrase);
+				$fileContent = mb_strtolower($fileContent);
 			}
 
 			$I_PCRE_MODIFIER = $this->Params['bCaseSens'] ? '' : 'i';
@@ -1264,7 +1266,7 @@ class CFilemanSearch
 			// TODO: Add check Entire word
 			//$this->Params['entire']
 
-			if (strpos($fileContent, $phrase) === false)
+			if (mb_strpos($fileContent, $phrase) === false)
 				return;
 
 			if ($this->bReplace) // Replace
@@ -1310,40 +1312,40 @@ class CFilemanSearch
 		);
 	}
 
-	function CheckBreak()
+	public function CheckBreak()
 	{
 		return time() - $this->startTime > CFilemanUtils::GetTimeout();
 	}
 
-	function trimPath($path, $docRoot = false)
+	public static function trimPath($path, $docRoot = false)
 	{
 		if ($docRoot === false)
 			$docRoot = $_SERVER["DOCUMENT_ROOT"];
-		$l = strlen($docRoot);
-		return strlen($path) > $l ? substr($path, $l) : '/';
+		$l = mb_strlen($docRoot);
+		return mb_strlen($path) > $l? mb_substr($path, $l) : '/';
 	}
 
-	function CheckSearchSess($searchSess)
+	public static function CheckSearchSess($searchSess)
 	{
 		global $DB;
 
-		switch(strtoupper($DB->type))
+		switch($DB->type)
 		{
 			case "MYSQL":
 				$res = $DB->Query("SELECT * FROM b_file_search WHERE SESS_ID='".$DB->ForSql($searchSess)."' LIMIT 1", false);
-			break;
+				break;
 			case "MSSQL":
 				$res = $DB->Query("SELECT TOP 1 * FROM b_file_search WHERE SESS_ID='".$DB->ForSql($searchSess)."'", false);
-			break;
+				break;
 			case "ORACLE":
 				$res = $DB->Query("SELECT * FROM b_file_search WHERE SESS_ID='".$DB->ForSql($searchSess)."' AND ROWNUM <= 1", false);
-			break;
+				break;
 		}
 
 		return !$res->Fetch();
 	}
 
-	function GetSearchResult($searchSess = '', $arOrder = array('date', 'desc'))
+	public static function GetSearchResult($searchSess = '', $arOrder = array('date', 'desc'))
 	{
 		global $DB;
 
@@ -1369,10 +1371,10 @@ class CFilemanSearch
 		else
 			$by = false;
 
-		$order = strtolower($arOrder[1]);
+		$order = mb_strtolower($arOrder[1]);
 		if ($by)
 		{
-			$strOrderBy = $by.' '.($order == 'desc' ? 'desc'.(strtoupper($DB->type) == "ORACLE" ? " NULLS LAST" : "") : 'asc'.(strtoupper($DB->type) == "ORACLE" ? " NULLS FIRST":""));
+			$strOrderBy = $by.' '.($order == 'desc' ? 'desc'.($DB->type == "ORACLE" ? " NULLS LAST" : "") : 'asc'.($DB->type == "ORACLE" ? " NULLS FIRST":""));
 		}
 
 		if($strOrderBy != "")
@@ -1394,7 +1396,7 @@ class CFilemanSearch
 		return $searchRes;
 	}
 
-	function SetSearchResult($searchRes, $searchSess, $bClean = true)
+	public static function SetSearchResult($searchRes, $searchSess, $bClean = true)
 	{
 		global $DB;
 		$DB->Query("DELETE FROM b_file_search WHERE SESS_ID='".$DB->ForSql($searchSess)."'", false);
@@ -1415,13 +1417,13 @@ class CFilemanSearch
 		return $searchRes;
 	}
 
-	function DelFromSearchResult($searchSess, $path)
+	public static function DelFromSearchResult($searchSess, $path)
 	{
 		global $DB;
 		return $DB->Query("DELETE FROM b_file_search WHERE SESS_ID='".$DB->ForSql($searchSess)."' AND F_PATH='".$DB->ForSql($path)."'", false);
 	}
 
-	function RenameInSearchResult($searchSess, $pathFrom, $pathTo)
+	public static function RenameInSearchResult($searchSess, $pathFrom, $pathTo)
 	{
 		global $DB;
 
@@ -1438,13 +1440,13 @@ class CFilemanSearch
 		return preg_replace("/[^a-z0-9]/i", "", $ssess);
 	}
 
-	function GetSearchSess()
+	public static function GetSearchSess()
 	{
 		return md5($GLOBALS["USER"]->GetID()."+".uniqid(rand(), true));
 	}
 
 	// Delete all results older than 2 days
-	function CleanOldSearchResult()
+	public static function CleanOldSearchResult()
 	{
 		global $DB;
 		$d = date(CDatabase::DateFormatToPHP(CLang::GetDateFormat("FULL")), mktime(0, 0, 0, date("m")  , date("d") - 2, date("Y")));
@@ -1452,17 +1454,17 @@ class CFilemanSearch
 		$DB->Query($q, false);
 	}
 
-	function SaveConfig($arConfig)
+	public static function SaveConfig($arConfig)
 	{
 		CUserOptions::SetOption("fileman", "file_search_config", serialize($arConfig));
 	}
 
-	function GetConfig()
+	public static function GetConfig()
 	{
 		$arConfig = array();
 		$strAr = CUserOptions::GetOption("fileman", "file_search_config", false);
 		if ($strAr && CheckSerializedData($strAr))
-			$arConfig = unserialize($strAr);
+			$arConfig = unserialize($strAr, ['allowed_classes' => false]);
 		return $arConfig;
 	}
 }
@@ -1484,7 +1486,7 @@ class CFilemanUtilDir
 	var $cntDir = 0;
 	var $cntFile = 0;
 
-	function CFilemanUtilDir($dir, $Params)
+	public function __construct($dir, $Params)
 	{
 		$this->dir = str_replace('\\','/',$dir);
 		$this->obj = $Params['obj'];
@@ -1496,7 +1498,7 @@ class CFilemanUtilDir
 		$this->processDir = isset($Params['processDir']) ? $Params['processDir'] : false;
 	}
 
-	function Start($dir = false)
+	public function Start($dir = false)
 	{
 		if ($dir)
 			$this->dir = str_replace('\\','/',$dir);
@@ -1524,7 +1526,7 @@ class CFilemanUtilDir
 		return $r;
 	}
 
-	function Recursion($dir)
+	public function Recursion($dir)
 	{
 		//error_reporting(0);
 		global $USER;
@@ -1555,7 +1557,7 @@ class CFilemanUtilDir
 			{
 				if ($this->startPath == $f)
 					$this->bFound = true;
-				elseif (substr($this->startPath,0,strlen($f)+1) != $f.'/')
+				elseif (mb_substr($this->startPath, 0, mb_strlen($f) + 1) != $f.'/')
 					continue;
 			}
 
@@ -1623,7 +1625,7 @@ class CFilemanUtilDir
 		return true;
 	}
 
-	function CallMethod($method = '', $param = false)
+	public function CallMethod($method = '', $param = false)
 	{
 		$obj = $this->obj;
 		if ($param)
@@ -1635,7 +1637,7 @@ class CFilemanUtilDir
 
 class CFilemanChmod
 {
-	function Init($Params)
+	public function Init($Params)
 	{
 		$this->value = $Params['value'];
 		$this->startTime = time();
@@ -1650,12 +1652,12 @@ class CFilemanChmod
 		}
 	}
 
-	function CheckBreak()
+	public function CheckBreak()
 	{
 		return time() - $this->startTime > CFilemanUtils::GetTimeout();
 	}
 
-	function Chmod($file)
+	public function Chmod($file)
 	{
 		if ($this->bSkip)
 		{
@@ -1671,7 +1673,7 @@ class CFilemanChmod
 
 class CFilemanCopy
 {
-	function Init($Params)
+	public function Init($Params)
 	{
 		global $USER;
 		$arWarnings = array();
@@ -1812,8 +1814,8 @@ class CFilemanCopy
 				$module_id = "fileman";
 				if(COption::GetOptionString($module_id, "log_page", "Y")=="Y" && $log)
 				{
-					$res_log['copy_to'] = substr($pathTo, 1);
-					$res_log['path'] = substr($filePath, 1);
+					$res_log['copy_to'] = mb_substr($pathTo, 1);
+					$res_log['path'] = mb_substr($filePath, 1);
 					if ($Params['bCopy'] == "copy")
 					{
 						if (!$bDir_i)
@@ -1865,31 +1867,31 @@ class CFilemanCopy
 		</script><?
 	}
 
-	function SaveConfig($arConfig)
+	public static function SaveConfig($arConfig)
 	{
 		CUserOptions::SetOption("fileman", "file_copy_move_config", serialize($arConfig));
 	}
 
-	function GetConfig()
+	public static function GetConfig()
 	{
 		$arConfig = array();
 		$strAr = CUserOptions::GetOption("fileman", "file_copy_move_config", false);
 		if ($strAr && CheckSerializedData($strAr))
-			$arConfig = unserialize($strAr);
+			$arConfig = unserialize($strAr, ['allowed_classes' => false]);
 
 		return $arConfig;
 	}
 
-	function GetAltFileName($absPath, $name, $bDir = false)
+	public static function GetAltFileName($absPath, $name, $bDir = false)
 	{
 		$io = CBXVirtualIo::GetInstance();
 		for ($i=1; $i <= 9999; $i++)
 		{
-			$dotPos = strpos($name, ".");
+			$dotPos = mb_strpos($name, ".");
 			if ($bDir || $dotPos === false)
 				$new_name = $name."(".$i.")";
 			else
-				$new_name = substr($name, 0, $dotPos)."(".$i.")".substr($name, $dotPos);
+				$new_name = mb_substr($name, 0, $dotPos)."(".$i.")".mb_substr($name, $dotPos);
 
 			if (!$io->FileExists($absPath.$new_name) && !$io->DirectoryExists($absPath.$new_name))
 				break;
@@ -2008,4 +2010,3 @@ InitTranslitInputs({
 <?
 	}
 }
-?>

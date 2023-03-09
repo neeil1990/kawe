@@ -52,6 +52,10 @@ class CIBlockFindTools
 
 	public static function GetSectionIDByCodePath($iblock_id, $section_code_path)
 	{
+		if ($section_code_path == '')
+		{
+			return 0;
+		}
 		$arVariables = array(
 			"SECTION_CODE_PATH" => $section_code_path,
 		);
@@ -148,7 +152,8 @@ class CIBlockFindTools
 		}
 
 		reset($pageCandidates);
-		list($pageID, $arVariables) = each($pageCandidates);
+		$pageID = key($pageCandidates);
+		$arVariables = $pageCandidates[$pageID];
 
 		return $pageID;
 	}
@@ -156,6 +161,8 @@ class CIBlockFindTools
 	public static function checkElement($iblock_id, &$arVariables, $strict_check = false)
 	{
 		global $DB;
+
+		$select = "BE.ID";
 
 		$strFrom = "
 			b_iblock_element BE
@@ -168,6 +175,7 @@ class CIBlockFindTools
 
 		if ($arVariables["SECTION_CODE_PATH"] != "")
 		{
+			$select .= ", BS.ID as SECTION_ID, BS.CODE";
 			//The path may be incomplete so we join part of the section tree BS and BSP
 			$strFrom .= "
 				INNER JOIN b_iblock_section_element BSE ON BSE.IBLOCK_ELEMENT_ID = BE.ID AND BSE.ADDITIONAL_PROPERTY_ID IS NULL
@@ -197,16 +205,26 @@ class CIBlockFindTools
 		}
 
 		$strSql = "
-			select BE.ID
+			select ".$select."
 			from ".$strFrom."
 			WHERE BE.IBLOCK_ID = ".$iblock_id."
 			".$strWhere."
 		";
 		$rs = $DB->Query($strSql);
-		if ($rs->Fetch())
+		if ($r = $rs->Fetch())
 		{
-			if (isset($sectionPath))
-				$arVariables["SECTION_CODE"] = $sectionPath[count($sectionPath)-1];
+			if (isset($sectionPath) && is_array($sectionPath))
+			{
+				$arVariables["SECTION_CODE"] = $sectionPath[count($sectionPath) - 1];
+				if (isset($r['SECTION_ID']) && isset($r['SECTION_CODE']))
+				{
+					if ($arVariables["SECTION_CODE"] === $r['SECTION_CODE'])
+					{
+						$arVariables["SECTION_ID"] = $r['SECTION_ID'];
+						$arVariables["ELEMENT_ID"] = $r['ID'];
+					}
+				}
+			}
 			return true;
 		}
 		else
@@ -220,6 +238,10 @@ class CIBlockFindTools
 		global $DB;
 
 		$sectionPath = explode("/", $arVariables["SECTION_CODE_PATH"]);
+
+		// B24 fix
+		if (count($sectionPath) > 61)
+			return false;
 
 		$strFrom = "";
 		$joinField = "";

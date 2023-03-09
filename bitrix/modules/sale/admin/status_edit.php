@@ -1,7 +1,6 @@
 <?
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
 require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/sale/prolog.php');
-require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/sale/include.php');
 
 $readOnly = $APPLICATION->GetGroupRight('sale') < 'W';
 
@@ -76,6 +75,8 @@ if ($saleGroupIds)
 // A D D / U P D A T E /////////////////////////////////////////////////////////////////////////////////////////////////
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$readOnly && check_bitrix_sessid() && ($_POST['save'] || $_POST['apply']))
 {
+	$adminSidePanelHelper->decodeUriComponent();
+
 	$errors = array();
 	$statusType = $_REQUEST['TYPE'] == \Bitrix\Sale\OrderStatus::TYPE ? \Bitrix\Sale\OrderStatus::TYPE : \Bitrix\Sale\DeliveryStatus::TYPE;
 	$lockedStatusList = array(
@@ -113,7 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$readOnly && check_bitrix_sessid() 
 		'TYPE'   => $statusType,
 		'SORT'   => ($statusSort = intval($_POST['SORT'])) ? $statusSort : 100,
 		'NOTIFY' => $_POST['NOTIFY'] ? 'Y' : 'N',
-		'COLOR' => strlen($_POST['NEW_COLOR']) ? $_POST['NEW_COLOR'] : "",
+		'COLOR' => $_POST['NEW_COLOR'] <> ''? $_POST['NEW_COLOR'] : "",
+		'XML_ID' => $_POST['XML_ID'] <> ''? $_POST['XML_ID'] : StatusTable::generateXmlId(),
 	);
 
 	$isNew = true;
@@ -256,11 +258,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$readOnly && check_bitrix_sessid() 
 			}
 		}
 
+		$adminSidePanelHelper->sendSuccessResponse("base", array("ID" => $statusId));
 
 		if ($_POST['save'])
 			LocalRedirect('sale_status.php?lang='.LANGUAGE_ID.GetFilterParams('filter_', false));
 		else
 			LocalRedirect("sale_status_edit.php?ID=".$statusId."&lang=".LANGUAGE_ID.GetFilterParams("filter_", false));
+	}
+	else
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($errors);
 	}
 }
 // L O A D  O R  N E W /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,6 +463,10 @@ if ($errors)
 			<div id="new_color_label" style="background: <?=htmlspecialcharsbx($status['COLOR'])?>"></div>
 		</td>
 	</tr>
+	<tr>
+		<td><?=$statusFields['XML_ID']->getTitle()?>:</td>
+		<td><input type="text" name="XML_ID" value="<?=$status['XML_ID'] ? htmlspecialcharsbx($status['XML_ID']): StatusTable::generateXmlId();?>" size="30"></td>
+	</tr>
 	<?foreach ($languages as $languageId => $languageName):?>
 		<tr class="heading">
 			<td colspan="2">[<?=htmlspecialcharsex($languageId)?>] <?=htmlspecialcharsex($languageName)?></td>
@@ -482,7 +493,7 @@ if ($errors)
 					<select name="TASK<?=$groupId?>">
 						<?foreach ($tasks as $taskId => $task):?>
 							<option value="<?=$taskId?>" <?=$taskId == $groupTaskId ? 'selected': ''?>>
-								<?=htmlspecialcharsbx(($name = Loc::getMessage('TASK_NAME_'.strtoupper($task['NAME']))) ? $name : $task['NAME'])?>
+								<?=htmlspecialcharsbx(($name = Loc::getMessage('TASK_NAME_'.mb_strtoupper($task['NAME']))) ? $name : $task['NAME'])?>
 							</option>
 						<?endforeach?>
 					</select>

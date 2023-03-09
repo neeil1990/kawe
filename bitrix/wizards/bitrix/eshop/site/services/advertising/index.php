@@ -5,7 +5,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 if(!CModule::IncludeModule('advertising'))
 	return;
 
-__IncludeLang(GetLangFileName(dirname(__FILE__)."/lang/", '/'.basename(__FILE__)));	
+IncludeModuleLangFile(__FILE__);
 
 //Matrix
 $arWeekday = Array(
@@ -18,16 +18,16 @@ $arWeekday = Array(
 	"SATURDAY" => Array(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23)
 );
 
-$contractId  = false; 
+$contractId  = false;
 
-$rsADV = CAdvContract::GetList($v1="s_sort", $v2="desc", array("NAME" => 'Eshop', 'DESCRIPTION' => GetMessage("CONTRACT_DESC")." [".WIZARD_SITE_ID."]"), $is_filtered);
+$rsADV = CAdvContract::GetList("s_sort", "desc", array("NAME" => 'Eshop', 'DESCRIPTION' => GetMessage("CONTRACT_DESC")." [".WIZARD_SITE_ID."]"));
 if ($arADV = $rsADV->Fetch())
 {
 	$contractId  = $arADV["ID"];
 	if (WIZARD_INSTALL_DEMO_DATA)
 	{
-		CAdvContract::Delete($arADV["ID"]); 
-		$contractId  = false; 
+		CAdvContract::Delete($arADV["ID"]);
+		$contractId  = false;
 	}
 }
 if ($contractId == false)
@@ -43,7 +43,7 @@ if ($contractId == false)
 		'arrSITE' => Array(WIZARD_SITE_ID),
 	);
 	$contractId = CAdvContract::Set($arFields, 0, 'N');
-		
+
 	//Types
 	$arTypes = Array(
 		Array(
@@ -61,17 +61,17 @@ if ($contractId == false)
 			"DESCRIPTION" => ""
 		)
 	);
-	
+
 	foreach ($arTypes as $arFields)
 	{
 		$dbResult = CAdvType::GetByID($arTypes["SID"], $CHECK_RIGHTS="N");
 		if ($dbResult && $dbResult->Fetch())
 			continue;
-	
+
 		CAdvType::Set($arFields, "", $CHECK_RIGHTS="N");
 	}
-	
-	$pathToBanner = str_replace("\\", "/", dirname(__FILE__));
+
+	$pathToBanner = str_replace("\\", "/", __DIR__);
 	$lang = (in_array(LANGUAGE_ID, array("ru", "en", "de"))) ? LANGUAGE_ID : \Bitrix\Main\Localization\Loc::getDefaultLang(LANGUAGE_ID);
 	$pathToBanner = $pathToBanner."/lang/".$lang;
 
@@ -102,18 +102,15 @@ if ($contractId == false)
 			"arrSITE" => Array(WIZARD_SITE_ID),
 			"WEIGHT"=> 200,
 			"FIX_SHOW" => "N",
-			"FIX_CLICK" => "Y",
 			"AD_TYPE" => "template",
-			"STAT_EVENT_1" => "banner",
-			"STAT_EVENT_2" => "click",
 			"arrWEEKDAY" => $arWeekday,
 			"COMMENTS" => "banner for " . WIZARD_SITE_ID,
 			"TEMPLATE" => serialize(array(
-				"NAME" => "bootstrap",
+				"NAME" => "bootstrap_v4",
 				"MODE" => "N",
 				"PROPS" => array(
 					0 => array(
-                    	"BANNER_NAME" => GetMessage("DEMO_ADV_1_NAME"),
+						"BANNER_NAME" => GetMessage("DEMO_ADV_1_NAME"),
 						"BACKGROUND" => "stream",
 						"IMG_FIXED" => "N",
 						"LINK_URL" => $arSectionLinks["underwear"],
@@ -121,7 +118,7 @@ if ($contractId == false)
 						"LINK_TARGET" => "_self",
 						"PRESET" => "3",
 						"HEADING_SHOW" => "Y",
-                   		"HEADING" => GetMessage("DEMO_ADV_1_NAME"),
+						"HEADING" => GetMessage("DEMO_ADV_1_NAME"),
 						"HEADING_FONT_SIZE" => 35,
 						"HEADING_FONT_COLOR" => "000000",
 						"HEADING_BG_COLOR" => "FFFFFF",
@@ -142,7 +139,7 @@ if ($contractId == false)
 						"ANIMATION" => "N",
 						"OVERLAY" => "N",
 						"STREAM" => "https://youtu.be/h-Sw7RZc4mQ",
-                    	"STREAM_MUTE" => "Y"
+						"STREAM_MUTE" => "Y"
 					),
 					1 => array(
 						"BANNER_NAME" => GetMessage("DEMO_ADV_2_NAME"),
@@ -233,10 +230,7 @@ if ($contractId == false)
 			"arrSITE" => Array(WIZARD_SITE_ID),
 			"WEIGHT"=> 200,
 			"FIX_SHOW" => "N",
-			"FIX_CLICK" => "Y",
 			"AD_TYPE" => "template",
-			"STAT_EVENT_1" => "banner",
-			"STAT_EVENT_2" => "click",
 			"arrWEEKDAY" => $arWeekday,
 			"COMMENTS" => "banner2 for " . WIZARD_SITE_ID,
 			"TEMPLATE" => serialize(array(
@@ -289,13 +283,13 @@ if ($contractId == false)
 			)
 		)
 	);
-	
+
 	foreach ($arBanners as $arFields)
 	{
-		$dbResult = CAdvBanner::GetList($by, $order, Array("COMMENTS" => $arFields["COMMENTS"], "COMMENTS_EXACT_MATCH" => "Y"), $is_filtered, "N");
+		$dbResult = CAdvBanner::GetList('', '', Array("COMMENTS" => $arFields["COMMENTS"], "COMMENTS_EXACT_MATCH" => "Y"), null, "N");
 		if ($dbResult && $dbResult->Fetch())
 			continue;
-	
+
 		CAdvBanner::Set($arFields, "", $CHECK_RIGHTS="N");
 	}
 }

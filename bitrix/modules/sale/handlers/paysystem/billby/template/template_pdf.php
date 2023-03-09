@@ -795,7 +795,7 @@ do
 	$newLine = false;
 	foreach ($arCols as $columnId => $column)
 	{
-		list($string, $arCols[$columnId]['NAME']) = $pdf->splitString($column['NAME'], $arRowsContentWidth[$columnId]);
+		list($string, $arCols[$columnId]['NAME']) = $pdf->splitString($column['NAME'], $arRowsWidth[$columnId]);
 		$pdf->Cell($arRowsWidth[$columnId], $lineHeight, $string, 0, 0, 'C');
 
 		if ($arCols[$columnId]['NAME'])
@@ -1148,7 +1148,7 @@ if ($_REQUEST['GET_CONTENT'] == 'Y')
 else if ($_REQUEST['DOWNLOAD'] == 'Y')
 	$dest = 'D';
 
-$fileNAme = sprintf(
+$fileName = sprintf(
 	'Schet No %s ot %s.pdf',
 	str_replace(
 		array(

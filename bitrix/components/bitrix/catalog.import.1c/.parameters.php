@@ -7,13 +7,13 @@ if(!CModule::IncludeModule("iblock"))
 $arIBlockType = CIBlockParameters::GetIBlockTypes(array("-" => GetMessage("CP_BCI1_CREATE")));
 
 $arUGroupsEx = Array();
-$dbUGroups = CGroup::GetList($by = "c_sort", $order = "asc");
+$dbUGroups = CGroup::GetList();
 while($arUGroups = $dbUGroups -> Fetch())
 {
 	$arUGroupsEx[$arUGroups["ID"]] = $arUGroups["NAME"];
 }
 
-$rsSite = CSite::GetList($by="sort", $order="asc", $arFilter=array("ACTIVE" => "Y"));
+$rsSite = CSite::GetList("sort", "asc", $arFilter=array("ACTIVE" => "Y"));
 $arSites = array(
 	"-" => GetMessage("CP_BCI1_CURRENT"),
 );
@@ -127,6 +127,13 @@ $arComponentParameters = array(
 			"TYPE" => "CHECKBOX",
 			"DEFAULT" => "N",
 		),
+		"IBLOCK_CACHE_MODE" => array(
+			"PARENT" => "ADDITIONAL",
+			"NAME" => GetMessage("CP_BCI1_IBLOCK_CACHE_MODE"),
+			"TYPE" => "LIST",
+			"VALUES" => \CIBlockCMLImport::getIblockCacheModeList(true),
+			"DEFAULT" => \CIBlockCMLImport::IBLOCK_CACHE_NORMAL
+		)
 	),
 );
 
@@ -243,4 +250,3 @@ if($arCurrentValues["TRANSLIT_ON_ADD"] === "Y" || $arCurrentValues["TRANSLIT_ON_
 		"DEFAULT" => "Y",
 	);
 }
-?>

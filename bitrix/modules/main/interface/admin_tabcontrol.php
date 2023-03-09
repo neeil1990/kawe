@@ -6,6 +6,8 @@
  * @copyright 2001-2016 Bitrix
  */
 
+use Bitrix\Main\Web\Uri;
+
 /*Tab Control*/
 class CAdminTabControl
 {
@@ -14,6 +16,7 @@ class CAdminTabControl
 	var $selectedTab;
 	var $tabIndex = 0;
 	var $bButtons = false;
+	var $arButtonsParams = [];
 	var $bCanExpand;
 	var $bPublicModeBuffer = false;
 	var $bShowSettings = false;
@@ -23,10 +26,15 @@ class CAdminTabControl
 	var $customTabber;
 
 	var $bPublicMode = false;
+	var $isPublicFrame = false;
 	var $publicObject = 'BX.WindowManager.Get()';
 
 	var $AUTOSAVE = null;
 	protected $tabEvent = false;
+
+	var $isSidePanel = false;
+	var $publicSidePanel = false;
+	var $isShownSidePanelFields = false;
 
 	public function __construct($name, $tabs, $bCanExpand = true, $bDenyAutoSave = false)
 	{
@@ -41,6 +49,8 @@ class CAdminTabControl
 		$this->name = $name;
 		$this->unique_name = $name."_".md5($APPLICATION->GetCurPage());
 
+		global $adminSidePanelHelper;
+		$this->publicSidePanel =  (is_object($adminSidePanelHelper) && $adminSidePanelHelper->isPublicSidePanel());
 		$this->bPublicMode = defined('BX_PUBLIC_MODE') && BX_PUBLIC_MODE == 1;
 		$this->bCanExpand = !$this->bPublicMode && (bool)$bCanExpand;
 
@@ -50,6 +60,11 @@ class CAdminTabControl
 		{
 			$this->AUTOSAVE = new CAutoSave();
 		}
+
+		$this->isSidePanel = ((isset($_REQUEST["IFRAME"]) && $_REQUEST["IFRAME"] === "Y") &&
+			isset($_REQUEST["IFRAME_TYPE"]) && $_REQUEST["IFRAME_TYPE"] === "SIDE_SLIDER");
+		$this->isPublicFrame = $this->isSidePanel && (isset($_REQUEST["IFRAME_TYPE"]) &&
+			$_REQUEST["IFRAME_TYPE"] === "PUBLIC_FRAME");
 	}
 
 	function SetPublicMode($jsObject = false)
@@ -81,7 +96,7 @@ class CAdminTabControl
 				{
 					foreach ($arCustomTabs as $key1 => $value1)
 					{
-						if (array_key_exists("SORT", $value1) && IntVal($value1["SORT"]) == $i)
+						if (array_key_exists("SORT", $value1) && intval($value1["SORT"]) == $i)
 						{
 							$arTabs[] = array_merge($value1, array("CUSTOM" => "Y"));
 							unset($arCustomTabs[$key1]);
@@ -257,7 +272,7 @@ echo '
 		if(
 			$this->tabIndex < 1
 			|| $this->tabIndex > count($this->tabs)
-			|| $this->tabs[$this->tabIndex-1]["_closed"] === true
+			|| isset($this->tabs[$this->tabIndex-1]["_closed"]) && $this->tabs[$this->tabIndex-1]["_closed"] === true
 		)
 		{
 			return;
@@ -284,6 +299,10 @@ echo '
 			$this->BeginNextTab();
 
 		$this->bButtons = true;
+		if($aParams === false)
+			$this->arButtonsParams = [];
+		else
+			$this->arButtonsParams = $aParams;
 
 		//end previous tab
 		$this->EndTab();
@@ -293,22 +312,29 @@ echo '
 			echo '<div class="adm-detail-content-btns-wrap" id="'.$this->name.'_buttons_div"><div class="adm-detail-content-btns">';
 		}
 
-		if ($_REQUEST['subdialog'])
+		if (isset($_REQUEST['subdialog']) && $_REQUEST['subdialog'])
 		{
-			echo '<input type="hidden" name="suffix" value="'.substr($GLOBALS['obJSPopup']->suffix, 1).'" />';
+			echo '<input type="hidden" name="suffix" value="'.mb_substr($GLOBALS['obJSPopup']->suffix, 1).'" />';
 			echo '<input type="hidden" name="subdialog" value="Y" />';
 		}
 
 		if($aParams !== false)
 		{
+			$aParams["ajaxMode"] = ($aParams["ajaxMode"] ?? true);
+
+			if (!$this->isShownSidePanelFields)
+			{
+				$this->getSidePanelFields();
+			}
+
 			if ($this->bPublicMode)
 			{
-				if (strlen($_REQUEST['from_module']))
+				if($_REQUEST['from_module'] <> '')
 				{
 					echo '<input type="hidden" name="from_module" value="'.htmlspecialcharsbx($_REQUEST['from_module']).'" />';
 				}
 
-				if(is_array($aParams['buttons']))
+				if (isset($aParams['buttons']) && is_array($aParams['buttons']))
 				{
 					echo '
 <input type="hidden" name="bxpublic" value="Y" />
@@ -323,29 +349,100 @@ echo '
 ';
 				}
 			}
+			elseif($this->isSidePanel && $aParams["ajaxMode"])
+			{
+				$this->getAjaxButtons($aParams);
+			}
 			else
 			{
+				$aParams['btnSave'] = $aParams['btnSave'] ?? true;
+				$aParams['btnApply'] = $aParams['btnApply'] ?? true;
+				$aParams['btnCancel'] = $aParams['btnCancel'] ?? true;
+				$aParams['btnSaveAndAdd'] = $aParams['btnSaveAndAdd'] ?? false;
+
+				$disable = isset($aParams['disabled']) && $aParams['disabled'] === true
+					? ' disabled data-btn-disabled="Y"'
+					: ''
+				;
+
 				if($aParams["btnSave"] !== false)
 				{
-					echo '<input'.($aParams["disabled"] === true? " disabled":"").' type="submit" name="save" value="'.GetMessage("admin_lib_edit_save").'" title="'.GetMessage("admin_lib_edit_save_title").$hkInst->GetTitle("Edit_Save_Button").'" class="adm-btn-save" />';
+					echo '<input' . $disable .' type="submit" name="save" value="'.GetMessage("admin_lib_edit_save").'" title="'.GetMessage("admin_lib_edit_save_title").$hkInst->GetTitle("Edit_Save_Button").'" class="adm-btn-save" />';
 					echo $hkInst->PrintJSExecs($hkInst->GetCodeByClassName("Edit_Save_Button"));
 				}
 				if($aParams["btnApply"] !== false)
 				{
-					echo '<input'.($aParams["disabled"] === true? " disabled":"").' type="submit" name="apply" value="'.GetMessage("admin_lib_edit_apply").'" title="'.GetMessage("admin_lib_edit_apply_title").$hkInst->GetTitle("Edit_Apply_Button").'" />';
+					echo '<input' . $disable .' type="submit" name="apply" value="'.GetMessage("admin_lib_edit_apply").'" title="'.GetMessage("admin_lib_edit_apply_title").$hkInst->GetTitle("Edit_Apply_Button").'" />';
 					echo $hkInst->PrintJSExecs($hkInst->GetCodeByClassName("Edit_Apply_Button"));
 				}
 				if($aParams["btnCancel"] !== false && $aParams["back_url"] <> '' && !preg_match('/(javascript|data)[\s\0-\13]*:/i', $aParams["back_url"]))
 				{
-					echo '<input type="button" value="'.GetMessage("admin_lib_edit_cancel").'" name="cancel" onClick="window.location=\''.htmlspecialcharsbx(CUtil::addslashes($aParams["back_url"])).'\'" title="'.GetMessage("admin_lib_edit_cancel_title").$hkInst->GetTitle("Edit_Cancel_Button").'" />';
+					echo '<input' . $disable . ' type="button" value="'.GetMessage("admin_lib_edit_cancel").'" name="cancel" onClick="top.window.location=\''.htmlspecialcharsbx(CUtil::addslashes($aParams["back_url"])).'\'" title="'.GetMessage("admin_lib_edit_cancel_title").$hkInst->GetTitle("Edit_Cancel_Button").'" />';
 					echo $hkInst->PrintJSExecs($hkInst->GetCodeByClassName("Edit_Cancel_Button"));
 				}
 				if($aParams["btnSaveAndAdd"] === true)
 				{
-					echo '<input'.($aParams["disabled"] === true? " disabled":"").' type="submit" name="save_and_add" value="'.GetMessage("admin_lib_edit_save_and_add").'" title="'.GetMessage("admin_lib_edit_save_and_add_title").$hkInst->GetTitle("Edit_Save_And_Add_Button").'" class="adm-btn-add" />';
+					echo '<input' . $disable . ' type="submit" name="save_and_add" value="'.GetMessage("admin_lib_edit_save_and_add").'" title="'.GetMessage("admin_lib_edit_save_and_add_title").$hkInst->GetTitle("Edit_Save_And_Add_Button").'" class="adm-btn-add" />';
 					echo $hkInst->PrintJSExecs($hkInst->GetCodeByClassName("Edit_Save_And_Add_Button"));
 				}
 			}
+		}
+	}
+
+	protected function getAjaxButtons(array $params)
+	{
+		$htmlAjaxButtons = '';
+
+		$params['btnSave'] = $params['btnSave'] ?? true;
+		$params['btnApply'] = $params['btnApply'] ?? true;
+		$params['btnCancel'] = $params['btnCancel'] ?? true;
+		$params['btnSaveAndAdd'] = $params['btnSaveAndAdd'] ?? false;
+
+		$disable = isset($params['disabled']) && $params['disabled'] === true
+			? ' disabled data-btn-disabled="Y"'
+			: ''
+		;
+
+		if ($params["btnSave"] !== false)
+		{
+			$htmlAjaxButtons .= '<input' . $disable . ' type="button" name="save" value="' . GetMessage("admin_lib_edit_save").'" title="'.GetMessage("admin_lib_edit_save_title").'" class="adm-btn-save">';
+		}
+		if ($params["btnApply"] !== false)
+		{
+			$htmlAjaxButtons .= '<input' . $disable . ' type="button" name="apply" value="'.GetMessage("admin_lib_edit_apply").'" title="'.GetMessage("admin_lib_edit_apply_title").'">';
+		}
+		if ($params["btnCancel"] !== false)
+		{
+			$htmlAjaxButtons .= '<input' . $disable . ' type="button" name="cancel" value="'.GetMessage("admin_lib_edit_cancel").'" title="'.GetMessage("admin_lib_edit_cancel_title").'">';
+		}
+		if ($params["btnSaveAndAdd"] === true)
+		{
+			global $APPLICATION;
+			$addUrl = (new Uri($APPLICATION->GetCurPage()))
+				->addParams(["lang" => LANGUAGE_ID])
+				->getUri()
+			;
+			if ($addUrl <> '' && !preg_match('/(javascript|data)[\s\0-\13]*:/i', $addUrl))
+			{
+				$htmlAjaxButtons .= '<input' . $disable . ' type="button" name="save_and_add" value="'.GetMessage("admin_lib_edit_save_and_add").'" title="'.GetMessage("admin_lib_edit_save_and_add_title").'" class="adm-btn-add"  data-url="'.htmlspecialcharsbx(CUtil::addslashes($addUrl)).'">';
+			}
+			else
+			{
+				$htmlAjaxButtons .= '<input' . $disable . ' type="button" name="save_and_add" value="'.GetMessage("admin_lib_edit_save_and_add").'" title="'.GetMessage("admin_lib_edit_save_and_add_title").'" class="adm-btn-add">';
+			}
+		}
+
+		echo $htmlAjaxButtons;
+	}
+
+	public function getSidePanelFields()
+	{
+		if ($this->isSidePanel)
+		{
+			$this->isShownSidePanelFields = true;
+
+			echo '<input type="hidden" name="IFRAME" value="Y">';
+			echo '<input type="hidden" name="IFRAME_TYPE" value="SIDE_SLIDER">';
 		}
 	}
 
@@ -362,8 +459,10 @@ echo '
 
 		if ($this->bPublicMode)
 		{
-			if (strlen($_REQUEST['from_module']))
+			if($_REQUEST['from_module'] <> '')
+			{
 				echo '<input type="hidden" name="from_module" value="'.htmlspecialcharsbx($_REQUEST['from_module']).'" />';
+			}
 
 			if ($arJSButtons === false)
 			{
@@ -381,7 +480,7 @@ echo '
 ';
 				foreach ($arJSButtons as $key => $btn)
 				{
-					if (substr($btn, 0, 1) == '.')
+					if (mb_substr($btn, 0, 1) == '.')
 						$btn = $this->publicObject.$btn;
 					echo $key ? ',' : '', $btn, "\r\n"; // NO JSESCAPE HERE! string must contain valid js object
 				}
@@ -432,12 +531,22 @@ echo '
 			$s .= ($s <> ""? ", ":"").
 			"{".
 			"'DIV': '".$tab["DIV"]."' ".
-			($tab["ONSELECT"] <> ""? ", 'ONSELECT': '".CUtil::JSEscape($tab["ONSELECT"])."'":"").
+			(isset($tab["ONSELECT"]) && $tab["ONSELECT"] <> ""? ", 'ONSELECT': '".CUtil::JSEscape($tab["ONSELECT"])."'":"").
 			"}";
 		}
+		$adminTabControlParams = array();
+		if (isset($this->arButtonsParams["back_url"]) && $this->arButtonsParams["back_url"] <> '')
+			$adminTabControlParams["backUrl"] = $this->arButtonsParams["back_url"];
+		if ($this->isPublicFrame)
+			$adminTabControlParams["isPublicFrame"] = "Y";
+		if ($this->isSidePanel)
+			$adminTabControlParams["isSidePanel"] = "Y";
+		if ($this->publicSidePanel)
+			$adminTabControlParams["publicSidePanel"] = "Y";
 		echo '
 if (!window.'.$this->name.' || !BX.is_subclass_of(window.'.$this->name.', BX.adminTabControl))
-	window.'.$this->name.' = new BX.adminTabControl("'.$this->name.'", "'.$this->unique_name.'", ['.$s.']);
+	window.'.$this->name.' = new BX.adminTabControl("'.$this->name.'", "'.$this->unique_name.
+			'", ['.$s.'], '.CUtil::phpToJsObject($adminTabControlParams).');
 else if(!!window.'.$this->name.')
 	window.'.$this->name.'.PreInit(true);
 ';
@@ -449,20 +558,20 @@ else if(!!window.'.$this->name.')
 
 			if($this->bCanExpand && count($this->tabs) > 1)
 			{
-				if($aEditOpt["expand"] == "on")
+				if (isset($aEditOpt["expand"]) && $aEditOpt["expand"] == "on")
 				{
 					echo '
 '.$this->name.'.ToggleTabs();';
 				}
 			}
 
-			if ($aTabOpt["fix_top"] == "off" && $aEditOpt["expand"] != "on")
+			if (isset($aTabOpt["fix_top"]) && $aTabOpt["fix_top"] == "off" && $aEditOpt["expand"] != "on")
 			{
 				echo '
 '.$this->name.'.ToggleFix(\'top\');';
 			}
 
-			if ($aTabOpt["fix_bottom"] == "off")
+			if (isset($aTabOpt["fix_bottom"]) && $aTabOpt["fix_bottom"] == "off")
 			{
 				echo '
 '.$this->name.'.ToggleFix(\'bottom\');';

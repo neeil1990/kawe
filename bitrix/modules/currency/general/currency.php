@@ -1,8 +1,9 @@
-<?
-use Bitrix\Main,
-	Bitrix\Main\ModuleManager,
-	Bitrix\Main\Localization\Loc,
-	Bitrix\Currency;
+<?php
+
+use Bitrix\Main;
+use Bitrix\Main\ModuleManager;
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Currency;
 
 Loc::loadMessages(__FILE__);
 
@@ -19,13 +20,13 @@ class CAllCurrency
 		return CCurrency::GetByID($currency);
 	}
 
-	public function CheckFields($ACTION, &$arFields, $strCurrencyID = false)
+	public static function CheckFields($ACTION, &$arFields, $strCurrencyID = false)
 	{
 		global $APPLICATION, $DB, $USER;
 
 		$arMsg = array();
 
-		$ACTION = strtoupper($ACTION);
+		$ACTION = mb_strtoupper($ACTION);
 		if ($ACTION != 'UPDATE' && $ACTION != 'ADD')
 			return false;
 		if (!is_array($arFields))
@@ -75,7 +76,7 @@ class CAllCurrency
 			}
 			else
 			{
-				$arFields['CURRENCY'] = strtoupper($arFields['CURRENCY']);
+				$arFields['CURRENCY'] = mb_strtoupper($arFields['CURRENCY']);
 				$currencyExist = Currency\CurrencyTable::getList(array(
 					'select' => array('CURRENCY'),
 					'filter' => array('=CURRENCY' => $arFields['CURRENCY'])
@@ -193,11 +194,7 @@ class CAllCurrency
 				{
 					if (empty($settings) || !is_array($settings))
 						continue;
-					$langAction = 'ADD';
-					if ($ACTION == 'UPDATE')
-					{
-						$langAction = (CCurrencyLang::isExistCurrencyLanguage($currency, $lang) ? 'UPDATE' : 'ADD');
-					}
+					$langAction = (CCurrencyLang::isExistCurrencyLanguage($currency, $lang) ? 'UPDATE' : 'ADD');
 					$checkLang = CCurrencyLang::checkFields($langAction, $settings, $currency, $lang, true);
 					$settings['CURRENCY'] = $currency;
 					$settings['LID'] = $lang;
@@ -251,6 +248,7 @@ class CAllCurrency
 			unset($settings, $lang);
 		}
 
+		Currency\CurrencyTable::getEntity()->cleanCache();
 		Currency\CurrencyManager::updateBaseRates($arFields['CURRENCY']);
 		Currency\CurrencyManager::clearCurrencyCache();
 
@@ -300,6 +298,7 @@ class CAllCurrency
 		}
 		if (!empty($strUpdate) || isset($arFields['LANG']))
 			Currency\CurrencyManager::clearCurrencyCache();
+		Currency\CurrencyTable::getEntity()->cleanCache();
 
 		foreach (GetModuleEvents("currency", "OnCurrencyUpdate", true) as $arEvent)
 			ExecuteModuleEventEx($arEvent, array($currency, $arFields));
@@ -346,6 +345,8 @@ class CAllCurrency
 		$DB->Query("delete from b_catalog_currency_rate where CURRENCY = '".$sqlCurrency."'", true);
 
 		Currency\CurrencyManager::clearTagCache($currency);
+		Currency\CurrencyTable::getEntity()->cleanCache();
+		Currency\CurrencyLangTable::getEntity()->cleanCache();
 
 		if (isset(self::$currencyCache[$currency]))
 			unset(self::$currencyCache[$currency]);
@@ -442,19 +443,24 @@ class CAllCurrency
 	 * @deprecated deprecated since currency 16.5.0
 	 * @see \Bitrix\Currency\CurrencyTable::getList
 	 *
-	 * @param string &$by
-	 * @param string &$order
+	 * @param string $by
+	 * @param string $order
 	 * @param string $lang
 	 * @return CDBResult
 	 */
-	public static function GetList(&$by, &$order, $lang = LANGUAGE_ID)
+	public static function GetList($by = 'sort', $order = 'asc', $lang = LANGUAGE_ID)
 	{
 		global $CACHE_MANAGER;
 
-		if (defined("CURRENCY_SKIP_CACHE") && CURRENCY_SKIP_CACHE
-			|| strtolower($by) == "name"
-			|| strtolower($by) == "currency"
-			|| strtolower($order) == "desc")
+		$by = strtolower($by);
+		$order = strtolower($order);
+
+		if (
+			defined("CURRENCY_SKIP_CACHE") && CURRENCY_SKIP_CACHE
+			|| $by == "name"
+			|| $by == "currency"
+			|| $order == "desc"
+		)
 		{
 			/** @noinspection PhpDeprecationInspection */
 			$dbCurrencyList = static::__GetList($by, $order, $lang);
@@ -493,25 +499,23 @@ class CAllCurrency
 	 * @deprecated deprecated since currency 16.5.0
 	 * @see \Bitrix\Currency\CurrencyTable::getList
 	 *
-	 * @param string &$by
-	 * @param string &$order
+	 * @param string $by
+	 * @param string $order
 	 * @param string $lang
 	 * @return CDBResult
 	 */
-	public static function __GetList(&$by, &$order, $lang = LANGUAGE_ID)
+	public static function __GetList($by = 'sort', $order = 'asc', $lang = LANGUAGE_ID)
 	{
 		$lang = substr((string)$lang, 0, 2);
 		$normalBy = strtolower($by);
 		if ($normalBy != 'currency' && $normalBy != 'name')
 		{
 			$normalBy = 'sort';
-			$by = 'sort';
 		}
 		$normalOrder = strtoupper($order);
 		if ($normalOrder != 'DESC')
 		{
 			$normalOrder = 'ASC';
-			$order = 'asc';
 		}
 		switch($normalBy)
 		{
@@ -685,5 +689,4 @@ class CAllCurrency
 
 class CCurrency extends CAllCurrency
 {
-
 }

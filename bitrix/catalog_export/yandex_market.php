@@ -1,12 +1,12 @@
 <? $disableReferers = false;
-if (!isset($_GET["referer1"]) || strlen($_GET["referer1"])<=0) $_GET["referer1"] = "yandext";
+if (!isset($_GET["referer1"]) || $_GET["referer1"] == "") $_GET["referer1"] = "yandext";
 $strReferer1 = htmlspecialchars($_GET["referer1"]);
-if (!isset($_GET["referer2"]) || strlen($_GET["referer2"]) <= 0) $_GET["referer2"] = "";
+if (!isset($_GET["referer2"]) || $_GET["referer2"] == "") $_GET["referer2"] = "";
 $strReferer2 = htmlspecialchars($_GET["referer2"]);
 header("Content-Type: text/xml; charset=windows-1251");
 echo "<"."?xml version=\"1.0\" encoding=\"windows-1251\"?".">"?>
 <!DOCTYPE yml_catalog SYSTEM "shops.dtd">
-<yml_catalog date="2023-03-02 15:54">
+<yml_catalog date="2023-03-09 12:05">
 <shop>
 <name>kawe.su - поставки медицинского оборудования по всей России</name>
 <company>Kawe - медицинское оборудование</company>

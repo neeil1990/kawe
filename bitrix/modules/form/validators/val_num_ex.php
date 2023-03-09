@@ -1,9 +1,10 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
 
 class CFormValidatorNumberEx
 {
-	function GetDescription()
+	public static function GetDescription()
 	{
 		return array(
 			"NAME" => "number_ext", // unique validator string ID
@@ -16,7 +17,7 @@ class CFormValidatorNumberEx
 		);
 	}
 
-	function GetSettings()
+	public static function GetSettings()
 	{
 		return array(
 			"NUMBER_FROM" => array(
@@ -39,7 +40,7 @@ class CFormValidatorNumberEx
 		);
 	}
 
-	function ToDB($arParams)
+	public static function ToDB($arParams)
 	{
 		$arParams["NUMBER_FLOAT"] = $arParams["NUMBER_FLOAT"] == "Y" ? "Y" : "N";
 		$arParams["NUMBER_FROM"] = $arParams["NUMBER_FLOAT"] == "Y" ? floatval($arParams["NUMBER_FROM"]) : intval($arParams["NUMBER_FROM"]);
@@ -55,18 +56,18 @@ class CFormValidatorNumberEx
 		return serialize($arParams);
 	}
 
-	function FromDB($strParams)
+	public static function FromDB($strParams)
 	{
-		return unserialize($strParams);
+		return unserialize($strParams, ['allowed_classes' => false]);
 	}
 
-	function DoValidate($arParams, $arQuestion, $arAnswers, $arValues)
+	public static function DoValidate($arParams, $arQuestion, $arAnswers, $arValues)
 	{
 		global $APPLICATION;
 
 		foreach ($arValues as $value)
 		{
-			if (strlen($value) <= 0) continue;
+			if ($value == '') continue;
 
 			// do not return error if NaN, but set it to number -
 
@@ -85,14 +86,14 @@ class CFormValidatorNumberEx
 			}
 
 			// check minimum number
-			if (strlen($arParams["NUMBER_FROM"]) > 0 && $value < $arParams["NUMBER_FROM"])
+			if ($arParams["NUMBER_FROM"] <> '' && $value < $arParams["NUMBER_FROM"])
 			{
 				$APPLICATION->ThrowException(GetMessage("FORM_VALIDATOR_VAL_NUM_EX_ERROR_LESS"));
 				return false;
 			}
 
 			// check maximum number
-			if (strlen($arParams["NUMBER_TO"]) > 0 && $value > $arParams["NUMBER_TO"])
+			if ($arParams["NUMBER_TO"] <> '' && $value > $arParams["NUMBER_TO"])
 			{
 				$APPLICATION->ThrowException(GetMessage("FORM_VALIDATOR_VAL_NUM_EX_ERROR_MORE"));
 				return false;
@@ -104,4 +105,3 @@ class CFormValidatorNumberEx
 }
 
 AddEventHandler("form", "onFormValidatorBuildList", array("CFormValidatorNumberEx", "GetDescription"));
-?>

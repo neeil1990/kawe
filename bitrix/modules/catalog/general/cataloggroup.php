@@ -18,7 +18,7 @@ class CAllCatalogGroup
 		$boolResult = true;
 		$arMsg = array();
 
-		$ACTION = strtoupper($ACTION);
+		$ACTION = mb_strtoupper($ACTION);
 		if ('UPDATE' != $ACTION && 'ADD' != $ACTION)
 			return false;
 
@@ -54,18 +54,38 @@ class CAllCatalogGroup
 		if (array_key_exists('DATE_CREATE', $arFields))
 			unset($arFields['DATE_CREATE']);
 		$arFields['~TIMESTAMP_X'] = $strDateFunction;
-		if ($boolUserExist)
+		if (array_key_exists('MODIFIED_BY', $arFields))
 		{
-			if (!array_key_exists('MODIFIED_BY', $arFields) || intval($arFields["MODIFIED_BY"]) <= 0)
-				$arFields["MODIFIED_BY"] = $intUserID;
+			if ($arFields['MODIFIED_BY'] !== false)
+			{
+				$arFields['MODIFIED_BY'] = (int)$arFields['MODIFIED_BY'];
+				if ($arFields['MODIFIED_BY'] <= 0)
+				{
+					unset($arFields['MODIFIED_BY']);
+				}
+			}
+		}
+		if (!isset($arFields['MODIFIED_BY']) && $boolUserExist)
+		{
+			$arFields["MODIFIED_BY"] = $intUserID;
 		}
 		if ('ADD' == $ACTION)
 		{
 			$arFields['~DATE_CREATE'] = $strDateFunction;
-			if ($boolUserExist)
+			if (array_key_exists('CREATED_BY', $arFields))
 			{
-				if (!array_key_exists('CREATED_BY', $arFields) || intval($arFields["CREATED_BY"]) <= 0)
-					$arFields["CREATED_BY"] = $intUserID;
+				if ($arFields['CREATED_BY'] !== false)
+				{
+					$arFields['CREATED_BY'] = (int)$arFields['CREATED_BY'];
+					if ($arFields['CREATED_BY'] <= 0)
+					{
+						unset($arFields['CREATED_BY']);
+					}
+				}
+			}
+			if (!isset($arFields['CREATED_BY']) && $boolUserExist)
+			{
+				$arFields["CREATED_BY"] = $intUserID;
 			}
 		}
 		if ('UPDATE' == $ACTION)
@@ -261,65 +281,45 @@ class CAllCatalogGroup
 		return $result;
 	}
 
-	public static function GetListArray()
+	/**
+	 * @deprecated
+	 * @see Catalog\GroupTable::getTypeList()
+	 *
+	 * @return array
+	 */
+	public static function GetListArray(): array
 	{
-		$result = array();
-
-		if (defined('CATALOG_SKIP_CACHE') && CATALOG_SKIP_CACHE)
-		{
-			$groupIterator = Catalog\GroupTable::getList(array(
-				'select' => array('ID', 'NAME', 'BASE', 'SORT', 'XML_ID', 'NAME_LANG' =>'CURRENT_LANG.NAME'),
-				'order' => array('SORT' => 'ASC', 'ID' => 'ASC')
-			));
-			while ($group = $groupIterator->fetch())
-				$result[$group['ID']] = $group;
-			unset($group, $groupIterator);
-		}
-		else
-		{
-
-			$cacheTime = (int)(defined('CATALOG_CACHE_TIME') ? CATALOG_CACHE_TIME : CATALOG_CACHE_DEFAULT_TIME);
-			$managedCache = Application::getInstance()->getManagedCache();
-			if ($managedCache->read($cacheTime, 'catalog_group_'.LANGUAGE_ID, 'catalog_group'))
-			{
-				$result = $managedCache->get('catalog_group_'.LANGUAGE_ID);
-			}
-			else
-			{
-				$groupIterator = Catalog\GroupTable::getList(array(
-					'select' => array('ID', 'NAME', 'BASE', 'SORT', 'XML_ID', 'NAME_LANG' =>'CURRENT_LANG.NAME'),
-					'order' => array('SORT' => 'ASC', 'ID' => 'ASC')
-				));
-				while ($group = $groupIterator->fetch())
-					$result[$group['ID']] = $group;
-				unset($group, $groupIterator);
-				$managedCache->set('catalog_group_'.LANGUAGE_ID, $result);
-			}
-			unset($managedCache, $cacheTime);
-		}
-
-		return $result;
+		return Catalog\GroupTable::getTypeList();
 	}
 
+	/**
+	 * @deprecated
+	 * @see Catalog\GroupTable::getBasePriceType()
+	 *
+	 * @return array|false
+	 */
 	public static function GetBaseGroup()
 	{
-		if (empty(self::$arBaseGroupCache) && is_array(self::$arBaseGroupCache))
+		$group = Catalog\GroupTable::getBasePriceType();
+		if (!empty($group))
 		{
-			self::$arBaseGroupCache = false;
-			$group = Catalog\GroupTable::getList(array(
-				'select' => array('ID', 'NAME', 'BASE', 'SORT', 'XML_ID', 'NAME_LANG' =>'CURRENT_LANG.NAME'),
-				'filter' => array('=BASE' => 'Y')
-			))->fetch();
-			if (!empty($group))
-			{
-				$group['ID'] = (int)$group['ID'];
-				$group['NAME_LANG'] = (string)$group['NAME_LANG'];
-				$group['XML_ID'] = (string)$group['XML_ID'];
+			$group['NAME_LANG'] = (string)$group['NAME_LANG'];
+			$group['XML_ID'] = (string)$group['XML_ID'];
 
-				self::$arBaseGroupCache = $group;
-			}
-			unset($group);
+			return $group;
 		}
-		return self::$arBaseGroupCache;
+
+		return false;
+	}
+
+	/**
+	 * @deprecated
+	 * @see Catalog\GroupTable::getBasePriceTypeId()
+	 *
+	 * @return int|null
+	 */
+	public static function GetBaseGroupId(): ?int
+	{
+		return Catalog\GroupTable::getBasePriceTypeId();
 	}
 }

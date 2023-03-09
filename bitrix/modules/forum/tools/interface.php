@@ -41,7 +41,7 @@ class CForumHTMLPresrnation
 		
 		if ((empty($arFields)) || !is_array($arFields["params"]))
 			return false;
-		if (strLen($arForm["formName"]) <= 0)
+		if ($arForm["formName"] == '')
 			$arForm["formName"] = "form1";
 		if (empty($arForm["formMethod"]))
 			$arForm["formMethod"] = "get";
@@ -60,7 +60,7 @@ class CForumHTMLPresrnation
 	$JSFile = "";
 	$prefix = preg_replace("/[^a-z0-9]/is", "_", $prefix);
 	ob_start();
-	$path = str_replace(array("\\", "//"), "/", dirname(__FILE__)."/interface_js.php");
+	$path = str_replace(array("\\", "//"), "/", __DIR__."/interface_js.php");
 	include_once($path);
 	$JSFile = ob_get_contents();
 	ob_end_clean();

@@ -1,6 +1,6 @@
 <?
 /*
-This is callback page for Dropbox OAuth 2.0 authentication.
+This is callback page for Facebook OAuth 2.0 authentication.
 Dropbox redirects only to specific back url set in the OAuth application.
 The page opens in popup window after user authorized on Dropbox.
 */
@@ -12,7 +12,7 @@ if(isset($_REQUEST["state"]) && is_string($_REQUEST["state"]))
 
 	if(isset($arState['site_id']) && is_string($arState['site_id']))
 	{
-		$site = substr(preg_replace("/[^a-z0-9_]/i", "", $arState['site_id']), 0, 2);
+		$site = mb_substr(preg_replace("/[^a-z0-9_]/i", "", $arState['site_id']), 0, 2);
 		define("SITE_ID", $site);
 	}
 }

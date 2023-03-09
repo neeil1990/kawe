@@ -39,7 +39,7 @@ class Catalog
 		{
 			return;
 		}
-		
+
 		// exclude empty cookie
 		if (!static::getBxUserId())
 		{
@@ -315,26 +315,33 @@ class Catalog
 		$siteUserId = $order['USER_ID'];
 
 		$phone = '';
+		$phone256 = '';
+		$phone256_e164 = '';
+
 		$email = '';
+		$email256 = '';
 
 		$result = \CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $orderId));
 		while ($row = $result->fetch())
 		{
-			if (empty($phone) && stripos($row['CODE'], 'PHONE') !== false)
+			if (empty($phone) && mb_stripos($row['CODE'], 'PHONE') !== false)
 			{
 				$stPhone = static::normalizePhoneNumber($row['VALUE']);
 
 				if (!empty($stPhone))
 				{
 					$phone = sha1($stPhone);
+					$phone256 = hash('sha256', $stPhone);
+					$phone256_e164 = hash('sha256', '+'.$stPhone);
 				}
 			}
 
-			if (empty($email) && stripos($row['CODE'], 'EMAIL') !== false)
+			if (empty($email) && mb_stripos($row['CODE'], 'EMAIL') !== false)
 			{
 				if (!empty($row['VALUE']))
 				{
 					$email = sha1($row['VALUE']);
+					$email256 = hash('sha256', mb_strtolower(trim($row['VALUE'])));
 				}
 			}
 		}
@@ -394,7 +401,10 @@ class Catalog
 			'order_id' => $orderId,
 			'user_id' => $siteUserId,
 			'phone' => $phone,
+			'phone256' => $phone256,
+			'phone256_e164' => $phone256_e164,
 			'email' => $email,
+			'email256' => $email256,
 			'products' => $products,
 			'price' => $order['PRICE'],
 			'currency' => $order['CURRENCY']
@@ -403,7 +413,7 @@ class Catalog
 		return $data;
 	}
 
-	protected function getBxUserId()
+	protected static function getBxUserId()
 	{
 		return $_COOKIE['BX_USER_ID'];
 	}
@@ -414,7 +424,7 @@ class Catalog
 
 		$cleanPhone = \NormalizePhone($phone, 6);
 
-		if (strlen($cleanPhone) == 10)
+		if (mb_strlen($cleanPhone) == 10)
 		{
 			$cleanPhone = '7'.$cleanPhone;
 		}
@@ -424,7 +434,7 @@ class Catalog
 
 	public static function isOn()
 	{
-		return SiteSpeed::isRussianSiteManager()
+		return SiteSpeed::isOn()
 			&& Option::get("main", "gather_catalog_stat", "Y") === "Y"
 			&& defined("LICENSE_KEY") && LICENSE_KEY !== "DEMO"
 		;

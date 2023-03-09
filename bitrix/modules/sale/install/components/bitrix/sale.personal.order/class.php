@@ -1,6 +1,9 @@
 <?php
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 
+use Bitrix\Main\Loader;
+use \Bitrix\Sale;
+
 class PersonalOrder extends CBitrixComponent
 {
 	public function executeComponent()
@@ -84,6 +87,37 @@ class PersonalOrder extends CBitrixComponent
 
 		if ($componentPage == "index" && $this->getTemplateName() !== "")
 			$componentPage = "template";
+
+		if ($componentPage == "detail")
+		{
+			$id = urldecode(urldecode($variables["ID"]));
+			Loader::includeModule('sale');
+			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+			$orderClassName = $registry->getOrderClassName();
+
+			$order = $orderClassName::loadByAccountNumber($id);
+			if (!$order)
+			{
+				$order = $orderClassName::load((int)$id);
+			}
+
+			/** @var Sale\Order $order */
+			if ($order)
+			{
+				if (
+					(is_array($this->arParams["HISTORIC_STATUSES"]) && in_array($order->getField('STATUS_ID'), $this->arParams["HISTORIC_STATUSES"]))
+					|| $order->isCanceled()
+				)
+				{
+					$delimeter = (mb_strpos($this->arResult["PATH_TO_LIST"], '?') !== false) ? '&' : '?';
+					$this->arResult["PATH_TO_LIST"] .=  $delimeter . "filter_history=Y";
+					if ($order->isCanceled())
+					{
+						$this->arResult["PATH_TO_LIST"] .=  "&show_canceled=Y";
+					}
+				}
+			}
+		}
 
 		$this->includeComponentTemplate($componentPage);
 	}

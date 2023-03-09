@@ -14,15 +14,13 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
  * @param array $arCurrentValues
  */
 
-include_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/components/bitrix/desktop/include.php');
-
 $arComponentParameters = array(
 	"GROUPS" => array(),
 	"PARAMETERS" => array(
 		"ID" => array(
 			"NAME" => GetMessage("CMDESKTOP_PARAMS_ID"),
 			"TYPE" => "STRING",
-			"DEFAULT" => "holder1".(strlen($_REQUEST["src_site"]) > 0 ? $_REQUEST["src_site"] : ""),
+			"DEFAULT" => "holder1".($_REQUEST["src_site"] <> '' ? $_REQUEST["src_site"] : ""),
 			"PARENT" => "DATA_SOURCE",
 		),
 		"CAN_EDIT" => array(

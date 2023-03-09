@@ -1,6 +1,10 @@
 <?
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 
+$instance = \Bitrix\Main\Application::getInstance();
+$context = $instance->getContext();
+$request = $context->getRequest();
+
 if(!is_array($arParams["GROUP_PERMISSIONS"]))
 	$arParams["GROUP_PERMISSIONS"] = array(1);
 if(empty($arParams["SITE_LIST"]))
@@ -17,7 +21,7 @@ if ($arParams["USE_TEMP_DIR"] !== "Y" && $arParams["USE_TEMP_DIR"] !== "N")
 if(!isset($arParams["INTERVAL"]))
 	$arParams["INTERVAL"] = COption::GetOptionString("sale", "1C_INTERVAL", 30);
 else
-	$arParams["INTERVAL"] = IntVal($arParams["INTERVAL"]);
+	$arParams["INTERVAL"] = intval($arParams["INTERVAL"]);
 
 $arParams["FILE_SIZE_LIMIT"] = intval($arParams["FILE_SIZE_LIMIT"]);
 if($arParams["FILE_SIZE_LIMIT"] < 1)
@@ -57,14 +61,14 @@ $lid = ($bCrmMode && !empty($arParams["LID"]) ? $arParams["LID"] : null);
 
 ob_start();
 
-$curPage = substr($APPLICATION -> GetCurPage(), 0, 22);
+$curPage = mb_substr($APPLICATION->GetCurPage(), 0, 22);
 
 if(empty($_REQUEST["sessid"]) && !empty($_POST["sessid"]))
 {
 	$_REQUEST["sessid"] = $_POST["sessid"];
 }
 
-if(strlen($_REQUEST["sessid"]) > 0 && COption::GetOptionString("sale", "secure_1c_exchange", "N") != "Y")
+if($_REQUEST["sessid"] <> '' && COption::GetOptionString("sale", "secure_1c_exchange", "N") != "Y")
 {
 	COption::SetOptionString("sale", "secure_1c_exchange", "Y");
 }
@@ -117,7 +121,7 @@ else
 	$ABS_FILE_NAME = false;
 	$WORK_DIR_NAME = false;
 
-	if(isset($_GET["filename"]) && strlen($_GET["filename"]) > 0 && strlen($DIR_NAME) > 0)
+	if(isset($_GET["filename"]) && $_GET["filename"] <> '' && $DIR_NAME <> '')
 	{
 		//This check for 1c server on linux
 		$filename = preg_replace("#^(/tmp/|upload/1c/webdata)#", "", $_GET["filename"]);
@@ -134,10 +138,10 @@ else
 			$filename = trim(str_replace("\\", "/", trim($filename)), "/");
 
 			$FILE_NAME = rel2abs($DIR_NAME, "/".$filename);
-			if((strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename))
+			if((mb_strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename))
 			{
 				$ABS_FILE_NAME = $DIR_NAME.$FILE_NAME;
-				$WORK_DIR_NAME = substr($ABS_FILE_NAME, 0, strrpos($ABS_FILE_NAME, "/")+1);
+				$WORK_DIR_NAME = mb_substr($ABS_FILE_NAME, 0, mb_strrpos($ABS_FILE_NAME, "/") + 1);
 			}
 		}
 	}
@@ -152,7 +156,7 @@ else
 		else
 		{
 			$DIR_NAME = $_SERVER["DOCUMENT_ROOT"]."/".COption::GetOptionString("main", "upload_dir", "upload")."/1c_exchange/";
-			DeleteDirFilesEx(substr($DIR_NAME, strlen($_SERVER["DOCUMENT_ROOT"])));
+			DeleteDirFilesEx(mb_substr($DIR_NAME, mb_strlen($_SERVER["DOCUMENT_ROOT"])));
 		}
 
 		CheckDirPath($DIR_NAME);
@@ -181,13 +185,14 @@ else
 			echo "zip=".($_SESSION["BX_CML2_EXPORT"]["zip"]? "yes": "no")."\n";
 			echo "file_limit=".$arParams["FILE_SIZE_LIMIT"]."\n";
 
-			if(strlen($_GET["version"]) > 0)
+			if($_GET["version"] <> '')
 			{
 				echo bitrix_sessid_get()."\n";
 				echo "version=2.09";
 				$_SESSION["BX_CML2_EXPORT"]["version"] = $_GET["version"];
 			}
 		}
+		$_SESSION["BX_CML2_EXPORT"]["cmlVersion"] = doubleval($request->get('cmlVersion'));
 	}
 	elseif($_GET["mode"] == "query" || $_POST["mode"] == "query")
 	{
@@ -196,7 +201,7 @@ else
 		$arFilter = Array();
 		$nTopCount = false;
 
-		if(CModule::IncludeModule('CRM'))
+		if(\Bitrix\Sale\Exchange\ManagerExport::isCRMCompatibility())
 		{
 			$export = new ExportOneCCRM();
 		}
@@ -213,17 +218,36 @@ else
 				$arFilter["PAYED"] = "Y";
 			if($arParams["EXPORT_ALLOW_DELIVERY_ORDERS"])
 				$arFilter["ALLOW_DELIVERY"] = "Y";
-			if(strlen($arParams["EXPORT_FINAL_ORDERS"])>0)
+			if($arParams["EXPORT_FINAL_ORDERS"] <> '')
 			{
 				$bNextExport = false;
-				$arStatusToExport = Array();
-				$dbStatus = CSaleStatus::GetList(Array("SORT" => "ASC"), Array("LID" => LANGUAGE_ID));
-				while ($arStatus = $dbStatus->Fetch())
+				$arStatusToExport = [];
+				if (\Bitrix\Sale\Exchange\ManagerExport::isCRMCompatibility())
 				{
-					if($arStatus["ID"] == $arParams["EXPORT_FINAL_ORDERS"])
-						$bNextExport = true;
-					if($bNextExport)
-						$arStatusToExport[] = $arStatus["ID"];
+					$statusList = CCrmStatus::GetStatus('INVOICE_STATUS');
+					foreach ($statusList as $statusId => $status)
+					{
+						if($status['STATUS_ID'] == $arParams["EXPORT_FINAL_ORDERS"])
+						{
+							$bNextExport = true;
+						}
+
+						if($bNextExport)
+						{
+							$arStatusToExport[] = $status['STATUS_ID'];
+						}
+					}
+				}
+				else
+				{
+					$dbStatus = CSaleStatus::GetList(Array("SORT" => "ASC"), Array("LID" => LANGUAGE_ID));
+					while ($arStatus = $dbStatus->Fetch())
+					{
+						if($arStatus["ID"] == $arParams["EXPORT_FINAL_ORDERS"])
+							$bNextExport = true;
+						if($bNextExport)
+							$arStatusToExport[] = $arStatus["ID"];
+					}
 				}
 
 				$arFilter["STATUS_ID"] = $arStatusToExport;
@@ -231,7 +255,7 @@ else
 			if($arParams["SITE_LIST"])
 				$arFilter["LID"] = $arParams["SITE_LIST"];
 
-			if(strlen(COption::GetOptionString("sale", "last_export_time_committed_".$curPage, ""))>0)
+			if(COption::GetOptionString("sale", "last_export_time_committed_".$curPage, "") <> '')
 				$arFilter[">=DATE_UPDATE"] = ConvertTimeStamp(COption::GetOptionString("sale", "last_export_time_committed_".$curPage, ""), "FULL");
 			COption::SetOptionString("sale", "last_export_time_".$curPage, time());
 		}
@@ -244,9 +268,6 @@ else
 			$arParams["MODIFICATION_LABEL"] = intval($arParams["MODIFICATION_LABEL"]);
 			if ($arParams["MODIFICATION_LABEL"] > 0)
 			{
-				if (ToUpper($GLOBALS["DB"]->type) == "MSSQL")
-					$arParams["MODIFICATION_LABEL"] += 1;
-
 				$arParams["MODIFICATION_LABEL"] += ($arParams["ZZZ"] - date("Z"));
 
 				$arFilter[">DATE_UPDATE"] = ConvertTimeStamp($arParams["MODIFICATION_LABEL"], "FULL");
@@ -257,13 +278,13 @@ else
 				$nTopCount = $arParams["IMPORT_SIZE"];
 
 			$arParams["REPLACE_CURRENCY"] = '';
-			if(strlen($_SESSION["BX_CML2_EXPORT"]["version"]) > 0 && IntVal($arParams["INTERVAL"]) <= 0)
+			if($_SESSION["BX_CML2_EXPORT"]["version"] <> '' && intval($arParams["INTERVAL"]) <= 0)
 				$arParams["INTERVAL"] = 30;
 
 			$export::setLanguage('en');
 		}
 
-		if(strlen($_SESSION["BX_CML2_EXPORT"]["version"]) <= 0)
+		if($_SESSION["BX_CML2_EXPORT"]["version"] == '')
 			$arParams["INTERVAL"] = 0;
 
 		$options = array();
@@ -279,10 +300,25 @@ else
 		}
 
 		CTimeZone::Disable();
-		$arResultStat = $export::ExportOrders2Xml(
-			$arFilter, $nTopCount, $arParams["REPLACE_CURRENCY"], $bCrmMode, $arParams["INTERVAL"],
-			$_SESSION["BX_CML2_EXPORT"]["version"], $options
-		);
+
+		if($_SESSION["BX_CML2_EXPORT"]["cmlVersion"] >= doubleval(\Bitrix\Sale\Exchange\ExportOneCBase::SHEM_VERSION_2_10))
+		{
+			//region schema Documents or Document.Subordinate
+		    $r = $export->export(array(
+					'filter'=>$arFilter,
+					'limit'=>$arParams["INTERVAL"])
+			);
+		    echo $r->getData()[0];
+			//endregion
+        }
+        else
+        {
+            $arResultStat = $export::ExportOrders2Xml(
+                $arFilter, $nTopCount, $arParams["REPLACE_CURRENCY"], $bCrmMode, $arParams["INTERVAL"],
+                $_SESSION["BX_CML2_EXPORT"]["version"], $options
+            );
+        }
+
 		CTimeZone::Enable();
 
 		if (!$bCrmMode)
@@ -302,10 +338,10 @@ else
 			{
 				$crmSiteUrl = $_GET["CRM_SITE_URL"];
 			}
-			if(strlen($crmSiteUrl) > 0)
+			if($crmSiteUrl <> '')
 			{
 				$opt = COption::GetOptionString("sale", "~crm_integration", "");
-				$opt = unserialize($opt);
+				$opt = unserialize($opt, ['allowed_classes' => false]);
 				if (!is_array($opt))
 					$opt = array();
 				if (!array_key_exists($crmSiteUrl, $opt))
@@ -339,7 +375,7 @@ else
 		else
 			echo "error\n";
 	}
-	elseif($_GET["mode"] == "file" && strlen($_SESSION["BX_CML2_EXPORT"]["version"]) <= 0)// old version
+	elseif($_GET["mode"] == "file" && $_SESSION["BX_CML2_EXPORT"]["version"] == '')// old version
 	{
 		if($ABS_FILE_NAME)
 		{
@@ -356,7 +392,7 @@ else
 				if($fp = fopen($ABS_FILE_NAME, "ab"))
 				{
 					$result = fwrite($fp, $DATA);
-					if($result === (function_exists("mb_strlen")? mb_strlen($DATA, 'latin1'): strlen($DATA)))
+					if($result === (function_exists("mb_strlen")? mb_strlen($DATA, 'latin1') : mb_strlen($DATA)))
 					{
 						if($_SESSION["BX_CML2_EXPORT"]["zip"])
 							$_SESSION["BX_CML2_EXPORT"]["zip"] = $ABS_FILE_NAME;
@@ -379,46 +415,35 @@ else
 			}
 		}
 
-		if(strlen($_SESSION["BX_CML2_EXPORT"]["zip"]) > 0)
+		if($_SESSION["BX_CML2_EXPORT"]["zip"] <> '')
 		{
 			$file_name = $_SESSION["BX_CML2_EXPORT"]["zip"];
+			$dir_name = mb_substr($file_name, 0, mb_strrpos($file_name, "/") + 1);
 
-			if(function_exists("zip_open"))
+			if (mb_strlen($dir_name) <= mb_strlen($_SERVER["DOCUMENT_ROOT"]))
 			{
-				$dir_name = substr($file_name, 0, strrpos($file_name, "/")+1);
-				if(strlen($dir_name) <= strlen($_SERVER["DOCUMENT_ROOT"]))
-					return false;
+				return false;
+			}
 
-				$hZip = zip_open($file_name);
-				if($hZip)
+			/** @var IBXArchive $oArchiver */
+			$oArchiver = CBXArchive::GetArchive($file_name, "ZIP");
+			if ($oArchiver instanceof IBXArchive)
+			{
+				$rArchiver = $oArchiver->Unpack($dir_name);
+
+				if ($rArchiver)
 				{
-					while($entry = zip_read($hZip))
-					{
-						$entry_name = zip_entry_name($entry);
-						//Check for directory
-						if(zip_entry_filesize($entry))
-						{
-							$ABS_FILE_NAME = $dir_name.$entry_name;
-							$file_name = $dir_name.$entry_name;
-							CheckDirPath($file_name);
-							$fout = fopen($file_name, "wb");
-							if($fout)
-							{
-								while($data = zip_entry_read($entry, 102400))
-								{
-									$result = fwrite($fout, $data);
-									if($result !== (function_exists("mb_strlen")? mb_strlen($data, 'latin1'): strlen($data)))
-										return false;
-								}
-							}
-						}
-						zip_entry_close($entry);
-					}
-					zip_close($hZip);
+					$ABS_FILE_NAME = current($rArchiver)['filename'];
+				}
+				else
+				{
+					echo "error\n".GetMessage("CC_BSC1_UNZIP_ERROR");
 				}
 			}
 			else
-				echo "error\n".GetMessage("CC_BSC1_UNZIP_ERROR");
+			{
+				return false;
+			}
 		}
 
 		$new_file_name = $ABS_FILE_NAME;
@@ -433,7 +458,7 @@ else
 			$o->registerElementHandler("/".GetMessage("CC_BSC1_COM_INFO"), array($loader, "elementHandler"));
 			$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_DOCUMENT"), function (CDataXML $xmlObject) use ($o, $loader)
 			{
-				$loader->nodeHandler($xmlObject, $o);
+				$loader->nodeHandlerDefaultModuleOneC($xmlObject);
 			});
 
 			$o->setPosition(false);
@@ -442,7 +467,7 @@ else
 				while($o->findNext());
 
 			echo "success";
-			if(strlen($loader->strError)>0)
+			if($loader->strError <> '')
 				echo $loader->strError;
 			echo "\n";
 		}
@@ -469,7 +494,7 @@ else
 				if($fp = fopen($ABS_FILE_NAME, "ab"))
 				{
 					$result = fwrite($fp, $DATA);
-					if($result === (function_exists("mb_strlen")? mb_strlen($DATA, 'latin1'): strlen($DATA)))
+					if($result === (function_exists("mb_strlen")? mb_strlen($DATA, 'latin1') : mb_strlen($DATA)))
 					{
 						if($_SESSION["BX_CML2_EXPORT"]["zip"])
 							$_SESSION["BX_CML2_EXPORT"]["zip"] = $ABS_FILE_NAME;
@@ -492,12 +517,12 @@ else
 			}
 		}
 	}
-	elseif($_GET["mode"] == "import" && $_SESSION["BX_CML2_EXPORT"]["zip"] && strlen($_SESSION["BX_CML2_EXPORT"]["zip"]) > 1)
+	elseif($_GET["mode"] == "import" && $_SESSION["BX_CML2_EXPORT"]["zip"] && mb_strlen($_SESSION["BX_CML2_EXPORT"]["zip"]) > 1)
 	{
 		if(!array_key_exists("last_zip_entry", $_SESSION["BX_CML2_EXPORT"]))
-			$_SESSION["BX_CML2_EXPORT"]["last_zip_entry"] = "";
+			$_SESSION["BX_CML2_EXPORT"]["last_zip_entry"] = -1;
 
-		$result = CSaleExport::UnZip($_SESSION["BX_CML2_EXPORT"]["zip"], $_SESSION["BX_CML2_EXPORT"]["last_zip_entry"]);
+		$result = CSaleExport::safetyUnZip($_SESSION["BX_CML2_EXPORT"]["zip"], $_SESSION["BX_CML2_EXPORT"]["last_zip_entry"]);
 		if($result===false)
 		{
 			echo "failure\n".GetMessage("CC_BSC1_ZIP_ERROR");
@@ -535,37 +560,103 @@ else
 			$o = new CXMLFileStream;
 
 			$o->registerElementHandler("/".GetMessage("CC_BSC1_COM_INFO"), array($loader, "elementHandler"));
-			
-			$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_DOCUMENT"), function (CDataXML $xmlObject) use ($o, $loader)
-			{
-				$loader->nodeHandler($xmlObject, $o);
-			});
-			
-			$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_AGENTS")."/".GetMessage("CC_BSC1_AGENT"), function (CDataXML $xmlObject) use ($o, $loader)
-			{
-				\Bitrix\Sale\Exchange\ImportOneCContragent::configuration();
-				$loader->importerContragent = new \Bitrix\Sale\Exchange\ImportOneCContragent();
-				$loader->nodeHandler($xmlObject, $o);
 
-			});
-			if(CModule::IncludeModule('CRM'))
+			//region schema Documents or Document.Subordinate
+			if($_SESSION["BX_CML2_EXPORT"]["cmlVersion"] >= doubleval(\Bitrix\Sale\Exchange\ExportOneCBase::SHEM_VERSION_2_10))
+			{
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_DOCUMENT"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
+					\Bitrix\Sale\Exchange\ImportOneCSubordinateSale::configuration();
+					$loader->importer = \Bitrix\Sale\Exchange\ImportOneCSubordinateSale::getInstance();
+					$loader->nodeHandler($xmlObject, $o);
+				});
+			}
+			else
+			{
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_DOCUMENT"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
+					if(\Bitrix\Sale\Exchange\ManagerExport::isCRMCompatibility())
+					{
+						$loader->nodeHandlerDefaultModuleOneCCRM($xmlObject);
+					}
+					else
+                    {
+						$loader->nodeHandlerDefaultModuleOneC($xmlObject);
+                    }
+				});
+			}
+			//endregion
+			//region schema Contragents
+			if(\Bitrix\Sale\Exchange\ManagerExport::isSaleB24Mode() || \Bitrix\Sale\Exchange\ManagerExport::isB24SaleMode())
             {
-				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_CONTAINER"), function (CDataXML $xmlObject) use ($o, $loader)
-                {
-					\Bitrix\Sale\Exchange\ImportOneCPackageCRM::configuration();
-					$loader->importer = \Bitrix\Sale\Exchange\ImportOneCPackageCRM::getInstance();
+				CModule::IncludeModule('CRM');
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_AGENTS")."/".GetMessage("CC_BSC1_AGENT"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
+					\Bitrix\Sale\Exchange\ImportOneCContragentCRM::configuration();
+					$loader->importer = new \Bitrix\Sale\Exchange\ImportOneCContragentCRM();
 					$loader->nodeHandler($xmlObject, $o);
 				});
             }
             else
             {
-                $o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_CONTAINER"), function (CDataXML $xmlObject) use ($o, $loader)
-                {
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_AGENTS")."/".GetMessage("CC_BSC1_AGENT"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
+					\Bitrix\Sale\Exchange\ImportOneCContragent::configuration();
+					$loader->importer = new \Bitrix\Sale\Exchange\ImportOneCContragent();
+					$loader->nodeHandler($xmlObject, $o);
+				});
+            }
+			//endregion
+			//region schema Package.CRM or Package.Sale
+            /*
+             * если устнавливется дистр Б24, то обмен идет счетами
+             * если устнавливется дистр БУС, то обмен идет заказами
+             * если на БУС вводиться ключ редакции Б24+БУС, то выполняется обмен заказми (т.к. модуль CRM не установлен)
+             * если на Б24 вводиться ключ редакции Б24+БУС, то выполняется обмен счетами (т.к. модуль CRM установлен)
+             * если на БУС запускается мастер +Б24, анализирем опцию IS_SALE_CRM_SITE_MASTER_FINISH и продолжаем ипортировать заказы
+             * если на Б24 запускается мастер +БУС, анализирем опцию IS_SALE_BSM_SITE_MASTER_FINISH и продолжаем ипортировать счета,
+             *     а для импорта заказов используем отдельный модуль на rest
+             * */
+			//B24 -> +BUS.wizard
+            if(\Bitrix\Sale\Exchange\ManagerExport::isB24SaleMode())
+            {
+				CModule::IncludeModule('CRM');
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_CONTAINER"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
+					\Bitrix\Sale\Exchange\ImportOneCPackageCRM::configuration();
+					$loader->importer = \Bitrix\Sale\Exchange\ImportOneCPackageCRM::getInstance();
+					$loader->nodeHandler($xmlObject, $o);
+				});
+            }
+			//BUS -> +B24.wizard
+            elseif(\Bitrix\Sale\Exchange\ManagerExport::isSaleB24Mode())
+			{
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_CONTAINER"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
 					\Bitrix\Sale\Exchange\ImportOneCPackageSale::configuration();
 					$loader->importer = \Bitrix\Sale\Exchange\ImportOneCPackageSale::getInstance();
 					$loader->nodeHandler($xmlObject, $o);
 				});
-            }
+			}
+			elseif(\Bitrix\Sale\Exchange\ManagerExport::isB24Mode())
+			{
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_CONTAINER"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
+					\Bitrix\Sale\Exchange\ImportOneCPackageCRM::configuration();
+					$loader->importer = \Bitrix\Sale\Exchange\ImportOneCPackageCRM::getInstance();
+					$loader->nodeHandler($xmlObject, $o);
+				});
+			}
+			else
+			{
+				$o->registerNodeHandler("/".GetMessage("CC_BSC1_COM_INFO")."/".GetMessage("CC_BSC1_CONTAINER"), function (CDataXML $xmlObject) use ($o, $loader)
+				{
+					\Bitrix\Sale\Exchange\ImportOneCPackageSale::configuration();
+					$loader->importer = \Bitrix\Sale\Exchange\ImportOneCPackageSale::getInstance();
+					$loader->nodeHandler($xmlObject, $o);
+				});
+			}
+			//endregion
 
 			$o->setPosition($_SESSION["BX_CML2_EXPORT"]["last_xml_entry"]);
 			if ($o->openFile($ABS_FILE_NAME))
@@ -590,7 +681,7 @@ else
 				$_SESSION["BX_CML2_EXPORT"]["last_xml_entry"] = "";
 				echo "success";
 			}
-			if(strlen($loader->strError)>0)
+			if($loader->strError <> '')
 				echo $loader->strError;
 			echo "\n";
 		}
@@ -605,27 +696,50 @@ else
 		<<?=GetMessage("CC_BSC1_DI_GENERAL")?>>
 			<<?=GetMessage("CC_BSC1_DI_STATUSES")?>>
 			<?
-			$dbStatus = CSaleStatus::GetList(array("SORT" => "ASC"), array("LID" => LANGUAGE_ID), false, false, array("ID", "NAME"));
-			while ($arStatus = $dbStatus->Fetch())
+			if(\Bitrix\Sale\Exchange\ManagerExport::isCRMCompatibility())
 			{
-				?>
-				<<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
+				$dbStatus = \Bitrix\Crm\Invoice\InvoiceStatus::getList(array('order'=>array("SORT" => "ASC")));
+                while ($arStatus = $dbStatus->Fetch())
+				{
+					?>
+					<<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
+					<<?=GetMessage("CC_BSC1_DI_ID")?>><?=$arStatus["STATUS_ID"]?></<?=GetMessage("CC_BSC1_DI_ID")?>>
+					<<?=GetMessage("CC_BSC1_DI_NAME")?>><?=htmlspecialcharsbx($arStatus["NAME"])?></<?=GetMessage("CC_BSC1_DI_NAME")?>>
+					</<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
+					<?
+                }
+			}
+			else
+			{
+				$dbStatus = CSaleStatus::GetList(array("SORT" => "ASC"), array("LID" => LANGUAGE_ID), false, false, array("ID", "NAME"));
+				while ($arStatus = $dbStatus->Fetch())
+				{
+					?>
+					<<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
 					<<?=GetMessage("CC_BSC1_DI_ID")?>><?=$arStatus["ID"]?></<?=GetMessage("CC_BSC1_DI_ID")?>>
 					<<?=GetMessage("CC_BSC1_DI_NAME")?>><?=htmlspecialcharsbx($arStatus["NAME"])?></<?=GetMessage("CC_BSC1_DI_NAME")?>>
-				</<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
-				<?
+					</<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
+					<?
+				}
 			}
 			?>
 			</<?=GetMessage("CC_BSC1_DI_STATUSES")?>>
 			<<?=GetMessage("CC_BSC1_DI_PS")?>>
 			<?
-			$dbPS = CSalePaySystem::GetList(array("SORT" => "ASC"), array("ACTIVE" => "Y"));
+			$dbPS = CSalePaySystem::GetList(array("SORT" => "ASC"), array("ACTIVE" => "Y"), false, false, array('ID', 'NAME', 'ACTIVE', 'SORT', 'DESCRIPTION', 'IS_CASH'));
 			while ($arPS = $dbPS->Fetch())
 			{
-				?>
+				if(\Bitrix\Sale\Exchange\ManagerExport::isCRMCompatibility())
+				    $typeId = \Bitrix\Sale\Exchange\Entity\PaymentInvoiceBase::resolveEntityTypeIdByCodeType($arPS["IS_CASH"]);
+				else
+			        $typeId = \Bitrix\Sale\Exchange\Entity\PaymentImport::resolveEntityTypeIdByCodeType($arPS["IS_CASH"]);
+
+				$typeName = \Bitrix\Sale\Exchange\EntityType::getDescription($typeId);
+			    ?>
 				<<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
 					<<?=GetMessage("CC_BSC1_DI_ID")?>><?=$arPS["ID"]?></<?=GetMessage("CC_BSC1_DI_ID")?>>
 					<<?=GetMessage("CC_BSC1_DI_NAME")?>><?=htmlspecialcharsbx($arPS["NAME"])?></<?=GetMessage("CC_BSC1_DI_NAME")?>>
+					<<?=GetMessage("CC_BSC1_DI_IS_CASH")?>><?=htmlspecialcharsbx($typeName)?></<?=GetMessage("CC_BSC1_DI_IS_CASH")?>>
 				</<?=GetMessage("CC_BSC1_DI_ELEMENT")?>>
 				<?
 			}
@@ -669,11 +783,11 @@ if(!$bDesignMode)
 		$contents = gzcompress($contents);
 
 		header("Content-Type: application/octet-stream");
-		header("Content-Length: ".(function_exists("mb_strlen")? mb_strlen($contents, 'latin1') : strlen($contents)));
+		header("Content-Length: ".(function_exists("mb_strlen")? mb_strlen($contents, 'latin1') : mb_strlen($contents)));
 	}
 	else
 	{
-		$str = (function_exists("mb_strlen")? mb_strlen($contents, 'latin1'): strlen($contents));
+		$str = (function_exists("mb_strlen")? mb_strlen($contents, 'latin1') : mb_strlen($contents));
 		if(in_array($_GET["mode"], array("query", "info")) || in_array($_POST["mode"], array("query", "info")))
 		{
 			header("Content-Type: application/xml; charset=windows-1251");

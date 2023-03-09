@@ -32,7 +32,7 @@ class CJSPopup
 		if ($title != '') $this->SetTitle($title);
 		if (is_set($arConfig, 'TITLE')) $this->SetTitle($arConfig['TITLE']);
 		if (is_set($arConfig, 'ARGS')) $this->SetAdditionalArgs($arConfig['ARGS']);
-		if (is_set($arConfig, 'SUFFIX') && strlen($arConfig['SUFFIX']) > 0) $this->SetSuffix($arConfig['SUFFIX']);
+		if (is_set($arConfig, 'SUFFIX') && $arConfig['SUFFIX'] <> '') $this->SetSuffix($arConfig['SUFFIX']);
 	}
 
 	function InitSystem()
@@ -57,9 +57,9 @@ class CJSPopup
 	{
 		$adminPage = new CAdminPage();
 
-		echo $adminPage->ShowPopupCSS();
-		echo $adminPage->ShowScript();
-
+		return
+		 	$adminPage->ShowPopupCSS().
+			$adminPage->ShowScript();
 	}
 
 	function InitScripts()
@@ -94,9 +94,16 @@ class CJSPopup
 
 		if ($title == '')
 			$title = $this->title;
-?>
-<script type="text/javascript">top.<?=$this->jsPopup?>.SetTitle('<?echo CUtil::JSEscape($title)?>');</script>
-<?
+		?>
+		<script type="text/javascript">
+			var currentWindow = top.window;
+			if (top.BX.SidePanel && top.BX.SidePanel.Instance && top.BX.SidePanel.Instance.getTopSlider())
+			{
+				currentWindow = top.BX.SidePanel.Instance.getTopSlider().getWindow();
+			}
+			currentWindow.<?=$this->jsPopup?>.SetTitle('<?echo CUtil::JSEscape($title)?>');
+		</script>
+		<?
 	}
 
 	function StartDescription($icon = false)
@@ -106,7 +113,7 @@ class CJSPopup
 		$this->bDescriptionStarted = true;
 ?>
 <script type="text/javascript"><?if ($icon):?>
-	<?if (strpos($icon, '/') === false):?>
+	<?if (strpos($icon,'/') === false):?>
 
 		<?=$this->jsPopup?>.SetIcon('<?echo CUtil::JSEscape($icon)?>');
 	<?else:?>
@@ -255,7 +262,7 @@ class CJSPopup
 		if (!$back_url && is_set($_REQUEST, 'back_url'))
 			$back_url = $_REQUEST['back_url'];
 
-		if(substr($back_url, 0, 1) != "/" || substr($back_url, 1, 1) == "/")
+		if(substr($back_url,0,1) != "/" || substr($back_url,1,1) == "/")
 		{
 			//only local /url is allowed
 			$back_url = '';

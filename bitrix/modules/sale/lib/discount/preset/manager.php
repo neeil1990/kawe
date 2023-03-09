@@ -33,6 +33,8 @@ final class Manager
 	private static $instance;
 	/** @var  BasePreset[] */
 	private $presetList;
+	/** @var $restrictedGroupsMode bool */
+	private $restrictedGroupsMode = false;
 
 	/**
 	 * Returns Singleton of Manager
@@ -96,6 +98,16 @@ final class Manager
 	private function __clone()
 	{}
 
+	public function enableRestrictedGroupsMode($state)
+	{
+		$this->restrictedGroupsMode = $state === true;
+	}
+
+	public function isRestrictedGroupsModeEnabled()
+	{
+		return $this->restrictedGroupsMode;
+	}
+
 	public function autoLoad($className)
 	{
 		$file = ltrim($className, "\\");    // fix web env
@@ -136,7 +148,7 @@ final class Manager
 				),
 				function(BasePreset $preset)
 				{
-					return $preset->isAvailable();
+					return $preset->getPossible();
 				}
 			);
 		}
@@ -192,7 +204,7 @@ final class Manager
 	private function buildDefaultPresets()
 	{
 		$documentRoot = Application::getDocumentRoot();
-		
+
 		if(!Directory::isDirectoryExists($documentRoot . self::DEFAULT_PRESET_DIRECTORY))
 		{
 			throw new SystemException('Could not find folder with default presets. ' . self::DEFAULT_PRESET_DIRECTORY);
@@ -231,7 +243,11 @@ final class Manager
 		{
 			$class = new \ReflectionClass($className);
 
-			return $class->newInstanceArgs(array());
+			/** @var BasePreset $instance */
+			$instance = $class->newInstanceArgs([]);
+			$instance->enableRestrictedGroupsMode($this->isRestrictedGroupsModeEnabled());
+
+			return $instance;
 		}
 		catch (\ReflectionException $exception)
 		{
@@ -239,12 +255,12 @@ final class Manager
 
 		return null;
 	}
-	
+
 	private function getClassNameFromPath($path)
 	{
 		return "Sale\\Handlers\\DiscountPreset\\" . getFileNameWithoutExtension($path);
 	}
-	
+
 	/**
 	 * Returns list of presets.
 	 *

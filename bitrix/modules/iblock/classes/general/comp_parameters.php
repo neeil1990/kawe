@@ -399,11 +399,11 @@ class CIBlockParameters
 			$arProperty = $USER_FIELD_MANAGER->GetUserFields("IBLOCK_".$iblock_id."_SECTION");
 			foreach($arProperty as $property)
 			{
-				if ($property["PROPERTY_TYPE"] != "F")
+				if (isset($property['USER_TYPE']['BASE_TYPE']) && $property['USER_TYPE']['BASE_TYPE'] !== \Bitrix\Main\UserField\Types\FileType::USER_TYPE_ID)
 				{
 					$result["properties"]["MENU"][] = array(
 						"TEXT" => $property["FIELD_NAME"],
-						"ONCLICK" => "$action_function('{=this.property.".strtolower(substr($property["FIELD_NAME"], 3))."}', '$menuID', '$inputID')",
+						"ONCLICK" => "$action_function('{=this.property.".mb_strtolower(mb_substr($property["FIELD_NAME"], 3))."}', '$menuID', '$inputID')",
 					);
 				}
 			}
@@ -902,7 +902,7 @@ class CIBlockParameters
 			);
 		}
 
-		if ($arCurrentValues["SHOW_404"] === "Y")
+		if (isset($arCurrentValues["SHOW_404"]) && $arCurrentValues["SHOW_404"] === "Y")
 		{
 			if ($bPage)
 			{

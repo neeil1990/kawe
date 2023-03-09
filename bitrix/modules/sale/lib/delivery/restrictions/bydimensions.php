@@ -26,7 +26,7 @@ class ByDimensions extends Restrictions\Base
 	}
 
 	/**
-	 * @param array $dimensions keys:(LENGTH, WIDTH, HEIGHT)
+	 * @param array $dimensionsList keys:(LENGTH, WIDTH, HEIGHT)
 	 * @param array $restrictionParams
 	 * @param int $deliveryId
 	 * @return bool
@@ -74,7 +74,7 @@ class ByDimensions extends Restrictions\Base
 				$dimensions = $basketItem->getField("DIMENSIONS");
 
 				if(is_string($dimensions))
-					$dimensions = unserialize($dimensions);
+					$dimensions = unserialize($dimensions, ['allowed_classes' => false]);
 
 				if(!is_array($dimensions) || empty($dimensions))
 					continue;

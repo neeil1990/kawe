@@ -1,63 +1,50 @@
-<?
-use Bitrix\Main\Loader;
-
-global $DB;
-$strDBType = strtolower($DB->type);
-
-Loader::registerAutoLoadClasses(
-	'currency',
-	array(
-		'CCurrency' => 'general/currency.php',
-		'CCurrencyLang' => 'general/currency_lang.php',
-		'CCurrencyRates' => $strDBType.'/currency_rate.php',
-		'\Bitrix\Currency\Compatible\Tools' => 'lib/compatible/tools.php',
-		'\Bitrix\Currency\Helpers\Admin\Tools' => 'lib/helpers/admin/tools.php',
-		'\Bitrix\Currency\Helpers\Editor' => 'lib/helpers/editor.php',
-		'\Bitrix\Currency\UserField\Money' => 'lib/userfield/money.php',
-		'\Bitrix\Currency\CurrencyManager' => 'lib/currencymanager.php',
-		'\Bitrix\Currency\CurrencyTable' => 'lib/currency.php',
-		'\Bitrix\Currency\CurrencyLangTable' => 'lib/currencylang.php',
-		'\Bitrix\Currency\CurrencyRateTable' => 'lib/currencyrate.php',
-		'\Bitrix\Currency\CurrencyClassifier' => 'lib/currencyclassifier.php'
-	)
-);
-unset($strDBType);
+<?php
+require_once __DIR__ . '/autoload.php';
 
 \CJSCore::RegisterExt(
 	'currency',
-	array(
+	[
 		'js' => '/bitrix/js/currency/core_currency.js',
-		'rel' => array('core')
-	)
+		'rel' => [
+			'core',
+			'main.polyfill.promise',
+			'currency.currency-core',
+		],
+	]
 );
 
 \CJSCore::RegisterExt(
 	'core_money_editor',
-	array(
-		'js' => '/bitrix/js/currency/core_money_editor.js',
+	[
+		'rel' => [
+			'core',
+			'currency.money-editor',
+		],
 		'oninit' => function()
 		{
-			return array(
-				'lang_additional' => array(
+			return [
+				'lang_additional' => [
 					'CURRENCY' => \Bitrix\Currency\Helpers\Editor::getListCurrency(),
-				),
-			);
-		}
-	)
+				],
+			];
+		},
+	]
 );
 
 \CJSCore::RegisterExt(
 	'core_uf_money',
-	array(
+	[
 		'js' => '/bitrix/js/currency/core_uf_money.js',
 		'css' => '/bitrix/js/currency/css/core_uf_money.css',
-		'rel' => array('uf', 'core_money_editor'),
-	)
+		'rel' => [
+			'uf',
+			'core_money_editor',
+		],
+	]
 );
 
-
-define('CURRENCY_CACHE_DEFAULT_TIME', 10800);
-define('CURRENCY_ISO_STANDART_URL', 'http://www.iso.org/iso/home/standards/currency_codes.htm');
+const CURRENCY_CACHE_DEFAULT_TIME = 10800;
+const CURRENCY_ISO_STANDART_URL = 'http://www.iso.org/iso/home/standards/currency_codes.htm';
 
 /*
 * @deprecated deprecated since currency 14.0.0

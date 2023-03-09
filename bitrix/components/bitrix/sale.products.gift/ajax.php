@@ -1,8 +1,10 @@
 <?
 /** @global \CMain $APPLICATION */
+define('STOP_STATISTICS', true);
+define('PUBLIC_AJAX_MODE', true);
 
 $siteId = isset($_REQUEST['siteId']) && is_string($_REQUEST['siteId']) ? $_REQUEST['siteId'] : '';
-$siteId = substr(preg_replace('/[^a-z0-9_]/i', '', $siteId), 0, 2);
+$siteId = mb_substr(preg_replace('/[^a-z0-9_]/i', '', $siteId), 0, 2);
 if (!empty($siteId) && is_string($siteId))
 {
 	define('SITE_ID', $siteId);
@@ -19,8 +21,8 @@ if (!\Bitrix\Main\Loader::includeModule('iblock'))
 $signer = new \Bitrix\Main\Security\Sign\Signer;
 try
 {
-	$template = $signer->unsign($request->get('template'), 'sale.products.gift');
-	$parameters = $signer->unsign($request->get('parameters'), 'sale.products.gift');
+	$template = $signer->unsign((string)$request->get('template'), 'sale.products.gift');
+	$parameters = $signer->unsign((string)$request->get('parameters'), 'sale.products.gift');
 }
 catch (\Bitrix\Main\Security\Sign\BadSignatureException $e)
 {
@@ -30,6 +32,12 @@ catch (\Bitrix\Main\Security\Sign\BadSignatureException $e)
 $APPLICATION->IncludeComponent(
 	'bitrix:sale.products.gift',
 	$template,
-	unserialize(base64_decode($parameters)),
+	unserialize(base64_decode($parameters), ['allowed_classes' => [
+		\Bitrix\Main\Type\DateTime::class,
+		\Bitrix\Main\Type\Date::class,
+		\Bitrix\Main\Web\Uri::class,
+		\DateTime::class,
+		\DateTimeZone::class,
+	]]),
 	false
 );

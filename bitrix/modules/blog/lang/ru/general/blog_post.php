@@ -22,7 +22,7 @@ $MESS["BLG_GP_PUSH_1A_FEMALE"] = "#name# написала вам #post#";
 $MESS["BLG_GP_IM_1B"] = "сообщение";
 $MESS["BLG_GP_IM_41"] = "Добавил комментарий к сообщению \"#title#\" со следующим текстом: \"#comment#\"";
 $MESS["BLG_GP_IM_41_FEMALE"] = "Добавила комментарий к сообщению \"#title#\" со следующим текстом: \"#comment#\"";
-$MESS["BLG_GP_PUSH_41"] = "#name# добавила комментарий к сообщению \"#title#\" со следующим текстом: \"#comment#\"";
+$MESS["BLG_GP_PUSH_41"] = "#name# добавил комментарий к сообщению \"#title#\" со следующим текстом: \"#comment#\"";
 $MESS["BLG_GP_PUSH_41_FEMALE"] = "#name# добавила комментарий к сообщению \"#title#\" со следующим текстом: \"#comment#\"";
 $MESS["BLG_GP_IM_41A"] = "Добавил комментарий к адресованному вам #post# со следующим текстом: \"#comment#\"";
 $MESS["BLG_GP_IM_41A_FEMALE"] = "Добавила комментарий к адресованному вам #post# со следующим текстом: \"#comment#\"";
@@ -86,4 +86,8 @@ $MESS["SONET_IM_NEW_POST_PUBLISHED_W_TITLE"] = "Ваше #link_post_start#соо
 $MESS["SONET_IM_NEW_POST_PUBLISHED_WO_TITLE"] = "Ваше #link_post_start#сообщение#link_post_end# опубликовано модератором";
 $MESS["SONET_IM_NEW_COMMENT_PUBLISHED_W_TITLE"] = "Ваш #link_com_start#комментарий#link_com_end# к сообщению \"#title#\" опубликован модератором";
 $MESS["SONET_IM_NEW_COMMENT_PUBLISHED_WO_TITLE"] = "Ваш #link_com_start#комментарий#link_com_end# к сообщению опубликован модератором";
+$MESS["SONET_IM_POST_GRAT"] = "Создал в ваш адрес благодарность: #link_post_start##title##link_post_end#";
+$MESS["SONET_IM_POST_GRAT_FEMALE"] = "Создала в ваш адрес благодарность: #link_post_start##title##link_post_end#";
+$MESS["SONET_PUSH_POST_GRAT"] = "#name# создал в ваш адрес благодарность: #title#";
+$MESS["SONET_PUSH_POST_GRAT_FEMALE"] = "#name# создала в ваш адрес благодарность: #title#";
 ?>

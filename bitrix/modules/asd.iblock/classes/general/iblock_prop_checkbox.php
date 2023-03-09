@@ -2,8 +2,14 @@
 IncludeModuleLangFile(__FILE__);
 
 define ('ASD_UT_CHECKBOX', 'SASDCheckbox');
-define ('ASD_UT_CHECKBOX_VAL_FALSE', 'N');
-define ('ASD_UT_CHECKBOX_VAL_TRUE', 'Y');
+if (!defined('ASD_UT_CHECKBOX_VAL_FALSE'))
+{
+	define ('ASD_UT_CHECKBOX_VAL_FALSE', 'N');
+}
+if (!defined('ASD_UT_CHECKBOX_VAL_TRUE'))
+{
+	define ('ASD_UT_CHECKBOX_VAL_TRUE', 'Y');
+}
 
 class CASDiblockPropCheckbox {
 	public static function GetUserTypeDescription() {
@@ -20,6 +26,7 @@ class CASDiblockPropCheckbox {
 			'GetAdminFilterHTML' => array(__CLASS__,'GetAdminFilterHTML'),
 			'GetSettingsHTML' => array(__CLASS__,'GetSettingsHTML'),
 			'PrepareSettings' => array(__CLASS__,'PrepareSettings'),
+			'GetUIFilterProperty' => array(__CLASS__, 'GetUIFilterProperty')
 		);
 	}
 
@@ -66,8 +73,18 @@ class CASDiblockPropCheckbox {
 		if ($arValue['VALUE'] != ASD_UT_CHECKBOX_VAL_TRUE) {
 			$arValue['VALUE'] = ASD_UT_CHECKBOX_VAL_FALSE;
 		}
-		$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_FALSE.'" />'.
-			'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_TRUE ? 'checked="checked"' : '').'/>';
+
+		if (
+			isset($strHTMLControlName['MODE'])
+			&& $strHTMLControlName['MODE'] == 'iblock_element_admin'
+			&& CASDiblockVersion::isIblockNewGridv18()
+			&& strncmp($strHTMLControlName['FORM_NAME'], 'form_tbl_iblock_sub_element', 27) !== 0
+		) {
+			$strResult = '<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_TRUE ? 'checked="checked"' : '').'/>';
+		} else {
+			$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_FALSE.'" />'.
+				'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_TRUE ? 'checked="checked"' : '').'/>';
+		}
 		return $strResult;
 	}
 
@@ -115,8 +132,13 @@ class CASDiblockPropCheckbox {
 		if ($arValue['VALUE'] != ASD_UT_CHECKBOX_VAL_TRUE) {
 			$arValue['VALUE'] = ASD_UT_CHECKBOX_VAL_FALSE;
 		}
-		$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_FALSE.'" />'.
-			'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_TRUE ? 'checked="checked"' : '').'/>';
+
+		if (CASDiblockVersion::isIblockNewGridv18()) {
+			$strResult = '<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_TRUE ? 'checked="checked"' : '').'/>';
+		} else {
+			$strResult = '<input type="hidden" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_N" value="'.ASD_UT_CHECKBOX_VAL_FALSE.'" />'.
+				'<input type="checkbox" name="'.htmlspecialcharsbx($strHTMLControlName['VALUE']).'" id="'.$strHTMLControlName['VALUE'].'_Y" value="'.ASD_UT_CHECKBOX_VAL_TRUE.'" '.($arValue['VALUE'] == ASD_UT_CHECKBOX_VAL_TRUE ? 'checked="checked"' : '').'/>';
+		}
 		return $strResult;
 	}
 
@@ -164,7 +186,21 @@ class CASDiblockPropCheckbox {
 		);
 	}
 
-	protected function GetDefaultListValues() {
+	public static function GetUIFilterProperty($arProperty, $strHTMLControlName, &$fields)
+	{
+		$settings = static::PrepareSettings($arProperty);
+		if (empty($settings['VIEW'])) {
+			return;
+		}
+		$fields['type'] = 'list';
+		$fields['items'] = array();
+		foreach ($settings['VIEW'] as $index => $value) {
+			$fields['items'][$index] = $value;
+		}
+		unset($index, $value, $settings);
+	}
+
+	protected static function GetDefaultListValues() {
 		return array(
 			ASD_UT_CHECKBOX_VAL_FALSE => GetMessage('ASD_UT_CHECKBOX_VALUE_N'),
 			ASD_UT_CHECKBOX_VAL_TRUE => GetMessage('ASD_UT_CHECKBOX_VALUE_Y')

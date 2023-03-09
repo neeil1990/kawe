@@ -18,15 +18,23 @@ class LogComment
 	const EVENT_ID_TASKS_COMMENT = 'tasks_comment';
 	const EVENT_ID_CALENDAR_COMMENT = 'calendar_comment';
 	const EVENT_ID_WIKI_COMMENT = 'wiki_comment';
+	const EVENT_ID_TIMEMAN_ENTRY_COMMENT = 'timeman_entry_comment';
+	const EVENT_ID_TIMEMAN_REPORT_COMMENT = 'report_comment';
+	const EVENT_ID_LISTS_NEW_ELEMENT_COMMENT = 'lists_new_element_comment';
+	const EVENT_ID_CRM_ACTIVITY_ADD_COMMENT = 'crm_activity_add_comment';
 
 	public static function getEventIdList()
 	{
-		return array(
+		return [
 			self::EVENT_ID_FORUM_COMMENT,
 			self::EVENT_ID_TASKS_COMMENT,
 			self::EVENT_ID_CALENDAR_COMMENT,
-			self::EVENT_ID_WIKI_COMMENT
-		);
+			self::EVENT_ID_WIKI_COMMENT,
+			self::EVENT_ID_TIMEMAN_ENTRY_COMMENT,
+			self::EVENT_ID_TIMEMAN_REPORT_COMMENT,
+			self::EVENT_ID_LISTS_NEW_ELEMENT_COMMENT,
+			self::EVENT_ID_CRM_ACTIVITY_ADD_COMMENT,
+		];
 	}
 
 	/**
@@ -54,9 +62,9 @@ class LogComment
 		$content = "";
 		$message = false;
 
-		if (intval($sourceId) > 0)
+		if ((int)$sourceId > 0)
 		{
-			$select = array('*', 'UF_FORUM_MES_URL_PRV');
+			$select = array('*', 'UF_FORUM_MES_URL_PRV', 'SERVICE_TYPE');
 
 			if (
 				\Bitrix\Main\Config\Option::get('disk', 'successfully_converted', false)
@@ -77,6 +85,11 @@ class LogComment
 
 		if ($message)
 		{
+			if (!empty($message['SERVICE_TYPE']))
+			{
+				return $result;
+			}
+
 			$content .= LogIndex::getUserName($message["AUTHOR_ID"])." ";
 			$content .= \forumTextParser::clearAllTags($message['POST_MESSAGE']);
 
@@ -85,7 +98,7 @@ class LogComment
 				$fileNameList = LogIndex::getDiskUFFileNameList($message['UF_FORUM_MESSAGE_DOC']);
 				if (!empty($fileNameList))
 				{
-					$content .= ' '.join(' ', $fileNameList);
+					$content .= ' '.implode(' ', $fileNameList);
 				}
 			}
 

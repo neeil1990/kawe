@@ -6,10 +6,16 @@ use Bitrix\Main,
 	Bitrix\Main\Localization\Loc,
 	Bitrix\Main\Page\Asset;
 
+\Bitrix\Main\UI\Extension::load([
+	'ui.design-tokens',
+	'ui.fonts.opensans',
+	'clipboard',
+	'fx',
+]);
+
 Asset::getInstance()->addJs("/bitrix/components/bitrix/sale.order.payment.change/templates/.default/script.js");
 Asset::getInstance()->addCss("/bitrix/components/bitrix/sale.order.payment.change/templates/.default/style.css");
 $this->addExternalCss("/bitrix/css/main/bootstrap.css");
-CJSCore::Init(array('clipboard', 'fx'));
 
 Loc::loadMessages(__FILE__);
 
@@ -136,7 +142,7 @@ else
 							<?=Loc::getMessage('SPOL_TPL_ORDER')?>
 							<?=Loc::getMessage('SPOL_TPL_NUMBER_SIGN').$order['ORDER']['ACCOUNT_NUMBER']?>
 							<?=Loc::getMessage('SPOL_TPL_FROM_DATE')?>
-							<?=$order['ORDER']['DATE_INSERT']->format($arParams['ACTIVE_DATE_FORMAT'])?>,
+							<?=$order['ORDER']['DATE_INSERT_FORMATED']?>,
 							<?=count($order['BASKET_ITEMS']);?>
 							<?
 							$count = count($order['BASKET_ITEMS']) % 10;
@@ -176,7 +182,8 @@ else
 									"allow_inner" => $arParams['ALLOW_INNER'],
 									"refresh_prices" => $arParams['REFRESH_PRICES'],
 									"path_to_payment" => $arParams['PATH_TO_PAYMENT'],
-									"only_inner_full" => $arParams['ONLY_INNER_FULL']
+									"only_inner_full" => $arParams['ONLY_INNER_FULL'],
+									"return_url" => $arResult['RETURN_URL'],
 								);
 							}
 							?>
@@ -201,7 +208,7 @@ else
 											$paymentSubTitle = Loc::getMessage('SPOL_TPL_BILL')." ".Loc::getMessage('SPOL_TPL_NUMBER_SIGN').htmlspecialcharsbx($payment['ACCOUNT_NUMBER']);
 											if(isset($payment['DATE_BILL']))
 											{
-												$paymentSubTitle .= " ".Loc::getMessage('SPOL_TPL_FROM_DATE')." ".$payment['DATE_BILL']->format($arParams['ACTIVE_DATE_FORMAT']);
+												$paymentSubTitle .= " ".Loc::getMessage('SPOL_TPL_FROM_DATE')." ".$payment['DATE_BILL_FORMATED'];
 											}
 											$paymentSubTitle .=",";
 											echo $paymentSubTitle;
@@ -240,13 +247,13 @@ else
 											foreach ($payment['CHECK_DATA'] as $checkInfo)
 											{
 												$title = Loc::getMessage('SPOL_CHECK_NUM', array('#CHECK_NUMBER#' => $checkInfo['ID']))." - ". htmlspecialcharsbx($checkInfo['TYPE_NAME']);
-												if (strlen($checkInfo['LINK']))
+												if($checkInfo['LINK'] <> '')
 												{
 													$link = $checkInfo['LINK'];
 													$listCheckLinks .= "<div><a href='$link' target='_blank'>$title</a></div>";
 												}
 											}
-											if (strlen($listCheckLinks) > 0)
+											if ($listCheckLinks <> '')
 											{
 												?>
 												<div class="sale-order-list-payment-check">
@@ -278,7 +285,7 @@ else
 
 									</div>
 									<?
-									if ($payment['PAID'] === 'N' && $payment['IS_CASH'] !== 'Y')
+									if ($payment['PAID'] === 'N' && $payment['IS_CASH'] !== 'Y' && $payment['ACTION_FILE'] !== 'cash')
 									{
 										if ($order['ORDER']['IS_ALLOW_PAY'] == 'N')
 										{
@@ -360,7 +367,7 @@ else
 										$shipmentSubTitle = Loc::getMessage('SPOL_TPL_NUMBER_SIGN').htmlspecialcharsbx($shipment['ACCOUNT_NUMBER']);
 										if ($shipment['DATE_DEDUCTED'])
 										{
-											$shipmentSubTitle .= " ".Loc::getMessage('SPOL_TPL_FROM_DATE')." ".$shipment['DATE_DEDUCTED']->format($arParams['ACTIVE_DATE_FORMAT']);
+											$shipmentSubTitle .= " ".Loc::getMessage('SPOL_TPL_FROM_DATE')." ".$shipment['DATE_DEDUCTED_FORMATED'];
 										}
 
 										if ($shipment['FORMATED_DELIVERY_PRICE'])
@@ -415,7 +422,7 @@ else
 									?>
 								</div>
 								<?
-								if (strlen($shipment['TRACKING_URL']) > 0)
+								if ($shipment['TRACKING_URL'] <> '')
 								{
 									?>
 									<div class="col-md-2 col-md-offset-1 col-sm-12 sale-order-list-shipment-button-container">
@@ -432,15 +439,22 @@ else
 						?>
 						<div class="row sale-order-list-inner-row">
 							<div class="sale-order-list-top-border"></div>
-							<div class="col-md-8  col-sm-12 sale-order-list-about-container">
+							<div class="col-md-<?=($order['ORDER']['CAN_CANCEL'] !== 'N') ? 8 : 10?>  col-sm-12 sale-order-list-about-container">
 								<a class="sale-order-list-about-link" href="<?=htmlspecialcharsbx($order["ORDER"]["URL_TO_DETAIL"])?>"><?=Loc::getMessage('SPOL_TPL_MORE_ON_ORDER')?></a>
 							</div>
 							<div class="col-md-2 col-sm-12 sale-order-list-repeat-container">
 								<a class="sale-order-list-repeat-link" href="<?=htmlspecialcharsbx($order["ORDER"]["URL_TO_COPY"])?>"><?=Loc::getMessage('SPOL_TPL_REPEAT_ORDER')?></a>
 							</div>
-							<div class="col-md-2 col-sm-12 sale-order-list-cancel-container">
-								<a class="sale-order-list-cancel-link" href="<?=htmlspecialcharsbx($order["ORDER"]["URL_TO_CANCEL"])?>"><?=Loc::getMessage('SPOL_TPL_CANCEL_ORDER')?></a>
-							</div>
+							<?
+							if ($order['ORDER']['CAN_CANCEL'] !== 'N')
+							{
+								?>
+								<div class="col-md-2 col-sm-12 sale-order-list-cancel-container">
+									<a class="sale-order-list-cancel-link" href="<?=htmlspecialcharsbx($order["ORDER"]["URL_TO_CANCEL"])?>"><?=Loc::getMessage('SPOL_TPL_CANCEL_ORDER')?></a>
+								</div>
+								<?
+							}
+							?>
 						</div>
 					</div>
 				</div>
@@ -486,7 +500,7 @@ else
 									<?= $order['ORDER']['DATE_INSERT'] ?>,
 									<?= count($order['BASKET_ITEMS']); ?>
 									<?
-									$count = substr(count($order['BASKET_ITEMS']), -1);
+									$count = mb_substr(count($order['BASKET_ITEMS']), -1);
 									if ($count == '1')
 									{
 										echo Loc::getMessage('SPOL_TPL_GOOD');
@@ -558,7 +572,9 @@ else
 		$javascriptParams = array(
 			"url" => CUtil::JSEscape($this->__component->GetPath().'/ajax.php'),
 			"templateFolder" => CUtil::JSEscape($templateFolder),
-			"paymentList" => $paymentChangeData
+			"templateName" => $this->__component->GetTemplateName(),
+			"paymentList" => $paymentChangeData,
+			"returnUrl" => CUtil::JSEscape($arResult["RETURN_URL"]),
 		);
 		$javascriptParams = CUtil::PhpToJSObject($javascriptParams);
 		?>

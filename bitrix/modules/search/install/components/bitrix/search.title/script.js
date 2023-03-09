@@ -18,6 +18,7 @@ function JCTitleSearch(arParams)
 
 	this.startText = '';
 	this.running = false;
+	this.runningCall = false;
 	this.currentRow = -1;
 	this.RESULT = null;
 	this.CONTAINER = null;
@@ -195,7 +196,10 @@ function JCTitleSearch(arParams)
 	this.onChange = function(callback)
 	{
 		if (_this.running)
+		{
+			_this.runningCall = true;
 			return;
+		}
 		_this.running = true;
 
 		if(_this.INPUT.value != _this.oldValue && _this.INPUT.value != _this.startText)
@@ -236,6 +240,11 @@ function JCTitleSearch(arParams)
 							if (!!callback)
 								callback();
 							_this.running = false;
+							if (_this.runningCall)
+							{
+								_this.runningCall = false;
+								_this.onChange();
+							}
 						}
 					);
 					return;
@@ -257,6 +266,17 @@ function JCTitleSearch(arParams)
 		if (!!callback)
 			callback();
 		_this.running = false;
+	};
+
+	this.onScroll = function ()
+	{
+		if(BX.type.isElementNode(_this.RESULT)
+			&& _this.RESULT.style.display !== "none"
+			&& _this.RESULT.innerHTML !== ''
+		)
+		{
+			_this.adjustResultNode();
+		}
 	};
 
 	this.UnSelectAll = function()
@@ -321,29 +341,29 @@ function JCTitleSearch(arParams)
 
 	this.adjustResultNode = function()
 	{
-		var pos;
-		var fixedParent = BX.findParent(_this.CONTAINER, BX.is_fixed);
-		if(!!fixedParent)
+		if(!(BX.type.isElementNode(_this.RESULT)
+			&& BX.type.isElementNode(_this.CONTAINER))
+		)
 		{
-			_this.RESULT.style.position = 'fixed';
-			_this.RESULT.style.zIndex = BX.style(fixedParent, 'z-index') + 2;
-			pos = BX.pos(_this.CONTAINER, true);
+			return { top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 };
 		}
-		else
-		{
-			_this.RESULT.style.position = 'absolute';
-			pos = BX.pos(_this.CONTAINER);
-		}
-		pos.width = pos.right - pos.left;
+
+		var pos = BX.pos(_this.CONTAINER);
+
+		_this.RESULT.style.position = 'absolute';
 		_this.RESULT.style.top = (pos.bottom + 2) + 'px';
 		_this.RESULT.style.left = pos.left + 'px';
 		_this.RESULT.style.width = pos.width + 'px';
+
 		return pos;
 	};
 
 	this._onContainerLayoutChange = function()
 	{
-		if(_this.RESULT.style.display !== "none" && _this.RESULT.innerHTML !== '')
+		if(BX.type.isElementNode(_this.RESULT)
+			&& _this.RESULT.style.display !== "none"
+			&& _this.RESULT.innerHTML !== ''
+		)
 		{
 			_this.adjustResultNode();
 		}
@@ -373,6 +393,12 @@ function JCTitleSearch(arParams)
 		}
 
 		BX.bind(this.INPUT, 'bxchange', function() {_this.onChange()});
+
+		var fixedParent = BX.findParent(this.CONTAINER, BX.is_fixed);
+		if(BX.type.isElementNode(fixedParent))
+		{
+			BX.bind(window, 'scroll', BX.throttle(this.onScroll, 100, this));
+		}
 	};
 	BX.ready(function (){_this.Init(arParams)});
 }

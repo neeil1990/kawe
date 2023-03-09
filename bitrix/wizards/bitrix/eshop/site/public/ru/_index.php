@@ -3,34 +3,40 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("Интернет-магазин \"Одежда\"");
 ?>
 <?if (IsModuleInstalled("advertising")):?>
-<?$APPLICATION->IncludeComponent(
-	"bitrix:advertising.banner",
-	"bootstrap",
-	array(
-		"COMPONENT_TEMPLATE" => "bootstrap",
-		"TYPE" => "MAIN",
-		"NOINDEX" => "Y",
-		"QUANTITY" => "3",
-		"BS_EFFECT" => "fade",
-		"BS_CYCLING" => "N",
-		"BS_WRAP" => "Y",
-		"BS_PAUSE" => "Y",
-		"BS_KEYBOARD" => "Y",
-		"BS_ARROW_NAV" => "Y",
-		"BS_BULLET_NAV" => "Y",
-		"BS_HIDE_FOR_TABLETS" => "N",
-		"BS_HIDE_FOR_PHONES" => "Y",
-		"CACHE_TYPE" => "A",
-		"CACHE_TIME" => "36000000",
-	),
-	false
-);?>
+	<div class="mb-5">
+		<?$APPLICATION->IncludeComponent(
+			"bitrix:advertising.banner",
+			"bootstrap_v4",
+			array(
+				"COMPONENT_TEMPLATE" => "bootstrap_v4",
+				"TYPE" => "MAIN",
+				"NOINDEX" => "Y",
+				"QUANTITY" => "3",
+				"BS_EFFECT" => "fade",
+				"BS_CYCLING" => "N",
+				"BS_WRAP" => "Y",
+				"BS_PAUSE" => "Y",
+				"BS_KEYBOARD" => "Y",
+				"BS_ARROW_NAV" => "Y",
+				"BS_BULLET_NAV" => "Y",
+				"BS_HIDE_FOR_TABLETS" => "N",
+				"BS_HIDE_FOR_PHONES" => "Y",
+				"CACHE_TYPE" => "A",
+				"CACHE_TIME" => "36000000",
+			),
+			false
+		);?>
+	</div>
 <?endif?>
 
+<?
+global $trendFilter;
+$trendFilter = array('PROPERTY_TREND' => '#TREND_PROPERTY_VALUE_ID#');
+?>
 <h2>Тренды сезона</h2>
 <?$APPLICATION->IncludeComponent(
 	"bitrix:catalog.section",
-	".default",
+	"bootstrap_v4",
 	array(
 		"IBLOCK_TYPE_ID" => "catalog",
 		"IBLOCK_ID" => "#CATALOG_IBLOCK_ID#",
@@ -47,14 +53,14 @@ $APPLICATION->SetTitle("Интернет-магазин \"Одежда\"");
 		"ELEMENT_SORT_ORDER" => "desc",
 		"ELEMENT_SORT_FIELD2" => "id",
 		"ELEMENT_SORT_ORDER2" => "desc",
-		"FILTER_NAME" => "arrFilter",
+		"FILTER_NAME" => "trendFilter",
 		"INCLUDE_SUBSECTIONS" => "Y",
 		"SHOW_ALL_WO_SECTION" => "Y",
 		"HIDE_NOT_AVAILABLE" => "N",
 		"PAGE_ELEMENT_COUNT" => "12",
 		"LINE_ELEMENT_COUNT" => "3",
 		"PROPERTY_CODE" => array(
-			0 => "",
+			0 => "NEWPRODUCT",
 			1 => "",
 		),
 		"OFFERS_FIELD_CODE" => array(
@@ -71,11 +77,12 @@ $APPLICATION->SetTitle("Интернет-магазин \"Одежда\"");
 		"OFFERS_SORT_ORDER" => "desc",
 		"OFFERS_SORT_FIELD2" => "id",
 		"OFFERS_SORT_ORDER2" => "desc",
-		"OFFERS_LIMIT" => "5",
 		"TEMPLATE_THEME" => "site",
 		"PRODUCT_DISPLAY_MODE" => "Y",
 		"ADD_PICT_PROP" => "MORE_PHOTO",
-		"LABEL_PROP" => "-",
+		"LABEL_PROP" => array(
+			0 => "NEWPRODUCT"
+		),
 		"OFFER_ADD_PICT_PROP" => "-",
 		"OFFER_TREE_PROPS" => array(
 			0 => "COLOR_REF",
@@ -147,7 +154,8 @@ $APPLICATION->SetTitle("Интернет-магазин \"Одежда\"");
 		"PAGER_BASE_LINK_ENABLE" => "N",
 		"SET_STATUS_404" => "N",
 		"SHOW_404" => "N",
-		"MESSAGE_404" => ""
+		"MESSAGE_404" => "",
+		"COMPATIBLE_MODE" => "N",
 	),
 	false
 );?>

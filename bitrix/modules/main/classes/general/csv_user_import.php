@@ -6,6 +6,8 @@
  * @copyright 2001-2013 Bitrix
  */
 
+use Bitrix\Main\Security\Random;
+
 IncludeModuleLangFile(__FILE__);
 
 class CSVUserImport
@@ -45,7 +47,7 @@ class CSVUserImport
 		}
 
 		foreach($this->arHeader as $key => $val)
-			$this->arHeader[$key] = strtoupper($val);
+			$this->arHeader[$key] = mb_strtoupper($val);
 
 		if (!$this->CheckRequiredFields())
 		{
@@ -94,7 +96,7 @@ class CSVUserImport
 	{
 		$userPropertyName = trim($userPropertyName);
 
-		if (strlen($userPropertyName) > 0)
+		if ($userPropertyName <> '')
 			$this->userPropertyName = $userPropertyName;
 	}
 
@@ -117,7 +119,7 @@ class CSVUserImport
 
 	function SetExternalAuthID($externalAuthID)
 	{
-		if (strlen($externalAuthID) > 0)
+		if ($externalAuthID <> '')
 			$this->externalAuthID = $externalAuthID;
 	}
 
@@ -192,7 +194,7 @@ class CSVUserImport
 		if (!$dbRes->Fetch())
 		{
 			$arLabelNames = Array();
-			$rsLanguage = CLanguage::GetList($by, $order, array());
+			$rsLanguage = CLanguage::GetList();
 			while($arLanguage = $rsLanguage->Fetch())
 			{
 				IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/csv_user_import_labels.php", $arLanguage["LID"]);
@@ -243,7 +245,7 @@ class CSVUserImport
 				break;
 
 			$sectionName = trim($arFields[$csvSectionCode]);
-			if (strlen($sectionName) < 1)
+			if (mb_strlen($sectionName) < 1)
 				break;
 
 			$cacheID = md5($csvSectionCode."_".$sectionName."_".$sectionID);
@@ -296,53 +298,53 @@ class CSVUserImport
 			if(($f = trim($arUser[$index])) <> '')
 				$arFields[$key] = $f;
 
-		if (!array_key_exists("NAME", $arFields) || strlen($arFields["NAME"]) < 1)
+		if (!array_key_exists("NAME", $arFields) || mb_strlen($arFields["NAME"]) < 1)
 		{
 			$this->errorMessage = GetMessage("CSV_IMPORT_NO_NAME")." (".implode(", ", $arFields).").<br>";
 			return true;
 		}
 
-		if (!array_key_exists("LAST_NAME", $arFields) || strlen($arFields["LAST_NAME"]) < 1)
+		if (!array_key_exists("LAST_NAME", $arFields) || mb_strlen($arFields["LAST_NAME"]) < 1)
 		{
 			$this->errorMessage = GetMessage("CSV_IMPORT_NO_LASTNAME")." (".implode(", ", $arFields).").<br>";
 			return true;
 		}
 
-		if (!array_key_exists("PASSWORD", $arFields) || strlen($arFields["PASSWORD"]) < 1)
+		if (!array_key_exists("PASSWORD", $arFields) || mb_strlen($arFields["PASSWORD"]) < 1)
 			$arFields["PASSWORD"] = $this->GenerateUserPassword(6);
 		$arFields["CONFIRM_PASSWORD"] = $arFields["PASSWORD"];
 
-		if (!array_key_exists("EMAIL", $arFields) || strlen($arFields["EMAIL"]) < 3 || !check_email($arFields["EMAIL"]))
+		if (!array_key_exists("EMAIL", $arFields) || mb_strlen($arFields["EMAIL"]) < 3 || !check_email($arFields["EMAIL"]))
 			$arFields["EMAIL"] = $defaultEmail;
 
 		if (!array_key_exists("LOGIN", $arFields))
-			$arFields["LOGIN"] = ToLower($arFields["NAME"]." ".$arFields["LAST_NAME"]);
+			$arFields["LOGIN"] = mb_strtolower($arFields["NAME"]." ".$arFields["LAST_NAME"]);
 
-		if (array_key_exists("PERSONAL_BIRTHDAY", $arFields) && (strlen($arFields["PERSONAL_BIRTHDAY"]) < 2 || !CheckDateTime($arFields["PERSONAL_BIRTHDAY"])))
+		if (array_key_exists("PERSONAL_BIRTHDAY", $arFields) && (mb_strlen($arFields["PERSONAL_BIRTHDAY"]) < 2 || !CheckDateTime($arFields["PERSONAL_BIRTHDAY"])))
 			unset($arFields["PERSONAL_BIRTHDAY"]);
 
-		if (array_key_exists("DATE_REGISTER", $arFields) && (strlen($arFields["DATE_REGISTER"]) < 2 || !CheckDateTime($arFields["DATE_REGISTER"])))
+		if (array_key_exists("DATE_REGISTER", $arFields) && (mb_strlen($arFields["DATE_REGISTER"]) < 2 || !CheckDateTime($arFields["DATE_REGISTER"])))
 			unset($arFields["DATE_REGISTER"]);
 
 		if ($this->externalAuthID !== null && !array_key_exists("EXTERNAL_AUTH_ID", $arFields))
 			$arFields["EXTERNAL_AUTH_ID"] = $this->externalAuthID;
 
 		if (!array_key_exists("XML_ID", $arFields))
-			$arFields["XML_ID"] = md5(uniqid(rand(), true));
+			$arFields["XML_ID"] = Random::getString(32);
 
-		if(!array_key_exists("CHECKWORD", $arFields) || strlen($arFields["CHECKWORD"]) <= 0)
-			$arFields["CHECKWORD"] = md5(CMain::GetServerUniqID().uniqid());
+		if(!array_key_exists("CHECKWORD", $arFields) || $arFields["CHECKWORD"] == '')
+			$arFields["CHECKWORD"] = Random::getString(32);
 
 		if ($this->imageFilePath !== null)
 		{
-			if (array_key_exists("PERSONAL_PHOTO", $arFields) && strlen($arFields["PERSONAL_PHOTO"]) > 0)
+			if (array_key_exists("PERSONAL_PHOTO", $arFields) && $arFields["PERSONAL_PHOTO"] <> '')
 			{
 				$arFile = CFile::MakeFileArray($this->imageFilePath."/".$arFields["PERSONAL_PHOTO"]);
 				$arFile["MODULE_ID"] = "main";
 				$arFields["PERSONAL_PHOTO"] = $arFile;
 			}
 
-			if (array_key_exists("WORK_LOGO", $arFields) && strlen($arFields["WORK_LOGO"]) > 0)
+			if (array_key_exists("WORK_LOGO", $arFields) && $arFields["WORK_LOGO"] <> '')
 			{
 				$arFile = CFile::MakeFileArray($this->imageFilePath."/".$arFields["WORK_LOGO"]);
 				$arFile["MODULE_ID"] = "main";

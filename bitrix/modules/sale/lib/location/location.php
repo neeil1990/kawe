@@ -19,6 +19,22 @@ use Bitrix\Sale\Location\DB\Helper;
 
 Loc::loadMessages(__FILE__);
 
+/**
+ * Class LocationTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Location_Query query()
+ * @method static EO_Location_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Location_Result getById($id)
+ * @method static EO_Location_Result getList(array $parameters = array())
+ * @method static EO_Location_Entity getEntity()
+ * @method static \Bitrix\Sale\Location\EO_Location createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Location\EO_Location_Collection createCollection()
+ * @method static \Bitrix\Sale\Location\EO_Location wakeUpObject($row)
+ * @method static \Bitrix\Sale\Location\EO_Location_Collection wakeUpCollection($rows)
+ */
 final class LocationTable extends Tree
 {
 	public static function getFilePath()
@@ -61,7 +77,7 @@ final class LocationTable extends Tree
 		{
 			$error = false;
 
-			if($field->getName() == 'LATITUDE' && strlen($data['LATITUDE']))
+			if($field->getName() == 'LATITUDE' && mb_strlen($data['LATITUDE']))
 			{
 				// latitude is set in data and not empty, it must lay between -90 and 90
 				if(!is_numeric($data['LATITUDE']))
@@ -70,7 +86,7 @@ final class LocationTable extends Tree
 					$error = Loc::getMessage('SALE_LOCATION_LOCATION_ENTITY_LATITUDE_RANGE_ERROR');
 			}
 
-			if($field->getName() == 'LONGITUDE' && strlen($data['LONGITUDE']))
+			if($field->getName() == 'LONGITUDE' && mb_strlen($data['LONGITUDE']))
 			{
 				// longitude is set in data and not empty, it must lay between -180 and 180
 				if(!is_numeric($data['LONGITUDE']))
@@ -171,7 +187,7 @@ final class LocationTable extends Tree
 	protected static function resetLegacy($typeId)
 	{
 		$type = TypeTable::getList(array('filter' => array('=ID' => $typeId), 'select' => array('CODE')))->fetch();
-		if(strlen($type['CODE']) && in_array($type['CODE'], array('COUNTRY', 'REGION', 'CITY')))
+		if(mb_strlen($type['CODE']) && in_array($type['CODE'], array('COUNTRY', 'REGION', 'CITY')))
 			static::resetLegacyPath();
 	}
 
@@ -297,7 +313,7 @@ final class LocationTable extends Tree
 			if($resetLegacy && intval($data['TYPE_ID']))
 			{
 				$type = TypeTable::getList(array('filter' => array('=ID' => $data['TYPE_ID']), 'select' => array('CODE')))->fetch();
-				if(strlen($type['CODE']) && in_array($type['CODE'], array('COUNTRY', 'REGION', 'CITY')))
+				if(mb_strlen($type['CODE']) && in_array($type['CODE'], array('COUNTRY', 'REGION', 'CITY')))
 					static::resetLegacyPath();
 			}
 

@@ -18,18 +18,18 @@ class VkCategories
 	const CACHE_DIR = '/sale/vkexport/';
 	const CACHE_TTL = 86400;
 	const CACHE_ID_PREFIX = "vkcategory_cache";
-	private $exportId;
-	
+	private int $exportId;
+
 	/**
 	 * VkCategories constructor.
 	 * @param $exportId - int, ID of export profile
 	 */
-	public function __construct($exportId)
+	public function __construct(int $exportId)
 	{
 		$this->exportId = $exportId;
 	}
-	
-	
+
+
 	/**
 	 * Create agent for pereodical update vk-categories in values (main function)
 	 *
@@ -42,7 +42,7 @@ class VkCategories
 		{
 			$ttl = self::CACHE_TTL;
 			$timeToStart = ConvertTimeStamp(strtotime(date('Y-m-d H:i:s', time() + $ttl)), 'FULL');
-			
+
 			$resultAgentAdd = \CAgent::AddAgent(
 				self::createAgentName($this->exportId),
 				'sale',
@@ -52,17 +52,17 @@ class VkCategories
 				"Y",
 				$timeToStart
 			);
-			
+
 			return $resultAgentAdd;
 		}
-		
+
 		else
 		{
 			return $agent;
 		}
 	}
-	
-	
+
+
 	/**
 	 * @return array|bool|false|mixed|null
 	 * Check if exist agent for update vk-categories.
@@ -76,49 +76,49 @@ class VkCategories
 				'NAME' => self::createAgentName($this->exportId),
 			)
 		);
-		
+
 		if ($agent = $dbRes->Fetch())
 			return $agent;
 		else
 			return false;
 	}
-	
-	
+
+
 	/**
 	 * @param $exportid
 	 * Remove agent for current export ID
 	 */
-	public static function deleteAgent($exportid)
+	public function deleteAgent()
 	{
 //		not change cache - they will self dropped after ttl
 //		dropped agent
 		$dbRes = \CAgent::GetList(
 			array(),
 			array(
-				'NAME' => self::createAgentName($exportid),
+				'NAME' => self::createAgentName($this->exportId),
 			)
 		);
-		
+
 		if ($agent = $dbRes->Fetch())
 			\CAgent::Delete($agent["ID"]);
 	}
-	
-	
+
+
 	/**
 	 * Remove agents for ALL export IDs
 	 */
-	public static function deleteAllAgents()
+	public function deleteAllAgents()
 	{
 		$vk = Vk::getInstance();
 		$settings = $vk->getSettings();
-		
+
 		foreach ($settings as $id => $value)
 		{
-			self::deleteAgent($id);
+			$this->deleteAgent();
 		}
 	}
-	
-	
+
+
 	/**
 	 * @return string
 	 * Create name for cache
@@ -128,17 +128,17 @@ class VkCategories
 //		we need only one cache for all exports => no needed export ID for cache ID
 		return self::CACHE_ID_PREFIX;
 	}
-	
+
 	/**
-	 * @param $exportid
+	 * @param $exportId
 	 * @return string
 	 * Create name for agent
 	 */
-	private static function createAgentName($exportid)
+	private static function createAgentName(int $exportId): string
 	{
-		return 'Bitrix\Sale\TradingPlatform\Vk\VkCategories::updateVkCategoriesAgent("' . $exportid . '");';
+		return 'Bitrix\Sale\TradingPlatform\Vk\VkCategories::updateVkCategoriesAgent(' . $exportId . ');';
 	}
-	
+
 	/**
 	 * If cache exist - get values from it.
 	 * Else - download categories via API
@@ -150,7 +150,7 @@ class VkCategories
 	{
 		$cacheManager = Application::getInstance()->getManagedCache();
 		$result = NULL;
-		
+
 		if ($cacheManager->read(self::CACHE_TTL, self::createCacheId()))
 		{
 			$result = $cacheManager->get(self::createCacheId());
@@ -159,40 +159,44 @@ class VkCategories
 		{
 			$result = self::updateDataToCache($this->exportId);
 		}
-		
+
 		if ($isTree)
+		{
 			$result = self::convertVkCategoriesToTree($result);
+		}
 		else
+		{
 			$result = self::convertVkCategoriesToList($result);
-		
+		}
+
 		return $result;
 	}
-	
-	
+
+
 	/**
 	 * Load vk-categories from VK and save them to cache.
 	 *
 	 * @param $exportId
-	 * @return bool - array of VkCategories or false if error
+	 * @return array of VkCategories or null if error
 	 */
 	private static function updateDataToCache($exportId)
 	{
 		$vkCategories = self::getDataFromVk($exportId);
-		
+
 		if (is_array($vkCategories))
 		{
 			$cacheManager = Application::getInstance()->getManagedCache();
 			$cacheManager->set(self::createCacheId(), $vkCategories);
-			
+
 			return $vkCategories;
 		}
 		else
 		{
-			return false;
+			return null;
 		}
 	}
-	
-	
+
+
 	/**
 	 * get vk categories from vk-api
 	 *
@@ -202,11 +206,11 @@ class VkCategories
 	private static function getDataFromVk($exportId)
 	{
 		$apiHelper = new ApiHelper($exportId);
-		
+
 		return $apiHelper->getVkCategories();
 	}
-	
-	
+
+
 	/**
  * Convert category list to tree
  *
@@ -234,11 +238,11 @@ class VkCategories
 				"NAME" => $category["name"],
 			);
 		}
-		
+
 		return $categoriesTree;
 	}
-	
-	
+
+
 	/**
 	 * Convert category list from VK to correct list
 	 *
@@ -255,11 +259,11 @@ class VkCategories
 				"NAME" => $category["name"],
 			);
 		}
-		
+
 		return $categoriesListFormatted;
 	}
 
-	
+
 	/**
 	 * Formmatted selector to HTML. Not create <select> tag. only inner options.
 	 *
@@ -272,37 +276,39 @@ class VkCategories
 		$vkCategory = $this->getList();
 
 //		todo: why upper case dont work?
-		$defaultItemText = strlen($defaultItemText) > 0 ? $defaultItemText : Loc::getMessage("SALE_CATALOG_CHANGE_VK_CATEGORY");
+		$defaultItemText = $defaultItemText <> '' ? $defaultItemText : Loc::getMessage("SALE_CATALOG_CHANGE_VK_CATEGORY");
 		$strSelect = '<option value="-1">[' . $defaultItemText . ']</option>';
-		
+
 		foreach ($vkCategory as $vkTreeItem)
 		{
-			$strSelect .= '<option disabled value="0">' . strtoupper($vkTreeItem["NAME"]) . '</option>';
-			
+			$strSelect .= '<option disabled value="0">'.mb_strtoupper($vkTreeItem["NAME"]) . '</option>';
+
 			foreach ($vkTreeItem["ITEMS"] as $sectionItem)
 			{
 				$selected = '';
 				if ($catVkSelected && ($sectionItem["ID"] == $catVkSelected))
 					$selected = " selected";
-				
+
 				$strSelect .= '<option' . $selected . ' value="' . $sectionItem["ID"] . '">- ' . $sectionItem["NAME"] . '</option>';
 			}
 		}
-		
+
 		return $strSelect;
 	}
-	
-	
+
+
 	/**
 	 * Agent wrap-method for update cache
 	 *
 	 * @param $exportId
 	 * @return string
 	 */
-	public function updateVkCategoriesAgent($exportId)
+	public static function updateVkCategoriesAgent(int $exportId): string
 	{
 		if (self::updateDataToCache($exportId))
+		{
 			return self::createAgentName($exportId);
+		}
 		else return '';
 	}
 }

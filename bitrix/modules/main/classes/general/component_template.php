@@ -257,7 +257,7 @@ class CBitrixComponentTemplate
 
 		if ($arData && is_array($arData))
 		{
-			if (array_key_exists("additionalCSS", $arData) && strlen($arData["additionalCSS"]) > 0)
+			if (array_key_exists("additionalCSS", $arData) && $arData["additionalCSS"] <> '')
 			{
 				$APPLICATION->SetAdditionalCSS($arData["additionalCSS"]);
 				//Check if parent component exists and plug css it to it's "collection"
@@ -265,7 +265,7 @@ class CBitrixComponentTemplate
 					$this->__component->__parent->addChildCSS($this->__folder."/style.css");
 			}
 
-			if (array_key_exists("additionalJS", $arData) && strlen($arData["additionalJS"]) > 0)
+			if (array_key_exists("additionalJS", $arData) && $arData["additionalJS"] <> '')
 			{
 				$APPLICATION->AddHeadScript($arData["additionalJS"]);
 				//Check if parent component exists and plug js it to it's "collection"
@@ -385,7 +385,7 @@ class CBitrixComponentTemplate
 			$this->__siteTemplate = $siteTemplate;
 		}
 
-		if (strlen($this->__siteTemplate) <= 0)
+		if ($this->__siteTemplate == '')
 			$this->__siteTemplate = ".default";
 
 		$this->__file = "";
@@ -401,7 +401,7 @@ class CBitrixComponentTemplate
 		$this->__component = &$component;
 
 		$this->__name = $this->__component->GetTemplateName();
-		if (strlen($this->__name) <= 0)
+		if ($this->__name == '')
 			$this->__name = ".default";
 
 		$this->__name = preg_replace("'[\\\\/]+'", "/", $this->__name);
@@ -411,7 +411,7 @@ class CBitrixComponentTemplate
 			$this->__name = ".default";
 
 		$this->__page = $this->__component->GetTemplatePage();
-		if (strlen($this->__page) <= 0)
+		if ($this->__page == '')
 			$this->__page = "template";
 
 		if (!$this->__SearchTemplate($customTemplatePath))
@@ -473,6 +473,141 @@ class CBitrixComponentTemplate
 	}
 
 	/**
+	 * Checking existence of the template
+	 * @return bool
+	 */
+	public function hasTemplate(): bool
+	{
+		$folders = $this->generatePossibleTemplatePath();
+		foreach($folders as $folder)
+		{
+			if(is_dir($_SERVER["DOCUMENT_ROOT"] . $folder["path"] . "/" . $this->__name))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Checking existence of the template page
+	 * @param string $templatePage
+	 * @return bool
+	 */
+	public function hasTemplatePage(string $templatePage): bool
+	{
+		$ext = '.php';
+		$delimeter = '/';
+
+		$folders = $this->generatePossibleTemplatePath();
+		foreach($folders as $folder)
+		{
+			$folderPath = $_SERVER["DOCUMENT_ROOT"] . $folder["path"];
+			$pageName = $templatePage . $ext;
+			if(file_exists(implode($delimeter, [$folderPath, $this->__name, $pageName])))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function generatePossibleTemplatePath(): array
+	{
+		$component = $this->getComponent();
+		$arFolders = [];
+		$relativePath = $component->GetRelativePath();
+		$parentComponent = $component->GetParent();
+		$siteTemplate = $component->getSiteTemplateId();
+
+		$defSiteTemplate = ($siteTemplate == ".default");
+		$parentTemplatePath = '';
+		$parentRelativePath = '';
+		if($parentComponent && $parentComponent->GetTemplate())
+		{
+			$parentRelativePath = $parentComponent->GetRelativePath();
+			$parentTemplateName = $parentComponent->GetTemplate()->GetName();
+			if($parentTemplateName <> '')
+			{
+				$parentTemplatePath = "/".$parentTemplateName;
+			}
+
+			if(!$defSiteTemplate)
+			{
+				$arFolders[] = array(
+					"path" => "/local/templates/" . $siteTemplate . "/components" . $parentRelativePath . $parentTemplatePath . $relativePath,
+					"in_theme" => true,
+				);
+			}
+			$arFolders[] = array(
+				"path" => "/local/templates/.default/components" . $parentRelativePath . $parentTemplatePath . $relativePath,
+				"in_theme" => true,
+				"site_template" => ".default",
+			);
+			$arFolders[] = array(
+				"path" => "/local/components" . $parentRelativePath . "/templates" . $parentTemplatePath . $relativePath,
+				"in_theme" => true,
+				"site_template" => "",
+			);
+		}
+		if(!$defSiteTemplate)
+		{
+			$arFolders[] = array(
+				"path" => "/local/templates/" . $siteTemplate . "/components" . $relativePath,
+			);
+		}
+		$arFolders[] = array(
+			"path" => "/local/templates/.default/components" . $relativePath,
+			"site_template" => ".default",
+		);
+		$arFolders[] = array(
+			"path" => "/local/components" . $relativePath . "/templates",
+			"site_template" => "",
+		);
+
+		if($parentComponent)
+		{
+			if(!$defSiteTemplate)
+			{
+				$arFolders[] = array(
+					"path" => BX_PERSONAL_ROOT . "/templates/" . $siteTemplate . "/components" . $parentRelativePath . $parentTemplatePath . $relativePath,
+					"in_theme" => true,
+				);
+			}
+			$arFolders[] = array(
+				"path" => BX_PERSONAL_ROOT . "/templates/.default/components" . $parentRelativePath . $parentTemplatePath . $relativePath,
+				"in_theme" => true,
+				"site_template" => ".default",
+			);
+			$arFolders[] = array(
+				"path" => "/bitrix/components" . $parentRelativePath . "/templates" . $parentTemplatePath . $relativePath,
+				"in_theme" => true,
+				"site_template" => "",
+			);
+		}
+		if(!$defSiteTemplate)
+		{
+			$arFolders[] = array(
+				"path" => BX_PERSONAL_ROOT . "/templates/" . $siteTemplate . "/components" . $relativePath,
+			);
+		}
+		$arFolders[] = array(
+			"path" => BX_PERSONAL_ROOT . "/templates/.default/components" . $relativePath,
+			"site_template" => ".default",
+		);
+		$arFolders[] = array(
+			"path" => "/bitrix/components" . $relativePath . "/templates",
+			"site_template" => "",
+		);
+
+		return $arFolders;
+	}
+//AddEventHandler("main", "OnUserTypeBuildList", array("CUserTypeWebdavElement", "GetUserTypeDescription"));
+
+	/**
 	 * Search template by its name in various locations.
 	 * <ol>
 	 * <li>/local/templates/&lt;site template&gt;/components/&lt;parent template&gt;/&lt;component path&gt;/
@@ -501,87 +636,22 @@ class CBitrixComponentTemplate
 		$this->__hasCSS = null;
 		$this->__hasJS = null;
 
-		$arFolders = array();
 		$relativePath = $this->__component->GetRelativePath();
 
 		$parentRelativePath = "";
 		$parentTemplateName = "";
-		$parentComponent = & $this->__component->GetParent();
-		$defSiteTemplate = ($this->__siteTemplate == ".default");
-		if ($parentComponent && $parentComponent->GetTemplate())
+
+		$parentComponent = &$this->__component->GetParent();
+
+		if($parentComponent && $parentComponent->GetTemplate())
 		{
 			$parentRelativePath = $parentComponent->GetRelativePath();
 			$parentTemplateName = $parentComponent->GetTemplate()->GetName();
+		}
 
-			if(!$defSiteTemplate)
-			{
-				$arFolders[] = array(
-					"path" => "/local/templates/".$this->__siteTemplate."/components".$parentRelativePath."/".$parentTemplateName.$relativePath,
-					"in_theme" => true,
-				);
-			}
-			$arFolders[] = array(
-				"path" => "/local/templates/.default/components".$parentRelativePath."/".$parentTemplateName.$relativePath,
-				"in_theme" => true,
-				"site_template" => ".default",
-			);
-			$arFolders[] = array(
-				"path" => "/local/components".$parentRelativePath."/templates/".$parentTemplateName.$relativePath,
-				"in_theme" => true,
-				"site_template" => "",
-			);
-		}
-		if(!$defSiteTemplate)
-		{
-			$arFolders[] = array(
-				"path" => "/local/templates/".$this->__siteTemplate."/components".$relativePath,
-			);
-		}
-		$arFolders[] = array(
-			"path" => "/local/templates/.default/components".$relativePath,
-			"site_template" => ".default",
-		);
-		$arFolders[] = array(
-			"path" => "/local/components".$relativePath."/templates",
-			"site_template" => "",
-		);
+		$arFolders = $this->generatePossibleTemplatePath();
 
-		if ($parentComponent)
-		{
-			if(!$defSiteTemplate)
-			{
-				$arFolders[] = array(
-					"path" => BX_PERSONAL_ROOT."/templates/".$this->__siteTemplate."/components".$parentRelativePath."/".$parentTemplateName.$relativePath,
-					"in_theme" => true,
-				);
-			}
-			$arFolders[] = array(
-				"path" => BX_PERSONAL_ROOT."/templates/.default/components".$parentRelativePath."/".$parentTemplateName.$relativePath,
-				"in_theme" => true,
-				"site_template" => ".default",
-			);
-			$arFolders[] = array(
-				"path" => "/bitrix/components".$parentRelativePath."/templates/".$parentTemplateName.$relativePath,
-				"in_theme" => true,
-				"site_template" => "",
-			);
-		}
-		if(!$defSiteTemplate)
-		{
-			$arFolders[] = array(
-				"path" => BX_PERSONAL_ROOT."/templates/".$this->__siteTemplate."/components".$relativePath,
-			);
-		}
-		$arFolders[] = array(
-			"path" => BX_PERSONAL_ROOT."/templates/.default/components".$relativePath,
-			"site_template" => ".default",
-		);
-		$arFolders[] = array(
-			"path" => "/bitrix/components".$relativePath."/templates",
-			"site_template" => "",
-		);
-
-		if ($customTemplatePath <> '' && $templatePageFile = $this->__SearchTemplateFile($customTemplatePath, $this->__page))
+		if($customTemplatePath <> '' && $templatePageFile = $this->__SearchTemplateFile($customTemplatePath, $this->__page))
 		{
 			$this->__fileAlt = $customTemplatePath."/".$templatePageFile;
 
@@ -631,8 +701,8 @@ class CBitrixComponentTemplate
 					elseif (is_file($_SERVER["DOCUMENT_ROOT"].$fname))
 					{
 						$this->__file = $fname;
-						if (strpos($this->__name, "/") !== false)
-							$this->__folder = $folder["path"]."/".substr($this->__name, 0, bxstrrpos($this->__name, "/"));
+						if (mb_strpos($this->__name, "/") !== false)
+							$this->__folder = $folder["path"]."/".mb_substr($this->__name, 0, bxstrrpos($this->__name, "/"));
 					}
 				}
 				else
@@ -938,7 +1008,7 @@ class CBitrixComponentTemplate
 	{
 		$templateName = trim($templateName, ". \r\n\t");
 		$arTemplateName = explode(".", $templateName);
-		return strtolower($arTemplateName[count($arTemplateName) - 1]);
+		return mb_strtolower($arTemplateName[count($arTemplateName) - 1]);
 	}
 
 	/**
@@ -1160,7 +1230,7 @@ class CBitrixComponentTemplate
 	public function createFrame($id = null, $autoContainer = true)
 	{
 		$this->frameMode = true;
-		if ($id === null)
+		if (!is_string($id) || $id == '')
 		{
 			$id = $this->randString();
 		}

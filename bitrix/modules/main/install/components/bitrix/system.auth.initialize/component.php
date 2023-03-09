@@ -15,6 +15,8 @@
  * @param CBitrixComponent $this
  */
 
+use Bitrix\Main\Security\Password;
+
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 	die();
 
@@ -65,20 +67,18 @@ else
 			$arResult["MESSAGE_CODE"][] = "E03";
 		}
 
-		$salt = substr($arResult["USER"]["CHECKWORD"], 0, 8);
-
 		if($arResult["~CHECKWORD"] == '')
 		{
 			$arResult["MESSAGE_TEXT"] .= GetMessage("CC_MAIN_REG_INIT_MESSAGE_CHECKWORD_EMPTY")."<br>";
 			$arResult["MESSAGE_CODE"][] = "E04";
 		}
-		elseif($arResult["USER"]["CONFIRM_CODE"] != $arResult["~CHECKWORD"] && $arResult["USER"]["CHECKWORD"] != $salt.md5($salt.$arResult["~CHECKWORD"]))
+		elseif($arResult["USER"]["CONFIRM_CODE"] != $arResult["~CHECKWORD"] && !Password::equals($arResult["USER"]["CHECKWORD"], $arResult["~CHECKWORD"]))
 		{
 			$arResult["MESSAGE_TEXT"] .= GetMessage("CC_MAIN_REG_INIT_MESSAGE_CHECKWORD_WRONG");
 			$arResult["MESSAGE_CODE"][] = "E05";
 		}
 
-		if(empty($arResult["MESSAGE_CODE"]) && $_SERVER["REQUEST_METHOD"] == "POST" && strlen($_POST["confirm"]) > 0 && check_bitrix_sessid())
+		if(empty($arResult["MESSAGE_CODE"]) && $_SERVER["REQUEST_METHOD"] == "POST" && $_POST["confirm"] <> '' && check_bitrix_sessid())
 		{
 			$arResult["USER"]["NAME"] = trim($_POST["NAME"]);
 			$arResult["USER"]["LAST_NAME"] = trim($_POST["LAST_NAME"]);

@@ -7,6 +7,22 @@ use Bitrix\Main\DB\OracleConnection;
 use Bitrix\Main\Entity\DataManager;
 
 
+/**
+ * Class IndexSectionTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_IndexSection_Query query()
+ * @method static EO_IndexSection_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_IndexSection_Result getById($id)
+ * @method static EO_IndexSection_Result getList(array $parameters = array())
+ * @method static EO_IndexSection_Entity getEntity()
+ * @method static \Bitrix\Sale\Discount\Index\EO_IndexSection createObject($setDefaultValues = true)
+ * @method static \Bitrix\Sale\Discount\Index\EO_IndexSection_Collection createCollection()
+ * @method static \Bitrix\Sale\Discount\Index\EO_IndexSection wakeUpObject($row)
+ * @method static \Bitrix\Sale\Discount\Index\EO_IndexSection_Collection wakeUpCollection($rows)
+ */
 final class IndexSectionTable extends DataManager
 {
 	const MAX_LENGTH_BATCH_MYSQL_QUERY = 2048;
@@ -114,7 +130,7 @@ final class IndexSectionTable extends DataManager
 				list($prefix, $values) = $sqlHelper->prepareInsert($tableName, $item);
 
 				$query .= ($query ? ', ' : ' ') . '(' . $values . ')';
-				if(strlen($query) > self::MAX_LENGTH_BATCH_MYSQL_QUERY)
+				if(mb_strlen($query) > self::MAX_LENGTH_BATCH_MYSQL_QUERY)
 				{
 					$connection->queryExecute("INSERT INTO {$tableName} ({$prefix}) VALUES {$query}");
 					$query = '';

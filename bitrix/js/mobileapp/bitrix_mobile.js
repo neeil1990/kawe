@@ -162,7 +162,6 @@
 
 	BXCordovaPlugin.prototype.exec = function (funcName, params, convertBoolean)
 	{
-
 		var pluginParams = {};
 
 		if(typeof convertBoolean == "undefined")
@@ -221,7 +220,7 @@
 	window.app = app;
 
 	document.addEventListener("DOMContentLoaded", function(){
-		app.db = new BX.dataBase.create({
+		app.db = BX.dataBase.create({
 			name: "Bitrix Base",
 			displayName: "Bitrix Base",
 			capacity: 1024 * 1024 * 4,
@@ -801,7 +800,7 @@
 				var insertCallback = params.TABLE_SETTINGS.callback;
 				params.TABLE_SETTINGS.callback = function (data)
 				{
-					insertCallback(BitrixMobile.Utils.htmlspecialchars(data));
+					insertCallback(data);
 				}
 			}
 		}
@@ -1386,13 +1385,27 @@
 		//params.callback - action on pull-down-refresh
 		//params.enable - true|false
 
+		var _params = BX.clone(params);
 
-		if(typeof params.backgroundColor == "undefined")
+		if(
+			typeof _params.backgroundColor == "undefined"
+			|| !BX.type.isNotEmptyString(_params.backgroundColor)
+		)
 		{
-			var bodySelector = (document.body.className.length>0
-					? document.querySelector("."+document.body.className)
-					: null
-			);
+			var bodySelector = null;
+
+			try
+			{
+				bodySelector = (document.body.className != null && document.body.className.length>0
+						? document.querySelector("."+document.body.className)
+						: null
+				);
+			}
+			catch (e)
+			{
+				//do nothing
+			}
+
 			if(bodySelector != null)
 			{
 				var bodyStyles = getComputedStyle(bodySelector);
@@ -1405,18 +1418,13 @@
 				};
 				var color  = rgb2hex(bodyStyles.backgroundColor);
 				if(color != "#000000")
-					params.backgroundColor = color;
+					_params.backgroundColor = color;
 				else
-					params.backgroundColor = "#ffffff";
+					_params.backgroundColor = "#ffffff";
 			}
 		}
-		else
-		{
-			params.backgroundColor = "#ffffff";
-		}
 
-
-		return this.exec("pullDown", params);
+		return this.exec("pullDown", _params);
 	};
 	/**
 	 * @deprecated
@@ -2053,6 +2061,9 @@
 
 					image.node.setAttribute("data-src", "");
 					image.status = this.status.loaded;
+					image.node.onload = function() {
+						BX.onCustomEvent('BX.LazyLoad:ImageLoaded', [ this ]);
+					};
 				}
 			}
 		},
@@ -2342,186 +2353,339 @@
 		});
 	}, false);
 
-	MobileAjaxWrapper = function ()
+	BX.mobileAjax = function (config)
 	{
-		this.type = null;
-		this.method = null;
-		this.url = null;
-		this.callback = null;
-		this.failure_callback = null;
-		this.progress_callback = null;
-		this.offline = null;
-		this.processData = null;
-		this.xhr = null;
-		this.data = null;
-		this.headers = null;
-};
+		console.warn("AJAX",config);
+		var promise = new Promise(function (resolve, reject)
+		{
+			"use strict";
 
-	MobileAjaxWrapper.prototype.Init = function (params)
-	{
-		if (params.type != 'json')
-			params.type = 'html';
+			config.onsuccess = (config.onsuccess ? config.onsuccess : function(){});
+			config.xhr = new BMXMLHttpRequest();
+			config.xhr.setRequestHeader("User-Agent", "Bitrix24/Janative");
+			if(!config["method"])
+				config["method"] = "GET";
 
-		if (params.method != 'POST')
-			params.method = 'GET';
-
-		if (params.processData == 'undefined')
-			params.processData = true;
-
-		this.type = params.type;
-		this.method = params.method;
-		this.url = params.url;
-		this.data = params.data;
-		this.headers = (typeof params.headers != 'undefined' ? params.headers : []);
-		this.processData = params.processData;
-		this.start = params.start;
-		this.preparePost = params.preparePost;
-		this.callback = params.callback;
-
-		if (params.callback_failure != 'undefined')
-			this.failure_callback = params.callback_failure;
-		if (params.callback_progress != 'undefined')
-			this.progress_callback = params.callback_progress;
-		if (params.callback_loadstart != 'undefined')
-			this.loadstart_callback = params.callback_loadstart;
-		if (params.callback_loadend != 'undefined')
-			this.loadend_callback = params.callback_loadend;
-	};
-
-	MobileAjaxWrapper.prototype.Wrap = function (params)
-	{
-		this.Init(params);
-
-		this.xhr = BX.ajax({
-			timeout: 30,
-			start : this.start,
-			preparePost : this.preparePost,
-			method: this.method,
-			dataType: this.type,
-			url: this.url,
-			data: this.data,
-			headers: this.headers,
-			processData: this.processData,
-			onsuccess: BX.defer(
-				function (response)
-				{
-					var bFailed = false;
-
-					if (this.xhr.status === 0)
-					{
-						bFailed = true;
-					}
-					else if (this.type == 'json')
-					{
-						bFailed = (typeof response == 'object' && typeof response.status != 'undefined' && response.status == 'failed');
-					}
-					else if (this.type == 'html')
-					{
-						bFailed = (response == '{"status":"failed"}');
-					}
-
-					if (bFailed)
-					{
-						this.RepeatRequest();
-					}
-					else
-					{
-						this.callback(response);
-					}
-				},
-				this
-			),
-			'onfailure': BX.delegate(function (errorCode, requestStatus)
+			if (config.headers)
 			{
-				if (
-					errorCode !== undefined
-					&& errorCode == 'status'
-					&& requestStatus !== undefined
-					&& requestStatus == 401
-				)
+				if(BX.type.isArray(config.headers))
 				{
-					this.RepeatRequest();
+					config.headers.forEach(function(element){
+						config.xhr.setRequestHeader(element.name, element.value);
+					});
 				}
 				else
 				{
-					this.failure_callback();
-				}
-			}, this)
-		});
-
-		if (this.progress_callback != null)
-			BX.bind(this.xhr, "progress", this.progress_callback);
-
-		if (this.load_callback != null)
-			BX.bind(this.xhr, "load", this.load_callback);
-
-		if (this.loadstart_callback != null)
-			BX.bind(this.xhr, "loadstart", this.loadstart_callback);
-
-		if (this.loadend_callback != null)
-			BX.bind(this.xhr, "loadend", this.loadend_callback);
-
-		if (this.error_callback != null)
-			BX.bind(this.xhr, "error", this.error_callback);
-
-		if (this.abort_callback != null)
-			BX.bind(this.xhr, "abort", this.abort_callback);
-		return this.xhr;
-	}
-
-	MobileAjaxWrapper.prototype.RepeatRequest = function ()
-	{
-		app.BasicAuth({
-			'success': BX.delegate(
-				function (auth_data)
-				{
-					this.data.sessid = auth_data.sessid_md5;
-					this.xhr = BX.ajax({
-						'timeout': 30,
-						'method': this.method,
-						'dataType': this.type,
-						'url': this.url,
-						'data': this.data,
-						'onsuccess': BX.delegate(
-							function (response_ii)
-							{
-								if (this.xhr.status === 0)
-									var bFailed = true;
-								else if (this.type == 'json')
-								{
-									var bFailed = (typeof response_ii == 'object' && typeof response_ii.status != 'undefined' && response_ii.status == 'failed');
-								}
-								else if (this.type == 'html')
-									var bFailed = (response_ii == '{"status":"failed"}');
-
-								if (bFailed)
-									this.failure_callback();
-								else
-									this.callback(response_ii);
-							},
-							this
-						),
-						'onfailure': BX.delegate(function ()
-						{
-							this.failure_callback();
-						}, this)
+					Object.keys(config.headers).forEach(function (headerName){
+						config.xhr.setRequestHeader(headerName, config.headers[headerName])
 					});
-				},
-				this
-			),
-			'failture': BX.delegate(function ()
+				}
+			}
+
+			if(config.files)
 			{
-				this.failure_callback();
-			}, this)
+				config.xhr.files = config.files;
+			}
+
+			if(typeof config.prepareData !== "undefined")
+			{
+				config.xhr.prepareData = config.prepareData;
+			}
+			else
+			{
+				config.xhr.prepareData = true;
+			}
+
+			if (config.timeout)
+			{
+				config.xhr.timeout = config.timeout;
+			}
+			if(BX.mobileAjax.debug)
+			{
+				console.log("Ajax request: "+ config.url);
+			}
+			config.xhr.open(config["method"], config["url"]);
+
+			config.xhr.onreadystatechange = function ()
+			{
+				if (config.xhr.readyState === 4)
+				{
+					var isSuccess = BX.mobileAjax.xhrSuccess(config.xhr);
+					console.log(config.xhr);
+					if (isSuccess)
+					{
+						if (config.dataType && config.dataType === "json")
+						{
+							try {
+								var json = BX.parseJSON(config.xhr.responseText);
+
+								if(BX.mobileAjax.debug)
+								{
+									console.log("Ajax success: "+ config.xhr);
+								}
+
+								config.onsuccess(json);
+								resolve(json);
+
+							}
+							catch (e)
+							{
+								var argument = {
+									error: e,
+									xhr: config.xhr
+								};
+
+								if(BX.mobileAjax.debug)
+								{
+									console.log("Ajax fail: ", argument);
+								}
+
+								if(typeof config.onfailure === "function")
+								{
+									config.onfailure(argument.error, argument.xhr);
+								}
+								else
+								{
+									reject(argument)
+								}
+
+
+							}
+						}
+						else {
+
+							if(BX.mobileAjax.debug)
+							{
+								console.log("Ajax success: "+ config.xhr);
+							}
+
+							config.onsuccess(config.xhr.responseText);
+							resolve(config.xhr.responseText);
+						}
+
+					}
+					else {
+						var argument = {
+							error: new Error("XMLHTTPRequest error status", config.xhr.status),
+							xhr: config.xhr
+						};
+
+						if(BX.mobileAjax.debug)
+						{
+							console.log("Ajax fail: ", argument);
+						}
+
+						if(typeof config.onfailure === "function")
+						{
+							config.onfailure(argument.error, argument.xhr);
+						}
+						else
+						{
+							reject(argument)
+						}
+					}
+				}
+
+			};
+			BX.mobileAjax.instances[config.xhr.getUniqueId()] = config.xhr;
+			config.xhr.send(config["data"]);
+
 		});
-	}
 
-	MobileAjaxWrapper.prototype.OfflineAlert = function (callback)
+		//to avoid exception which will be thrown if catch-handler will be not defined
+		promise.catch(function(){});
+
+		return promise;
+	};
+
+	BX.mobileAjax.debug = false;
+	BX.mobileAjax.instances = {};
+	BX.mobileAjax.xhrSuccess = function (xhr)
 	{
-		navigator.notification.alert(BX.message('MobileAppOfflineMessage'), (callback || BX.DoNothing), BX.message('MobileAppOfflineTitle'));
-	}
+		return (xhr.status >= 200 && xhr.status < 300) || xhr.status === 304 || xhr.status === 1223
+	};
 
-	BMAjaxWrapper = new MobileAjaxWrapper;
+	BX.mobileAjax.prepareData = function (originalData, prefix)
+	{
+		var data = '';
+		if (null !== originalData)
+		{
+			for (var paramName in originalData)
+			{
+				if (originalData.hasOwnProperty(paramName))
+				{
+					if (data.length > 0)
+						data += '&';
+					var name = encodeURIComponent(paramName);
+					if (prefix)
+						name = prefix + '[' + name + ']';
+					if (typeof originalData[paramName] === 'object')
+						data += BX.mobileAjax.prepareData(originalData[paramName], name);
+					else
+						data += name + '=' + encodeURIComponent(originalData[paramName]);
+				}
+			}
+		}
+		return data;
+	};
+
+	BX.mobileAjax.onreadystatechange = function(data){
+		var id = data["id"];
+		if(BX.mobileAjax.instances[id])
+		{
+			if (data["readyState"])
+			{
+				BX.mobileAjax.instances[id].readyState = data["readyState"];
+			}
+
+			if(data["readyState"] === 4)
+			{
+				BX.mobileAjax.instances[id].responseText = data["responseText"];
+				console.timeEnd(data["id"]);
+			}
+
+			if(data["statusCode"])
+			{
+				BX.mobileAjax.instances[id].status = data["statusCode"];
+			}
+		}
+		if(typeof(BX.mobileAjax.instances[id]["onreadystatechange"]) === "function")
+			BX.mobileAjax.instances[id]["onreadystatechange"].call(BX.mobileAjax.instances[id],[]);
+
+	};
+	BX.mobileAjax.onload = function(data){
+		var id = data["id"];
+		if(BX.mobileAjax.instances[id] && BX.mobileAjax.instances[id]["onload"])
+			BX.mobileAjax.instances[id]["onload"].call(BX.mobileAjax.instances[id],[data]);
+	};
+	BX.mobileAjax.onerror = function(data) {
+		var id = data["id"];
+		if(BX.mobileAjax.instances[id] && BX.mobileAjax.instances[id]["onerror"])
+			BX.mobileAjax.instances[id]["onerror"].call(BX.mobileAjax.instances[id],[data.error])
+	};
+	BX.mobileAjax.send = function(object, data)
+	{
+		BX.mobileAjax.instances[object.getUniqueId()] = object;
+		data["id"] = object.getUniqueId();
+		console.time(data["id"]);
+		Object.keys(BX.mobileAjax.preregistredCallbacks).forEach(function(event){ data[event] = BX.mobileAjax.preregistredCallbacks[event]});
+		app.exec("sendAjax", data, false)
+	};
+
+	BX.mobileAjax.abort = function(object, data)
+	{
+		data["id"] = object.getUniqueId();
+		app.exec("abortAjax", data, false)
+	};
+
+	BX.mobileAjax.registerCallbacks = function(){
+		BX.mobileAjax.preregistredCallbacks = {
+			onreadystatechange: app.RegisterCallBack(BX.mobileAjax.onreadystatechange),
+			onload: app.RegisterCallBack(BX.mobileAjax.onload),
+			onerror: app.RegisterCallBack(BX.mobileAjax.onerror),
+		}
+
+	};
+
+	BX.mobileAjax.registerCallbacks();
+
+	window.BMXMLHttpRequest = function(){
+		this.id = "ajaxId"+Math.random();
+		this.headers = {};
+		this.files = [];
+		this.prepareData = false;
+	};
+	BMXMLHttpRequest.prototype = {
+		open:function(method, url){
+			this.method = method;
+			this.url = url;
+		},
+		setRequestHeader:function(name, value)
+		{
+			this.headers[name] = value;
+		},
+		send:function(requestBody){
+
+			// if(requestBody instanceof FormData)
+			// {
+			// 	var object = {};
+			// 	for(var pair of requestBody.entries()) {
+			// 		console.log(pair);
+			// 		object[pair[0]] = pair[1];
+			// 	}
+			//
+			// 	requestBody = object;
+			// }
+
+			if(this.prepareData === true)
+			{
+				if(typeof requestBody === "object")
+					requestBody = BX.mobileAjax.prepareData(requestBody);
+			}
+
+			var data = {
+				headers: this.headers,
+				body: requestBody,
+				method: this.method,
+				url: this.url,
+				prepareData: this.prepareData,
+				files: this.files
+			};
+
+
+			BX.mobileAjax.send(this, data);
+		},
+		abort:function () {
+			BX.mobileAjax.abort(this, {});
+		},
+		onreadystatechange:null,
+		onload:null,
+		onerror:null,
+		getUniqueId:function(){
+			return this.id;
+		}
+	};
+
+	BMAjaxWrapper = null;
+	BX.ready(function() {
+
+		if (BX.type.isUndefined(BX.Mobile))
+		{
+			return;
+		}
+
+		/**
+		 * @deprecated since version 2.0
+		 */
+		window.MobileAjaxWrapper = function ()
+		{
+			this.instance = new BX.Mobile.Ajax();
+		};
+
+		MobileAjaxWrapper.prototype.Wrap = function (params)
+		{
+			var result = this.instance.instanceWrap(params);
+			this.xhr = this.instance.xhr;
+			return result;
+		};
+
+		MobileAjaxWrapper.prototype.runComponentAction = function(component, action, config, callbacks)
+		{
+			return this.instance.instanceRunComponentAction(component, action, config, callbacks);
+		};
+
+		MobileAjaxWrapper.prototype.runAction = function(action, config, callbacks)
+		{
+			return this.instance.instanceRunAction(action, config, callbacks);
+		};
+
+		MobileAjaxWrapper.prototype.OfflineAlert = function (callback)
+		{
+			navigator.notification.alert(BX.message('MobileAppOfflineMessage'), (callback || BX.DoNothing), BX.message('MobileAppOfflineTitle'));
+		};
+
+		BMAjaxWrapper = new MobileAjaxWrapper;
+	});
 
 	MobileNetworkStatus = function ()
 	{
@@ -2553,11 +2717,8 @@
 
 })();
 
-
 (function ()
 {
-
-
 	function addListener(el, type, listener, useCapture)
 	{
 		if (el.addEventListener)

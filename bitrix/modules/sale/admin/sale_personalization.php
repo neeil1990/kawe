@@ -6,7 +6,14 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
 Loader::includeModule('sale');
 
+if (!\Bitrix\Sale\Configuration::isCanUsePersonalization())
+{
+	LocalRedirect('/bitrix/admin/');
+}
+
 IncludeModuleLangFile(__FILE__);
+
+\Bitrix\Main\UI\Extension::load('ui.fonts.opensans');
 
 // Page header
 $APPLICATION->SetTitle(GetMessage('BIGDATA_PERSONALIZATION'));
@@ -62,7 +69,8 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 	box-sizing:border-box;
 	width:33%;
 	padding-right:40px;
-	font-family:'Open Sans','Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-family: var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-regular, 400);
 	text-align: center;
 	font-size: 16px;
 	padding-top: 22px;
@@ -74,7 +82,8 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 	box-sizing:border-box;
 	width:34%;
 	padding:22px 20px 0;
-	font-family:'Open Sans','Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-family: var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-regular, 400);
 	text-align: center;
 	font-size: 16px;
 	/*padding-top: 25px;*/
@@ -86,7 +95,8 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 	box-sizing:border-box;
 	width:33%;
 	padding-left:40px;
-	font-family:'Open Sans','Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-family: var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-regular, 400);
 	text-align: center;
 	font-size: 16px;
 	padding-top: 22px;
@@ -106,10 +116,12 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 	vertical-align: middle;
 	font-size: 24px;
 	text-align: center;
-	font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-regular, 400);
 }
 .adm-c-bigdata-activate-content{
-	font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-regular, 400);
 	padding: 30px;
 	background: #fff;
 }
@@ -117,9 +129,8 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 	list-style: none;
 }
 .adm-c-bigdata-activate-content-task-list li{
-	font-size: 18px;
-	font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
-	font-weight: 300;
+	font-family: var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-regular, 400);
 	margin-bottom: 14px;
 	display: block;
 	position: relative;
@@ -173,7 +184,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 	vertical-align: middle;
 	font-size: 18px;
 	text-decoration: none;
-	font-weight: bold;
+	font-weight: var(--ui-font-weight-bold);
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 	text-shadow:0 1px 1px #789d1c;
 }
@@ -200,7 +211,9 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 
 	<div class="adm-c-bigdata-title-box">
 		<h2><?=GetMessage('BIGDATA_CONVERT')?></h2>
-		<div class="adm-c-bigdata-mac"><iframe width="389" height="245" src="//www.youtube.com/embed/AtNZQGbkjHI?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe></div>
+		<?if (\Bitrix\Main\Application::getInstance()->getLicense()->getRegion() !== 'ua'):?>
+			<div class="adm-c-bigdata-mac"><iframe width="389" height="245" src="//www.youtube.com/embed/AtNZQGbkjHI?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe></div>
+		<?endif;?>
 	</div>
 
 	<div class="adm-c-bigdata-content">
@@ -255,7 +268,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 				}
 				elseif (!$installed)
 				{
-					$goUrl = 'https://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&LESSON_ID=5367';
+					$goUrl = 'https://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=42&CHAPTER_ID=05367';
 				}
 			?>
 

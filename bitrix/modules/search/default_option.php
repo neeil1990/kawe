@@ -9,6 +9,7 @@ $search_default_option = array(
 	"agent_duration" => 2,
 	"letters" => "-",
 	"max_result_size" => 500,
+	"max_body_size" => 100000,
 	"page_tag_property" => "tags",
 	"suggest_save_days" => 30,
 	"stat_phrase" => "Y",

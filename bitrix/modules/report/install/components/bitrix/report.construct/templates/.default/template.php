@@ -4,7 +4,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
 $APPLICATION->SetTitle(GetMessage('REPORT_CONSTRUCT'));
 
-CJSCore::Init(array('report', 'socnetlogdest'));
+CJSCore::Init(['ui.design-tokens', 'ui.fonts.opensans', 'report', 'socnetlogdest',]);
 
 $jsClass = 'ReportConstructClass_'.$arResult['randomString'];
 
@@ -91,8 +91,6 @@ initReportControls();
 
 <div class="reports-constructor">
 
-
-
 <!-- period -->
 <div class="webform-main-fields">
 	<div class="webform-corners-top">
@@ -142,6 +140,14 @@ initReportControls();
 		?>
 		<span class="filter-date-interval"><span class="filter-date-interval-from-wrap"><input type="text" class="filter-date-interval-from" name="F_DATE_FROM" id="REPORT_INTERVAL_F_DATE_FROM" value="<?=$_date_from?>" /><a class="filter-date-interval-calendar" href="" title="<?php echo GetMessage("REPORT_CALEND_PICK_DATE")?>" id="filter-date-interval-calendar-from"><img border="0" src="/bitrix/js/main/core/images/calendar-icon.gif" alt="<?php echo GetMessage("REPORT_CALEND_PICK_DATE")?>"/></a></span><span class="filter-date-interval-hellip">&hellip;</span><span class="filter-date-interval-to-wrap"><input type="text" class="filter-date-interval-to" name="F_DATE_TO" id="REPORT_INTERVAL_F_DATE_TO" value="<?=$_date_to?>" /><a href="" class="filter-date-interval-calendar" title="<?php echo GetMessage("REPORT_CALEND_PICK_DATE")?>" id="filter-date-interval-calendar-to"><img border="0" src="/bitrix/js/main/core/images/calendar-icon.gif" alt="<?php echo GetMessage("REPORT_CALEND_PICK_DATE")?>"/></a></span></span>
 		<span class="filter-day-interval<?php if ($arResult["preSettings"]["period"]['type'] == "days"):?> filter-day-interval-selected<?php endif?>"><input type="text" size="5" class="filter-date-days" value="<?php echo $arResult["preSettings"]["period"]['type'] == "days" ? $arResult["preSettings"]["period"]['value'] : ""?>" name="F_DATE_DAYS" /> <?php echo GetMessage("REPORT_CALEND_REPORT_DAYS")?></span>
+		<div class="report-period-hidden">
+			<input type="hidden" name="period_hidden" value="N">
+			<input type="checkbox" <?=($arResult['preSettings']['period']['hidden'] === 'Y')?'checked="checked" ':''?>
+				class="reports-checkbox" id="report-period-hidden-checkbox" name="period_hidden" value="Y" />
+			<span class="reports-limit-res-select-lable">
+				<label for="report-period-hidden-checkbox"><?=GetMessage('REPORT_PERIOD_HIDDEN')?></label>
+			</span>
+		</div>
 
 	</div>
 </div>
@@ -189,17 +195,17 @@ initReportControls();
 				BX('reports-add_col-popup-cont'),
 				{tag:'input', attr:{type:'checkbox', name:'<?=CUtil::JSEscape($selElem['name'])?>'}}, true
 			),
-			'<?=strlen($selElem['aggr']) ? CUtil::JSEscape($selElem['aggr']) : ''?>',
-			'<?=strlen($selElem['alias']) ? CUtil::JSEscape($selElem['alias']) : ''?>',
+			'<?=$selElem['aggr'] <> ''? CUtil::JSEscape($selElem['aggr']) : ''?>',
+			'<?=$selElem['alias'] <> ''? CUtil::JSEscape($selElem['alias']) : ''?>',
 			<?=$num?>,
 			<?=($selElem['grouping']) ? 'true' : 'false'?>,
 			<?=($selElem['grouping_subtotal']) ? 'true' : 'false'?>);
 		<? endforeach; ?>
 
 		<? foreach ($arResult['preSettings']['select'] as $num => $selElem): ?>
-			<? if (strlen($selElem['prcnt'])): ?>
-				setPrcntView(<?=$num?>, '<?=CUtil::JSEscape($selElem['prcnt'])?>');
-			<? endif; ?>
+			<? if ($selElem['prcnt'] <> ''): ?>
+		setPrcntView(<?=$num?>, '<?=CUtil::JSEscape($selElem['prcnt'])?>');
+		<? endif; ?>
 		<? endforeach; ?>
 
 		<? if (array_key_exists("sort", $arResult["preSettings"])): ?>
@@ -284,7 +290,7 @@ initReportControls();
 		$helperClassName = isset($arParams['REPORT_HELPER_CLASS']) ? $arParams['REPORT_HELPER_CLASS'] : '';
 		if ($helperClassName != '')
 		{
-			$classNamePrefix = substr($helperClassName, 0, 7);
+			$classNamePrefix = mb_substr($helperClassName, 0, 7);
 			if ($classNamePrefix === 'CTasksR' || $classNamePrefix === 'CCrmRep')
 				$bShowRedNegValsOption = false;
 		}
@@ -382,7 +388,7 @@ initReportControls();
 		#report-chart-display-checkbox {vertical-align: middle;}
 		#report-chart-switch label {vertical-align: middle;}
 
-		.webform-additional-fields { margin-bottom: 5px; }
+		.webform-additional-fields { margin-bottom: 15px; }
 		#report-chart-params { padding-top: 19px; }
 		.chart-config-label {
 			color: #303030/*#555555*/;
@@ -391,6 +397,16 @@ initReportControls();
 		}
 		#report-chart-config .reports-content-block-title { padding: 0 0 5px 1px; }
 		.popup-window-close-icon {  margin-top: 0;}
+		.reports-filter-item .money-editor input[type=text] { height: 16px; }
+		.reports-filter-item .money-editor select {
+			padding: 1px;
+			border-width: 1px;
+			height: 22px;
+			margin-left: 2px;
+		}
+		.report-period-hidden {
+			padding: 5px 5px 5px 0;
+		}
 	</style>
 <?php $fDisplayChart = $arResult['preSettings']['chart']['display']; ?>
 	<div id="report-chart-config" class="webform-additional-fields">
@@ -807,9 +823,7 @@ initReportControls();
 <div class="reports-preview-table-report" id="reports-preview-table-report">
 	<span class="reports-prev-table-title"><?=GetMessage('REPORT_SCHEME_PREVIEW')?></span>
 
-	<div class="reports-list">
-		<div class="reports-list-left-corner"></div>
-		<div class="reports-list-right-corner"></div>
+	<div class="reports-list-preview">
 		<table cellspacing="0" class="reports-list-table">
 			<tr>
 				<th></th>
@@ -835,12 +849,22 @@ initReportControls();
 	</div>
 </div>
 
-<!-- choose filter column popup -->
+<!-- choose filter column popup --><?php
+$refChooseParam = call_user_func([$arParams['REPORT_HELPER_CLASS'], 'getFiltrableColumnGroups']);
+if (!is_array($refChooseParam) || empty($refChooseParam))
+{
+	$refChooseParam = true;
+}
+?>
 <div class="reports-add_col-popup-cont reports-add_filcol-popup-cont" id="reports-add_filcol-popup-cont" style="display:none;">
 	<div class="reports-add_col-popup-title"><?=GetMessage('REPORT_POPUP_FILTER_TITLE')?></div>
 	<div class="popup-window-hr popup-window-buttons-hr"><i></i></div>
 	<div class="reports-add_col-popup">
-		<?=call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'buildHTMLSelectTreePopup'), $arResult['fieldsTree'], true)?>
+		<?php echo call_user_func(
+			[$arParams['REPORT_HELPER_CLASS'], 'buildHTMLSelectTreePopup'],
+			$arResult['fieldsTree'],
+			$refChooseParam
+		); ?>
 	</div>
 </div>
 
@@ -990,32 +1014,6 @@ initReportControls();
 
 </div>
 
-<!-- filter value control examples for UF enumerations -->
-<div id="report-filter-value-control-examples-ufenums" style="display: none">
-	<?
-	if (is_array($arResult['ufEnumerations'])):
-		foreach ($arResult['ufEnumerations'] as $ufId => $enums):
-			foreach ($enums as $fieldKey => $enum):
-	?>
-	<span name="report-filter-value-control-<?=($ufId.'_'.$fieldKey)?>" class="report-filter-vcc">
-		<select class="reports-filter-select-small" name="value">
-			<option value=""><?=GetMessage('REPORT_IGNORE_FILTER_VALUE')?></option>
-	<?
-				foreach ($enum as $itemId => $itemInfo):
-	?>
-			<option value="<?=$itemId?>"><?=$itemInfo['VALUE']?></option>
-	<?
-				endforeach;
-	?>
-		</select>
-	</span>
-	<?
-			endforeach;
-		endforeach;
-	endif;
-	?>
-</div>
-
 <!-- user selector -->
 
 <script type="text/javascript">
@@ -1101,6 +1099,7 @@ $name = $APPLICATION->IncludeComponent(
 	</a>
 	&nbsp;
 	<? endif ?>
+
 	<a class="webform-small-button webform-small-button-blue webform-small-button-back"
 		href="<?=CComponentEngine::MakePathFromTemplate($arParams["PATH_TO_REPORT_LIST"], array());?>">
 		<span class="webform-small-button-icon"></span>

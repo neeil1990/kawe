@@ -1,4 +1,5 @@
-<? if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
+<?php
+if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
 
 /**
  * @var string $componentPath
@@ -8,12 +9,17 @@
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
 use Bitrix\Main\Web\Json;
+use Bitrix\Iblock;
 
 if (!Loader::includeModule('iblock'))
 	return;
 
 $boolCatalog = Loader::includeModule('catalog');
 CBitrixComponent::includeComponentClass($componentName);
+
+$usePropertyFeatures = Iblock\Model\PropertyFeature::isEnabledFeatures();
+
+$iblockExists = (!empty($arCurrentValues['IBLOCK_ID']) && (int)$arCurrentValues['IBLOCK_ID'] > 0);
 
 $defaultValue = array('-' => GetMessage('CP_BCT_TPL_PROP_EMPTY'));
 $viewModeList = array(
@@ -54,7 +60,7 @@ if (!empty($viewModeValue))
 		'black' => GetMessage('CP_BCT_TPL_THEME_BLACK')
 	);
 
-	$dir = trim(preg_replace("'[\\\\/]+'", "/", dirname(__FILE__).'/'.ToLower($arCurrentValues['VIEW_MODE']).'/themes/'));
+	$dir = trim(preg_replace("'[\\\\/]+'", "/", __DIR__.'/'.ToLower($arCurrentValues['VIEW_MODE']).'/themes/'));
 	if (is_dir($dir))
 	{
 		foreach ($arThemesList as $themeID => $themeName)
@@ -78,7 +84,7 @@ if (!empty($viewModeValue))
 
 $arSKU = false;
 $boolSKU = false;
-if ($boolCatalog && isset($arCurrentValues['IBLOCK_ID']) && intval($arCurrentValues['IBLOCK_ID']) > 0)
+if ($boolCatalog && $iblockExists)
 {
 	$arSKU = CCatalogSku::GetInfoByProductIBlock($arCurrentValues['IBLOCK_ID']);
 	$boolSKU = !empty($arSKU) && is_array($arSKU);
@@ -105,7 +111,7 @@ $arAllPropList = array();
 $arFilePropList = array();
 $arListPropList = array();
 
-if (isset($arCurrentValues['IBLOCK_ID']) && 0 < intval($arCurrentValues['IBLOCK_ID']))
+if ($iblockExists)
 {
 	$rsProps = CIBlockProperty::GetList(
 		array('SORT' => 'ASC', 'ID' => 'ASC'),
@@ -131,11 +137,31 @@ if (isset($arCurrentValues['IBLOCK_ID']) && 0 < intval($arCurrentValues['IBLOCK_
 			$arListPropList[$arProp['CODE']] = $strPropName;
 		}
 
-		if (!empty($arCurrentValues['PROPERTY_CODE']))
+		$showedProperties = [];
+		if ($usePropertyFeatures)
+		{
+			if ($iblockExists)
+			{
+				$showedProperties = Iblock\Model\PropertyFeature::getListPageShowPropertyCodes(
+					$arCurrentValues['IBLOCK_ID'],
+					['CODE' => 'Y']
+				);
+				if ($showedProperties === null)
+					$showedProperties = [];
+			}
+		}
+		else
+		{
+			if (!empty($arCurrentValues['PROPERTY_CODE']) && is_array($arCurrentValues['PROPERTY_CODE']))
+			{
+				$showedProperties = $arCurrentValues['PROPERTY_CODE'];
+			}
+		}
+		if (!empty($showedProperties))
 		{
 			$selected = array();
 
-			foreach ($arCurrentValues['PROPERTY_CODE'] as $code)
+			foreach ($showedProperties as $code)
 			{
 				if (isset($arAllPropList[$code]))
 				{
@@ -151,6 +177,7 @@ if (isset($arCurrentValues['IBLOCK_ID']) && 0 < intval($arCurrentValues['IBLOCK_
 				'VALUES' => $selected
 			);
 		}
+		unset($showedProperties);
 	}
 
 	$arTemplateParameters['ADD_PICT_PROP'] = array(
@@ -164,7 +191,7 @@ if (isset($arCurrentValues['IBLOCK_ID']) && 0 < intval($arCurrentValues['IBLOCK_
 		'VALUES' => $defaultValue + $arFilePropList
 	);
 
-	if ($viewModeValue === 'SECTION')
+	if ($viewModeValue === 'SECTION' || $viewModeValue === 'SLIDER')
 	{
 		$arTemplateParameters['LABEL_PROP'] = array(
 			'PARENT' => 'VISUAL',
@@ -276,16 +303,19 @@ if (isset($arCurrentValues['IBLOCK_ID']) && 0 < intval($arCurrentValues['IBLOCK_
 			'DEFAULT' => '-',
 			'VALUES' => $arFileOfferPropList
 		);
-		$arTemplateParameters['OFFER_TREE_PROPS'] = array(
-			'PARENT' => 'VISUAL',
-			'NAME' => GetMessage('CP_BCT_TPL_OFFER_TREE_PROPS'),
-			'TYPE' => 'LIST',
-			'MULTIPLE' => 'Y',
-			'ADDITIONAL_VALUES' => 'N',
-			'REFRESH' => 'N',
-			'DEFAULT' => '-',
-			'VALUES' => $arTreeOfferPropList
-		);
+		if (!$usePropertyFeatures)
+		{
+			$arTemplateParameters['OFFER_TREE_PROPS'] = array(
+				'PARENT' => 'VISUAL',
+				'NAME' => GetMessage('CP_BCT_TPL_OFFER_TREE_PROPS'),
+				'TYPE' => 'LIST',
+				'MULTIPLE' => 'Y',
+				'ADDITIONAL_VALUES' => 'N',
+				'REFRESH' => 'N',
+				'DEFAULT' => '-',
+				'VALUES' => $arTreeOfferPropList
+			);
+		}
 	}
 }
 
@@ -351,7 +381,7 @@ if ($boolCatalog)
 			);
 		}
 	}
-	
+
 	$arTemplateParameters['ADD_TO_BASKET_ACTION'] = array(
 		'PARENT' => 'BASKET',
 		'NAME' => GetMessage('CP_BCT_TPL_ADD_TO_BASKET_ACTION'),
@@ -371,7 +401,7 @@ if ($boolCatalog)
 	);
 }
 
-if ($viewModeValue === 'SLIDER' || $viewModeValue === 'BANNER')
+if ($viewModeValue === 'SECTION' || $viewModeValue === 'SLIDER')
 {
 	$arTemplateParameters['ROTATE_TIMER'] = array(
 		'PARENT' => 'VISUAL',
@@ -385,10 +415,6 @@ if ($viewModeValue === 'SLIDER' || $viewModeValue === 'BANNER')
 		'TYPE' => 'CHECKBOX',
 		'DEFAULT' => 'Y'
 	);
-}
-
-if ($viewModeValue === 'SECTION')
-{
 	$arTemplateParameters['PRODUCT_SUBSCRIPTION'] = array(
 		'PARENT' => 'VISUAL',
 		'NAME' => GetMessage('CP_BCT_TPL_PRODUCT_SUBSCRIPTION'),
@@ -420,6 +446,7 @@ if ($viewModeValue === 'SECTION')
 
 	$lineElementCount = (int)$arCurrentValues['LINE_ELEMENT_COUNT'] ?: 3;
 	$pageElementCount = (int)$arCurrentValues['ELEMENT_COUNT'] ?: 9;
+	$variantsMap = $viewModeValue === 'SLIDER' ? CatalogTopComponent::getTemplateVariantsMapForSlider() : CatalogTopComponent::getTemplateVariantsMap();
 
 	$arTemplateParameters['PRODUCT_ROW_VARIANTS'] = array(
 		'PARENT' => 'VISUAL',
@@ -435,7 +462,7 @@ if ($viewModeValue === 'SECTION')
 			'quantity' => GetMessage('CP_BCT_TPL_SETTINGS_QUANTITY'),
 			'quantityBigData' => GetMessage('CP_BCT_TPL_SETTINGS_QUANTITY_BIG_DATA')
 		)),
-		'JS_DATA' => Json::encode(CatalogTopComponent::getTemplateVariantsMap()),
+		'JS_DATA' => Json::encode($variantsMap),
 		'DEFAULT' => Json::encode(CatalogTopComponent::predictRowVariants($lineElementCount, $pageElementCount))
 	);
 	$arTemplateParameters['ENLARGE_PRODUCT'] = array(
@@ -578,3 +605,9 @@ $arTemplateParameters['MESS_NOT_AVAILABLE'] = array(
 	'TYPE' => 'STRING',
 	'DEFAULT' => GetMessage('CP_BCT_TPL_MESS_NOT_AVAILABLE_DEFAULT')
 );
+$arTemplateParameters['MESS_NOT_AVAILABLE_SERVICE'] = [
+	'PARENT' => 'VISUAL',
+	'NAME' => GetMessage('CP_BCT_TPL_MESS_NOT_AVAILABLE_SERVICE'),
+	'TYPE' => 'STRING',
+	'DEFAULT' => GetMessage('CP_BCT_TPL_MESS_NOT_AVAILABLE_SERVICE_DEFAULT'),
+];

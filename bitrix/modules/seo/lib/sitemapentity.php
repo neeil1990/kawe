@@ -12,6 +12,19 @@ use Bitrix\Main\Entity;
 /**
  * Class SitemapEntityTable
  * @package Bitrix\Seo
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_SitemapEntity_Query query()
+ * @method static EO_SitemapEntity_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_SitemapEntity_Result getById($id)
+ * @method static EO_SitemapEntity_Result getList(array $parameters = array())
+ * @method static EO_SitemapEntity_Entity getEntity()
+ * @method static \Bitrix\Seo\EO_SitemapEntity createObject($setDefaultValues = true)
+ * @method static \Bitrix\Seo\EO_SitemapEntity_Collection createCollection()
+ * @method static \Bitrix\Seo\EO_SitemapEntity wakeUpObject($row)
+ * @method static \Bitrix\Seo\EO_SitemapEntity_Collection wakeUpCollection($rows)
  */
 class SitemapEntityTable extends Entity\DataManager
 {
@@ -88,7 +101,7 @@ class SitemapEntityTable extends Entity\DataManager
 			$arSitemaps = array();
 			while($arRes = $dbRes->fetch())
 			{
-				$arRes["SITEMAP_SETTINGS"] = unserialize($arRes['SITEMAP_SETTINGS']);
+				$arRes["SITEMAP_SETTINGS"] = unserialize($arRes['SITEMAP_SETTINGS'], ['allowed_classes' => false]);
 				self::$entityCache[$entityId][] = $arRes;
 				if ($arRes["SITEMAP_SETTINGS"][static::ENTITY_TYPE."_ACTIVE"] &&
 					$arRes["SITEMAP_SETTINGS"][static::ENTITY_TYPE."_ACTIVE"][$entityId] == "Y")

@@ -164,7 +164,7 @@ class Spotlight
 	private function getRegisterDate($userId)
 	{
 		$user = $this->getUser($userId);
-		return $user ? $user["DATE_REGISTER"]->getTimestamp() : false;
+		return $user && isset($user["DATE_REGISTER"]) ? $user["DATE_REGISTER"]->getTimestamp() : false;
 	}
 
 	private function getUserId($userId = false)
@@ -223,7 +223,7 @@ class Spotlight
 		$refClass = new \ReflectionClass(__CLASS__);
 		foreach ($refClass->getConstants() as $name => $value)
 		{
-			if (substr($name, 0, 9) === "USER_TYPE")
+			if (mb_substr($name, 0, 9) === "USER_TYPE")
 			{
 				$types[] = $value;
 			}

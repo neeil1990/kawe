@@ -6,7 +6,7 @@ if (empty($arResult))
 if (isset($arParams["MENU_THEME"]) && !empty($arParams["MENU_THEME"]))
 {
 	$arAvailableThemes = array();
-	$dir = trim(preg_replace("'[\\\\/]+'", "/", dirname(__FILE__)."/themes/"));
+	$dir = trim(preg_replace("'[\\\\/]+'", "/", __DIR__."/themes/"));
 	if (is_dir($dir) && $directory = opendir($dir))
 	{
 		while (($file = readdir($directory)) !== false)
@@ -83,6 +83,11 @@ if(!function_exists("FillAllPicturesAndDescriptions"))
 				}
 			}
 		}
+
+		$pictureLevel_1 = "";
+		$descriptionLevel_1 = "";
+		$pictureLevel_2 = "";
+		$descriptionLevel_2 = "";
 
 		foreach($arAllItems as $itemID=>$arItem)
 		{

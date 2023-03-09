@@ -83,8 +83,8 @@ else
 	}
 }
 
-if (isset($arParams["TRANSLIT_REPLACE_CHAR"]) && strlen($arParams["TRANSLIT_REPLACE_CHAR"]) > 0)
-	$replaceChar = substr($arParams["TRANSLIT_REPLACE_CHAR"], 0, 1);
+if (isset($arParams["TRANSLIT_REPLACE_CHAR"]) && $arParams["TRANSLIT_REPLACE_CHAR"] <> '')
+	$replaceChar = mb_substr($arParams["TRANSLIT_REPLACE_CHAR"], 0, 1);
 else
 	$replaceChar = '_';
 
@@ -179,15 +179,15 @@ $FILE_NAME = false;
 $ABS_FILE_NAME = false;
 $WORK_DIR_NAME = false;
 
-if ($arParams["USE_TEMP_DIR"] === "Y" && strlen($_SESSION["BX_CML2_IMPORT"]["TEMP_DIR"]) > 0)
+if ($arParams["USE_TEMP_DIR"] === "Y" && $_SESSION["BX_CML2_IMPORT"]["TEMP_DIR"] <> '')
 	$DIR_NAME = $_SESSION["BX_CML2_IMPORT"]["TEMP_DIR"];
 else
 	$DIR_NAME = $_SERVER["DOCUMENT_ROOT"]."/".COption::GetOptionString("main", "upload_dir", "upload")."/1c_catalog/";
 
 if (
 	isset($_GET["filename"])
-	&& (strlen($_GET["filename"]) > 0)
-	&& (strlen($DIR_NAME) > 0)
+	&& ($_GET["filename"] <> '')
+	&& ($DIR_NAME <> '')
 )
 {
 	//This check for 1c server on linux
@@ -203,10 +203,10 @@ if (
 	if (!$bBadFile)
 	{
 		$FILE_NAME = rel2abs($DIR_NAME, "/".$filename);
-		if ((strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename))
+		if ((mb_strlen($FILE_NAME) > 1) && ($FILE_NAME === "/".$filename))
 		{
 			$ABS_FILE_NAME = $DIR_NAME.$filename;
-			$WORK_DIR_NAME = substr($ABS_FILE_NAME, 0, strrpos($ABS_FILE_NAME, "/")+1);
+			$WORK_DIR_NAME = mb_substr($ABS_FILE_NAME, 0, mb_strrpos($ABS_FILE_NAME, "/") + 1);
 		}
 	}
 }
@@ -292,7 +292,7 @@ elseif (($_GET["mode"] == "file") && $ABS_FILE_NAME)
 {
 	//Read http data
 	$DATA = file_get_contents("php://input");
-	$DATA_LEN = defined("BX_UTF")? mb_strlen($DATA, 'latin1'): strlen($DATA);
+	$DATA_LEN = defined("BX_UTF")? mb_strlen($DATA, 'latin1') : mb_strlen($DATA);
 
 	//And save it the file
 	if (isset($DATA) && $DATA !== false)
@@ -347,19 +347,43 @@ elseif (($_GET["mode"] == "import") && $_SESSION["BX_CML2_IMPORT"]["zip"])
 //Step by step import
 elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 {
+	if (!isset($arParams['IBLOCK_CACHE_MODE']))
+		$arParams['IBLOCK_CACHE_MODE'] = CIBlockCMLImport::IBLOCK_CACHE_NORMAL;
+	if (!in_array($arParams['IBLOCK_CACHE_MODE'], CIBlockCMLImport::getIblockCacheModeList(false)))
+		$arParams['IBLOCK_CACHE_MODE'] = CIBlockCMLImport::IBLOCK_CACHE_NORMAL;
+
 	$NS = &$_SESSION["BX_CML2_IMPORT"]["NS"];
 	$strError = "";
 	$strMessage = "";
 
+	$importParameters = [
+		"files_dir" => $WORK_DIR_NAME,
+		"use_crc" => $arParams["USE_CRC"],
+		"preview" => $preview,
+		"detail" => $detail,
+		"use_offers" => $arParams["USE_OFFERS"],
+		"force_offers" => $arParams["FORCE_OFFERS"],
+		"use_iblock_type_id" => $arParams["USE_IBLOCK_TYPE_ID"],
+		"translit_on_add" => $arParams["TRANSLIT_ON_ADD"],
+		"translit_on_update" => $arParams["TRANSLIT_ON_UPDATE"],
+		"translit_params" => $arTranslitParams,
+		"skip_root_section" => $arParams["SKIP_ROOT_SECTION"],
+		"disable_change_price_name" => $arParams["DISABLE_CHANGE_PRICE_NAME"],
+		"table_name" => CBitrixCatalogImport1C::XML_TREE_TABLE_NAME,
+		"iblock_cache_mode" => $arParams["IBLOCK_CACHE_MODE"]
+	];
+
 	if ($NS["STEP"] < 1)
 	{
-		CIBlockXMLFile::DropTemporaryTables();
+		$obXMLFile = new CIBlockXMLFile(CBitrixCatalogImport1C::XML_TREE_TABLE_NAME);
+		$obXMLFile->DropTemporaryTables();
 		$strMessage = GetMessage("CC_BSC1_TABLES_DROPPED");
 		$NS["STEP"] = 1;
 	}
 	elseif ($NS["STEP"] == 1)
 	{
-		if (CIBlockXMLFile::CreateTemporaryTables())
+		$obXMLFile = new CIBlockXMLFile(CBitrixCatalogImport1C::XML_TREE_TABLE_NAME);
+		if ($obXMLFile->CreateTemporaryTables())
 		{
 			$strMessage = GetMessage("CC_BSC1_TABLES_CREATED");
 			$NS["STEP"] = 2;
@@ -381,7 +405,7 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 
 		if (($total > 0) && is_resource($fp))
 		{
-			$obXMLFile = new CIBlockXMLFile;
+			$obXMLFile = new CIBlockXMLFile(CBitrixCatalogImport1C::XML_TREE_TABLE_NAME);
 			if ($obXMLFile->ReadXMLToDatabase($fp, $NS, $arParams["INTERVAL"]))
 			{
 				$NS["STEP"] = 3;
@@ -400,7 +424,7 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 	}
 	elseif ($NS["STEP"] == 3)
 	{
-		$obXMLFile = new CIBlockXMLFile;
+		$obXMLFile = new CIBlockXMLFile(CBitrixCatalogImport1C::XML_TREE_TABLE_NAME);
 		if ($obXMLFile->IndexTemporaryTables())
 		{
 			$strMessage = GetMessage("CC_BSC1_INDEX_CREATED");
@@ -412,23 +436,13 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 	elseif ($NS["STEP"] == 4)
 	{
 		$obCatalog = new CIBlockCMLImport;
-		$obCatalog->InitEx($NS, array(
-			"files_dir" => $WORK_DIR_NAME,
-			"use_crc" => $arParams["USE_CRC"],
-			"preview" => $preview,
-			"detail" => $detail,
-			"use_offers" => $arParams["USE_OFFERS"],
-			"force_offers" => $arParams["FORCE_OFFERS"],
-			"use_iblock_type_id" => $arParams["USE_IBLOCK_TYPE_ID"],
-			"translit_on_add" => $arParams["TRANSLIT_ON_ADD"],
-			"translit_on_update" => $arParams["TRANSLIT_ON_UPDATE"],
-			"translit_params" => $arTranslitParams,
-			"skip_root_section" => $arParams["SKIP_ROOT_SECTION"],
-			"disable_change_price_name" => $arParams["DISABLE_CHANGE_PRICE_NAME"]
-		));
+		$obCatalog->InitEx($NS, $importParameters);
+		CIBlock::disableClearTagCache();
 		$result = $obCatalog->ImportMetaData(array(1,2), $arParams["IBLOCK_TYPE"], $arParams["SITE_LIST"]);
+		CIBlock::enableClearTagCache();
 		if ($result === true)
 		{
+			$obCatalog->clearIblockCacheOnHit();
 			$strMessage = GetMessage("CC_BSC1_METADATA_IMPORTED");
 			$NS["STEP"] = 5;
 		}
@@ -444,21 +458,11 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 	elseif ($NS["STEP"] == 5)
 	{
 		$obCatalog = new CIBlockCMLImport;
-		$obCatalog->InitEx($NS, array(
-			"files_dir" => $WORK_DIR_NAME,
-			"use_crc" => $arParams["USE_CRC"],
-			"preview" => $preview,
-			"detail" => $detail,
-			"use_offers" => $arParams["USE_OFFERS"],
-			"force_offers" => $arParams["FORCE_OFFERS"],
-			"use_iblock_type_id" => $arParams["USE_IBLOCK_TYPE_ID"],
-			"translit_on_add" => $arParams["TRANSLIT_ON_ADD"],
-			"translit_on_update" => $arParams["TRANSLIT_ON_UPDATE"],
-			"translit_params" => $arTranslitParams,
-			"skip_root_section" => $arParams["SKIP_ROOT_SECTION"],
-			"disable_change_price_name" => $arParams["DISABLE_CHANGE_PRICE_NAME"]
-		));
+		$obCatalog->InitEx($NS, $importParameters);
+		$obCatalog->freezeIblockCache();
 		$result = $obCatalog->ImportSections();
+		$obCatalog->unFreezeIblockCache();
+		$obCatalog->clearIblockCacheOnHit();
 		if ($result === true)
 		{
 			$strMessage = GetMessage("CC_BSC1_SECTIONS_IMPORTED");
@@ -472,22 +476,12 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 	elseif ($NS["STEP"] == 6)
 	{
 		$obCatalog = new CIBlockCMLImport;
-		$obCatalog->InitEx($NS, array(
-			"files_dir" => $WORK_DIR_NAME,
-			"use_crc" => $arParams["USE_CRC"],
-			"preview" => $preview,
-			"detail" => $detail,
-			"use_offers" => $arParams["USE_OFFERS"],
-			"force_offers" => $arParams["FORCE_OFFERS"],
-			"use_iblock_type_id" => $arParams["USE_IBLOCK_TYPE_ID"],
-			"translit_on_add" => $arParams["TRANSLIT_ON_ADD"],
-			"translit_on_update" => $arParams["TRANSLIT_ON_UPDATE"],
-			"translit_params" => $arTranslitParams,
-			"skip_root_section" => $arParams["SKIP_ROOT_SECTION"],
-			"disable_change_price_name" => $arParams["DISABLE_CHANGE_PRICE_NAME"]
-		));
+		$obCatalog->InitEx($NS, $importParameters);
+		$obCatalog->freezeIblockCache();
 		$obCatalog->DeactivateSections($arParams["SECTION_ACTION"]);
 		$obCatalog->SectionsResort();
+		$obCatalog->unFreezeIblockCache();
+		$obCatalog->clearIblockCacheOnHit();
 		$strMessage = GetMessage("CC_BSC1_SECTION_DEA_DONE");
 		$NS["STEP"] = 7;
 	}
@@ -495,9 +489,10 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 	{
 		if (($NS["DONE"]["ALL"] <= 0) && $NS["XML_ELEMENTS_PARENT"])
 		{
-			if (CIBlockXMLFile::IsExistTemporaryTable())
+			$obXMLFile = new CIBlockXMLFile(CBitrixCatalogImport1C::XML_TREE_TABLE_NAME);
+			if ($obXMLFile->IsExistTemporaryTable())
 			{
-				$NS["DONE"]["ALL"] = CIBlockXMLFile::GetCountItemsWithParent($NS["XML_ELEMENTS_PARENT"]);
+				$NS["DONE"]["ALL"] = $obXMLFile->GetCountItemsWithParent($NS["XML_ELEMENTS_PARENT"]);
 			}
 			else
 			{
@@ -508,22 +503,12 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 		if ($strError == "")
 		{
 			$obCatalog = new CIBlockCMLImport;
-			$obCatalog->InitEx($NS, array(
-				"files_dir" => $WORK_DIR_NAME,
-				"use_crc" => $arParams["USE_CRC"],
-				"preview" => $preview,
-				"detail" => $detail,
-				"use_offers" => $arParams["USE_OFFERS"],
-				"force_offers" => $arParams["FORCE_OFFERS"],
-				"use_iblock_type_id" => $arParams["USE_IBLOCK_TYPE_ID"],
-				"translit_on_add" => $arParams["TRANSLIT_ON_ADD"],
-				"translit_on_update" => $arParams["TRANSLIT_ON_UPDATE"],
-				"translit_params" => $arTranslitParams,
-				"skip_root_section" => $arParams["SKIP_ROOT_SECTION"],
-				"disable_change_price_name" => $arParams["DISABLE_CHANGE_PRICE_NAME"]
-			));
+			$obCatalog->InitEx($NS, $importParameters);
+			$obCatalog->freezeIblockCache();
 			$obCatalog->ReadCatalogData($_SESSION["BX_CML2_IMPORT"]["SECTION_MAP"], $_SESSION["BX_CML2_IMPORT"]["PRICES_MAP"]);
 			$result = $obCatalog->ImportElements($start_time, $arParams["INTERVAL"]);
+			$obCatalog->unFreezeIblockCache();
+			$obCatalog->clearIblockCacheOnHit();
 
 			$counter = 0;
 			foreach ($result as $key=>$value)
@@ -537,7 +522,7 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 				$strMessage = GetMessage("CC_BSC1_DONE");
 				$NS["STEP"] = 8;
 			}
-			elseif (strlen($obCatalog->LAST_ERROR))
+			elseif($obCatalog->LAST_ERROR <> '')
 			{
 				$strError = $obCatalog->LAST_ERROR;
 			}
@@ -550,8 +535,11 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 	elseif ($NS["STEP"] == 8)
 	{
 		$obCatalog = new CIBlockCMLImport;
-		$obCatalog->Init($NS);
+		$obCatalog->InitEx($NS, $importParameters);
+		$obCatalog->freezeIblockCache();
 		$result = $obCatalog->DeactivateElement($arParams["ELEMENT_ACTION"], $start_time, $arParams["INTERVAL"]);
+		$obCatalog->unFreezeIblockCache();
+		$obCatalog->clearIblockCacheOnHit();
 
 		$counter = 0;
 		foreach ($result as $key=>$value)
@@ -586,6 +574,9 @@ elseif (($_GET["mode"] == "import") && $ABS_FILE_NAME)
 	}
 	else
 	{
+		$obCatalog = new CIBlockCMLImport;
+		$obCatalog->InitEx($NS, $importParameters);
+		$obCatalog->clearIblockCacheAfterFinal();
 		foreach (GetModuleEvents("catalog", "OnSuccessCatalogImport1C", true) as $arEvent)
 		{
 			ExecuteModuleEventEx($arEvent, array($arParams, $ABS_FILE_NAME));
@@ -608,6 +599,7 @@ elseif ($_GET["mode"]=="deactivate")
 {
 	if ($_GET["timestamp"] > 0)
 	{
+		\CTimeZone::Disable();
 		$rsImportedIBlocks = \Bitrix\IBlock\IblockFieldTable::getList(array(
 			"select" => array("IBLOCK_ID", "DEFAULT_VALUE"),
 			"filter" => array(
@@ -641,6 +633,7 @@ elseif ($_GET["mode"]=="deactivate")
 				$section->Update($arSection["ID"], array("ACTIVE" => "N"));
 			}
 		}
+		\CTimeZone::Enable();
 
 		echo "success\n",GetMessage("CC_BSC1_DEACTIVATION_DONE");
 	}
@@ -734,4 +727,3 @@ else
 	</table>
 	<?
 }
-?>

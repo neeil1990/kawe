@@ -4,6 +4,7 @@ var sEndCh = '';
 var asdIblockFormLoaded = false;
 var asdIblockFormCnt = 0;
 
+
 function formLoaded(){
 	iblockTable = $('#'+sListTable);
 	asdIblockFormCnt++;
@@ -127,6 +128,39 @@ $(document).ready(function(){
 			}
 		});
 	});
+	$('.list input').live('click', function(e){
+		if ($(this).attr('name') == 'ID[]') {
+			if (sStartCh.length>0 && e.shiftKey && sStartCh!=$(this).val()) {
+				sEndCh = $(this).val();
+			} else {
+				sStartCh = $(this).val();
+			}
+
+			var bWasChecked = false;
+			var bDoCheck = false;
+
+			if (e.shiftKey && sStartCh.length>0 && sEndCh.length>0) {
+				$('.list input').each(function(){
+					if ($(this).attr('name') == 'ID[]') {
+						if ($(this).val()==sStartCh || $(this).val()==sEndCh) {
+							bDoCheck = !bDoCheck;
+							bWasChecked = true;
+						}
+						if (bDoCheck) {
+							this.checked = true;
+							obListTable = new JCAdminList(sListTable);
+							obListTable.SelectRow(this);
+							$(this).attr('checked', true);
+						}
+					}
+				});
+			}
+
+			if (bWasChecked)
+				sStartCh = sEndCh = '';
+
+		}
+	});
 });
 
 function ASDSelIBChange(value) {
@@ -139,4 +173,26 @@ function ASDSelIBShow(lang) {
 		var intIBlockID = BX('asd_ib_dest').options[BX('asd_ib_dest').selectedIndex].value;
 		jsUtils.OpenWindow('/bitrix/admin/iblock_section_search.php?lang='+lang+'&IBLOCK_ID='+intIBlockID+'&n=asd_sect_id', 600, 500);
 	}
+}
+
+function ASDSetCurrentIblock(id, value) {
+	var control;
+	id += '_control';
+	control = BX(id);
+	if (BX.type.isElementNode(control)) {
+		control.value = value;
+	}
+}
+
+function ASDShowSectionWindow(config) {
+	config.destId += '_control';
+	config.destSection += '_control';
+	jsUtils.OpenWindow(
+		'/bitrix/admin/asd_iblock_section_search.php?lang='
+		+ config.languageId + (config.multiSelect ? '&m=y' : '')
+		+ '&destId=' + config.destId + '&destSection=' + config.destSection
+		+ '&destDescrIblock=' + config.destDescrIblock
+		+ '&destDescrSection=' + config.destDescrSection,
+		900, 700
+	);
 }

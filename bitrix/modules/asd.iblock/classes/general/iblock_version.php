@@ -1,31 +1,17 @@
 <?php
 
 class CASDiblockVersion {
-	protected static $iblockVersion = null;
+
+	public static function isIblockNewGridv18() {
+		return self::checkMinVersion('18.0.0');
+	}
 
 	public static function getIblockVersion() {
-		if (self::$iblockVersion === null) {
-			self::loadIblockVersion();
-		}
-		return self::$iblockVersion;
+		return CASDModuleVersion::getModuleVersion('iblock');
 	}
 
 	public static function checkMinVersion($checkVersion)
 	{
-		if (self::$iblockVersion === null) {
-			self::loadIblockVersion();
-		}
-		if (self::$iblockVersion) {
-			return version_compare(self::$iblockVersion, $checkVersion, '>=');
-		}
-		return false;
-	}
-
-	protected static function loadIblockVersion() {
-		$moduleIblock = CModule::CreateModuleObject('iblock');
-		if ($moduleIblock) {
-			self::$iblockVersion = $moduleIblock->MODULE_VERSION;
-		}
-		unset($moduleIblock);
+		return CASDModuleVersion::checkMinVersion('iblock', $checkVersion);
 	}
 }

@@ -9,7 +9,9 @@ use Bitrix\Sale\Exchange;
 class ImportCriterionBase
     implements Exchange\ICriterion
 {
-    protected $entity = null;
+    use Exchange\BaseTrait;
+
+	protected $entity = null;
 
     /**
      * @return null|Sale\Internals\CollectableEntity $entity
@@ -56,6 +58,16 @@ class ImportCriterionBase
 	{
 		return true;
 	}
+
+	protected function getParentTypeId()
+	{
+		return Exchange\EntityType::ORDER;
+	}
+
+	protected function getShipmentTypeId()
+	{
+		return Exchange\EntityType::SHIPMENT;
+	}
 }
 
 class ImportCriterionOneCCml2 extends ImportCriterionBase
@@ -74,7 +86,7 @@ class ImportCriterionOneCCml2 extends ImportCriterionBase
 		}
 
 		if(($entity->getField('VERSION_1C') != $fields['VERSION_1C']) ||
-			(strlen($entity->getField('VERSION_1C'))<=0 || strlen($fields['VERSION_1C'])<=0)
+			($entity->getField('VERSION_1C') == '' || $fields['VERSION_1C'] == '')
 		)
 		{
 			return true;
@@ -94,9 +106,8 @@ class CriterionOrder extends ImportCriterionOneCCml2
      */
     public function equalsBasketItemTax(Sale\BasketItem $basketItem, array $fields)
     {
-        if($fields['TAX']['VAT_RATE'] != $basketItem->getVatRate() &&
-            ($fields['TAX']['VAT_INCLUDED']<>'Y' && $fields['PRICE']<>$basketItem->getPrice())
-        )
+        if($fields['TAX']['VAT_RATE'] != $basketItem->getVatRate()
+			|| $fields['TAX']['VAT_INCLUDED']<>$basketItem->getField('VAT_INCLUDED'))
         {
             return true;
         }
@@ -152,6 +163,7 @@ class CriterionOrder extends ImportCriterionOneCCml2
 
 class CriterionShipment extends ImportCriterionOneCCml2
 {
+
 	/**
 	 * @param Sale\Shipment $entity
 	 * @throws Main\ArgumentException
@@ -180,8 +192,12 @@ class CriterionShipment extends ImportCriterionOneCCml2
 		$bBasketItemsMatch = true;
 		$basketItemsIndexList = array();
 		$fieldsItemsIndexList = array();
+		/** @var Exchange\Entity\OrderImport $parentImport */
+		$parentImport = $this->entityFactoryCreate($this->getParentTypeId());
+		/** @var Exchange\Entity\ShipmentImport $shipmentImport */
+		$shipmentImport = $this->entityFactoryCreate($this->getShipmentTypeId());
 
-		$basketItems = Exchange\Entity\OrderImport::getGroupItemsBasketFields($fields['ITEMS']);
+		$basketItems = $parentImport::getGroupItemsBasketFields($fields['ITEMS']);
 		if(count($basketItems)<=0)
 		{
 			return true;
@@ -208,7 +224,7 @@ class CriterionShipment extends ImportCriterionOneCCml2
 		{
 			foreach($items as $productXML_ID => $item)
 			{
-				if($basketItem = Exchange\Entity\OrderImport::getBasketItemByItem($basket, $item))
+				if($basketItem = $parentImport::getBasketItemByItem($basket, $item))
 				{
 					$fieldsItemsIndexList[$basketItem->getId()] = $item['QUANTITY'];
 				}
@@ -231,7 +247,7 @@ class CriterionShipment extends ImportCriterionOneCCml2
 				$bBasketItemsMatch = false;
 		}
 
-		$itemDeliveryService = Exchange\Entity\ShipmentImport::getFieldsDeliveryService($fields);
+		$itemDeliveryService = $shipmentImport::getFieldsDeliveryService($fields);
 
 		if($bBasketItemsMatch &&
 			($entity->isShipped()? $fields['DEDUCTED']=='Y':true) &&
@@ -244,6 +260,19 @@ class CriterionShipment extends ImportCriterionOneCCml2
 		{
 			return true;
 		}
+	}
+}
+
+class CriterionShipmentInvoice extends CriterionShipment
+{
+	protected function getParentTypeId()
+	{
+		return Exchange\EntityType::INVOICE;
+	}
+
+	protected function getShipmentTypeId()
+	{
+		return Exchange\EntityType::INVOICE_SHIPMENT;
 	}
 }
 
@@ -307,7 +336,7 @@ class CriterionProfile extends ImportCriterionOneCCml2
         }
 
         if(($entity->getField('USER_PROFILE_VERSION') != $fields['VERSION_1C']) ||
-            (strlen($entity->getField('USER_PROFILE_VERSION'))<=0 || strlen($fields['VERSION_1C'])<=0)
+            ($entity->getField('USER_PROFILE_VERSION') == '' || $fields['VERSION_1C'] == '')
         )
         {
             return true;

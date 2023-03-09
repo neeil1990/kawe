@@ -6,8 +6,8 @@ use Bitrix\Main\Loader;
 use Bitrix\Main\Result;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Socialservices\ApClient;
 use Bitrix\Socialservices\ApTable;
-use Bitrix\Socialservices\ContactConnectTable;
 
 Loc::loadMessages(__FILE__);
 
@@ -17,6 +17,8 @@ Loc::loadMessages(__FILE__);
  */
 class Connection
 {
+	const DEFAULT_CACHE_TTL = 3600;
+
 	/**
 	 * @return bool|string
 	 * @throws \Bitrix\Main\LoaderException
@@ -128,7 +130,7 @@ class Connection
 		$href = 'javascript:void(0)';
 		$moduleAccess = $APPLICATION->GetGroupRight('b24connector');
 
-		if(strlen($title) <= 0)
+		if($title == '')
 			$title = Loc::getMessage('B24C_CONN_BUTT_CONNECT');
 
 		if(!Loader::includeModule('socialservices') || $moduleAccess <= "R")
@@ -162,7 +164,7 @@ class Connection
 		}
 
 		$result = '<a href="'.htmlspecialcharsbx($href).'"'.
-			(strlen($onclick) > 0 ? ' onclick="'.$onclick.'"' : '').
+			($onclick <> '' ? ' onclick="'.$onclick.'"' : '').
 			' class="'.$class.'" >'.
 			$title.'</a>';
 
@@ -253,6 +255,40 @@ class Connection
 	}
 
 	/**
+	 * Check that connection with remote Bitrix24 exists and REST API is available according current tariff
+	 * Result is cached for 1 hour.
+	 * @return bool
+	 */
+	public static function isRestAvailable(): bool
+	{
+		static $result = null;
+
+		if ($result === null)
+		{
+			if (!Loader::includeModule('socialservices'))
+			{
+				$result = false;
+			}
+			elseif (!$client = ApClient::init())
+			{
+				$result = false;
+			}
+			else
+			{
+				$cacheId = 'b24connector_rest_status';
+				$cached = Cache::remember($cacheId, self::DEFAULT_CACHE_TTL, function () use ($client)
+				{
+					$response = $client->call('app.info');
+					return (isset($response['result']) && empty($response['error']));
+				});
+				$result = (bool)$cached;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * @param $host
 	 * @return string
 	 * @throws \Bitrix\Main\LoaderException
@@ -261,7 +297,7 @@ class Connection
 	{
 		global $APPLICATION;
 
-		if(strlen($host) <= 0)
+		if($host == '')
 			return '';
 
 		if(!Loader::includeModule("socialservices"))
@@ -270,7 +306,7 @@ class Connection
 		$result = '';
 		$appId = self::getAppID();
 
-		if(strlen($appId) > 0)
+		if($appId <> '')
 		{
 			$result = $host.'apconnect/?client_id='.urlencode($appId).'&preset=ap&state='.urlencode(http_build_query(array(
 				'check_key' => \CSocServAuthManager::GetUniqueKey(),
@@ -295,7 +331,7 @@ class Connection
 		$appId = self::getAppID();
 		$result = '';
 
-		if(strlen($appId) > 0)
+		if($appId <> '')
 		{
 			$result = \CBitrix24NetOAuthInterface::NET_URL.'/oauth/select/?preset=ap&client_id='.urlencode($appId).'&state='.urlencode(http_build_query(array(
 				'check_key' => \CSocServAuthManager::GetUniqueKey(),
@@ -340,7 +376,7 @@ class Connection
 		{
 			$domain = self::getDomain();
 
-			if(strlen($domain) <= 0)
+			if($domain == '')
 				return '';
 
 			$result = 'https://'.htmlspecialcharsbx($domain).'/settings/openlines/'; //default for b24 cloud
@@ -380,7 +416,7 @@ class Connection
 
 		$result = '';
 
-		if($client = \Bitrix\Socialservices\ApClient::init())
+		if($client = ApClient::init())
 		{
 			$result = $client->call($method);
 
@@ -404,11 +440,11 @@ class Connection
 		if(is_array($result))
 			return $result;
 
-		if(strlen($result) <= 0)
+		if($result == '')
 		{
 			$domain = self::getDomain();
 
-			if(strlen($domain) <= 0)
+			if($domain == '')
 				return '';
 
 			$result = 'https://'.htmlspecialcharsbx($domain).$defaultPath; //default for b24 cloud

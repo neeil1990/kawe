@@ -18,12 +18,23 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 {
 	const OPERATION_CHECK_REGISTRY = 'registry';
 	const OPERATION_CHECK_CHECK = 'check';
+	const OPERATION_GET_TOKEN = 'get_token';
+
 	const REQUEST_TYPE_GET = 'get';
 	const REQUEST_TYPE_POST = 'post';
+
 	const TOKEN_OPTION_NAME = 'atol_access_token';
+
 	const SERVICE_URL = 'https://online.atol.ru/possystem/v3';
+
 	const RESPONSE_HTTP_CODE_401 = 401;
 	const RESPONSE_HTTP_CODE_200 = 200;
+
+	const CODE_VAT_0 = 'vat0';
+	const CODE_VAT_10 = 'vat10';
+	const CODE_VAT_20 = 'vat20';
+
+	protected const MAX_NAME_LENGTH = 128;
 
 	/**
 	 * @param Check $check
@@ -36,17 +47,6 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		/** @var Main\Type\DateTime $dateTime */
 		$dateTime = $data['date_create'];
 
-		$phone = \NormalizePhone($data['client_phone']);
-		if (is_string($phone))
-		{
-			if ($phone[0] === '7')
-				$phone = substr($phone, 1);
-		}
-		else
-		{
-			$phone = '';
-		}
-
 		$result = array(
 			'timestamp' => $dateTime->format('d.m.Y H:i:s'),
 			'external_id' => static::buildUuid(static::UUID_TYPE_CHECK, $data['unique_id']),
@@ -57,8 +57,6 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 			),
 			'receipt' => array(
 				'attributes' => array(
-					'email' => $data['client_email'] ?: '',
-					'phone' => $phone,
 					'sno' => $this->getValueFromSettings('TAX', 'SNO')
 				),
 				'payments' => array(),
@@ -66,6 +64,36 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 				'total' => (float)$data['total_sum']
 			)
 		);
+
+		$phone = \NormalizePhone($data['client_phone']);
+		if (is_string($phone))
+		{
+			if ($phone[0] === '7')
+				$phone = mb_substr($phone, 1);
+		}
+		else
+		{
+			$phone = '';
+		}
+
+		$email = $data['client_email'] ?: '';
+
+		$clientInfo = $this->getValueFromSettings('CLIENT', 'INFO');
+		if ($clientInfo === 'PHONE')
+		{
+			$result['receipt']['attributes'] = ['phone' => $phone];
+		}
+		elseif ($clientInfo === 'EMAIL')
+		{
+			$result['receipt']['attributes'] = ['email' => $email];
+		}
+		else
+		{
+			$result['receipt']['attributes'] = [
+				'email' => $email,
+				'phone' => $phone,
+			];
+		}
 
 		foreach ($data['payments'] as $payment)
 		{
@@ -80,7 +108,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 			$vat = $this->getValueFromSettings('VAT', $item['vat']);
 
 			$result['receipt']['items'][] = array(
-				'name' => $item['name'],
+				'name' => mb_substr($item['name'], 0, self::MAX_NAME_LENGTH),
 				'price' => (float)$item['price'],
 				'sum' => (float)$item['sum'],
 				'quantity' => $item['quantity'],
@@ -132,7 +160,9 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		$result = array();
 
 		if (!$data['uuid'])
+		{
 			return $result;
+		}
 
 		$checkInfo = CheckManager::getCheckInfoByExternalUuid($data['uuid']);
 
@@ -151,7 +181,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		$result['CHECK_TYPE'] = $checkInfo['TYPE'];
 
 		$check = CheckManager::getObjectById($checkInfo['ID']);
-		$dateTime = new Main\Type\DateTime($data['payload']['receipt_datetime']);
+		$dateTime = new Main\Type\DateTime($data['payload']['receipt_datetime'], 'd.m.Y H:i:s');
 		$result['LINK_PARAMS'] = array(
 			Check::PARAM_REG_NUMBER_KKT => $data['payload']['ecr_registration_number'],
 			Check::PARAM_FISCAL_DOC_ATTR => $data['payload']['fiscal_document_attribute'],
@@ -204,7 +234,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	 * @return string
 	 * @throws Main\SystemException
 	 */
-	protected function getUrl($operation, $token, array $queryData = array())
+	protected function getRequestUrl($operation, $token, array $queryData = array())
 	{
 		$groupCode = $this->getField('NUMBER_KKM');
 
@@ -216,6 +246,10 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		{
 			return static::SERVICE_URL.'/'.$groupCode.'/report/'.$queryData['EXTERNAL_UUID'].'?tokenid='.$token;
 		}
+		elseif ($operation === static::OPERATION_GET_TOKEN)
+		{
+			return static::SERVICE_URL.'/getToken';
+		}
 
 		throw new Main\SystemException();
 	}
@@ -223,8 +257,33 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	/**
 	 * @param Check $check
 	 * @return Result
+	 * @throws Main\SystemException
 	 */
 	public function printImmediately(Check $check)
+	{
+		$checkQuery = $this->buildCheckQuery($check);
+		$validateResult = $this->validateCheckQuery($checkQuery);
+		if (!$validateResult->isSuccess())
+		{
+			return $validateResult;
+		}
+
+		$operation = 'sell';
+		if ($check::getCalculatedSign() === Check::CALCULATED_SIGN_CONSUMPTION)
+		{
+			$operation = 'sell_refund';
+		}
+
+		return $this->registerCheck($operation, $checkQuery);
+	}
+
+	/**
+	 * @param $operation
+	 * @param array $check
+	 * @return Result
+	 * @throws Main\SystemException
+	 */
+	protected function registerCheck($operation, array $check)
 	{
 		$printResult = new Result();
 
@@ -239,19 +298,13 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 			}
 		}
 
-		$checkQuery = static::buildCheckQuery($check);
-		$validateResult = $this->validate($checkQuery);
-		if (!$validateResult->isSuccess())
-		{
-			return $validateResult;
-		}
+		$url = $this->getRequestUrl(static::OPERATION_CHECK_REGISTRY, $token, ['CHECK_TYPE' => $operation]);
 
-		$operation = $check::getCalculatedSign() === Check::CALCULATED_SIGN_INCOME ? 'sell' : 'sell_refund';
-		$url = $this->getUrl(static::OPERATION_CHECK_REGISTRY, $token, array('CHECK_TYPE' => $operation));
-
-		$result = $this->send(static::REQUEST_TYPE_POST, $url, $checkQuery);
+		$result = $this->send(static::REQUEST_TYPE_POST, $url, $check);
 		if (!$result->isSuccess())
+		{
 			return $result;
+		}
 
 		$response = $result->getData();
 		if ($response['http_code'] === static::RESPONSE_HTTP_CODE_401)
@@ -263,10 +316,12 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 				return $printResult;
 			}
 
-			$url = $this->getUrl(static::OPERATION_CHECK_REGISTRY, $token, array('CHECK_TYPE' => $operation));
-			$result = $this->send(static::REQUEST_TYPE_POST, $url, $checkQuery);
+			$url = $this->getRequestUrl(static::OPERATION_CHECK_REGISTRY, $token, array('CHECK_TYPE' => $operation));
+			$result = $this->send(static::REQUEST_TYPE_POST, $url, $check);
 			if (!$result->isSuccess())
+			{
 				return $result;
+			}
 
 			$response = $result->getData();
 		}
@@ -303,15 +358,24 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	 */
 	public function check(Check $check)
 	{
-		$url = $this->getUrl(
+		return $this->checkByUuid(
+			$check->getField('EXTERNAL_UUID')
+		);
+	}
+
+	protected function checkByUuid($uuid)
+	{
+		$url = $this->getRequestUrl(
 			static::OPERATION_CHECK_CHECK,
 			$this->getAccessToken(),
-			array('EXTERNAL_UUID' => $check->getField('EXTERNAL_UUID'))
+			['EXTERNAL_UUID' => $uuid]
 		);
 
 		$result = $this->send(static::REQUEST_TYPE_GET, $url);
 		if (!$result->isSuccess())
+		{
 			return $result;
+		}
 
 		$response = $result->getData();
 		if ($response['http_code'] === static::RESPONSE_HTTP_CODE_401)
@@ -323,18 +387,22 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 				return $result;
 			}
 
-			$url = $this->getUrl(
+			$url = $this->getRequestUrl(
 				static::OPERATION_CHECK_CHECK,
 				$this->getAccessToken(),
-				array('EXTERNAL_UUID' => $check->getField('EXTERNAL_UUID'))
+				['EXTERNAL_UUID' => $uuid]
 			);
 
 			$result = $this->send(static::REQUEST_TYPE_GET, $url);
 			if (!$result->isSuccess())
+			{
 				return $result;
+			}
 
 			$response = $result->getData();
 		}
+
+		$response['uuid'] = $uuid;
 
 		if ($response['status'] === 'wait')
 		{
@@ -349,7 +417,7 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	 * @param array $checkData
 	 * @return Result
 	 */
-	protected function validate(array $checkData)
+	protected function validateCheckQuery(array $checkData)
 	{
 		$result = new Result();
 
@@ -387,6 +455,9 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		{
 			$http->disableSslVerification();
 			$data = $this->encode($data);
+
+			Logger::addDebugInfo($data);
+
 			$response = $http->post($url, $data);
 		}
 		else
@@ -396,11 +467,15 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 
 		if ($response !== false)
 		{
+			Logger::addDebugInfo($response);
+
 			try
 			{
 				$response = $this->decode($response);
 				if (!is_array($response))
-					$response = array();
+				{
+					$response = [];
+				}
 
 				$response['http_code'] = $http->getStatus();
 				$result->addData($response);
@@ -456,7 +531,22 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 						'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_SERVICE_URL_LABEL')
 					),
 				)
-			)
+			),
+			'CLIENT' => [
+				'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_CLIENT'),
+				'ITEMS' => array(
+					'INFO' => array(
+						'TYPE' => 'ENUM',
+						'VALUE' => 'NONE',
+						'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_CLIENT_INFO'),
+						'OPTIONS' => array(
+							'NONE' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_CLIENT_NONE'),
+							'PHONE' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_CLIENT_PHONE'),
+							'EMAIL' => Localization\Loc::getMessage('SALE_CASHBOX_ATOL_FARM_SETTINGS_CLIENT_EMAIL'),
+						)
+					),
+				)
+			]
 		);
 
 		$settings['PAYMENT_TYPE'] = array(
@@ -492,16 +582,21 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 
 		if (Main\Loader::includeModule('catalog'))
 		{
-			$dbRes = Catalog\VatTable::getList(array('filter' => array('ACTIVE' => 'Y')));
+			$dbRes = Catalog\VatTable::getList(['filter' => ['ACTIVE' => 'Y']]);
 			$vatList = $dbRes->fetchAll();
 			if ($vatList)
 			{
-				$defaultVat = array(0 => 'vat0', 10 => 'vat10', 18 => 'vat18');
+				$defaultVatList = [
+					0 => self::CODE_VAT_0,
+					10 => self::CODE_VAT_10,
+					20 => self::CODE_VAT_20
+				];
+
 				foreach ($vatList as $vat)
 				{
 					$value = '';
-					if (isset($defaultVat[(int)$vat['RATE']]))
-						$value = $defaultVat[(int)$vat['RATE']];
+					if (isset($defaultVatList[(int)$vat['RATE']]))
+						$value = $defaultVatList[(int)$vat['RATE']];
 
 					$settings['VAT']['ITEMS'][(int)$vat['ID']] = array(
 						'TYPE' => 'STRING',
@@ -532,7 +627,51 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 			)
 		);
 
+		if (static::hasMeasureSettings())
+		{
+			$settings['MEASURE'] = static::getMeasureSettings();
+		}
+
 		return $settings;
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected static function hasMeasureSettings(): bool
+	{
+		return false;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected static function getMeasureSettings(): array
+	{
+		$measureItems = [
+			'DEFAULT' => [
+				'TYPE' => 'STRING',
+				'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_MEASURE_SUPPORT_SETTINGS_DEFAULT_VALUE'),
+				'VALUE' => 0,
+			]
+		];
+		if (Main\Loader::includeModule('catalog'))
+		{
+			$measuresList = \CCatalogMeasure::getList();
+			while ($measure = $measuresList->fetch())
+			{
+				$measureItems[$measure['CODE']] = [
+					'TYPE' => 'STRING',
+					'LABEL' => $measure['MEASURE_TITLE'],
+					'VALUE' => MeasureCodeToTag2108Mapper::getTag2108Value($measure['CODE']),
+				];
+			}
+		}
+
+		return [
+			'LABEL' => Localization\Loc::getMessage('SALE_CASHBOX_MEASURE_SUPPORT_SETTINGS'),
+			'ITEMS' => $measureItems,
+		];
 	}
 
 	/**
@@ -568,7 +707,15 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	 */
 	private function getOptionName()
 	{
-		return static::TOKEN_OPTION_NAME.'_'.ToLower($this->getField('NUMBER_KKM'));
+		return static::getOptionPrefix() . '_' .ToLower($this->getField('NUMBER_KKM'));
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getOptionPrefix(): string
+	{
+		return static::TOKEN_OPTION_NAME;
 	}
 
 	/**
@@ -581,8 +728,9 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 	}
 
 	/**
-	 * @param string $data
+	 * @param $data
 	 * @return mixed
+	 * @throws Main\ArgumentException
 	 */
 	private function decode($data)
 	{
@@ -591,10 +739,12 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 
 	/**
 	 * @return string
+	 * @throws Main\SystemException
 	 */
 	private function requestAccessToken()
 	{
-		$url = static::SERVICE_URL.'/getToken';
+		$url = $this->getRequestUrl(static::OPERATION_GET_TOKEN, '');
+
 		$data = array(
 			'login' => $this->getValueFromSettings('AUTH', 'LOGIN'),
 			'pass' => $this->getValueFromSettings('AUTH', 'PASS')
@@ -604,9 +754,12 @@ class CashboxAtolFarm extends Cashbox implements IPrintImmediately, ICheckable
 		if ($result->isSuccess())
 		{
 			$response = $result->getData();
-			$this->setAccessToken($response['token']);
+			if (isset($response['token']))
+			{
+				$this->setAccessToken($response['token']);
 
-			return $response['token'];
+				return $response['token'];
+			}
 		}
 
 		return '';

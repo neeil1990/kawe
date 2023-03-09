@@ -8,7 +8,7 @@ CModule::IncludeModule("photogallery");
 if (!check_bitrix_sessid())
 	die('<script>window.bxph_error = \''.GetMessage("IBLOCK_WRONG_SESSION").'\';</script>');
 
-if (CPGalleryInterface::CheckSign($_REQUEST['sigh'], $_REQUEST["checkParams"]))
+if (CPGalleryInterface::CheckSign($_REQUEST['sign'], $_REQUEST["checkParams"]))
 {
 	$APPLICATION->RestartBuffer();
 	$UCID = preg_replace("/[^a-z0-9\_]+/is" , "", $_REQUEST["UCID"]);
@@ -22,7 +22,7 @@ if (CPGalleryInterface::CheckSign($_REQUEST['sigh'], $_REQUEST["checkParams"]))
 	CUtil::JSPostUnEscape();
 	$arParams = array_merge($_REQUEST["checkParams"], $_REQUEST["reqParams"]);
 
-	$elementId = intVal($_REQUEST["ELEMENT_ID"]);
+	$elementId = intval($_REQUEST["ELEMENT_ID"]);
 	if ($_REQUEST['getRaiting'] == 'Y' && $arParams["USE_RATING"] == "Y" && $arParams["PERMISSION"] >= "R")
 	{
 		if ($arParams["DISPLAY_AS_RATING"] == "rating_main")
@@ -44,7 +44,7 @@ if (CPGalleryInterface::CheckSign($_REQUEST['sigh'], $_REQUEST["checkParams"]))
 					"PATH_TO_USER_PROFILE" => $arParams["PATH_TO_USER"],
 					"AJAX_MODE" => "Y",
 				),
-				$this,
+				null,
 				array("HIDE_ICONS" => "Y")
 			);
 			?><!--BX_PHOTO_RATING_END--><?
@@ -68,7 +68,7 @@ if (CPGalleryInterface::CheckSign($_REQUEST['sigh'], $_REQUEST["checkParams"]))
 					"CACHE_TYPE" => $arParams["CACHE_TYPE"],
 					"CACHE_TIME" => $arParams["CACHE_TIME"]
 				),
-				$this,
+				null,
 				array("HIDE_ICONS" => "Y")
 			);
 		}

@@ -1,12 +1,15 @@
-<?
-if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+<?php
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
+{
+	die();
+}
 
 if (!CModule::IncludeModule("form")) return;
 
 $arStartPage = array("list" => GetMessage("COMP_FORM_VALUES_LIST"), "new" => GetMessage("COMP_FORM_VALUES_NEW"));
 
 $arrForms = array();
-$rsForm = CForm::GetList($by='s_sort', $order='asc', !empty($_REQUEST["site"]) ? array("SITE" => $_REQUEST["site"]) : array(), $v3);
+$rsForm = CForm::GetList('s_sort', 'asc', !empty($_REQUEST["site"]) ? array("SITE" => $_REQUEST["site"]) : array());
 while ($arForm = $rsForm->Fetch())
 {
 	$arrForms[$arForm["ID"]] = "[".$arForm["ID"]."] ".$arForm["NAME"];
@@ -15,7 +18,7 @@ while ($arForm = $rsForm->Fetch())
 if (intval($arCurrentValues["WEB_FORM_ID"]) > 0)
 {
 	$show_list = true;
-	$rsFieldList = CFormField::GetList(intval($arCurrentValues["WEB_FORM_ID"]), "ALL", $by="s_sort", $order="asc", array(), $is_filtered);
+	$rsFieldList = CFormField::GetList(intval($arCurrentValues["WEB_FORM_ID"]), "ALL");
 	$arFieldList = array();
 	while ($arField = $rsFieldList->GetNext())
 	{
@@ -62,14 +65,14 @@ $arComponentParameters = array(
 			"VALUES" => $arrForms,
 			"ADDITIONAL_VALUES"	=> "Y",
 			"REFRESH" => "Y",
-			"DEFAULT" => "={\$_REQUEST[WEB_FORM_ID]}",
+			"DEFAULT" => "={\$_REQUEST[\"WEB_FORM_ID\"]}",
 			"PARENT" => "DATA_SOURCE",
 		),
 
 		"RESULT_ID" => array(
 			"NAME" => GetMessage("COMP_FORM_PARAMS_RESULT_ID"),
 			"TYPE" => "STRING",
-			"DEFAULT" => "={\$_REQUEST[RESULT_ID]}",
+			"DEFAULT" => "={\$_REQUEST[\"RESULT_ID\"]}",
 			"PARENT" => "DATA_SOURCE",
 		),
 
@@ -187,6 +190,16 @@ $arComponentParameters = array(
 			"PARENT" => "ADDITIONAL_SETTINGS",
 		),
 
+		"NAME_TEMPLATE" => array(
+			"TYPE" => "LIST",
+			"NAME" => GetMessage("COMP_FORM_PARAMS_NAME_TEMPLATE"),
+			"VALUES" => CComponentUtil::GetDefaultNameTemplates(),
+			"MULTIPLE" => "N",
+			"ADDITIONAL_VALUES" => "Y",
+			"DEFAULT" => "",
+			"PARENT" => "ADDITIONAL_SETTINGS",
+		),
+
 		"IGNORE_CUSTOM_TEMPLATE" => array(
 			"NAME" => GetMessage("COMP_FORM_PARAMS_IGNORE_CUSTOM_TEMPLATE"),
 			"TYPE" => "CHECKBOX",
@@ -204,4 +217,3 @@ $arComponentParameters = array(
 		"CACHE_TIME" => array("DEFAULT" => "3600"),
 	),
 );
-?>

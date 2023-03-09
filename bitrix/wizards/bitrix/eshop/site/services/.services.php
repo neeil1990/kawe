@@ -42,9 +42,6 @@ $arServices = Array(
 			"step3.php"
 		),
 	),
-	"forum" => Array(
-		"NAME" => GetMessage("SERVICE_FORUM")
-	),
 	"advertising" => Array(
 		"NAME" => GetMessage("SERVICE_ADVERTISING"),
 	)

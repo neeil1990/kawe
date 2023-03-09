@@ -19,11 +19,21 @@ $arResult["GROUP_POLICY"] = CUser::GetGroupPolicy($arResult["ID"]);
 $arParams['SEND_INFO'] = $arParams['SEND_INFO'] == 'Y' ? 'Y' : 'N';
 $arParams['CHECK_RIGHTS'] = $arParams['CHECK_RIGHTS'] == 'Y' ? 'Y' : 'N';
 
+$arParams['EDITABLE_EXTERNAL_AUTH_ID'] = isset($arParams['EDITABLE_EXTERNAL_AUTH_ID']) && is_array($arParams['EDITABLE_EXTERNAL_AUTH_ID'])
+	? $arParams['EDITABLE_EXTERNAL_AUTH_ID']
+	: [];
+
 if(!($arParams['CHECK_RIGHTS'] == 'N' || $USER->CanDoOperation('edit_own_profile')) || $arResult["ID"]<=0)
 {
 	$APPLICATION->ShowAuthForm("");
 	return;
 }
+
+$arResult["PHONE_REGISTRATION"] = (COption::GetOptionString("main", "new_user_phone_auth", "N") == "Y");
+$arResult["PHONE_REQUIRED"] = ($arResult["PHONE_REGISTRATION"] && COption::GetOptionString("main", "new_user_phone_required", "N") == "Y");
+$arResult["EMAIL_REGISTRATION"] = (COption::GetOptionString("main", "new_user_email_auth", "Y") <> "N");
+$arResult["EMAIL_REQUIRED"] = ($arResult["EMAIL_REGISTRATION"] && COption::GetOptionString("main", "new_user_email_required", "Y") <> "N");
+$arResult["PHONE_CODE_RESEND_INTERVAL"] = CUser::PHONE_CODE_RESEND_INTERVAL;
 
 $strError = '';
 
@@ -48,21 +58,21 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && ($_REQUEST["save"] <> '' || $_REQUEST["
 	{
 		$bOk = false;
 		$obUser = new CUser;
-	
+
 		$arPERSONAL_PHOTO = $_FILES["PERSONAL_PHOTO"];
 		$arWORK_LOGO = $_FILES["WORK_LOGO"];
-	
+
 		$rsUser = CUser::GetByID($arResult["ID"]);
 		$arUser = $rsUser->Fetch();
 		if($arUser)
 		{
 			$arPERSONAL_PHOTO["old_file"] = $arUser["PERSONAL_PHOTO"];
 			$arPERSONAL_PHOTO["del"] = $_REQUEST["PERSONAL_PHOTO_del"];
-	
+
 			$arWORK_LOGO["old_file"] = $arUser["WORK_LOGO"];
 			$arWORK_LOGO["del"] = $_REQUEST["WORK_LOGO_del"];
 		}
-	
+
 		$arEditFields = array(
 			"TITLE",
 			"NAME",
@@ -102,6 +112,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && ($_REQUEST["save"] <> '' || $_REQUEST["
 			"WORK_PROFILE",
 			"WORK_NOTES",
 			"TIME_ZONE",
+			"PHONE_NUMBER",
 		);
 
 		$arFields = array();
@@ -123,7 +134,10 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && ($_REQUEST["save"] <> '' || $_REQUEST["
 			$arFields["ADMIN_NOTES"] = $_REQUEST["ADMIN_NOTES"];
 		}
 
-		if($_REQUEST["NEW_PASSWORD"] <> '' && $arUser['EXTERNAL_AUTH_ID'] == '')
+		$arResult['CAN_EDIT_PASSWORD'] = $arUser['EXTERNAL_AUTH_ID'] == ''
+			|| in_array($arUser['EXTERNAL_AUTH_ID'], $arParams['EDITABLE_EXTERNAL_AUTH_ID'], true);
+
+		if($_REQUEST["NEW_PASSWORD"] <> '' && $arResult['CAN_EDIT_PASSWORD'])
 		{
 			$arFields["PASSWORD"] = $_REQUEST["NEW_PASSWORD"];
 			$arFields["CONFIRM_PASSWORD"] = $_REQUEST["NEW_PASSWORD_CONFIRM"];
@@ -142,8 +156,45 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && ($_REQUEST["save"] <> '' || $_REQUEST["
 
 		$USER_FIELD_MANAGER->EditFormAddFields("USER", $arFields);
 	
-		if(!$obUser->Update($arResult["ID"], $arFields))
+		if($obUser->Update($arResult["ID"], $arFields))
+		{
+			if($arResult["PHONE_REGISTRATION"] == true && $arFields["PHONE_NUMBER"] <> '')
+			{
+				if(!($phone = \Bitrix\Main\UserPhoneAuthTable::getRowById($arResult["ID"])))
+				{
+					$phone = ["PHONE_NUMBER" => "", "CONFIRMED" => "N"];
+				}
+
+				$arFields["PHONE_NUMBER"] = \Bitrix\Main\UserPhoneAuthTable::normalizePhoneNumber($arFields["PHONE_NUMBER"]);
+
+				if($arFields["PHONE_NUMBER"] <> $phone["PHONE_NUMBER"] || $phone["CONFIRMED"] <> 'Y')
+				{
+					//added or updated the phone number for the user, now sending a confirmation SMS
+					list($code, $phoneNumber) = CUser::GeneratePhoneCode($arResult["ID"]);
+
+					$sms = new \Bitrix\Main\Sms\Event(
+						"SMS_USER_CONFIRM_NUMBER",
+						[
+							"USER_PHONE" => $phoneNumber,
+							"CODE" => $code,
+						]
+					);
+					$smsResult = $sms->send(true);
+
+					if(!$smsResult->isSuccess())
+					{
+						$strError .= implode("<br />", $smsResult->getErrorMessages());
+					}
+
+					$arResult["SHOW_SMS_FIELD"] = true;
+					$arResult["SIGNED_DATA"] = \Bitrix\Main\Controller\PhoneAuth::signData(['phoneNumber' => $phoneNumber]);
+				}
+			}
+		}
+		else
+		{
 			$strError .= $obUser->LAST_ERROR;
+		}
 	}
 
 	if($strError == '')
@@ -280,10 +331,41 @@ if($_SERVER["REQUEST_METHOD"]=="POST" && ($_REQUEST["save"] <> '' || $_REQUEST["
 	}
 }
 
+// verify phone code
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $_REQUEST["code_submit_button"] <> '' && check_bitrix_sessid())
+{
+	if($_REQUEST["SIGNED_DATA"] <> '')
+	{
+		if(($params = \Bitrix\Main\Controller\PhoneAuth::extractData($_REQUEST["SIGNED_DATA"])) !== false)
+		{
+			if(($userId = CUser::VerifyPhoneCode($params['phoneNumber'], $_REQUEST["SMS_CODE"])))
+			{
+				$bOk = true;
+			}
+			else
+			{
+				$strError .= GetMessage("main_profile_sms_error")."<br />";
+				$arResult["SHOW_SMS_FIELD"] = true;
+				$arResult["SMS_CODE"] = $_REQUEST["SMS_CODE"];
+				$arResult["SIGNED_DATA"] = $_REQUEST["SIGNED_DATA"];
+			}
+		}
+	}
+}
+
 $rsUser = CUser::GetByID($arResult["ID"]);
 if(!$arResult["arUser"] = $rsUser->GetNext(false))
 {
 	$arResult["ID"] = 0;
+}
+
+$arResult["arUser"]["PHONE_NUMBER"] = "";
+if($arResult["PHONE_REGISTRATION"])
+{
+	if($phone = \Bitrix\Main\UserPhoneAuthTable::getRowById($arResult["ID"]))
+	{
+		$arResult["arUser"]["PHONE_NUMBER"] = htmlspecialcharsbx($phone["PHONE_NUMBER"]);
+	}
 }
 
 if (CModule::IncludeModule("blog"))
@@ -336,17 +418,17 @@ if($strError <> '')
 			{
 				$val = htmlspecialcharsex($val);
 			}
-			if(strpos($k, "forum_") === 0)
+			if(mb_strpos($k, "forum_") === 0)
 			{
-				$arResult["arForumUser"][substr($k, 6)] = $val;
+				$arResult["arForumUser"][mb_substr($k, 6)] = $val;
 			}
-			elseif(strpos($k, "blog_") === 0)
+			elseif(mb_strpos($k, "blog_") === 0)
 			{
-				$arResult["arBlogUser"][substr($k, 5)] = $val;
+				$arResult["arBlogUser"][mb_substr($k, 5)] = $val;
 			}
-			elseif(strpos($k, "student_") === 0)
+			elseif(mb_strpos($k, "student_") === 0)
 			{
-				$arResult["arStudent"][substr($k, 8)] = $val;
+				$arResult["arStudent"][mb_substr($k, 8)] = $val;
 			}
 			else
 			{
@@ -359,22 +441,24 @@ if($strError <> '')
 $arResult["FORM_TARGET"] = $APPLICATION->GetCurPage();
 
 $arResult["arUser"]["PERSONAL_PHOTO_INPUT"] = CFile::InputFile("PERSONAL_PHOTO", 20, $arResult["arUser"]["PERSONAL_PHOTO"], false, 0, "IMAGE");
-if (strlen($arResult["arUser"]["PERSONAL_PHOTO"])>0)
+if ($arResult["arUser"]["PERSONAL_PHOTO"] <> '')
 	$arResult["arUser"]["PERSONAL_PHOTO_HTML"] = CFile::ShowImage($arResult["arUser"]["PERSONAL_PHOTO"], 150, 150, "border=0", "", true);
 
 $arResult["arUser"]["WORK_LOGO_INPUT"] = CFile::InputFile("WORK_LOGO", 20, $arResult["arUser"]["WORK_LOGO"], false, 0, "IMAGE");
-if (strlen($arResult["arUser"]["WORK_LOGO"])>0)
+if ($arResult["arUser"]["WORK_LOGO"] <> '')
 	$arResult["arUser"]["WORK_LOGO_HTML"] = CFile::ShowImage($arResult["arUser"]["WORK_LOGO"], 150, 150, "border=0", "", true);
 
 $arResult["arForumUser"]["AVATAR_INPUT"] = CFile::InputFile("forum_AVATAR", 20, $arResult["arForumUser"]["AVATAR"], false, 0, "IMAGE");
-if (strlen($arResult["arForumUser"]["AVATAR"])>0)
+if ($arResult["arForumUser"]["AVATAR"] <> '')
 	$arResult["arForumUser"]["AVATAR_HTML"] = CFile::ShowImage($arResult["arForumUser"]["AVATAR"], 150, 150, "border=0", "", true);
 
 $arResult["arBlogUser"]["AVATAR_INPUT"] = CFile::InputFile("blog_AVATAR", 20, $arResult["arBlogUser"]["AVATAR"], false, 0, "IMAGE");
-if (strlen($arResult["arBlogUser"]["AVATAR"])>0)
+if ($arResult["arBlogUser"]["AVATAR"] <> '')
 	$arResult["arBlogUser"]["AVATAR_HTML"] = CFile::ShowImage($arResult["arBlogUser"]["AVATAR"], 150, 150, "border=0", "", true);
 
 $arResult["IS_ADMIN"] = $USER->IsAdmin();
+$arResult['CAN_EDIT_PASSWORD'] = $arUser['EXTERNAL_AUTH_ID'] == ''
+	|| in_array($arUser['EXTERNAL_AUTH_ID'], $arParams['EDITABLE_EXTERNAL_AUTH_ID'], true);
 
 $arCountries = GetCountryArray();
 $arResult["COUNTRY_SELECT"] = SelectBoxFromArray("PERSONAL_COUNTRY", $arCountries, $arResult["arUser"]["PERSONAL_COUNTRY"], GetMessage("USER_DONT_KNOW"));
@@ -386,7 +470,7 @@ $arResult["BX_SESSION_CHECK"] = bitrix_sessid_post();
 $arResult["DATE_FORMAT"] = CLang::GetDateFormat("SHORT");
 
 $arResult["COOKIE_PREFIX"] = COption::GetOptionString("main", "cookie_name", "BITRIX_SM");
-if (strlen($arResult["COOKIE_PREFIX"]) <= 0) 
+if ($arResult["COOKIE_PREFIX"] == '')
 	$arResult["COOKIE_PREFIX"] = "BX";
 
 // ********************* User properties ***************************************************
@@ -400,7 +484,7 @@ if (!empty($arParams["USER_PROPERTY"]))
 		{
 			if (!in_array($FIELD_NAME, $arParams["USER_PROPERTY"]))
 				continue;
-			$arUserField["EDIT_FORM_LABEL"] = strLen($arUserField["EDIT_FORM_LABEL"]) > 0 ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
+			$arUserField["EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"] <> '' ? $arUserField["EDIT_FORM_LABEL"] : $arUserField["FIELD_NAME"];
 			$arUserField["EDIT_FORM_LABEL"] = htmlspecialcharsEx($arUserField["EDIT_FORM_LABEL"]);
 			$arUserField["~EDIT_FORM_LABEL"] = $arUserField["EDIT_FORM_LABEL"];
 			$arResult["USER_PROPERTIES"]["DATA"][$FIELD_NAME] = $arUserField;
@@ -422,8 +506,6 @@ if($bOk)
 $arResult["TIME_ZONE_ENABLED"] = CTimeZone::Enabled();
 if($arResult["TIME_ZONE_ENABLED"])
 	$arResult["TIME_ZONE_LIST"] = CTimeZone::GetZones();
-
-$arResult["EMAIL_REQUIRED"] = (COption::GetOptionString("main", "new_user_email_required", "Y") <> "N");
 
 //secure authorization
 $arResult["SECURE_AUTH"] = false;

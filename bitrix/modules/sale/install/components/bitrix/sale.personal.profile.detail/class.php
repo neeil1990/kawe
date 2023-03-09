@@ -22,6 +22,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 class PersonalProfileDetail extends CBitrixComponent
 {
 	const E_SALE_MODULE_NOT_INSTALLED = 10000;
+	const E_NOT_AUTHORIZED = 10001;
 
 	/** @var  Main\ErrorCollection $errorCollection*/
 	protected $errorCollection;
@@ -44,6 +45,11 @@ class PersonalProfileDetail extends CBitrixComponent
 		if (isset($params['ID']) && $params['ID'] > 0)
 		{
 			$this->idProfile = (int)$params['ID'];
+		}
+		else
+		{
+			$request = Main\Application::getInstance()->getContext()->getRequest();
+			$this->idProfile = (int)($request->get('ID'));
 		}
 
 		if (isset($params['PATH_TO_LIST']))
@@ -99,7 +105,14 @@ class PersonalProfileDetail extends CBitrixComponent
 
 		if (!$USER->IsAuthorized())
 		{
-			$APPLICATION->AuthForm(Loc::getMessage("SALE_ACCESS_DENIED"), false, false, 'N', false);
+			if(!$this->arParams['AUTH_FORM_IN_TEMPLATE'])
+			{
+				$APPLICATION->AuthForm(Loc::getMessage("SALE_ACCESS_DENIED"), false, false, 'N', false);
+			}
+			else
+			{
+				$this->errorCollection->setError(new Main\Error(Loc::getMessage("SALE_ACCESS_DENIED"), self::E_NOT_AUTHORIZED));
+			}
 		}
 
 		$request = Main\Application::getInstance()->getContext()->getRequest();
@@ -116,34 +129,44 @@ class PersonalProfileDetail extends CBitrixComponent
 
 		if ($this->idProfile <= 0 || $request->get('reset'))
 		{
-			LocalRedirect($this->arParams["PATH_TO_LIST"]);
-		}
-
-		$userProperties = Sale\OrderUserProperties::getList(
-			array(
-				'order' => array("DATE_UPDATE" => "DESC"),
-				'filter' => array(
-					"ID" => $this->idProfile,
-					"USER_ID" => (int)($USER->GetID())
-				),
-				"select" => array("*")
-			)
-		);
-
-		$htmlConvector = \Bitrix\Main\Text\Converter::getHtmlConverter();
-
-		if ($userOrderProperties = $userProperties->fetch($htmlConvector))
-		{
-			if ($request->isPost() && ($request->get("save") || $request->get("apply"))	&& check_bitrix_sessid())
+			if (!empty($this->arParams["PATH_TO_LIST"]))
 			{
-				$this->updateProfileProperties($request, $userOrderProperties);
+				LocalRedirect($this->arParams["PATH_TO_LIST"]);
 			}
-
-			$this->fillResultArray($userOrderProperties);
+			else
+			{
+				$this->errorCollection->setError(new Main\Error(Loc::getMessage("SALE_NO_PROFILE")));
+			}
 		}
-		else
+
+		if ($this->errorCollection->isEmpty())
 		{
-			$this->errorCollection->setError(new Main\Error(Loc::getMessage("SALE_NO_PROFILE")));
+			$userProperties = Sale\OrderUserProperties::getList(
+				array(
+					'order' => array("DATE_UPDATE" => "DESC"),
+					'filter' => array(
+						"ID" => $this->idProfile,
+						"USER_ID" => (int)($USER->GetID())
+					),
+					"select" => array("*")
+				)
+			);
+
+			$htmlConvector = \Bitrix\Main\Text\Converter::getHtmlConverter();
+
+			if ($userOrderProperties = $userProperties->fetch($htmlConvector))
+			{
+				if ($request->isPost() && ($request->get("save") || $request->get("apply"))	&& check_bitrix_sessid())
+				{
+					$this->updateProfileProperties($request, $userOrderProperties);
+				}
+
+				$this->fillResultArray($userOrderProperties);
+			}
+			else
+			{
+				$this->errorCollection->setError(new Main\Error(Loc::getMessage("SALE_NO_PROFILE")));
+			}
 		}
 
 		$this->formatResultErrors();
@@ -194,9 +217,9 @@ class PersonalProfileDetail extends CBitrixComponent
 	 */
 	protected function getLocationHtml($name, $key, $locationTemplate)
 	{
-		$name = strlen($name) > 0 ? $name : "" ;
+		$name = $name <> '' ? $name : "" ;
 		$key = (int)$key >= 0 ? (int)$this->arParams['LOCATION_KEY'] : 0;
-		$locationTemplate = strlen($locationTemplate) > 0 ? $locationTemplate : '';
+		$locationTemplate = $locationTemplate <> '' ? $locationTemplate : '';
 		$locationClassName = 'location-block-wrapper';
 		if (empty($locationTemplate))
 		{
@@ -239,11 +262,11 @@ class PersonalProfileDetail extends CBitrixComponent
 
 		if ($this->errorCollection->isEmpty())
 		{
-			if (strlen($request->get("save")) > 0)
+			if ($request->get("save") <> '')
 			{
 				LocalRedirect($this->arParams["PATH_TO_LIST"]);
 			}
-			elseif (strlen($request->get("apply")) > 0)
+			elseif ($request->get("apply") <> '')
 			{
 				LocalRedirect(CComponentEngine::makePathFromTemplate($this->arParams["PATH_TO_DETAIL"], Array("ID" => $this->idProfile)));
 			}
@@ -387,6 +410,11 @@ class PersonalProfileDetail extends CBitrixComponent
 			foreach ($this->errorCollection->toArray() as $error)
 			{
 				$this->arResult['ERROR_MESSAGE'] .= $error->getMessage();
+
+				if ($error->getCode())
+					$this->arResult['ERRORS'][$error->getCode()] = $error->getMessage();
+				else
+					$this->arResult['ERRORS'][] = $error->getMessage();
 			}
 		}
 	}
@@ -406,17 +434,17 @@ class PersonalProfileDetail extends CBitrixComponent
 		}
 		elseif ($property["IS_PROFILE_NAME"] == "Y")
 		{
-			if (strlen(trim($currentValue)) <= 0)
+			if (trim($currentValue) == '')
 				return false;
 		}
 		elseif ($property["IS_PAYER"] == "Y")
 		{
-			if (strlen(trim($currentValue)) <= 0)
+			if (trim($currentValue) == '')
 				return false;
 		}
 		elseif ($property["IS_EMAIL"] == "Y")
 		{
-			if (strlen(trim($currentValue)) <= 0 || !check_email(trim($currentValue)))
+			if (trim($currentValue) == '' || !check_email(trim($currentValue)))
 				return false;
 		}
 		elseif ($property["REQUIED"] == "Y")
@@ -433,7 +461,7 @@ class PersonalProfileDetail extends CBitrixComponent
 			}
 			else
 			{
-				if (strlen($currentValue) <= 0)
+				if ($currentValue == '')
 					return false;
 			}
 		}
@@ -449,7 +477,7 @@ class PersonalProfileDetail extends CBitrixComponent
 	 */
 	protected function prepareUpdatingProperties($request, $userOrderProperties)
 	{
-		if (strlen($request->get("NAME")) <= 0)
+		if ($request->get("NAME") == '')
 		{
 			$this->errorCollection->setError(new Main\Error(Loc::getMessage("SALE_NO_NAME")."<br>"));
 		}
@@ -511,7 +539,7 @@ class PersonalProfileDetail extends CBitrixComponent
 
 					foreach ($currentValue['name'] as $key => $fileName)
 					{
-						if (strlen($fileName) > 0)
+						if ($fileName <> '')
 						{
 							$fileArray = array(
 								'name' => $fileName,
@@ -586,7 +614,7 @@ class PersonalProfileDetail extends CBitrixComponent
 		{
 			if ($propertyValues['PROP_TYPE'] === 'FILE')
 			{
-				$baseArray = unserialize(htmlspecialchars_decode($propertyValues['VALUE']));
+				$baseArray = unserialize(htmlspecialchars_decode($propertyValues['VALUE']), ['allowed_classes' => false]);
 				if ($idFileDeletingList = $request->get("ORDER_PROP_" . $propertyValues["ORDER_PROPS_ID"] . "_del"))
 				{
 					$propertyValues['VALUE'] = $this->deleteFromPropertyTypeFile($idFileDeletingList, $baseArray);
@@ -650,7 +678,7 @@ class PersonalProfileDetail extends CBitrixComponent
 	protected function deleteFromPropertyTypeFile($idFileDeletingList, $baseArray)
 	{
 		if (CheckSerializedData($idFileDeletingList)
-			&& ($serialisedValue = @unserialize($idFileDeletingList)) !== false)
+			&& ($serialisedValue = @unserialize($idFileDeletingList, ['allowed_classes' => false])) !== false)
 		{
 			$idFileDeletingList = $serialisedValue;
 		}

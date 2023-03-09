@@ -14,6 +14,22 @@ use \Bitrix\Main\Localization\Loc;
 Loc::loadMessages(__FILE__);
 
 // Table with settings
+/**
+ * Class SitemapTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_Sitemap_Query query()
+ * @method static EO_Sitemap_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_Sitemap_Result getById($id)
+ * @method static EO_Sitemap_Result getList(array $parameters = array())
+ * @method static EO_Sitemap_Entity getEntity()
+ * @method static \Bitrix\Seo\EO_Sitemap createObject($setDefaultValues = true)
+ * @method static \Bitrix\Seo\EO_Sitemap_Collection createCollection()
+ * @method static \Bitrix\Seo\EO_Sitemap wakeUpObject($row)
+ * @method static \Bitrix\Seo\EO_Sitemap_Collection wakeUpCollection($rows)
+ */
 class SitemapTable extends Entity\DataManager
 {
 	const SETTINGS_DEFAULT_FILE_MASK = '*.php,*.html';
@@ -68,13 +84,13 @@ class SitemapTable extends Entity\DataManager
 
 	protected static function compileMask($mask)
 	{
-		if(strlen($mask) > 0)
+		if($mask <> '')
 		{
 			$arMask = preg_split("/[\s,;]+/", $mask);
 
 			foreach ($arMask as $key => $subMask)
 			{
-				if(strlen($subMask) > 0)
+				if($subMask <> '')
 				{
 					$arMask[$key] = str_replace(
 						array("___ALL___", "___ONE___"),
@@ -122,8 +138,8 @@ class SitemapTable extends Entity\DataManager
 
 				foreach($arSettings['FILE'] as $file => $value)
 				{
-					$pos = strrpos($file, '/');
-					$parentDir = $pos > 0 ? substr($file, 0, $pos) : '/';
+					$pos = mb_strrpos($file, '/');
+					$parentDir = $pos > 0? mb_substr($file, 0, $pos) : '/';
 
 					if(isset($arSettings['DIR'][$parentDir]) && $arSettings['DIR'][$parentDir] == $value)
 					{
@@ -140,8 +156,8 @@ class SitemapTable extends Entity\DataManager
 				{
 					if($dir != '/')
 					{
-						$pos = strrpos($dir, '/');
-						$parentDir = substr($dir, 0, $pos);
+						$pos = mb_strrpos($dir, '/');
+						$parentDir = mb_substr($dir, 0, $pos);
 
 						if($parentDir == '')
 							$parentDir = '/';

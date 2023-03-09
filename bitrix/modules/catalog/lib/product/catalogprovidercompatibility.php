@@ -1,9 +1,6 @@
 <?php
-
-
 namespace Bitrix\Catalog\Product;
 
-use Bitrix\Currency;
 use Bitrix\Sale;
 
 /**
@@ -433,9 +430,9 @@ class CatalogProviderCompatibility
 	 *
 	 * @return null|Sale\SaleProviderBase
 	 */
-	private static function getProviderClass($context = array())
+	private static function getProviderClass(array $context = array()): ?Sale\SaleProviderBase
 	{
-		$providerName = static::getProviderName();
+		$providerName = Basket::getDefaultProviderName();
 		$providerClass = null;
 
 		$setContext = static::getContext();
@@ -456,21 +453,14 @@ class CatalogProviderCompatibility
 	/**
 	 * @return array
 	 */
-	private static function getContext()
+	private static function getContext(): array
 	{
 		global $USER;
-		return array(
+
+		return [
 			'SITE_ID' => SITE_ID,
 			'USER_ID' => isset($USER) && $USER instanceof \CUser ? (int)$USER->GetID() : 0,
-			'CURRENCY' => Currency\CurrencyManager::getBaseCurrency(),
-		);
+			'CURRENCY' => Sale\Internals\SiteCurrencyTable::getSiteCurrency(SITE_ID)
+		];
 	}
-	/**
-	 * @return string
-	 */
-	private static function getProviderName()
-	{
-		return "\Bitrix\Catalog\Product\CatalogProvider";
-	}
-
 }

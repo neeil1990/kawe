@@ -3,7 +3,7 @@
  * @global CUser $USER
  * @global CMain $APPLICATION
  */
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+require_once(__DIR__."/../include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "settings/culture_admin.php");
 
@@ -70,13 +70,13 @@ if(($arID = $adminList->GroupAction()) && $isAdmin)
 
 $APPLICATION->SetTitle(Loc::getMessage("TITLE"));
 
-$sortBy = strtoupper($sorting->getField());
+$sortBy = mb_strtoupper($sorting->getField());
 if(!CultureTable::getEntity()->hasField($sortBy))
 {
 	$sortBy = "NAME";
 }
 
-$sortOrder = strtoupper($sorting->getOrder());
+$sortOrder = mb_strtoupper($sorting->getOrder());
 if($sortOrder <> "DESC")
 {
 	$sortOrder = "ASC";

@@ -8,7 +8,8 @@
 namespace Bitrix\Sale;
 
 use Bitrix\Main;
-use Bitrix\Sale\Internals\FuserTable;
+use Bitrix\Main\Application;
+use Bitrix\Sale\Internals;
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
@@ -62,11 +63,22 @@ class Fuser
 	protected static function updateSession($id)
 	{
 		\CSaleUser::updateSessionSaleUserID();
-		if ((string)Main\Config\Option::get('sale', 'encode_fuser_id') != 'Y' && isset($_SESSION['SALE_USER_ID']))
-			$_SESSION['SALE_USER_ID'] = (int)$_SESSION['SALE_USER_ID'];
 
-		if (!isset($_SESSION['SALE_USER_ID']) || (string)$_SESSION['SALE_USER_ID'] == '' || $_SESSION['SALE_USER_ID'] === 0)
-			$_SESSION['SALE_USER_ID'] = $id;
+		$session = Application::getInstance()->getSession();
+		if (!$session->isAccessible())
+		{
+			return;
+		}
+
+		if (isset($session['SALE_USER_ID']) && Main\Config\Option::get('sale', 'encode_fuser_id') !== 'Y')
+		{
+			$session['SALE_USER_ID'] = (int)$session['SALE_USER_ID'];
+		}
+
+		if (!isset($session['SALE_USER_ID']) || empty($session['SALE_USER_ID']))
+		{
+			$session['SALE_USER_ID'] = $id;
+		}
 	}
 
 	/**
@@ -88,7 +100,7 @@ class Fuser
 	 */
 	public static function getIdByUserId($userId)
 	{
-		$res = FuserTable::getList(array(
+		$res = Internals\FuserTable::getList(array(
 			'filter' => array(
 				'USER_ID' => $userId
 			),
@@ -128,7 +140,7 @@ class Fuser
 		$fuserId = (int)$fuserId;
 		if ($fuserId <= 0)
 			return $result;
-		$row = FuserTable::getList(array(
+		$row = Internals\FuserTable::getList(array(
 			'select' => array('USER_ID'),
 			'filter' => array('=ID' => $fuserId),
 			'order' => array('ID' => "DESC")
@@ -180,6 +192,6 @@ class Fuser
 		);
 
 		/** @var Result $r */
-		return FuserTable::add($fields);
+		return Internals\FuserTable::add($fields);
 	}
 }

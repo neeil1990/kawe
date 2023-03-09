@@ -35,7 +35,7 @@ if (Loader::includeModule('catalog'))
 	);
 
 	$siteId = isset($_REQUEST['src_site']) && is_string($_REQUEST['src_site']) ? $_REQUEST['src_site'] : '';
-	$siteId = substr(preg_replace('/[^a-z0-9_]/i', '', $siteId), 0, 2);
+	$siteId = mb_substr(preg_replace('/[^a-z0-9_]/i', '', $siteId), 0, 2);
 	if (!empty($siteId) && is_string($siteId))
 	{
 		$parameters['select']['SITE_ID'] = 'IBLOCK_SITE.SITE_ID';
@@ -343,8 +343,15 @@ if (isset($templateProperties['LABEL_PROP']))
 	}
 	else
 	{
-		$templateProperties['LABEL_PROP_MOBILE']['HIDDEN'] = 'Y';
-		$templateProperties['LABEL_PROP_POSITION']['HIDDEN'] = 'Y';
+		if (!empty($templateProperties['LABEL_PROP_MOBILE']))
+		{
+			$templateProperties['LABEL_PROP_MOBILE']['HIDDEN'] = 'Y';
+		}
+
+		if (!empty($templateProperties['LABEL_PROP_POSITION']))
+		{
+			$templateProperties['LABEL_PROP_POSITION']['HIDDEN'] = 'Y';
+		}
 	}
 }
 
@@ -353,7 +360,16 @@ if(!Loader::includeModule('catalog'))
 	unset($arComponentParameters["PARAMETERS"]["USE_GIFTS"]);
 	unset($arComponentParameters["GROUPS"]["GIFTS"]);
 }
-elseif($arCurrentValues["USE_GIFTS"] === null && $arComponentParameters['PARAMETERS']['USE_GIFTS']['DEFAULT'] == 'Y' || $arCurrentValues["USE_GIFTS"] == "Y")
+elseif(
+	(
+		!isset($arCurrentValues["USE_GIFTS"])
+		&& $arComponentParameters['PARAMETERS']['USE_GIFTS']['DEFAULT'] == 'Y'
+	)
+	|| (
+		isset($arCurrentValues["USE_GIFTS"])
+		&& $arCurrentValues["USE_GIFTS"] == "Y"
+	)
+)
 {
 	$arComponentParameters['PARAMETERS'] = array_merge(
 		$arComponentParameters['PARAMETERS'],
@@ -411,18 +427,6 @@ elseif($arCurrentValues["USE_GIFTS"] === null && $arComponentParameters['PARAMET
 				'NAME' => GetMessage('CVP_SHOW_DISCOUNT_PERCENT'),
 				'TYPE' => 'CHECKBOX',
 				'DEFAULT' => 'Y'
-			),
-			"GIFTS_SHOW_NAME" => array(
-				"PARENT" => "GIFTS",
-				"NAME" => GetMessage("CVP_SHOW_NAME"),
-				"TYPE" => "CHECKBOX",
-				"DEFAULT" => "Y",
-			),
-			"GIFTS_SHOW_IMAGE" => array(
-				"PARENT" => "GIFTS",
-				"NAME" => GetMessage("CVP_SHOW_IMAGE"),
-				"TYPE" => "CHECKBOX",
-				"DEFAULT" => "Y",
 			),
 			'GIFTS_MESS_BTN_BUY' => array(
 				'PARENT' => 'GIFTS',

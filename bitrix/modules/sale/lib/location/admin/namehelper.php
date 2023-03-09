@@ -49,7 +49,7 @@ abstract class NameHelper extends Helper
 				{
 					$tmpCol = $column;
 
-					$tmpCol['title'] = $tmpCol['title'].'&nbsp;('.$lang.')';
+					$tmpCol['title'] = $tmpCol['title'].' ('.$lang.')';
 					$flds[$code.'_'.ToUpper($lang)] = $tmpCol;
 				}
 			}
@@ -195,8 +195,10 @@ abstract class NameHelper extends Helper
 				{
 					$key = 'find_'.$code.'_'.$lang;
 
-					if(strlen($GLOBALS[$key]))
+					if($GLOBALS[$key] <> '')
+					{
 						$parameters['filter'][static::getFilterModifier($fld['data_type']).'NAME__'.$lang.'.'.$code] = $GLOBALS[$key];
+					}
 				}
 			}
 		}
@@ -229,11 +231,8 @@ abstract class NameHelper extends Helper
 
 		if($languages == null)
 		{
-			$by = 'sort';
-			$order = 'asc';
-
 			$lang = new \CLanguage();
-			$res = $lang->GetList($by, $order, array());
+			$res = $lang->GetList();
 			$languages = array();
 			while($item = $res->Fetch())
 				$languages[$item['LANGUAGE_ID']] = $item['LANGUAGE_ID'];

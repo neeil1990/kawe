@@ -17,6 +17,7 @@ use Bitrix\Main\ObjectNotFoundException;
 use Bitrix\Main\SystemException;
 use Bitrix\Sale\Internals;
 use Bitrix\Currency;
+use Bitrix\Sale\Reservation\Configuration\ReserveCondition;
 
 Loc::loadMessages(__FILE__);
 
@@ -395,7 +396,7 @@ abstract class ProviderBase
 						if ($providerClass instanceof SaleProviderBase)
 						{
 							$shipmentProductData = $creator->createItemForShip($shipmentItem);
-							$creator->addShipmentProductData($shipmentProductData);
+							$creator->addProductData($shipmentProductData);
 						}
 					}
 
@@ -540,7 +541,7 @@ abstract class ProviderBase
 	 * @throws NotSupportedException
 	 * @throws SystemException
 	 */
-	private function reverseShipment(Shipment $shipment, array $shippedList)
+	private static function reverseShipment(Shipment $shipment, array $shippedList)
 	{
 		$needShip = $shipment->needShip();
 
@@ -699,7 +700,7 @@ abstract class ProviderBase
 	 * @return Result
 	 * @throws ObjectNotFoundException
 	 */
-	private function setShipmentItemReserved(Shipment $shipment)
+	private static function setShipmentItemReserved(Shipment $shipment)
 	{
 
 		$result = new Result();
@@ -718,7 +719,10 @@ abstract class ProviderBase
 			throw new ObjectNotFoundException('Entity "Order" not found');
 		}
 
-		if (!$shipment->needReservation())
+		if (
+			Configuration::isEnableAutomaticReservation()
+			&& !$shipment->needReservation()
+		)
 		{
 			if ($needShip === false)
 			{
@@ -1010,28 +1014,34 @@ abstract class ProviderBase
 
 		$basketList = static::makeArrayFromBasketCollection($basketCollection, $refreshItem);
 
+		// Process each element separately so that it works correctly with duplicates.
 		$basketProviderMap = static::createProviderBasketMap($basketList, array('QUANTITY', 'RENEWAL', 'SITE_ID', 'USER_ID'));
-		$basketProviderList = static::redistributeToProviders($basketProviderMap);
-
-		if (!empty($basketProviderList))
+		foreach ($basketProviderMap as $basketProviderMapItem)
 		{
-			$options = array(
-				'RETURN_BASKET_ID'
-			);
+			$basketProviderList = static::redistributeToProviders([
+				$basketProviderMapItem,
+			]);
 
-			foreach ($basketProviderList as $providerClassName => $productValueList)
+			if (!empty($basketProviderList))
 			{
-				$r = static::getProductDataByList($productValueList, $providerClassName, $select, $context, $options);
-				if ($r->isSuccess())
+				$options = array(
+					'RETURN_BASKET_ID'
+				);
+
+				foreach ($basketProviderList as $providerClassName => $productValueList)
 				{
-					$resultData = $r->getData();
-					if (!empty($resultData['PRODUCT_DATA_LIST']))
+					$r = static::getProductDataByList($productValueList, $providerClassName, $select, $context, $options);
+					if ($r->isSuccess())
 					{
-						$resultList = $resultData['PRODUCT_DATA_LIST'] + $resultList;
+						$resultData = $r->getData();
+						if (!empty($resultData['PRODUCT_DATA_LIST']))
+						{
+							$resultList = $resultData['PRODUCT_DATA_LIST'] + $resultList;
+						}
 					}
 				}
-			}
 
+			}
 		}
 
 		return $resultList;
@@ -1342,18 +1352,19 @@ abstract class ProviderBase
 
 			$fields = $data;
 
-			if ($productData['IS_BUNDLE_CHILD'])
-			{
-				$fields['CHECK_DISCOUNT'] = 'N';
-			}
-
 			if ($productData['IS_ORDERABLE'])
 			{
-				$fields['CHECK_COUPONS'] = 'N';
+				$fields['CHECK_COUPONS'] = 'Y';
 			}
 			else
 			{
-				$fields['CHECK_COUPONS'] = 'Y';
+				$fields['CHECK_COUPONS'] = 'N';
+			}
+
+			if ($productData['IS_BUNDLE_CHILD'])
+			{
+				$fields['CHECK_DISCOUNT'] = 'N';
+				$fields['CHECK_COUPONS'] = 'N';
 			}
 
 			$fields['PRODUCT_ID'] = $productId;
@@ -1492,11 +1503,19 @@ abstract class ProviderBase
 				foreach ($basketCodeList as $basketCode)
 				{
 					$result[$itemCode]['PRICE_LIST'][$basketCode] = array(
-						'QUANTITY' => $providerData['DATA']['QUANTITY'],
-						'AVAILABLE_QUANTITY' => $providerData['DATA']['AVAILABLE_QUANTITY'],
 						"ITEM_CODE" => $itemCode,
 						"BASKET_CODE" => $basketCode,
 					);
+
+					if (isset($providerData['DATA']['QUANTITY']) && $providerData['DATA']['QUANTITY'] > 0)
+					{
+						$result[$itemCode]['PRICE_LIST'][$basketCode]['QUANTITY'] = $providerData['DATA']['QUANTITY'];
+					}
+
+					if (isset($providerData['DATA']['AVAILABLE_QUANTITY']))
+					{
+						$result[$itemCode]['PRICE_LIST'][$basketCode]['AVAILABLE_QUANTITY'] = $providerData['DATA']['AVAILABLE_QUANTITY'];
+					}
 				}
 
 				foreach ($priceFields as $fieldName)
@@ -1917,7 +1936,7 @@ abstract class ProviderBase
 						if ($providerClass instanceof SaleProviderBase)
 						{
 							$shipmentProductData = $creator->createItemForShip($shipmentItem);
-							$creator->addShipmentProductData($shipmentProductData);
+							$creator->addProductData($shipmentProductData);
 						}
 					}
 
@@ -2214,7 +2233,7 @@ abstract class ProviderBase
 				$creator = Internals\ProviderCreator::create($context);
 
 				$shipmentProductData = $creator->createItemForShip($shipmentItem);
-				$creator->addShipmentProductData($shipmentProductData);
+				$creator->addProductData($shipmentProductData);
 
 				$r = $creator->tryShip();
 				if ($r->isSuccess())
@@ -2800,8 +2819,8 @@ abstract class ProviderBase
 			if ($providerClass instanceof SaleProviderBase)
 			{
 				$creator = Internals\ProviderCreator::create($context);
-				$shipmentProductData = $creator->createItemForReserve($shipmentItem);
-				$creator->addShipmentProductData($shipmentProductData);
+				$shipmentProductData = $creator->createItemForReserveByShipmentItem($shipmentItem);
+				$creator->addProductData($shipmentProductData);
 
 				$r = $creator->getAvailableQuantity();
 				if ($r->isSuccess())
@@ -2812,9 +2831,9 @@ abstract class ProviderBase
 						$productId = $basketItem->getProductId();
 
 						$resultAvailableQuantityList = $resultData['AVAILABLE_QUANTITY_LIST'];
-						if (substr($providerName, 0, 1) == "\\")
+						if (mb_substr($providerName, 0, 1) == "\\")
 						{
-							$providerName = substr($providerName, 1);
+							$providerName = mb_substr($providerName, 1);
 						}
 
 						if (isset($resultAvailableQuantityList[$providerName]) && isset($resultAvailableQuantityList[$providerName][$productId]))
@@ -2899,7 +2918,7 @@ abstract class ProviderBase
 				$availableQuantity = -1 * $shipmentItem->getReservedQuantity();
 			}
 
-			if (Configuration::getProductReservationCondition() != Configuration::RESERVE_ON_SHIP)
+			if (Configuration::getProductReservationCondition() != ReserveCondition::ON_SHIP)
 			{
 
 				$reservedQuantity = ($availableQuantity >= $needQuantity ? $needQuantity : $availableQuantity);
@@ -3412,15 +3431,7 @@ abstract class ProviderBase
 				$creator->addShipmentItem($shipmentItem);
 
 				$r = $creator->reserve();
-				if ($r->isSuccess())
-				{
-					$r = $creator->setItemsResultAfterReserve($r);
-					if (!$r->isSuccess())
-					{
-						$result->addErrors($r->getErrors());
-					}
-				}
-				else
+				if (!$r->isSuccess())
 				{
 					$result->addErrors($r->getErrors());
 				}
@@ -3432,193 +3443,6 @@ abstract class ProviderBase
 		{
 			$result->setData($fields);
 		}
-		return $result;
-	}
-
-	/**
-	 * @param ShipmentItem $shipmentItem
-	 * @param $quantity
-	 *
-	 * @return Result
-	 * @throws NotSupportedException
-	 * @throws ObjectNotFoundException
-	 */
-	private static function unreserveShipmentItem(ShipmentItem $shipmentItem, $quantity)
-	{
-		global $APPLICATION;
-
-		$result = new Result();
-		$fields = array();
-
-		/** @var ShipmentItemCollection $shipmentItemCollection */
-		if (!$shipmentItemCollection = $shipmentItem->getCollection())
-		{
-			throw new ObjectNotFoundException('Entity "ShipmentItemCollection" not found');
-		}
-
-		/** @var Shipment $shipment */
-		if (!$shipment = $shipmentItemCollection->getShipment())
-		{
-			throw new ObjectNotFoundException('Entity "Shipment" not found');
-		}
-
-		/** @var BasketItem $basketItem */
-		if (!$basketItem = $shipmentItem->getBasketItem())
-		{
-			$result->addError( new ResultError(
-			   Loc::getMessage('SALE_PROVIDER_BASKET_ITEM_NOT_FOUND',  array(
-				   '#BASKET_ITEM_ID#' => $shipmentItem->getBasketId(),
-				   '#SHIPMENT_ID#' => $shipment->getId(),
-				   '#SHIPMENT_ITEM_ID#' => $shipmentItem->getId(),
-			   )),
-			'PROVIDER_UNRESERVED_SHIPMENT_ITEM_WRONG_BASKET_ITEM')
-			);
-			return $result;
-		}
-
-		$provider = $basketItem->getProvider();
-
-		if ($provider && array_key_exists("IBXSaleProductProvider", class_implements($provider)))
-		{
-
-			$data = array(
-				"PRODUCT_ID" => $basketItem->getProductId(),
-				"UNDO_RESERVATION" => "Y",
-				"QUANTITY_ADD"   => $quantity,
-				"ORDER_DEDUCTED" => $shipment->isShipped()? "Y" : "N",
-			);
-			$APPLICATION->ResetException();
-			if (($resultReserveData = $provider::ReserveProduct($data)))
-			{
-				if ($resultReserveData['RESULT'])
-				{
-					$fields['QUANTITY'] = $resultReserveData['QUANTITY_RESERVED'];
-
-					if (isset($resultReserveData['QUANTITY_NOT_RESERVED']) && floatval($resultReserveData['QUANTITY_NOT_RESERVED']) > 0)
-					{
-						$fields['QUANTITY'] = $shipmentItem->getReservedQuantity() + ($shipmentItem->getQuantity() - $shipmentItem->getReservedQuantity()) -  $resultReserveData['QUANTITY_NOT_RESERVED'];
-					}
-
-					return $result;
-				}
-				else
-				{
-					if ($ex = $APPLICATION->GetException())
-					{
-						if ($ex->GetID() != "ALREADY_FLAG")
-							$result->addError(new ResultError($ex->GetString())) ;
-					}
-					else
-					{
-						$result->addError(new ResultError(Loc::getMessage('SALE_PROVIDER_RESERVE_BASKET_ITEM_ERROR'), 'SALE_PROVIDER_RESERVE_BASKET_ITEM_ERROR')) ;
-					}
-				}
-
-			}
-
-		}
-
-		if (!empty($fields))
-		{
-			$result->setData($fields);
-		}
-		return $result;
-	}
-
-	/**
-	 * @param Shipment $shipment
-	 * @return array
-	 * @throws NotSupportedException
-	 * @throws ObjectNotFoundException
-	 */
-	public static function syncReservedQuantity(Shipment $shipment)
-	{
-		$result = array();
-
-		/** @var ShipmentCollection $shipmentCollection */
-		if (!$shipmentCollection = $shipment->getCollection())
-		{
-			throw new ObjectNotFoundException('Entity "ShipmentCollection" not found');
-		}
-
-		/** @var Shipment $systemShipment */
-		$systemShipment = $shipmentCollection->getSystemShipment();
-
-		/** @var ShipmentItemCollection $shipmentItemCollection */
-		if (!$shipmentItemCollection = $shipment->getShipmentItemCollection())
-		{
-			throw new ObjectNotFoundException('Entity "ShipmentItemCollection" not found');
-		}
-
-		/** @var ShipmentItem $shipmentItem */
-		foreach ($shipmentItemCollection as $shipmentIndex => $shipmentItem)
-		{
-			$basketCode = $shipmentItem->getBasketCode();
-
-			if (!array_key_exists($basketCode, static::$poolProductQuantity))
-			{
-				continue;
-			}
-
-			$reserveQuantity = static::$poolProductQuantity[$basketCode];
-
-
-			if ($reserveQuantity >= 0)
-			{
-
-				$basketCode = $shipmentItem->getBasketCode();
-
-				if (floatval($shipmentItem->getQuantity()) == floatval($shipmentItem->getReservedQuantity()))
-				{
-					continue;
-				}
-
-				$needReserved = floatval($shipmentItem->getQuantity()) - floatval($shipmentItem->getReservedQuantity());
-
-				$resultQuantity = static::reserveShipmentItem($shipmentItem, (($reserveQuantity - $needReserved) > 0 || $reserveQuantity == 0)? $needReserved : $reserveQuantity );
-
-				if (!$shipment->isSystem())
-				{
-					$shipmentReservedQuantity = floatval($shipmentItem->getReservedQuantity()) + $resultQuantity;
-					if (floatval($shipmentReservedQuantity) != floatval($shipmentItem->getQuantity()))
-					{
-						/** @var ShipmentItemCollection $systemShipmentItemCollection */
-						$systemShipmentItemCollection = $systemShipment->getShipmentItemCollection();
-
-						/** @var ShipmentItem $systemShipmentItem */
-						if ($systemShipmentItem = $systemShipmentItemCollection->getItemByBasketCode($shipmentItem->getBasketCode()))
-						{
-							$needMoreReserved = $shipmentItem->getQuantity() - $shipmentReservedQuantity;
-							$quantityNeedReserve = $systemShipmentItem->getReservedQuantity() - $needMoreReserved;
-							$quantityNeedReserve = ($quantityNeedReserve <= 0) ? $systemShipmentItem->getReservedQuantity() : $needMoreReserved ;
-
-							if (static::unreserveShipmentItem($systemShipmentItem, $quantityNeedReserve))
-							{
-								$resultNeedQuantity = static::reserveShipmentItem($shipmentItem, $quantityNeedReserve);
-
-								$resultQuantity = $resultQuantity + $resultNeedQuantity;
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-
-				$resultQuantity = static::unreserveShipmentItem($shipmentItem, $shipmentItem->getReservedQuantity());
-
-			}
-
-			static::$poolProductQuantity[$basketCode] -= $resultQuantity;
-			$result[$shipmentItem->getBasketCode()] = $resultQuantity;
-
-			if (static::$poolProductQuantity[$basketCode] == 0)
-			{
-				unset(static::$poolProductQuantity[$basketCode]);
-			}
-
-		}
-
 		return $result;
 	}
 
@@ -3923,7 +3747,7 @@ abstract class ProviderBase
 				{
 					$providerName = $basketItem->getCallbackFunction();
 				}
-				
+
 				$resultData = $r->getData();
 				if (!empty($resultData) && array_key_exists('BARCODE_CHECK_LIST', $resultData))
 				{
@@ -4785,13 +4609,12 @@ abstract class ProviderBase
 	{
 		$result = new Result();
 
-		if (empty($providerClass))
+		$providerName = null;
+		if (!empty($providerClass))
 		{
-			return $result;
+			$reflect = new \ReflectionClass($providerClass);
+			$providerName = $reflect->getName();
 		}
-		
-		$reflect = new \ReflectionClass($providerClass);
-		$providerName = $reflect->getName();
 
 		$productId = $productData['PRODUCT_ID'];
 
@@ -4826,7 +4649,12 @@ abstract class ProviderBase
 
 		$result = new Result();
 
-		$needDeliver = $shipment->needDeliver();
+		$needDeliver = null;
+		if ($shipment->getFields()->isChanged('ALLOW_DELIVERY'))
+		{
+			$needDeliver = $shipment->getField('ALLOW_DELIVERY') === "Y";
+		}
+
 		if ($needDeliver === null || ($needDeliver === false && $shipment->getId() <= 0))
 			return $result;
 
@@ -5062,7 +4890,7 @@ abstract class ProviderBase
 		$result = new Result();
 		$APPLICATION->ResetException();
 		$resultProductData = false;
-		
+
 		if ($provider && array_key_exists("IBXSaleProductProvider", class_implements($provider)))
 		{
 			$resultProductData = $provider::DeliverProduct($fields);
@@ -5441,7 +5269,13 @@ abstract class ProviderBase
 	/**
 	 * @param Order $order
 	 *
+	 * @throws ArgumentNullException
+	 * @throws NotImplementedException
+	 * @throws NotSupportedException
 	 * @throws ObjectNotFoundException
+	 * @throws \Bitrix\Main\ArgumentException
+	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
+	 * @throws \Exception
 	 */
 	protected static function refreshMarkers(Order $order)
 	{
@@ -5743,7 +5577,20 @@ abstract class ProviderBase
 				throw new ObjectNotFoundException('Entity "BasketItem" not found');
 			}
 
-			if ($providerClass)
+			$callbackFunction = null;
+			if (!empty($productData['CALLBACK_FUNC']))
+			{
+				$callbackFunction = $productData['CALLBACK_FUNC'];
+			}
+
+			$isCustomItem = !($providerClass || $callbackFunction);
+
+			if ($isCustomItem)
+			{
+				$providerData = $basketItem->getFieldValues();
+				$providerData['AVAILABLE_QUANTITY'] = $basketItem->getQuantity();
+			}
+			else
 			{
 				$r = static::getProviderDataByProductData($providerClass, $productData, $context);
 				if (!$r->isSuccess())
@@ -5754,30 +5601,15 @@ abstract class ProviderBase
 				{
 					$result->addWarnings($r->getWarnings());
 				}
-
-				if (!empty($providerClass))
-				{
-					$reflect = new \ReflectionClass($providerClass);
-					$providerName = $reflect->getName();
-				}
-				else
-				{
-					$providerName = $basketItem->getCallbackFunction();
-				}
-
 				$providerData = $r->getData();
-			}
-			else
-			{
-				$providerData = $basketItem->getFieldValues();
-				$providerData['AVAILABLE_QUANTITY'] = $basketItem->getQuantity();
 			}
 
 			if (!empty($providerData))
 			{
 				if (isset($providerData['AVAILABLE_QUANTITY']))
 				{
-					$availableQuantityList[$productId] += floatval($providerData['AVAILABLE_QUANTITY']);
+					$availableQuantityList[$productId] ??= 0;
+					$availableQuantityList[$productId] += (float)$providerData['AVAILABLE_QUANTITY'];
 				}
 				else
 				{
@@ -5787,7 +5619,7 @@ abstract class ProviderBase
 
 				}
 
-				if ($providerClass)
+				if (!$isCustomItem)
 				{
 					$priceFields = static::getPriceFields();
 

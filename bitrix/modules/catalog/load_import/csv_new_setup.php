@@ -1,6 +1,8 @@
 <?
 //<title>CSV (new)</title>
-use Bitrix\Main;
+use Bitrix\Main,
+	Bitrix\Catalog;
+
 IncludeModuleLangFile($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/catalog/import_setup_templ.php');
 /** @global string $ACTION */
 /** @global string $URL_DATA_FILE */
@@ -47,10 +49,10 @@ if (($ACTION == 'IMPORT_EDIT' || $ACTION == 'IMPORT_COPY') && $STEP == 1)
 
 if ($STEP > 1)
 {
-	if (strlen($URL_DATA_FILE) > 0 && file_exists($_SERVER["DOCUMENT_ROOT"].$URL_DATA_FILE) && is_file($_SERVER["DOCUMENT_ROOT"].$URL_DATA_FILE) && $APPLICATION->GetFileAccessPermission($URL_DATA_FILE)>="R")
+	if ($URL_DATA_FILE <> '' && file_exists($_SERVER["DOCUMENT_ROOT"].$URL_DATA_FILE) && is_file($_SERVER["DOCUMENT_ROOT"].$URL_DATA_FILE) && $APPLICATION->GetFileAccessPermission($URL_DATA_FILE)>="R")
 		$DATA_FILE_NAME = $URL_DATA_FILE;
 
-	if (strlen($DATA_FILE_NAME) <= 0)
+	if ($DATA_FILE_NAME == '')
 		$arSetupErrors[] = GetMessage("CATI_NO_DATA_FILE");
 
 	if (empty($arSetupErrors))
@@ -140,14 +142,14 @@ if ($STEP > 2)
 					$delimiter_r_char = " ";
 					break;
 				case "OTR":
-					$delimiter_r_char = substr($delimiter_other_r, 0, 1);
+					$delimiter_r_char = mb_substr($delimiter_other_r, 0, 1);
 					break;
 				case "TZP":
 					$delimiter_r_char = ";";
 					break;
 			}
 
-			if (strlen($delimiter_r_char) != 1)
+			if (mb_strlen($delimiter_r_char) != 1)
 				$arSetupErrors[] = GetMessage("CATI_NO_DELIMITER");
 
 			if (empty($arSetupErrors))
@@ -160,7 +162,7 @@ if ($STEP > 2)
 			$first_names_f = ($first_names_f == "Y" ? "Y" : "N");
 			$csvFile->SetFirstHeader(($first_names_f == "Y") ? true : false);
 
-			if (strlen($metki_f) <= 0)
+			if ($metki_f == '')
 				$arSetupErrors[] = GetMessage("CATI_NO_METKI");
 
 			if (empty($arSetupErrors))
@@ -290,9 +292,15 @@ $context->Show();
 
 if (!empty($arSetupErrors))
 	ShowError(implode('<br>', $arSetupErrors));
+
+$actionParams = "";
+if ($adminSidePanelHelper->isSidePanel())
+{
+	$actionParams = "?IFRAME=Y&IFRAME_TYPE=SIDE_SLIDER";
+}
 ?>
 <!--suppress JSUnresolvedVariable -->
-<form method="POST" action="<? echo $APPLICATION->GetCurPage(); ?>" ENCTYPE="multipart/form-data" name="dataload">
+<form method="POST" action="<? echo $APPLICATION->GetCurPage().$actionParams; ?>" ENCTYPE="multipart/form-data" name="dataload">
 <?
 $aTabs = array(
 	array("DIV" => "edit1", "TAB" => GetMessage("CAT_ADM_CSV_IMP_TAB1"), "ICON" => "store", "TITLE" => GetMessage("CAT_ADM_CSV_IMP_TAB1_TITLE")),
@@ -435,11 +443,11 @@ if ($STEP == 2)
 			fclose($file_id);
 			if ($sContent != '')
 			{
-				$key = strrpos($sContent, "\r\n");
+				$key = mb_strrpos($sContent, "\r\n");
 				if ($key === false)
-					$key = strrpos($sContent, "\n");
+					$key = mb_strrpos($sContent, "\n");
 				if ($key !== false)
-					$sContent = substr($sContent, 0, $key);
+					$sContent = mb_substr($sContent, 0, $key);
 				unset($key);
 			}
 			?><textarea name="data" rows="7" cols="90"><? echo htmlspecialcharsbx($sContent); ?></textarea>
@@ -500,7 +508,7 @@ if ($STEP == 3)
 	if (isset($arOneCatalogAvailProdFields_tmp))
 		unset($arOneCatalogAvailProdFields_tmp);
 
-	$properties = CIBlockProperty::GetList(array("SORT"=>"ASC", "ID"=>"ASC"), array("IBLOCK_ID"=>$IBLOCK_ID, "ACTIVE"=>"Y", 'CHECK_PERMISSIONS' => 'N'));
+	$properties = CIBlockProperty::GetList(array("SORT"=>"ASC", "NAME" => "ASC", "ID"=>"ASC"), array("IBLOCK_ID"=>$IBLOCK_ID, "ACTIVE"=>"Y", 'CHECK_PERMISSIONS' => 'N'));
 	while ($prop_fields = $properties->Fetch())
 	{
 		$arAvailFields[$intCount] = array(
@@ -572,7 +580,7 @@ if ($STEP == 3)
 
 	if ($boolCatalog)
 	{
-		$boolUseStoreControl = 'Y' == COption::GetOptionString('catalog', 'default_use_store_control', 'N');
+		$boolUseStoreControl = Catalog\Config\State::isUsedInventoryManagement();
 		$arDisableFields = array(
 			'CP_QUANTITY' => true,
 			'CP_PURCHASING_PRICE' => true,
@@ -847,11 +855,11 @@ if ($STEP == 3)
 			fclose($file_id);
 			if ($sContent != '')
 			{
-				$key = strrpos($sContent, "\r\n");
+				$key = mb_strrpos($sContent, "\r\n");
 				if ($key === false)
-					$key = strrpos($sContent, "\n");
+					$key = mb_strrpos($sContent, "\n");
 				if ($key !== false)
-					$sContent = substr($sContent, 0, $key);
+					$sContent = mb_substr($sContent, 0, $key);
 				unset($key);
 			}
 			?><textarea name="data" rows="7" cols="90"><? echo htmlspecialcharsbx($sContent); ?></textarea>

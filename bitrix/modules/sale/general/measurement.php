@@ -1,7 +1,8 @@
-<?
+<?php
+
 class CSaleMeasure
 {
-	function GetList($category = false)
+	public static function GetList($category = false)
 	{
 		static $arMeasurementsTable;
 
@@ -9,7 +10,7 @@ class CSaleMeasure
 		{
 			$tablePath = COption::GetOptionString('sale', 'measurement_path', '/bitrix/modules/sale/measurements.php');
 			$fullPath = $_SERVER["DOCUMENT_ROOT"].$tablePath;
-			if (strlen($tablePath) > 0 && file_exists($fullPath) && !is_dir($fullPath))
+			if ($tablePath <> '' && file_exists($fullPath) && !is_dir($fullPath))
 			{
 				require_once($fullPath);
 				
@@ -33,7 +34,7 @@ class CSaleMeasure
 		}
 	}
 
-	function Convert($value, $measureFrom, $measureTo = "G")
+	public static function Convert($value, $measureFrom, $measureTo = "G")
 	{
 		if (!is_numeric($value)) 
 			return false;
@@ -47,4 +48,3 @@ class CSaleMeasure
 			return false;
 	}
 }
-?>

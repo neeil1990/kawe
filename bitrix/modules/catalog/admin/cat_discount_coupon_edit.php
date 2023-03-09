@@ -3,15 +3,24 @@
  * @global CUser $USER
  * @global CMain $APPLICATION
  */
+
 use Bitrix\Main;
 use Bitrix\Catalog;
+use Bitrix\Catalog\Access\ActionDictionary;
+use Bitrix\Catalog\Access\AccessController;
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/catalog/prolog.php");
-if (!($USER->CanDoOperation('catalog_read') || $USER->CanDoOperation('catalog_discount')))
-	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+
 Main\Loader::includeModule('catalog');
-$bReadOnly = !$USER->CanDoOperation('catalog_discount');
+
+$accessController = AccessController::getCurrent();
+if (!($accessController->check(ActionDictionary::ACTION_CATALOG_READ) || $accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET)))
+{
+	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+}
+
+$bReadOnly = !$accessController->check(ActionDictionary::ACTION_PRODUCT_DISCOUNT_SET);
 
 if ($ex = $APPLICATION->GetException())
 {
@@ -26,7 +35,7 @@ $returnUrl = '';
 if (!empty($_REQUEST['return_url']))
 {
 	$currentUrl = $APPLICATION->GetCurPage();
-	if (strtolower(substr($_REQUEST['return_url'], strlen($currentUrl))) != strtolower($currentUrl))
+	if (mb_strtolower(mb_substr($_REQUEST['return_url'], mb_strlen($currentUrl))) != mb_strtolower($currentUrl))
 	{
 		$returnUrl = $_REQUEST['return_url'];
 	}

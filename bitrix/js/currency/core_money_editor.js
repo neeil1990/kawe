@@ -3,7 +3,20 @@
 
 	BX.namespace('BX.Currency');
 
-	var currencyList = null;
+	var currencyList = null,
+		defaultFormat = {
+			'CURRENCY': '',
+			'NAME': '',
+			'FORMAT_STRING': '#',
+			'DEC_POINT': '.',
+			'THOUSANDS_VARIANT': null,
+			'THOUSANDS_SEP': ' ',
+			'DECIMALS': 2,
+			'HIDE_ZERO': 'N',
+			'BASE': 'N',
+			'SEPARATOR': ' '
+		};
+
 	function getCurrencyList()
 	{
 		if(currencyList === null)
@@ -12,6 +25,16 @@
 		}
 
 		return currencyList;
+	}
+
+	function getCurrencyFormat(currency)
+	{
+		var list = getCurrencyList();
+
+		if (typeof list[currency] !== 'undefined')
+			return list[currency];
+
+		return defaultFormat;
 	}
 
 	BX.Currency.Editor = function(param)
@@ -28,6 +51,7 @@
 
 	BX.Currency.Editor.prototype.init = function()
 	{
+		this.formatValue();
 		BX.bind(this.input, 'bxchange', BX.proxy(this.valueEdit, this));
 		BX.unbind(this.input, 'change', BX.proxy(this.valueEdit, this));
 	};
@@ -38,7 +62,13 @@
 		this.input = null;
 	};
 
-	BX.Currency.Editor.prototype.valueEdit = function(){
+	BX.Currency.Editor.prototype.valueEdit = function(e){
+		// hack to prevent selection loss while form editing with keyboard
+		if(!!e && e.type === 'keyup' && e.code === 'Tab')
+		{
+			return;
+		}
+
 		this.formatValue();
 	};
 
@@ -58,8 +88,8 @@
 
 	BX.Currency.Editor.prototype.formatValue = function()
 	{
-		var cursorPos = BX.getCaretPosition(this.input);
-		var originalValue = this.input.value;
+		var cursorPos = BX.getCaretPosition(this.input),
+			originalValue = this.input.value;
 
 		this.changeValue();
 
@@ -115,13 +145,10 @@
 
 	BX.Currency.Editor.trimTrailingZeros = function(formattedValue, currency)
 	{
-		var listCurrency = getCurrencyList();
-		if(typeof listCurrency[currency] === 'undefined')
-		{
-			return formattedValue;
-		}
+		var currentFormat = getCurrencyFormat(currency),
+			ch;
+		ch = BX.prop.getString(currentFormat, 'DEC_POINT', '');
 
-		var ch = BX.prop.getString(listCurrency[currency], 'DEC_POINT', '');
 		return ch !== '' ? formattedValue.replace(new RegExp('\\' + ch + '0+$'), '') : formattedValue;
 	};
 
@@ -132,26 +159,38 @@
 
 	BX.Currency.Editor.getUnFormattedValue = function(formattedValue, currency)
 	{
-		var listCurrency = getCurrencyList();
-		if (listCurrency[currency]['SEPARATOR'].length === 1)
+		var currentFormat = getCurrencyFormat(currency);
+
+		if (currentFormat['SEPARATOR'].length === 1)
 		{
 			return formattedValue
-				.replace(new RegExp('[' + listCurrency[currency]['SEPARATOR'] + ']', 'g'), '')
-				.replace(listCurrency[currency]['DEC_POINT'], '.');
+				.replace(new RegExp('[' + currentFormat['SEPARATOR'] + ']', 'g'), '')
+				.replace(currentFormat['DEC_POINT'], '.')
+				.replace(new RegExp('[^0-9\.]', 'g'), '');
+		}
+		else if(currentFormat['SEPARATOR'].length > 1)
+		{
+			return formattedValue
+				.replace(new RegExp(this.escapeRegExp(currentFormat['SEPARATOR']), 'g'), '')
+				.replace(currentFormat['DEC_POINT'], '.')
+				.replace(new RegExp('[^0-9\.]', 'g'), '');
 		}
 		else
 		{
-			return formattedValue
-				.replace(new RegExp(this.escapeRegExp(listCurrency[currency]['SEPARATOR']), 'g'), '')
-				.replace(listCurrency[currency]['DEC_POINT'], '.');
+			return formattedValue.replace(currentFormat['DEC_POINT'], '.')
+				.replace(new RegExp('[^0-9\.]', 'g'), '');
 		}
 	};
 
 	BX.Currency.Editor.getFormattedValue = function(baseValue, currency)
 	{
-		var valueLength = baseValue.length;
-		var formatValue = "";
-		var listCurrency = getCurrencyList();
+		var valueLength = baseValue.length,
+			formatValue = "",
+			currentFormat = getCurrencyFormat(currency),
+			regExp,
+			decPointPosition,
+			countDigit,
+			i;
 
 		if(valueLength > 0)
 		{
@@ -168,21 +207,20 @@
 			valueLength = baseValue.length;
 		}
 
-		var regExp;
-		if(listCurrency[currency]['SEPARATOR'] === ',' || listCurrency[currency]['SEPARATOR'] === '.')
+		if(currentFormat['SEPARATOR'] === ',' || currentFormat['SEPARATOR'] === '.')
 		{
 			regExp = new RegExp('[.,]');
 		}
 		else
 		{
-			regExp = new RegExp('[' + listCurrency[currency]['DEC_POINT'] + ',.]');
+			regExp = new RegExp('[' + currentFormat['DEC_POINT'] + ',.]');
 		}
 
-		var decPointPosition = baseValue.match(regExp);
+		decPointPosition = baseValue.match(regExp);
 
 		decPointPosition = decPointPosition === null ? baseValue.length : decPointPosition.index;
-		var countDigit = 0;
-		for(var i = 0; i < baseValue.length; i++)
+		countDigit = 0;
+		for (i = 0; i < baseValue.length; i++)
 		{
 			var symbolPosition = baseValue.length - 1 - i;
 			var symbol = baseValue.charAt(symbolPosition);
@@ -198,16 +236,16 @@
 
 			if(symbolPosition >= decPointPosition)
 			{
-				if(listCurrency[currency]['DEC_POINT'] === '.' && symbol === ',')
+				if(currentFormat['DEC_POINT'] === '.' && symbol === ',')
 				{
-					symbol = listCurrency[currency]['DEC_POINT'];
+					symbol = currentFormat['DEC_POINT'];
 				}
-				if(listCurrency[currency]['DEC_POINT'] === ',' && symbol === '.')
+				if(currentFormat['DEC_POINT'] === ',' && symbol === '.')
 				{
-					symbol = listCurrency[currency]['DEC_POINT'];
+					symbol = currentFormat['DEC_POINT'];
 				}
 
-				if(isDigit || (symbolPosition === decPointPosition && symbol === listCurrency[currency]['DEC_POINT']))
+				if(isDigit || (symbolPosition === decPointPosition && symbol === currentFormat['DEC_POINT']))
 				{
 					formatValue = symbol + formatValue;
 				}
@@ -228,7 +266,7 @@
 				}
 				if(isDigit && countDigit % 3 === 0 && countDigit !== 0 && symbolPosition !== 0)
 				{
-					formatValue = listCurrency[currency]['SEPARATOR'] + formatValue;
+					formatValue = currentFormat['SEPARATOR'] + formatValue;
 					if(valueLength >= symbolPosition)
 					{
 						valueLength++;
@@ -237,11 +275,11 @@
 			}
 		}
 
-		if(listCurrency[currency]['DECIMALS'] > 0)
+		if(currentFormat['DECIMALS'] > 0)
 		{
-			decPointPosition = formatValue.match(new RegExp('[' + listCurrency[currency]['DEC_POINT'] + ']'));
+			decPointPosition = formatValue.match(new RegExp('[' + currentFormat['DEC_POINT'] + ']'));
 			decPointPosition = decPointPosition === null ? formatValue.length : decPointPosition.index;
-			while(formatValue.length - 1 - decPointPosition > listCurrency[currency]['DECIMALS'])
+			while(formatValue.length - 1 - decPointPosition > currentFormat['DECIMALS'])
 			{
 				if(valueLength >= formatValue.length - 1)
 				{
@@ -252,5 +290,4 @@
 		}
 		return formatValue;
 	};
-
 })();

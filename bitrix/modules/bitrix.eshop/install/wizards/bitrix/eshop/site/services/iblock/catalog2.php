@@ -40,12 +40,14 @@ if($IBLOCK_OFFERS_ID == false)
 			"1" => "X",
 			"2" => "R"
 		);
-	$dbGroup = CGroup::GetList($by = "", $order = "", Array("STRING_ID" => "sale_administrator"));
+	$dbGroup = CGroup::GetList('', '', Array("STRING_ID" => "sale_administrator"));
 	if($arGroup = $dbGroup -> Fetch())
 	{
 		$permissions[$arGroup["ID"]] = 'W';
 	}
-	$dbGroup = CGroup::GetList($by = "", $order = "", Array("STRING_ID" => "content_editor"));
+	$by = "";
+	$order = "";
+	$dbGroup = CGroup::GetList('', '', Array("STRING_ID" => "content_editor"));
 	if($arGroup = $dbGroup -> Fetch())
 	{
 		$permissions[$arGroup["ID"]] = 'W';
@@ -70,6 +72,9 @@ if($IBLOCK_OFFERS_ID == false)
 
 	if ($IBLOCK_OFFERS_ID < 1)
 		return;
+
+	$iblock = new CIBlock;
+	$iblock->Update($IBLOCK_CATALOG_ID, array("LIST_MODE" => \Bitrix\Iblock\IblockTable::LIST_MODE_SEPARATE));
 
 	$_SESSION["WIZARD_OFFERS_IBLOCK_ID"] = $IBLOCK_OFFERS_ID;
 }

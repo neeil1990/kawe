@@ -1,11 +1,12 @@
-<?
+<?php
+
 class CAllSaleOrderUserPropsValue
 {
-	function GetByID($ID)
+	public static function GetByID($ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		if(CSaleLocation::isLocationProMigrated())
 		{
@@ -33,24 +34,24 @@ class CAllSaleOrderUserPropsValue
 		return False;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		return $DB->Query("DELETE FROM b_sale_user_props_value WHERE ID = ".$ID."", true);
 	}
 
-	function DeleteAll($ID)
+	public static function DeleteAll($ID)
 	{
 		global $DB;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		return $DB->Query("DELETE FROM b_sale_user_props_value WHERE USER_PROPS_ID = ".$ID."", true);
 	}
 	
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		// need to check here if we got CODE or ID came
 		if(isset($arFields['VALUE']) && ((string) $arFields['VALUE'] != '') && CSaleLocation::isLocationProMigrated())
@@ -197,4 +198,3 @@ class CAllSaleOrderUserPropsValue
 //		));
 //	}
 }
-?>

@@ -1,6 +1,9 @@
 <?
-use Bitrix\Main\Web\HttpClient;
+
 use Bitrix\Main\Web\Json;
+use Bitrix\Main\Config\Option;
+use Bitrix\Main\Web\HttpClient;
+use Bitrix\Main\Localization\Loc;
 
 IncludeModuleLangFile(__FILE__);
 
@@ -31,13 +34,25 @@ class CSocServFacebook extends CSocServAuth
 		return $this->entityOAuth;
 	}
 
-	public function GetSettings()
+	/**
+	 * @return array
+	 */
+	public function GetSettings(): array
 	{
-		return array(
-			array("facebook_appid", GetMessage("socserv_fb_id"), "", Array("text", 40)),
-			array("facebook_appsecret", GetMessage("socserv_fb_secret"), "", Array("text", 40)),
-			array("note"=>GetMessage("socserv_fb_sett_note1", array('#URL#'=>$this->getEntityOAuth()->GetRedirectURI()))),
-		);
+		$urlPreviewEnable = Option::get('main', 'url_preview_enable', 'Y');
+		$result = [
+			['facebook_appid', Loc::getMessage('socserv_fb_id'), '', ['text', 40]],
+			['facebook_appsecret', Loc::getMessage('socserv_fb_secret'), '', ['text', 40]],
+			['note' => Loc::getMessage('socserv_fb_sett_note1', ['#URL#'=>$this->getEntityOAuth()->GetRedirectURI()])],
+		];
+
+		if($urlPreviewEnable === 'Y')
+		{
+			$result[] = ['facebook_instagram_url_preview_enable', Loc::getMessage('socserv_fb_instagram_url_preview'), '', ['checkbox']];
+			$result[] = ['note' => Loc::getMessage('socserv_fb_sett_note_oembed_2')];
+		}
+
+		return $result;
 	}
 
 	public function GetFormHtml($arParams)
@@ -63,17 +78,16 @@ class CSocServFacebook extends CSocServAuth
 	{
 		global $APPLICATION;
 
-		CSocServAuthManager::SetUniqueKey();
 		if(IsModuleInstalled('bitrix24') && defined('BX24_HOST_NAME'))
 		{
 			$redirect_uri = static::CONTROLLER_URL."/redirect.php";
-			$state = $this->getEntityOAuth()->GetRedirectURI()."?check_key=".$_SESSION["UNIQUE_KEY"]."&state=";
+			$state = $this->getEntityOAuth()->GetRedirectURI()."?check_key=".\CSocServAuthManager::getUniqueKey()."&state=";
 			$backurl = $APPLICATION->GetCurPageParam('', array("logout", "auth_service_error", "auth_service_id", "backurl"));
 			$state .= urlencode("state=".urlencode("backurl=".urlencode($backurl).(isset($arParams['BACKURL']) ? '&redirect_url='.urlencode($arParams['BACKURL']) : '')));
 		}
 		else
 		{
-			$state = 'site_id='.SITE_ID.'&backurl='.urlencode($APPLICATION->GetCurPageParam('check_key='.$_SESSION["UNIQUE_KEY"], array("logout", "auth_service_error", "auth_service_id", "backurl"))).(isset($arParams['BACKURL']) ? '&redirect_url='.urlencode($arParams['BACKURL']) : '');
+			$state = 'site_id='.SITE_ID.'&backurl='.urlencode($APPLICATION->GetCurPageParam('check_key='.\CSocServAuthManager::getUniqueKey(), array("logout", "auth_service_error", "auth_service_id", "backurl"))).(isset($arParams['BACKURL']) ? '&redirect_url='.urlencode($arParams['BACKURL']) : '');
 			$redirect_uri = $this->getEntityOAuth()->GetRedirectURI();
 		}
 
@@ -137,7 +151,7 @@ class CSocServFacebook extends CSocServAuth
 
 		$arFields["PERSONAL_WWW"] = $this->getProfileUrl($arFBUser['id']);
 
-		if(strlen(SITE_ID) > 0)
+		if(SITE_ID <> '')
 		{
 			$arFields["SITE_ID"] = SITE_ID;
 		}
@@ -183,7 +197,7 @@ class CSocServFacebook extends CSocServAuth
 		$url = ($APPLICATION->GetCurDir() == "/login/") ? "" : $APPLICATION->GetCurDir();
 		$aRemove = array("logout", "auth_service_error", "auth_service_id", "code", "error_reason", "error", "error_description", "check_key", "current_fieldset");
 
-		if(isset($_REQUEST["state"]))
+		if(isset($_REQUEST["state"]) && $bSuccess)
 		{
 			$arState = array();
 			parse_str($_REQUEST["state"], $arState);
@@ -191,7 +205,7 @@ class CSocServFacebook extends CSocServAuth
 			if(isset($arState['backurl']) || isset($arState['redirect_url']))
 			{
 				$url = !empty($arState['redirect_url']) ? $arState['redirect_url'] : $arState['backurl'];
-				if(substr($url, 0, 1) !== "#")
+				if(mb_substr($url, 0, 1) !== "#")
 				{
 					$parseUrl = parse_url($url);
 
@@ -202,7 +216,7 @@ class CSocServFacebook extends CSocServAuth
 					{
 						foreach($aRemove as $param)
 						{
-							if(strpos($value, $param."=") === 0)
+							if(mb_strpos($value, $param."=") === 0)
 							{
 								unset($arUrlQuery[$key]);
 								break;
@@ -225,9 +239,9 @@ class CSocServFacebook extends CSocServAuth
 			$url = (isset($urlPath)) ? $urlPath.'?auth_service_id='.self::ID.'&auth_service_error='.$authError : $GLOBALS['APPLICATION']->GetCurPageParam(('auth_service_id='.self::ID.'&auth_service_error='.$authError), $aRemove);
 		}
 
-		if(CModule::IncludeModule("socialnetwork") && strpos($url, "current_fieldset=") === false)
+		if(CModule::IncludeModule("socialnetwork") && mb_strpos($url, "current_fieldset=") === false)
 		{
-			$url .= ((strpos($url, "?") === false) ? '?' : '&')."current_fieldset=SOCSERV";
+			$url .= ((mb_strpos($url, "?") === false) ? '?' : '&')."current_fieldset=SOCSERV";
 		}
 ?>
 <script type="text/javascript">
@@ -236,7 +250,7 @@ if(window.opener)
 window.close();
 </script>
 <?
-		die();
+		CMain::FinalActions();
 	}
 
 	public function setUser($userId)
@@ -354,8 +368,6 @@ class CFacebookInterface extends CSocServOAuthTransport
 
 	protected $scope = array(
 		"email",
-		"publish_actions",
-		"user_friends",
 	);
 
 	public function __construct($appID = false, $appSecret = false, $code=false)
@@ -430,7 +442,7 @@ class CFacebookInterface extends CSocServOAuthTransport
 			if(isset($arResultLongLive["access_token"]) && $arResultLongLive["access_token"] <> '')
 			{
 				$arResult["access_token"] = $arResultLongLive["access_token"];
-				$arResult["expires"] = $arResultLongLive["expires_in"];
+				$arResult["expires"] = isset($arResultLongLive["expires_in"]) ? $arResultLongLive["expires_in"] : 86400 * 60;
 				$_SESSION["OAUTH_DATA"] = array(
 					"OATOKEN" => $arResultLongLive["access_token"],
 					"OATOKEN_EXPIRES" => time() + $arResultLongLive['expires'],
@@ -576,8 +588,11 @@ class CFacebookInterface extends CSocServOAuthTransport
 
 	private function SetOauthKeys($socServUserId)
 	{
-		$dbSocservUser = CSocServAuthDB::GetList(array(), array('ID' => $socServUserId), false, false, array("OATOKEN", "XML_ID"));
-		while($arOauth = $dbSocservUser->Fetch())
+		$dbSocservUser = \Bitrix\Socialservices\UserTable::getList([
+			'filter' => ['=ID' => $socServUserId],
+			'select' => ["OATOKEN", "XML_ID"]
+		]);
+		while($arOauth = $dbSocservUser->fetch())
 		{
 			$this->access_token = $arOauth["OATOKEN"];
 			$this->userId = $arOauth["XML_ID"];

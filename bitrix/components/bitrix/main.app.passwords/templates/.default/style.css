@@ -1,17 +1,17 @@
 /*GRID*/
 .bx-otp-wrap-container{
-    padding:20px 25px;
+    /*padding:20px 25px;*/
 }
 h2.bx-otp-wrap-container-title{
     font-size:20px;
-    font-weight:bold;
+    font-weight:var(--ui-font-weight-bold);
     margin:0;
     padding:0;
     color:#535b69;
 }
 h3.bx-otp-wrap-container-title{
     font-size:14px;
-    font-weight:bold;
+    font-weight:var(--ui-font-weight-bold);
     margin:0;
     padding:0;
     color:#535b69;
@@ -27,7 +27,6 @@ h3.bx-otp-wrap-container-title{
 
 /*white section*/
 .bx-otp-section-white{
-    padding:7px;
     background:#fff;
 }
 .bx-otp-accordion-container{
@@ -44,6 +43,7 @@ h3.bx-otp-wrap-container-title{
     padding:15px 60px 13px 17px;
     background:#e8ecee;
     cursor: pointer;
+	border-radius: var(--ui-border-radius-sm);
     -webkit-transition:background .2s ease;
        -moz-transition:background .2s ease;
         -ms-transition:background .2s ease;
@@ -65,7 +65,7 @@ h3.bx-otp-wrap-container-title{
 
 .bx-otp-accordion-head-title{
     font-size:21px;
-    font-weight:bold;
+    font-weight:var(--ui-font-weight-bold);
     line-height:21px;
     margin-bottom:3px;
     color:#535b69;
@@ -94,7 +94,7 @@ h3.bx-otp-wrap-container-title{
 	background-repeat:no-repeat;
 	background-position:center;
 }
-.bx-otp-accordion-container.open        .bx-otp-accordion-action{    
+.bx-otp-accordion-container.open        .bx-otp-accordion-action{
     background-color:#7fc4de;
     -webkit-transform: rotate(90deg);
        -moz-transform: rotate(90deg);
@@ -102,13 +102,13 @@ h3.bx-otp-wrap-container-title{
          -o-transform: rotate(90deg);
             transform: rotate(90deg);
 }
-.bx-otp-accordion-container.open:hover  .bx-otp-accordion-action{    
+.bx-otp-accordion-container.open:hover  .bx-otp-accordion-action{
     background-color:#53accd;
 }
-.bx-otp-accordion-container.close       .bx-otp-accordion-action{    
+.bx-otp-accordion-container.close       .bx-otp-accordion-action{
     background-color:#acb2b9;
 }
-.bx-otp-accordion-container.close:hover .bx-otp-accordion-action{    
+.bx-otp-accordion-container.close:hover .bx-otp-accordion-action{
     background-color:#8f969e;
 }
 
@@ -130,9 +130,9 @@ h3.bx-otp-wrap-container-title{
     border-collapse:collapse;
 }
 .bx-otp-access-table thead td{
-    font-family:'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family:var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-semi-bold, 400);
     font-size:10px;
-    font-weight:bold;
     padding:12px 5px 10px;
     text-align:right;
     white-space:nowrap;
@@ -169,6 +169,11 @@ h3.bx-otp-wrap-container-title{
     white-space:nowrap;
     color:#abaaaa;
     border-top:1px solid #edeef0;
+	vertical-align: bottom;
+}
+
+.bx-otp-access-table-value .ui-btn {
+	margin-bottom: 2px;
 }
 .bx-otp-access-table-action{
     width:auto !important;
@@ -187,7 +192,7 @@ h3.bx-otp-wrap-container-title{
     border: 1px solid #bdc0c5;
     padding: 0 10px;
     display:inline-block;
-    border-radius:2px;
+    border-radius: var(--ui-field-border-radius, 2px);
     -webkit-transition:border .5s ease;
        -moz-transition:border .5s ease;
         -ms-transition:border .5s ease;
@@ -225,14 +230,7 @@ h3.bx-otp-wrap-container-title{
 .bx-otp-slt.medium  {line-height:32px;height:32px;font-size:14px;}
 .bx-otp-slt.small   {line-height:29px;height:29px;font-size:14px;}
 .bx-otp-slt.xsmall  {line-height:18px;height:20px;font-size:13px;padding-bottom: 2px;font-weight: normal;}
-.bx-ie .bx-otp-slt {
-	padding-right:0;
-	padding-left:0;
-	height: auto;
-	line-height: normal;
-	margin-top: 5px;
-	margin-bottom: 5px;
-}
+
 /*== MODAL WINDOW ==*/
 /* General */
 .bx-otp-popup-container{
@@ -242,7 +240,7 @@ h3.bx-otp-wrap-container-title{
     background:#fff;
 }
 .bx-otp-popup-content{
-    font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family:var(--ui-font-family-primary, var(--ui-font-family-helvetica));
     font-size:16px;
     min-width:500px;
     padding:20px;
@@ -283,7 +281,7 @@ h3.bx-otp-wrap-container-title{
 }
 .bx-otp-popup-lottery{
     font-size:27px;
-    font-weight:bold;
+    font-weight:var(--ui-font-weight-bold);
     line-height:84px;
     position:relative;
     width:451px;
@@ -292,6 +290,7 @@ h3.bx-otp-wrap-container-title{
     vertical-align:middle;
     color:#000;
     background:#f7fafc no-repeat center;
+	border-radius: var(--ui-border-radius-sm);
 }
 .bx-otp-popup-lottery-black{
     background:url(images/otp_trans_speed_black.gif);
@@ -309,9 +308,9 @@ h3.bx-otp-wrap-container-title{
 }
 
 .bx-otp-popup-content-title{
-    font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family:var(--ui-font-family-primary, var(--ui-font-family-helvetica));
     font-size:21px;
-    font-weight:bold;
+    font-weight:var(--ui-font-weight-bold);
     margin-top:6px;
     padding-bottom:10px;
     color:#505967;
@@ -338,8 +337,8 @@ h3.bx-otp-wrap-container-title{
 
 /*Buttons*/
 .bx-otp-btn{
-    font-family:'Open Sans', Helvetica, Arial, sans-serif;
-    font-weight:bold;
+    font-family:var(--ui-font-family-secondary, var(--ui-font-family-open-sans));
+	font-weight: var(--ui-font-weight-semi-bold, 600);
     display:inline-block;
     -webkit-box-sizing:border-box;
        -moz-box-sizing:border-box;
@@ -352,7 +351,8 @@ h3.bx-otp-wrap-container-title{
     text-transform:uppercase;
     color:#535b69;
     border:none;
-    border-radius:2px;
+	border-radius: var(--ui-field-border-radius, 2px);
+	white-space: nowrap;
 }
 
 .bx-otp-btn.wait{
@@ -412,7 +412,7 @@ h3.bx-otp-wrap-container-title{
 .m0   {margin:         0        !important}
 .mb0  {margin-bottom:  0        !important}
 .clb  {clear:          both     !important}
-.fwb  {font-weight:    bold     !important}
+.fwb  {font-weight:    var(--ui-font-weight-bold)     !important}
 .fwn  {font-weight:    normal   !important}
 .tal  {text-align:     left     !important}
 .tar  {text-align:     right    !important}
@@ -420,4 +420,3 @@ h3.bx-otp-wrap-container-title{
 .tdn  {text-decoration:none     !important}
 .lhn  {line-height:    normal   !important}
 .ttn  {text-transform: none     !important}
-

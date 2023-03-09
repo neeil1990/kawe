@@ -1,47 +1,50 @@
 <?php
+
 /**
  * Bitrix Framework
  * @package bitrix
  * @subpackage main
- * @copyright 2001-2017 Bitrix
+ * @copyright 2001-2022 Bitrix
  */
+
 namespace Bitrix\Main\Service\GeoIp;
 
 use Bitrix\Main\Application;
 use Bitrix\Main\Event;
+use Bitrix\Main\IO\File;
 use Bitrix\Main\Loader;
 use Bitrix\Main\EventResult;
-use Bitrix\Main\Text\Encoding;
-use Bitrix\Main\Web\Json;
+use Bitrix\Main\Config\Configuration;
+use Bitrix\Main\Config\Option;
+use Bitrix\Main\Web;
+use Bitrix\Main\Diag;
+use Psr\Log;
 
 /**
  * Class for working with geolocation information.
  * @package Bitrix\Main\Service\GeoIp
  */
-final class Manager
+class Manager
 {
-	/** @var array | null  */
-	private static $handlers = null;
+	/** @var Base[] | null  */
+	protected static $handlers = null;
 
-	/** @var Result */
-	private static $data = array();
-
-	/** @var bool */
-	private static $logErrors = false;
+	/** @var Data[][] */
+	protected static $data = [];
 
 	/** @var bool */
-	private static $useCookie = false;
+	protected static $logErrors = false;
 
-	/**
-	 * Constant for parameters who information not available.
-	 */
+    /** @var Log\LoggerInterface|null  */
+    protected static $logger;
+
+	/** @deprecated */
 	const INFO_NOT_AVAILABLE = null;
 
-	const COOKIE_NAME = 'BX_GEO_IP';
-	const COOKIE_EXPIRED = 86400; //day
+	protected const CACHE_DIR = 'geoip_manager';
 
 	/**
-	 * Get the two letter country code.
+	 * Get the two letters country code.
 	 * @param string $ip Ip address.
 	 * @param string $lang Language identifier.
 	 * @return string
@@ -100,8 +103,8 @@ final class Manager
 
 		if (
 			$data !== null
-			&& $data->getGeoData()->latitude != self::INFO_NOT_AVAILABLE
-			&&  $data->getGeoData()->longitude != self::INFO_NOT_AVAILABLE
+			&& $data->getGeoData()->latitude != null
+			&&  $data->getGeoData()->longitude != null
 		)
 		{
 			$result = Array(
@@ -111,7 +114,7 @@ final class Manager
 		}
 		else
 		{
-			$result = self::INFO_NOT_AVAILABLE;
+			$result = null;
 		}
 		
 		return $result;
@@ -180,206 +183,236 @@ final class Manager
 	/**
 	 * Get the all available information about geolocation.
 	 *
-	 * @param string  $ip Ip address.
-	 * @param string  $lang Language identifier.
+	 * @param string $ip Ip address.
+	 * @param string $lang Language identifier.
 	 * @param array $required Required fields for result data.
 	 * @return Result | null
 	 */
-	public static function getDataResult($ip = '', $lang = '', array $required = array())
+	public static function getDataResult($ip = '', $lang = '', array $required = [])
 	{
 		$result = null;
 
-		if(strlen($ip) <= 0)
-			$ip = self::getRealIp();
-
-		if(self::$useCookie && !isset(self::$data[$ip]))
-			self::$data[$ip] = self::getCookie($ip);
-
-		if(isset(self::$data[$ip]) && is_array(self::$data[$ip]))
+		if ($ip == '')
 		{
-			/** @var Result $dataResult */
-			foreach(self::$data[$ip] as $data)
+			$ip = self::getRealIp();
+		}
+
+		// cache on the hit
+		if (isset(self::$data[$ip][$lang]))
+		{
+			$data = self::$data[$ip][$lang];
+			if (empty($required) || self::hasDataAllRequiredFields($required, $data))
 			{
-				if(is_object($data) && ($data instanceof Data))
-				{
-					if(empty($required) || self::hasDataAllRequiredFields($required, $data))
-					{
-						if(strlen($lang) <= 0 || $data->lang == $lang)
-						{
-							$result = new Result();
-							$result->setGeoData($data);
-							break;
-						}
-					}
-				}
+				$result = ((new Result())->setGeoData($data));
 			}
 		}
-		else
-		{
-			self::$data[$ip] = array();
-		}
 
-		if(!$result)
+		if (!$result)
 		{
 			if(self::$handlers === null)
-				self::initHandlers();
-
-			/** @var Base $handler */
-			foreach(self::$handlers as $handler)
 			{
-				if(!$handler->isInstalled())
-					continue;
+				self::initHandlers();
+			}
 
-				if(!$handler->isActive())
+			foreach (self::$handlers as $class => $handler)
+			{
+				if (!$handler->isInstalled() || !$handler->isActive())
+				{
 					continue;
+				}
 
-				if(strlen($lang) > 0)
-					if(!in_array($lang, $handler->getSupportedLanguages()))
-						continue;
-
-				if(!empty($required) && !self::hasDataAllRequiredFields($required, $handler->getProvidingData()))
+				if ($lang != '' && !in_array($lang, $handler->getSupportedLanguages()))
+				{
 					continue;
+				}
+
+				if (!empty($required) && !self::hasDataAllRequiredFields($required, $handler->getProvidingData()))
+				{
+					continue;
+				}
+
+				$ipAddress = new Web\IpAddress($ip);
+
+				// get from cache
+				$records = self::getFromStore($ipAddress, $class);
+				$data = static::findForIp($ipAddress, $records, $lang);
+
+				if ($data)
+				{
+					if (empty($required) || self::hasDataAllRequiredFields($required, $data))
+					{
+						$data->ip = $ip;
+						self::$data[$ip][$lang] = $data;
+
+						$result = ((new Result())->setGeoData($data));
+						break;
+					}
+				}
 
 				$dataResult = $handler->getDataResult($ip, $lang);
 
-				if(!$dataResult)
-					continue;
-
-				if(!$dataResult->isSuccess())
+				if (!$dataResult)
 				{
-					if(self::$logErrors)
-					{
-						$eventLog = new \CEventLog;
+					continue;
+				}
 
-						$eventLog->Add(array(
-							"SEVERITY" => \CEventLog::SEVERITY_ERROR,
-							"AUDIT_TYPE_ID" => 'MAIN_SERVICES_GEOIP_GETDATA_ERROR',
-							"MODULE_ID" => "main",
-							"ITEM_ID" => $ip.'('.$lang.')',
-							"DESCRIPTION" => 'Handler id: '.$handler->getId()."\n<br>".implode("\n<br>",$dataResult->getErrorMessages()),
-						));
+				if (!$dataResult->isSuccess())
+				{
+					if (self::$logErrors && ($logger = static::getLogger()))
+					{
+						$logger->error(
+							"{date} - {host}\nIP: {ip}, handler: {handler}, lang: {lang}\n{errors}\n{trace}{delimiter}\n",
+							[
+								'ip' => $ip,
+								'lang' => $lang,
+								'handler' => $handler->getId(),
+								'errors' => $dataResult->getErrorMessages(),
+								'trace' => Diag\Helper::getBackTrace(6, DEBUG_BACKTRACE_IGNORE_ARGS, 3),
+							]
+						);
 					}
 
 					continue;
 				}
 
-				$geoData = $dataResult->getGeoData();
-				$geoData->handlerClass = get_class($handler);
+				$data = $dataResult->getGeoData();
+				$data->handlerClass = $class;
+				$data->ip = $ip;
+
+				// write to cache
+				self::$data[$ip][$lang] = $data;
+				self::saveToStore($ipAddress, $records, $data, $lang);
+
+				// save geonames
+				if (Option::get('main', 'collect_geonames', 'N') == 'Y')
+				{
+					if (!empty($data->geonames))
+					{
+						Internal\GeonameTable::save($data->geonames);
+					}
+				}
+
 				$result = $dataResult;
-				self::$data[$ip][$geoData->handlerClass] = $result->getGeoData();
-
-				if(self::$useCookie)
-					self::setCookie($ip, self::$data[$ip]);
-
 				break;
 			}
+		}
+
+		if ($result)
+		{
+			$event = new Event('main', 'onGeoIpGetResult', [
+				'originalData' => clone $result->getGeoData(),
+				'data' => $result->getGeoData(),
+			]);
+			$event->send();
 		}
 
 		return $result;
 	}
 
-	/**
-	 * @param $ip
-	 * @return bool| Result[]
-	 */
-	private static function getCookie($ip)
+	protected static function getCacheId(Web\IpAddress $ipAddress, string $handler): string
 	{
-		$name = self::getCookieName($ip);
-		$cookieData = Application::getInstance()->getContext()->getRequest()->getCookieRaw($name);
-
-		if(!$cookieData)
-			return false;
-
-		if(function_exists('gzuncompress'))
-			$cookieData = @\gzuncompress($cookieData);
-
-		if(!$cookieData)
-			return false;
-
-		try
-		{
-			$cookieData = Json::decode($cookieData);
-		}
-		catch(\Exception $e)
-		{
-			$cookieData = false;
-		}
-
-		if(!is_array($cookieData))
-			return false;
-
-		$result = array();
-
-		foreach($cookieData as $class => $data)
-		{
-			$tmpData = new Data();
-
-			foreach($data as $attr => $value)
-				if(property_exists($tmpData, $attr))
-					$tmpData->$attr = $value;
-
-			$result[$class] = $tmpData;
-		}
-
-		return !empty($result) ? $result : false;
+		return $ipAddress->toRange(24) . ':v1:' . $handler;
 	}
 
-	/**
-	 * @param string $ip
-	 * @param Data[] $geoData
-	 * @return bool
-	 */
-	private static function setCookie($ip, $geoData)
+	protected static function getFromStore(Web\IpAddress $ipAddress, string $handler): array
 	{
-		$cookieData = array();
+		$cacheTtl = static::getCacheTtl();
 
-		foreach($geoData as $class => $data)
+		if ($cacheTtl > 0)
 		{
-			$cookieData[$class] = array();
-			$values = get_object_vars($data);
+			$cache = Application::getInstance()->getManagedCache();
+			$cacheId = static::getCacheId($ipAddress, $handler);
 
-			foreach($values as $attr => $value)
-				if($value !== self::INFO_NOT_AVAILABLE)
-					$cookieData[$class][$attr] = $value;
+			if ($cache->read($cacheTtl, $cacheId, self::CACHE_DIR))
+			{
+				$records = $cache->get($cacheId);
+
+				if (is_array($records))
+				{
+					return $records;
+				}
+			}
 		}
 
-		$cookieData = Json::encode($cookieData);
-
-		if(function_exists('gzcompress'))
-			$cookieData = \gzcompress($cookieData, 9);
-
-		return setcookie(
-			self::getCookieName($ip),
-			$cookieData,
-			time()+self::COOKIE_EXPIRED,
-			'/'
-		);
+		return [];
 	}
 
-	/**
-	 * @param string $ip
-	 * @return string
-	 */
-	private static function getCookieName($ip)
+	protected static function findForIp(Web\IpAddress $ipAddress, array $records, string $lang): ?Data
 	{
-		return self::COOKIE_NAME.'_'.str_replace('.', '_',$ip);
+		foreach ($records as $range => $data)
+		{
+			if (isset($data[$lang]))
+			{
+				// sorted by the most specific first
+				if ($ipAddress->matchRange($range))
+				{
+					$result = new Data();
+
+					foreach ($data[$lang] as $attr => $value)
+					{
+						if (property_exists($result, $attr))
+						{
+							$result->$attr = $value;
+						}
+					}
+					return $result;
+				}
+			}
+		}
+		return null;
+	}
+
+	protected static function saveToStore(Web\IpAddress $ipAddress, array $records, Data $geoData, string $lang): void
+	{
+		$cacheTtl = static::getCacheTtl();
+
+		if ($cacheTtl > 0)
+		{
+			$storedData = [];
+			foreach (get_object_vars($geoData) as $attr => $value)
+			{
+				if ($value !== null)
+				{
+					$storedData[$attr] = $value;
+				}
+			}
+
+			$network = $geoData->ipNetwork ?? $ipAddress->toRange(32);
+			$records[$network][$lang] = $storedData;
+
+			// the most specific first
+			krsort($records);
+
+			$cache = Application::getInstance()->getManagedCache();
+			$cacheId = static::getCacheId($ipAddress, $geoData->handlerClass);
+
+			$cache->clean($cacheId, self::CACHE_DIR);
+			$cache->read($cacheTtl, $cacheId, self::CACHE_DIR);
+			$cache->set($cacheId, $records);
+		}
 	}
 
 	/**
 	 * @param array $required
-	 * @param Data|ProvidingData $geoData
+	 * @param Data $geoData
 	 * @return bool
 	 */
 	private static function hasDataAllRequiredFields(array $required, $geoData)
 	{
 		if(empty($required))
+		{
 			return true;
+		}
 
 		$vars = get_object_vars($geoData);
 
 		foreach($required as $field)
-			if($vars[$field] === self::INFO_NOT_AVAILABLE)
+		{
+			if($vars[$field] === null)
+			{
 				return false;
+			}
+		}
 
 		return true;
 	}
@@ -392,6 +425,7 @@ final class Manager
 		self::$handlers = array();
 		$handlersList = array();
 		$buildInHandlers = array(
+			'\Bitrix\Main\Service\GeoIp\GeoIP2' => 'lib/service/geoip/geoip2.php',
 			'\Bitrix\Main\Service\GeoIp\MaxMind' => 'lib/service/geoip/maxmind.php',
 			'\Bitrix\Main\Service\GeoIp\Extension' => 'lib/service/geoip/extension.php',
 			'\Bitrix\Main\Service\GeoIp\SypexGeo' => 'lib/service/geoip/sypexgeo.php'
@@ -400,7 +434,7 @@ final class Manager
 		Loader::registerAutoLoadClasses('main', $buildInHandlers);
 
 		$handlersFields = array();
-		$res = HandlerTable::getList();
+		$res = HandlerTable::getList(['cache' => ['ttl' => static::getCacheTtl()]]);
 
 		while($row = $res->fetch())
 			$handlersFields[$row['CLASS_NAME']] = $row;
@@ -409,7 +443,7 @@ final class Manager
 		{
 			if(self::isHandlerClassValid($class))
 			{
-				$fields = isset($handlersFields[$class]) ? $handlersFields[$class] : array();
+				$fields = $handlersFields[$class] ?? [];
 				$handlersList[$class] = new $class($fields);
 				$handlersSort[$class] = $handlersList[$class]->getSort();
 			}
@@ -425,7 +459,6 @@ final class Manager
 
 			foreach ($resultList as $eventResult)
 			{
-				/** @var  EventResult $eventResult*/
 				if ($eventResult->getType() != EventResult::SUCCESS)
 					continue;
 
@@ -441,9 +474,14 @@ final class Manager
 
 				foreach($customClasses as $class => $file)
 				{
+					if(!File::isFileExists(Application::getDocumentRoot().'/'.$file))
+					{
+						continue;
+					}
+
 					if(self::isHandlerClassValid($class))
 					{
-						$fields = isset($handlersFields[$class]) ? $handlersFields[$class] : array();
+						$fields = $handlersFields[$class] ?? [];
 						$handlersList[$class] = new $class($fields);
 						$handlersSort[$class] = $handlersList[$class]->getSort();
 					}
@@ -524,7 +562,7 @@ final class Manager
 		if(self::$handlers === null)
 			self::initHandlers();
 
-		return isset(self::$handlers[$className]) ? self::$handlers[$className] : null;
+		return self::$handlers[$className] ?? null;
 	}
 
 	/**
@@ -537,15 +575,6 @@ final class Manager
 	}
 
 	/**
-	 * Turn on / off storing geolocation info in cookie for performance purposes.
-	 * @param bool $isUse
-	 */
-	public static function useCookieToStoreInfo($isUse)
-	{
-		self::$useCookie = $isUse;
-	}
-
-	/**
 	 * @param Base $handler
 	 * @return string Config HTML for admin interface form.
 	 */
@@ -554,31 +583,43 @@ final class Manager
 		$result = '';
 		$adminFields = $handler->getConfigForAdmin();
 
-		foreach($adminFields as $field)
+		foreach ($adminFields as $field)
 		{
-			if($field['TYPE'] == 'COLSPAN2')
+			if ($field['TYPE'] == 'COLSPAN2')
 			{
-				$heading = isset($field['HEADING']) && $field['HEADING'] == true ? ' class="heading"' : '';
+				$heading = isset($field['HEADING']) && $field['HEADING'] ? ' class="heading"' : '';
 				$result .= '<tr'.$heading.'><td colspan="2">'.$field['TITLE'];
 			}
-			elseif($field['TYPE'] == 'TEXT' || $field['TYPE'] == 'CHECKBOX')
+			elseif ($field['TYPE'] == 'TEXT' || $field['TYPE'] == 'CHECKBOX' || $field['TYPE'] == 'LIST')
 			{
-				$required = isset($field['REQUIRED']) && $field['REQUIRED'] == true ? ' class="adm-detail-required-field"' : '';
-				$disabled = isset($field['DISABLED']) && $field['DISABLED'] == true ? ' disabled' : '';
+				$required = isset($field['REQUIRED']) && $field['REQUIRED'] ? ' class="adm-detail-required-field"' : '';
+				$disabled = isset($field['DISABLED']) && $field['DISABLED'] ? ' disabled' : '';
 				$value = isset($field['VALUE']) ? ' value="'.$field['VALUE'].'"' : '';
 				$name = isset($field['NAME']) ? ' name="'.$field['NAME'].'"' : '';
 				$title = isset($field['TITLE']) ? ' title="'.$field['TITLE'].'"' : '';
 
 				$result .= '<tr'.$required.'><td width="40%">'.$field['TITLE'].':</td><td width="60%">';
 
-				if($field['TYPE'] == 'TEXT')
+				if ($field['TYPE'] == 'TEXT')
 				{
 					$result .= '<input type="text" size="45" maxlength="255"'.$name.$value.$disabled.$title.'>';
 				}
-				elseif($field['TYPE'] == 'CHECKBOX')
+				elseif ($field['TYPE'] == 'CHECKBOX')
 				{
-					$checked = isset($field['CHECKED']) && $field['CHECKED'] == true ? ' checked' : '';
+					$checked = isset($field['CHECKED']) && $field['CHECKED'] ? ' checked' : '';
 					$result .= '<input type="checkbox"'.$name.$value.$checked.$disabled.$title.'>';
+				}
+				else
+				{
+					$result .= '<select' . $name . $disabled . $title . '>';
+					if (is_array($field['OPTIONS']))
+					{
+						foreach ($field['OPTIONS'] as $key => $val)
+						{
+							$result .= '<option value="' . $key . '"' . ($key == $field['VALUE'] ? ' selected' : '') . '>' . $val . '</option>';
+						}
+					}
+					$result .= '</select>';
 				}
 			}
 
@@ -588,26 +629,36 @@ final class Manager
 		return $result;
 	}
 
-	/**
-	 * @param string $ip
-	 * @param string $lang
-	 * @param array $required
-	 * @return DataResult|null
-	 * @deprecated
-	 */
-	public static function getData($ip = '', $lang = '', array $required = array())
+	protected static function getCacheTtl(): int
 	{
-		$dataResult = self::getDataResult($ip, $lang, $required);
+		static $cacheTtl = null;
 
-		if(!$dataResult)
-			return null;
+		if($cacheTtl === null)
+		{
+			$cacheFlags = Configuration::getValue('cache_flags');
+			$cacheTtl = $cacheFlags['geoip_manager'] ?? 604800; // a week
+		}
+		return $cacheTtl;
+	}
 
-		$result = new DataResult();
+	public static function cleanCache(): void
+	{
+		$cache = Application::getInstance()->getManagedCache();
+		$cache->cleanDir(static::CACHE_DIR);
+	}
 
-		foreach($dataResult as $attr => $value)
-			if(property_exists($result, $attr))
-				$result->$attr = $value;
+	protected static function getLogger()
+	{
+		if (static::$logger === null)
+		{
+			$logger = Diag\Logger::create('main.GeoIpManager');
 
-		return $result;
+			if ($logger !== null)
+			{
+				static::$logger = $logger;
+			}
+		}
+
+		return static::$logger;
 	}
 }

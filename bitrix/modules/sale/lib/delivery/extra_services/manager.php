@@ -33,7 +33,7 @@ class Manager
 
 	/**
 	 * Manager constructor.
-	 * @param array $initParam
+	 * @param array|int $initParam
 	 * @param string $currency
 	 * @param array $values
 	 * @param array $additionalParams
@@ -92,7 +92,6 @@ class Manager
 		$classes = array(
 			'\Bitrix\Sale\Delivery\ExtraServices\Enum' => 'lib/delivery/extra_services/enum.php',
 			'\Bitrix\Sale\Delivery\ExtraServices\Store' => 'lib/delivery/extra_services/store.php',
-			'\Bitrix\Sale\Delivery\ExtraServices\String' => 'lib/delivery/extra_services/string.php',
 			'\Bitrix\Sale\Delivery\ExtraServices\Quantity' => 'lib/delivery/extra_services/quantity.php',
 			'\Bitrix\Sale\Delivery\ExtraServices\Checkbox' => 'lib/delivery/extra_services/checkbox.php'
 		);
@@ -141,7 +140,8 @@ class Manager
 	}
 
 	/**
-	 * @return Base
+	 * @param int $id
+	 * @return Base|null
 	 */
 	public function getItem($id)
 	{
@@ -190,7 +190,7 @@ class Manager
 				(isset($params["RIGHTS"][self::RIGHTS_CLIENT_IDX]) ? $params["RIGHTS"][self::RIGHTS_CLIENT_IDX] : "Y");
 		}
 
-		if(!isset($params["CLASS_NAME"]) || strlen($params["CLASS_NAME"]) <= 0 || !class_exists($params["CLASS_NAME"]))
+		if(!isset($params["CLASS_NAME"]) || $params["CLASS_NAME"] == '' || !class_exists($params["CLASS_NAME"]))
 			return $params;
 
 		if(!isset($params["ACTIVE"]))
@@ -215,7 +215,7 @@ class Manager
 	 */
 	public static function getAdminParamsControl($className, $name, array $params)
 	{
-		if(strlen($className) <= 0)
+		if($className == '')
 			throw new ArgumentNullException("className");
 
 		if(!is_callable($className.'::getAdminParamsControl'))
@@ -235,7 +235,7 @@ class Manager
 	 */
 	public function addItem($params, $currency, $value = null, array $additionalParams = array())
 	{
-		if(strlen($params["CLASS_NAME"]) <= 0 )
+		if($params["CLASS_NAME"] === '' )
 			return false;
 
 		if(!isset($params["CLASS_NAME"]))
@@ -244,13 +244,15 @@ class Manager
 		if(!class_exists($params["CLASS_NAME"]))
 			return false;
 
+		if(!is_subclass_of($params["CLASS_NAME"], Base::class))
+		{
+			throw new \Bitrix\Main\SystemException(
+				'Class "' . $params["CLASS_NAME"] . '" is not a subclass of the \Bitrix\Sale\Delivery\ExtraServices\Base'
+			);
+		}
+
 		$item = new $params["CLASS_NAME"]($params["ID"], $params, $currency, $value, $additionalParams);
-
-		if(!($item instanceof Base))
-			throw new SystemException("Class ".$params["CLASS_NAME"].' must extends \Bitrix\Sale\Delivery\ExtraServices\Base');
-
 		$this->items[$params["ID"]] =  $item;
-
 		return $params["ID"];
 	}
 
@@ -282,7 +284,6 @@ class Manager
 	 * @param int $shipmentId
 	 * @param int $deliveryId
 	 * @return array
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function getValuesForShipment($shipmentId, $deliveryId)
 	{
@@ -371,8 +372,66 @@ class Manager
 	/**
 	 * @param int $shipmentId
 	 * @param int $deliveryId
+	 * @param string $currency
+	 * @return Base[]
+	 * @throws SystemException
+	 */
+	public static function getObjectsForShipment(int $shipmentId, int $deliveryId, string $currency): array
+	{
+		$result = [];
+
+		$extraServiceValuesList = ShipmentExtraServiceTable::getList(
+			[
+				'filter' => [
+					'=SHIPMENT_ID' => $shipmentId,
+					'!=ID' => self::getStoresValueId($deliveryId)
+				],
+				'select' => [
+					'*',
+					'EXTRA_SERVICE',
+				]
+			]
+		);
+
+		while ($extraServiceValue = $extraServiceValuesList->fetchObject())
+		{
+			$extraService = $extraServiceValue->getExtraService();
+
+			$className = $extraService->getClassName();
+
+			/** @var Base $extraServiceValue */
+			$extraServiceInstance = new $className(
+				$extraService->getId(),
+				[
+					'NAME' => $extraService->getName(),
+					'CODE' => $extraService->getCode(),
+					'INIT_VALUE' => $extraService->getInitValue(),
+					'PARAMS' => $extraService->getParams()
+				],
+				$currency,
+				$extraServiceValue->getValue()
+			);
+
+			if (!$extraServiceInstance instanceof Base)
+			{
+				throw new SystemException(
+					sprintf(
+						'Object is not of expected type: %s',
+						Base::class
+					)
+				);
+			}
+
+			$result[$extraServiceValue['EXTRA_SERVICE_ID']] = $extraServiceInstance;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param int $shipmentId
+	 * @param int $deliveryId
 	 * @return int
-	 * @throws \Bitrix\Main\ArgumentException
 	 */
 	public static function getStoreIdForShipment($shipmentId, $deliveryId)
 	{
@@ -483,8 +542,13 @@ class Manager
 
 		$result = self::getExtraServicesList($deliveryId, true);
 
-		if($onlyActive && $result['ACTIVE'] != 'Y')
-			return array();
+		if(
+			$onlyActive
+			&& (empty($result['ACTIVE']) || $result['ACTIVE'] !== 'Y')
+		)
+		{
+			return [];
+		}
 
 		return $result;
 	}
@@ -596,6 +660,7 @@ class Manager
 
 	/**
 	 * @param int $deliveryId
+	 * @param bool $stores
 	 * @return array
 	 * @throws SystemException
 	 */

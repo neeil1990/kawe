@@ -45,7 +45,11 @@ abstract class ProviderBuilderBase
 	public static function create($providerClass, $context)
 	{
 		$builder = new static();
-		$builder->providerClass = $providerClass;
+
+		if ($providerClass && !is_string($providerClass))
+		{
+			$builder->providerClass = $providerClass;
+		}
 		$builder->context = $context;
 
 		return $builder;
@@ -100,9 +104,9 @@ abstract class ProviderBuilderBase
 	abstract public function addProductByShipmentItem(Sale\ShipmentItem $shipmentItem);
 
 	/**
-	 * @param array $shipmentProductData
+	 * @param array $productData
 	 */
-	abstract public function addProductByShipmentProductData(array $shipmentProductData);
+	abstract public function addProductData(array $productData);
 
 	/**
 	 * @param array $barcodeParams
@@ -148,6 +152,22 @@ abstract class ProviderBuilderBase
 	public function getAvailableQuantity($outputName)
 	{
 		$r = static::callTransferMethod($this->getTransferClassName(), 'getAvailableQuantity');
+		if (!$r->isSuccess())
+		{
+			return $r;
+		}
+
+		return $this->decomposeIntoProvider($r, $outputName);
+	}
+
+	/**
+	 * @param $outputName
+	 *
+	 * @return Sale\Result
+	 */
+	public function getAvailableQuantityByStore($outputName)
+	{
+		$r = static::callTransferMethod($this->getTransferClassName(), 'getAvailableQuantityByStore');
 		if (!$r->isSuccess())
 		{
 			return $r;
@@ -271,16 +291,6 @@ abstract class ProviderBuilderBase
 	 *
 	 * @return Sale\Result
 	 */
-	public function setItemsResultAfterReserve(Sale\Result $result)
-	{
-		return static::callTransferMethod($this->getTransferClassName(), 'setItemsResultAfterReserve', $result);
-	}
-
-	/**
-	 * @param Sale\Result $result
-	 *
-	 * @return Sale\Result
-	 */
 	public function setItemsResultAfterShip(Sale\Result $result)
 	{
 		return static::callTransferMethod($this->getTransferClassName(), 'setItemsResultAfterShip', $result);
@@ -375,11 +385,20 @@ abstract class ProviderBuilderBase
 
 	/**
 	 * @internal
-	 * @return mixed
+	 * @return string|null
 	 */
 	public function getProviderClass()
 	{
 		return $this->providerClass;
+	}
+
+	/**
+	 * @internal
+	 * @return string|null
+	 */
+	public function getCallbackFunction()
+	{
+		return $this->callbackFunction;
 	}
 
 	/**
@@ -406,9 +425,9 @@ abstract class ProviderBuilderBase
 	 */
 	protected function clearProviderName($providerName)
 	{
-		if (substr($providerName, 0, 1) == "\\")
+		if (mb_substr($providerName, 0, 1) == "\\")
 		{
-			$providerName = substr($providerName, 1);
+			$providerName = mb_substr($providerName, 1);
 		}
 
 		return $providerName;
@@ -448,25 +467,63 @@ abstract class ProviderBuilderBase
 
 		if (isset($fields['QUANTITY_LIST'][$productData['BASKET_CODE']]))
 		{
-			$fields['QUANTITY_LIST'][$productData['BASKET_CODE']] += floatval($productData['QUANTITY']);
+			$fields['QUANTITY_LIST'][$productData['BASKET_CODE']] += (float)$productData['QUANTITY'];
 		}
 		else
 		{
-			$fields['QUANTITY_LIST'][$productData['BASKET_CODE']] = floatval($productData['QUANTITY']);
+			$fields['QUANTITY_LIST'][$productData['BASKET_CODE']] = (float)$productData['QUANTITY'];
 		}
 
 		unset($fields['QUANTITY']);
 
-		if (isset($fields['RESERVED_QUANTITY_LIST'][$productData['BASKET_CODE']]))
+		if (isset($fields['QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']]))
 		{
-			$fields['RESERVED_QUANTITY_LIST'][$productData['BASKET_CODE']] += floatval($productData['RESERVED_QUANTITY']);
+			foreach ($productData['QUANTITY_BY_STORE'] as $storeId => $quantity)
+			{
+				if (!isset($fields['QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']][$storeId]))
+				{
+					$fields['QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']][$storeId] = 0;
+				}
+
+				$fields['QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']][$storeId] += $quantity;
+			}
 		}
 		else
 		{
-			$fields['RESERVED_QUANTITY_LIST'][$productData['BASKET_CODE']] = floatval($productData['RESERVED_QUANTITY']);
+			$fields['QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']] = $productData['QUANTITY_BY_STORE'] ?? [];
+		}
+
+		unset($fields['QUANTITY_BY_STORE']);
+
+		if (isset($fields['RESERVED_QUANTITY_LIST'][$productData['BASKET_CODE']]))
+		{
+			$fields['RESERVED_QUANTITY_LIST'][$productData['BASKET_CODE']] += (float)$productData['RESERVED_QUANTITY'];
+		}
+		else
+		{
+			$fields['RESERVED_QUANTITY_LIST'][$productData['BASKET_CODE']] = (float)($productData['RESERVED_QUANTITY'] ?? 0.0);
 		}
 
 		unset($fields['RESERVED_QUANTITY']);
+
+		if (isset($fields['RESERVED_QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']]))
+		{
+			foreach ($productData['RESERVED_QUANTITY_BY_STORE'] as $storeId => $quantity)
+			{
+				if (!isset($fields['RESERVED_QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']][$storeId]))
+				{
+					$fields['RESERVED_QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']][$storeId] = 0;
+				}
+
+				$fields['RESERVED_QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']][$storeId] += $quantity;
+			}
+		}
+		else
+		{
+			$fields['RESERVED_QUANTITY_LIST_BY_STORE'][$productData['BASKET_CODE']] = $productData['RESERVED_QUANTITY_BY_STORE'] ?? [];
+		}
+
+		unset($fields['RESERVED_QUANTITY_BY_STORE']);
 
 		if (isset($productData['SHIPMENT_ITEM']))
 		{
@@ -475,7 +532,7 @@ abstract class ProviderBuilderBase
 			unset($fields['SHIPMENT_ITEM']);
 
 			$fields['SHIPMENT_ITEM_LIST'][$shipmentItem->getInternalIndex()] = $shipmentItem;
-			$fields['SHIPMENT_ITEM_QUANTITY_LIST'][$shipmentItem->getInternalIndex()] = floatval($productData['QUANTITY']);
+			$fields['SHIPMENT_ITEM_QUANTITY_LIST'][$shipmentItem->getInternalIndex()] = (float)$productData['QUANTITY'];
 		}
 
 		if (isset($productData['STORE_DATA']))
@@ -509,12 +566,26 @@ abstract class ProviderBuilderBase
 		{
 			if (!isset($fields['NEED_RESERVE_LIST']))
 			{
-				$fields['NEED_RESERVE_LIST'] = array();
+				$fields['NEED_RESERVE_LIST'] = [];
 			}
 
 			$fields['NEED_RESERVE_LIST'] = $productData['NEED_RESERVE'] + $fields['NEED_RESERVE_LIST'];
+
 			unset($fields['NEED_RESERVE']);
 		}
+
+		if (isset($productData['NEED_RESERVE_BY_STORE']))
+		{
+			if (!isset($fields['NEED_RESERVE_BY_STORE_LIST']))
+			{
+				$fields['NEED_RESERVE_BY_STORE_LIST'] = [];
+			}
+
+			$fields['NEED_RESERVE_BY_STORE_LIST'] = $productData['NEED_RESERVE_BY_STORE'] + $fields['NEED_RESERVE_BY_STORE_LIST'];
+
+			unset($fields['NEED_RESERVE_BY_STORE']);
+		}
+
 		$this->items[$productId] = $fields;
 	}
 

@@ -8,7 +8,14 @@ global $APPLICATION;
 	$APPLICATION->RestartBuffer();
 	while (@ob_end_clean());
 	?>
-	<script>(window.BX||top.BX)['file-async-loader']['<?=$arResult['FILE_UPLOAD_ID']?>'].<?=(empty($arResult['ERRORS']['FATAL']) ? 'uploadSuccess' : 'uploadFail')?>();</script>
+	<script>
+		var currentWindow = top.window;
+		if (top.BX.SidePanel && top.BX.SidePanel.Instance && top.BX.SidePanel.Instance.getTopSlider())
+		{
+			currentWindow = top.BX.SidePanel.Instance.getTopSlider().getWindow();
+		}
+		currentWindow.BX['file-async-loader']['<?=$arResult['FILE_UPLOAD_ID']?>'].<?=(empty($arResult['ERRORS']['FATAL']) ? 'uploadSuccess' : 'uploadFail')?>();
+	</script>
 	<?die();?>
 <?endif?>
 
@@ -45,6 +52,15 @@ Loc::loadMessages(__FILE__);
 		),
 	);
 
+	global $adminSidePanelHelper;
+	if (!is_object($adminSidePanelHelper))
+	{
+		require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/interface/admin_lib.php");
+		$adminSidePanelHelper = new \CAdminSidePanelHelper();
+	}
+	$arResult['URLS']['TYPE_LIST'] = $adminSidePanelHelper->editUrlToPublicPage($arResult['URLS']['TYPE_LIST']);
+	$arResult['URLS']['EXTERNAL_SERVICE_LIST'] = $adminSidePanelHelper->editUrlToPublicPage($arResult['URLS']['EXTERNAL_SERVICE_LIST']);
+
 	$tabControl = new CAdminTabControl("tabctrl_import", $aTabs, false, true);
 
 	CJSCore::Init();
@@ -61,9 +77,9 @@ Loc::loadMessages(__FILE__);
 			<?=Loc::getMessage('SALE_SLI_STAT_TITLE')?>:
 			<ul class="bx-ui-loc-i-stat-list">
 				<?foreach($arResult['STATISTICS'] as $code => $stat):?>
-					<?if(strlen($stat['NAME'])):?>
-						<li><?=htmlspecialcharsbx($stat['NAME'])?>: <?=intval($stat['CNT'])?></li>
-					<?endif?>
+					<? if($stat['NAME'] <> ''): ?>
+						<li><?= htmlspecialcharsbx($stat['NAME']) ?>: <?= intval($stat['CNT']) ?></li>
+					<? endif?>
 				<?endforeach?>
 				<script type="text/html" data-template-id="bx-ui-loc-i-stat-item">
 					<li>{{type}}: {{count}}</li>
@@ -128,9 +144,20 @@ Loc::loadMessages(__FILE__);
 					</div>
 
 					<?=BeginNote();?>
+					<?
+					if ($adminSidePanelHelper->isPublicSidePanel())
+					{
+						$anchorExtServs = '';
+					}
+					else
+					{
+						$anchorExtServs = '<a href="'.$arResult['URLS']['EXTERNAL_SERVICE_LIST'].'" target="_blank">';
+					}
+					$externalServiceHtml = ($adminSidePanelHelper->isPublicSidePanel() ?  :'<a href="'.$arResult['URLS']['EXTERNAL_SERVICE_LIST'].'" target="_blank">');
+					?>
 						<?=Loc::getMessage('SALE_SLI_SOURCE_FILE_NOTES', array(
 							'#ANCHOR_LOCTYPES#' => '<a href="'.$arResult['URLS']['TYPE_LIST'].'" target="_blank">', 
-							'#ANCHOR_EXT_SERVS#' => '<a href="'.$arResult['URLS']['EXTERNAL_SERVICE_LIST'].'" target="_blank">',
+							'#ANCHOR_EXT_SERVS#' => $anchorExtServs,
 							'#ANCHOR_END#' => '</a>'
 						))?>
 					<?=EndNote();?>
@@ -182,7 +209,7 @@ Loc::loadMessages(__FILE__);
 				</td>
 			</tr>
 
-			<?if(in_array(LANGUAGE_ID, array('ru', 'ua'))):?>
+			<?if(LANGUAGE_ID === 'ru' && Bitrix\Sale\Delivery\Helper::getPortalZone() !== 'ua'):?>
 				<tr class="bx-ui-load-remote">
 					<td>
 						<label for="loc-i-additional-yamarket"><?=Loc::getMessage('SALE_SLI_EXTRA_EXTERNAL_YAMARKET')?></label>
@@ -192,6 +219,15 @@ Loc::loadMessages(__FILE__);
 					</td>
 				</tr>
 			<?endif?>
+
+			<tr class="bx-ui-load-remote">
+				<td>
+					<label for="loc-i-additional-zip"><?=Loc::getMessage('SALE_SLI_EXTRA_EXTERNAL_ISO_3166_NUMERIC')?></label>
+				</td>
+				<td>
+					<input type="checkbox" value="BX_ISO_3166_NUMERIC" name="BX_ISO_3166_NUMERIC" id="loc-i-additional-bx-iso-3166-numeric" class="bx-ui-loc-i-additional" checked />
+				</td>
+			</tr>
 
 			<?/*
 			<tr class="bx-ui-load-remote">

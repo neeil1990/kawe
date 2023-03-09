@@ -9,11 +9,11 @@ if(isset($_REQUEST["site"]) && is_string($_REQUEST["site"]))
 {
 
 	$site_id = trim($_REQUEST["site"]);
-	$site_id = substr(preg_replace("/[^a-z0-9_]/i", "", $site_id), 0, 2);
+	$site_id = mb_substr(preg_replace("/[^a-z0-9_]/i", "", $site_id), 0, 2);
 	define("SITE_ID", $site_id);
 }
 
-require_once(dirname(__FILE__)."/../include/prolog_before.php");
+require_once(__DIR__."/../include/prolog_before.php");
 
 if (!IsModuleInstalled("b24network"))
 {

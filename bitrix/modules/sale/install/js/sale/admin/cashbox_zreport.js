@@ -4,7 +4,7 @@
 
 	if (BX.Sale.CashboxReport)
 		return;
-	
+
 	BX.Sale.CashboxReport =
 	{
 		ajaxUrl: "/bitrix/admin/sale_order_ajax.php",
@@ -27,6 +27,7 @@
 			{
 				var data = {
 					sessid : BX.bitrix_sessid(),
+					lang: BX.message('LANGUAGE_ID'),
 					cashboxId: cashboxFilter.value,
 					action: 'loadCashboxCheckInfo'
 				};
@@ -99,7 +100,7 @@
 			var content = "<div class='adm-info-message'>"+BX.message('CASHBOX_CREATE_ZREPORT_WINDOW_INFO')+"</div>";
 			content += "<table><tbody><tr><td><label>"+BX.message('SALE_F_CASHBOX')+":</label></td><td>";
 			content += "<select id='cashboxListAddReport' class='sale-discount-bus-select'>";
-			for (option in cashboxFilterOptions)
+			for (var option in cashboxFilterOptions)
 			{
 				if (cashboxFilterOptions[option].value != undefined)
 				{
@@ -142,6 +143,7 @@
 				{
 					var sendData = {
 						sessid : BX.bitrix_sessid(),
+						lang: BX.message('LANGUAGE_ID'),
 						cashboxId: BX('cashboxListAddReport').value,
 						action: 'addZReport'
 					};

@@ -21,6 +21,22 @@ CREATE TABLE b_sec_user
 );
  */
 
+/**
+ * Class UserTable
+ *
+ * DO NOT WRITE ANYTHING BELOW THIS
+ *
+ * <<< ORMENTITYANNOTATION
+ * @method static EO_User_Query query()
+ * @method static EO_User_Result getByPrimary($primary, array $parameters = array())
+ * @method static EO_User_Result getById($id)
+ * @method static EO_User_Result getList(array $parameters = array())
+ * @method static EO_User_Entity getEntity()
+ * @method static \Bitrix\Security\Mfa\EO_User createObject($setDefaultValues = true)
+ * @method static \Bitrix\Security\Mfa\EO_User_Collection createCollection()
+ * @method static \Bitrix\Security\Mfa\EO_User wakeUpObject($row)
+ * @method static \Bitrix\Security\Mfa\EO_User_Collection wakeUpCollection($rows)
+ */
 class UserTable
 	extends Entity\DataManager
 {
@@ -48,11 +64,12 @@ class UserTable
 			),
 			'USER' => array(
 				'data_type' => '\Bitrix\Main\User',
-				'reference' => array('=this.USER_ID' => 'ref.ID')
+				'reference' => array('=this.USER_ID' => 'ref.ID'),
+				'join_type' => 'INNER',
 			),
 			'ACTIVE' => array(
 				'data_type' => 'boolean',
-				'values' => array('Y', 'N'),
+				'values' => array('N', 'Y'),
 				'default' => 'N'
 			),
 			'SECRET' => array(
@@ -77,7 +94,7 @@ class UserTable
 			),
 			'SKIP_MANDATORY' => array(
 				'data_type' => 'boolean',
-				'values' => array('Y', 'N'),
+				'values' => array('N', 'Y'),
 				'default' => 'N'
 			),
 			'DEACTIVATE_UNTIL' => array(

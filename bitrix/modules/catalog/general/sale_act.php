@@ -462,7 +462,7 @@ class CCatalogGifterProduct extends CGlobalCondCtrlAtoms
 						'id' => 'Value',
 						'name' => 'Value',
 						'type' => 'multiDialog',
-						'popup_url' => '/bitrix/admin/cat_product_search_dialog.php',
+						'popup_url' => self::getAdminSection().'cat_product_search_dialog.php',
 						'popup_params' => array(
 							'lang' => LANGUAGE_ID,
 							'caller' => 'discount_rules',
@@ -506,7 +506,7 @@ class CCatalogGifterProduct extends CGlobalCondCtrlAtoms
 						'id' => 'Value',
 						'name' => 'Value',
 						'type' => 'popup',
-						'popup_url' => '/bitrix/admin/iblock_section_search.php',
+						'popup_url' => self::getAdminSection().'iblock_section_search.php',
 						'popup_params' => array(
 							'lang' => LANGUAGE_ID,
 							'discount' => 'Y',
@@ -531,7 +531,7 @@ class CCatalogGifterProduct extends CGlobalCondCtrlAtoms
 	public static function GenerateApplyCallableFilter($controlId, array $gifts, $type)
 	{
 		$gifts = array_combine($gifts, $gifts);
-		return function(&$row) use($controlId, $gifts, $type)
+		return function($row) use($controlId, $gifts, $type)
 		{
 			static $isApplied = false;
 			if($isApplied && $type === CSaleDiscountActionApply::GIFT_SELECT_TYPE_ONE)
@@ -646,5 +646,14 @@ class CCatalogGifterProduct extends CGlobalCondCtrlAtoms
 		unset($product);
 
 		return $giftedProductIds;
+	}
+
+	/**
+	 * @return string
+	 */
+	private static function getAdminSection()
+	{
+		//TODO: need use \CAdminPage::getSelfFolderUrl, but in general it is impossible now
+		return (defined('SELF_FOLDER_URL') ? SELF_FOLDER_URL : '/bitrix/admin/');
 	}
 }

@@ -10,7 +10,7 @@
 
 	BX.Sale.Delivery = {
 
-		ajaxUrl: "/bitrix/admin/sale_delivery_ajax.php",
+		ajaxUrl: "sale_delivery_ajax.php",
 
 		showGroupsDialog: function(nextUrl, currentGroup)
 		{
@@ -135,6 +135,7 @@
 			params.params = params.params || {};
 			params.restrictionId = params.restrictionId || 0;
 			params.sort = params.sort || 100;
+			params.publicMode = params.publicMode || 'N';
 
 			ShowWaitWindow();
 
@@ -145,6 +146,7 @@
 				deliveryId: params.deliveryId,
 				sort: params.sort,
 				lang: params.lang,
+				publicMode: params.publicMode,
 				sessid: BX.bitrix_sessid()
 			};
 
@@ -209,10 +211,15 @@
 
 		showRestrictionParamsDialog: function(content, rstrParams)
 		{
-			if(rstrParams.class == '\\Bitrix\\Sale\\Delivery\\Restrictions\\ByLocation')
+			if(rstrParams.class == '\\Bitrix\\Sale\\Delivery\\Restrictions\\ByLocation'
+				|| rstrParams.class == '\\Bitrix\\Sale\\Delivery\\Restrictions\\ExcludeLocation')
+			{
 				var width = 1030;
+			}
 			else
+			{
 				width = 600;
+			}
 
 			var	dialog = new BX.CDialog({
 					'content': '<form id="sale-delivery-restriction-edit-form">'+
@@ -376,29 +383,39 @@
 			window.location.href.search('RESET_TARIF_SETTINGS') != -1 ? window.location.reload(true) : window.location.href += '&RESET_TARIF_SETTINGS=Y';
 		},
 
-		addRestrictionProductSection: function(id, name)
+		addRestrictionProductSection: function(id, name, nodeId)
 		{
+			var deprecatedSupport = !(typeof nodeId === 'string');
+			if (deprecatedSupport)
+			{
+				nodeId = 'sale-admin-delivery-restriction-cat';
+			}
+
 			name = BX.util.htmlspecialcharsback(name);
 			name = name.replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
 
-			var alreadyExist = BX('sale-admin-delivery-restriction-cat-'+id);
+			var alreadyExist = BX(nodeId + '-' + id);
 
-			if(alreadyExist)
+			if (alreadyExist)
+			{
 				return;
+			}
 
-			var category = BX.create('tr',{
-				props:{
-					id: 'sale-admin-delivery-restriction-cat-'+id,
-					className: 'adm-s-delivery-restriction-delcat'
+			var self = this;
+
+			var category = BX.create('tr', {
+				props: {
+					id: nodeId + '-' + id,
+					className: 'adm-s-product-category-restriction-delcat'
 				},
 				children:[
-					BX.create('td',{
+					BX.create('td', {
 						children:[
-							BX.create('span',{
+							BX.create('span', {
 								html: " - "+ BX.util.htmlspecialchars(name)
 							}),
-							BX.create('input',{
-								props:{
+							BX.create('input', {
+								props: {
 									type: 'hidden',
 									name: 'RESTRICTION[CATEGORIES][]',
 									value: id
@@ -406,20 +423,24 @@
 							})
 						]
 					}),
-					BX.create('td',{
-						props:{
+					BX.create('td', {
+						props: {
 							align: 'right'
 						},
 						children: [
-							BX.create('text', {html: '&nbsp;'}),
-							BX.create('a',{
-								props:{
+							BX.create('text', {
+								html: '&nbsp;'
+							}),
+							BX.create('a', {
+								props: {
 									href: 'javascript:void(0);',
 									className: 'adm-s-bus-morelinkqhsw'
 								},
-								html: BX.message("SALE_DELIVERY_INP_DELETE"),
-								events:{
-									click: function(){BX.Sale.Delivery.deleteRestrictionProductSection(id);}
+								text: BX.message('SALE_PRODUCT_CATEGORY_INP_DELETE'),
+								events: {
+									click: function() {
+										self.deleteRestrictionProductSection(id, nodeId);
+									}
 								}
 							})
 						]
@@ -427,16 +448,93 @@
 				]
 			});
 
-			BX('sale-admin-delivery-restriction-cat-content').appendChild(category);
+			BX(nodeId + '-content').appendChild(category);
 		},
 
-		deleteRestrictionProductSection: function(id)
+		deleteRestrictionProductSection: function(id, nodeId)
 		{
-			var node = BX('sale-admin-delivery-restriction-cat-'+id);
+			var deprecatedSupport = !(typeof nodeId === 'string');
+			if (deprecatedSupport)
+			{
+				nodeId = 'sale-admin-delivery-restriction-cat';
+			}
 
-			if(node)
+			var node = BX(nodeId + '-' + id);
+			if (node)
+			{
 				node.parentNode.removeChild(node);
-		}
+			}
+		},
+
+		addRestrictionByConcreteProduct: function (nodeId, id, name)
+		{
+			name = BX.util.htmlspecialcharsback(name);
+			name = name.replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
+
+			var alreadyExist = BX(nodeId + '-' + id);
+
+			if (alreadyExist)
+			{
+				return;
+			}
+
+			var self = this;
+
+			var product = BX.create('tr', {
+				props: {
+					id: nodeId + '-' + id,
+					className: 'adm-s-concrete-product-restriction-delprod'
+				},
+				children: [
+					BX.create('td', {
+						children:[
+							BX.create('span', {
+								text: " - "+ BX.util.htmlspecialchars(name)
+							}),
+							BX.create('input', {
+								props: {
+									type: 'hidden',
+									name: 'RESTRICTION[PRODUCTS][]',
+									value: id
+								}
+							})
+						]
+					}),
+					BX.create('td', {
+						props:{
+							align: 'right'
+						},
+						children: [
+							BX.create('text', {html: '&nbsp;'}),
+							BX.create('a', {
+								props: {
+									href: 'javascript:void(0);',
+									className: 'adm-s-bus-morelinkqhsw'
+								},
+								text: BX.message('SALE_CONCRETE_PRODUCT_INP_DELETE'),
+								events: {
+									click: function() {
+										self.deleteRestrictionByConcreteProduct(nodeId, id);
+									}
+								}
+							})
+						]
+					})
+				]
+			});
+
+			BX(nodeId + '-content').appendChild(product);
+		},
+
+		deleteRestrictionByConcreteProduct: function (nodeId, id)
+		{
+			var node = BX(nodeId + '-' + id);
+
+			if (node)
+			{
+				node.parentNode.removeChild(node);
+			}
+		},
 	};
 
 })(window);

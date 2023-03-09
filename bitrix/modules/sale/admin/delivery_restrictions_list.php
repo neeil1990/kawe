@@ -8,6 +8,11 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryRestrictions
 
 	global $APPLICATION;
 
+	/** @global \CAdminPage $adminPage */
+	global $adminPage;
+	/** @global \CAdminSidePanelHelper $adminSidePanelHelper */
+	global $adminSidePanelHelper;
+
 	$saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 	if ($saleModulePermissions < "W")
 		$APPLICATION->AuthForm(Loc::getMessage("SALE_ESDL_ACCESS_DENIED"));
@@ -62,10 +67,10 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryRestrictions
 		if(empty($record['CLASS_NAME']) || !class_exists($record['CLASS_NAME']))
 			continue;
 
-		if(!is_subclass_of($record['CLASS_NAME'], 'Bitrix\Sale\Delivery\Restrictions\Base'))
+		if(!is_subclass_of($record['CLASS_NAME'], 'Bitrix\Sale\Services\Base\Restriction'))
 			continue;
 
-		if(strlen($record['CLASS_NAME']) > 0)
+		if($record['CLASS_NAME'] <> '')
 		{
 			$restrictionClassNamesUsed[] = $record['CLASS_NAME'];
 
@@ -102,7 +107,7 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryRestrictions
 
 		foreach($paramsStructure as $name => $params)
 		{
-			$paramsField .= (isset($params["LABEL"]) && strlen($params["LABEL"]) > 0 ? $params["LABEL"].": " : "").
+			$paramsField .= (isset($params["LABEL"]) && $params["LABEL"] <> '' ? $params["LABEL"].": " : "").
 				Input\Manager::getViewHtml($params, (isset($record["PARAMS"][$name]) ? $record["PARAMS"][$name] : null)).
 				"<br>";
 		}
@@ -135,7 +140,7 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryRestrictions
 
 		foreach($restrictionClassNames as $class)
 		{
-			if(strlen($class) <= 0)
+			if($class == '')
 				continue;
 
 			if(in_array($class, $restrictionClassNamesUsed))
@@ -148,6 +153,7 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryRestrictions
 				"ACTION" => "BX.Sale.Delivery.getRestrictionParamsHtml({".
 					"class: '".\CUtil::JSEscape($class).
 					"',deliveryId: ".$ID.
+					",publicMode: '".(($adminPage->publicMode || $adminSidePanelHelper->isPublicSidePanel()) ? 'Y' : 'N') . "'".
 					",title: '".$classTitle.
 					"',lang: '".LANGUAGE_ID."'".
 				"});"
@@ -171,8 +177,10 @@ namespace Bitrix\Sale\Delivery\AdminPage\DeliveryRestrictions
 		$lAdmin->AddAdminContextMenu($aContext, false);
 	}
 
-	if($_REQUEST['table_id'] == $tableId)
+	if (isset($_REQUEST['table_id']) && $_REQUEST['table_id'] === $tableId)
+	{
 		$lAdmin->CheckListMode();
+	}
 
 	$lAdmin->DisplayList();
 }

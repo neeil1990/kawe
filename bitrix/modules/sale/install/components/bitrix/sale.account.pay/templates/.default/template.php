@@ -3,6 +3,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
 use Bitrix\Main\Localization\Loc;
 
+CJSCore::Init(array("popup"));
 $this->addExternalCss("/bitrix/css/main/bootstrap.css");
 
 if (!empty($arResult["errorMessage"]))
@@ -23,7 +24,7 @@ else
 {
 	if ($arParams['REFRESHED_COMPONENT_MODE'] === 'Y')
 	{
-		$wrapperId = str_shuffle(substr($arResult['SIGNED_PARAMS'],0,10));
+		$wrapperId = str_shuffle(mb_substr($arResult['SIGNED_PARAMS'], 0, 10));
 		?>
 		<div class="bx-sap" id="bx-sap<?=$wrapperId?>">
 			<div class="container-fluid">
@@ -69,11 +70,8 @@ else
 											.($arParams['SELL_USER_INPUT'] === 'N' ? "disabled" :"").
 											">
 										</div>";
-									$tempCurrencyRow = trim(str_replace("#", "", $arResult['FORMATED_CURRENCY']));
-									$labelWrapper = "<label class='control-label input-lg input-lg col-sm-3'>".$tempCurrencyRow."</label>";
-									$currencyRow = str_replace($tempCurrencyRow, $labelWrapper, $arResult['FORMATED_CURRENCY']);
-									$currencyRow = str_replace("#", $inputElement, $currencyRow);
-									echo $currencyRow;
+									$currencyRow = "<label class='control-label input-lg input-lg col-sm-3'>".$arResult['FORMATED_CURRENCY']."</label>";
+									echo $inputElement.$currencyRow;
 									?>
 								</div>
 							</div>
@@ -158,6 +156,7 @@ else
 			"alertMessages" => array("wrongInput" => Loc::getMessage('SAP_ERROR_INPUT')),
 			"url" => CUtil::JSEscape($this->__component->GetPath().'/ajax.php'),
 			"templateFolder" => CUtil::JSEscape($templateFolder),
+			"templateName" => $this->__component->GetTemplateName(),
 			"signedParams" => $arResult['SIGNED_PARAMS'],
 			"wrapperId" => $wrapperId
 		);

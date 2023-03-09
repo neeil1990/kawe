@@ -1,5 +1,8 @@
-<?
-if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
+<?php
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
+{
+	die();
+}
 /** @var CBitrixComponent $this */
 /** @var array $arParams */
 /** @var array $arResult */
@@ -11,7 +14,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 /** @global CMain $APPLICATION */
 $this->setFrameMode(false);
 
-if(!CModule::IncludeModule("iblock"))
+if (!CModule::IncludeModule("iblock"))
 {
 	return;
 }
@@ -19,49 +22,66 @@ if(!CModule::IncludeModule("iblock"))
 /*************************************************************************
 	Processing of received parameters
 *************************************************************************/
-if(!isset($arParams["CACHE_TIME"]))
+if (!isset($arParams["CACHE_TIME"]))
+{
 	$arParams["CACHE_TIME"] = 3600;
+}
 
 unset($arParams["IBLOCK_TYPE"]); //was used only for IBLOCK_ID setup with Editor
-$arParams["IBLOCK_ID"] = intval($arParams["IBLOCK_ID"]);
-$arParams["SECTION_ID"] = intval($arParams["SECTION_ID"]);
-$arParams["SECTION_CODE"] = trim($arParams["SECTION_CODE"]);
-$arParams["NUM_DAYS"] = intval($arParams["NUM_DAYS"]);
-$arParams["NUM_NEWS"] = intval($arParams["NUM_NEWS"]);
+$arParams["IBLOCK_ID"] = (int)($arParams["IBLOCK_ID"] ?? 0);
+$arParams["SECTION_ID"] = (int)($arParams["SECTION_ID"] ?? 0);
+$arParams["SECTION_CODE"] = trim($arParams["SECTION_CODE"] ?? '');
+$arParams["NUM_DAYS"] = (int)($arParams["NUM_DAYS"] ?? 0);
+$arParams["NUM_NEWS"] = (int)($arParams["NUM_NEWS"] ?? 0);
 
-if(!array_key_exists("RSS_TTL", $arParams))
-	$arParams["RSS_TTL"] = 60;
-$arParams["RSS_TTL"] = intval($arParams["RSS_TTL"]);
+$arParams["RSS_TTL"] = (int)($arParams["RSS_TTL"] ?? 60);
+$arParams["DETAIL_URL"] ??= '';
 
-$arParams["YANDEX"] = $arParams["YANDEX"]=="Y";
+$arParams["YANDEX"] = ($arParams["YANDEX"] ?? '') === "Y";
 
-$arParams["CHECK_DATES"] = $arParams["CHECK_DATES"]!="N";
+$arParams["CHECK_DATES"] = ($arParams["CHECK_DATES"] ?? '') !== "N";
+$arParams["INCLUDE_SUBSECTIONS"] ??= false;
 
-$arParams["SORT_BY1"] = trim($arParams["SORT_BY1"]);
-if(strlen($arParams["SORT_BY1"])<=0)
+$arParams["SORT_BY1"] = trim($arParams["SORT_BY1"] ?? '');
+if ($arParams["SORT_BY1"] === '')
+{
 	$arParams["SORT_BY1"] = "ACTIVE_FROM";
-if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER1"]))
-	$arParams["SORT_ORDER1"]="DESC";
+}
+if (
+	!isset($arParams["SORT_ORDER1"])
+	|| !preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER1"])
+)
+{
+	$arParams["SORT_ORDER1"] = "DESC";
+}
 
-if(strlen($arParams["SORT_BY2"])<=0)
+if (empty($arParams["SORT_BY2"]))
+{
 	$arParams["SORT_BY2"] = "SORT";
-if(!preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER2"]))
-	$arParams["SORT_ORDER2"]="ASC";
-
-if(strlen($arParams["FILTER_NAME"])<=0 || !preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
-{
-	$arrFilter = array();
 }
-else
+if (
+	!isset($arParams["SORT_ORDER2"])
+	|| !preg_match('/^(asc|desc|nulls)(,asc|,desc|,nulls){0,1}$/i', $arParams["SORT_ORDER2"])
+)
 {
-	$arrFilter = $GLOBALS[$arParams["FILTER_NAME"]];
-	if(!is_array($arrFilter))
-		$arrFilter = array();
+	$arParams["SORT_ORDER2"] = "ASC";
 }
 
-$arParams["CACHE_FILTER"] = $arParams["CACHE_FILTER"]=="Y";
-if(!$arParams["CACHE_FILTER"] && count($arrFilter)>0)
+$arrFilter = [];
+if (!empty($arParams["FILTER_NAME"]) && preg_match("/^[A-Za-z_][A-Za-z01-9_]*$/", $arParams["FILTER_NAME"]))
+{
+	$arrFilter = $GLOBALS[$arParams["FILTER_NAME"]] ?? [];
+	if (!is_array($arrFilter))
+	{
+		$arrFilter = [];
+	}
+}
+
+$arParams["CACHE_FILTER"] = ($arParams["CACHE_FILTER"] ?? '') === "Y";
+if (!$arParams["CACHE_FILTER"] && !empty($arrFilter))
+{
 	$arParams["CACHE_TIME"] = 0;
+}
 
 $bDesignMode = $APPLICATION->GetShowIncludeAreas() && is_object($USER) && $USER->IsAdmin();
 
@@ -78,7 +98,7 @@ else
 /*************************************************************************
 	Start caching
 *************************************************************************/
-
+$arParams["CACHE_GROUPS"] ??= '';
 if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: $USER->GetGroups(), $arrFilter)))
 {
 	$rsResult = CIBlock::GetList(array(), array(
@@ -103,7 +123,7 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 	{
 		foreach($arResult as $k => $v)
 		{
-			if(substr($k, 0, 1)!=="~")
+			if(mb_substr($k, 0, 1) !== "~")
 			{
 				$arResult["~".$k] = $v;
 				$arResult[$k] = htmlspecialcharsbx($v);
@@ -111,9 +131,13 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 		}
 	}
 
+	$arResult["PROTOCOL"] = \Bitrix\Main\Context::getCurrent()->getRequest()->isHttps()
+		? 'https://'
+		: 'http://';
+
 	$arResult["RSS_TTL"] = $arParams["RSS_TTL"];
 
-	if($arParams["SECTION_ID"] > 0 || strlen($arParams["SECTION_CODE"]) > 0)
+	if($arParams["SECTION_ID"] > 0 || $arParams["SECTION_CODE"] <> '')
 	{
 		$arFilter = array(
 			"ACTIVE" => "Y",
@@ -123,7 +147,7 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 		);
 		if($arParams["SECTION_ID"] > 0)
 			$arFilter["ID"] = $arParams["SECTION_ID"];
-		elseif(strlen($arParams["SECTION_CODE"]) > 0)
+		elseif($arParams["SECTION_CODE"] <> '')
 			$arFilter["=CODE"] = $arParams["SECTION_CODE"];
 
 		$rsResult = CIBlockSection::GetList(array(), $arFilter);
@@ -144,7 +168,7 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 		{
 			foreach($arResult["SECTION"] as $k => $v)
 			{
-				if(substr($k, 0, 1)!=="~")
+				if(mb_substr($k, 0, 1) !== "~")
 				{
 					$arResult["SECTION"]["~".$k] = $v;
 					$arResult["SECTION"][$k] = htmlspecialcharsbx($v);
@@ -153,19 +177,17 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 		}
 	}
 
-	if(strlen($arResult["SERVER_NAME"])<=0 && defined("SITE_SERVER_NAME"))
+	if($arResult["SERVER_NAME"] == '' && defined("SITE_SERVER_NAME"))
 	{
 		$arResult["SERVER_NAME"] = SITE_SERVER_NAME;
 	}
-	if(strlen($arResult["SERVER_NAME"])<=0 && defined("SITE_SERVER_NAME"))
+	if($arResult["SERVER_NAME"] == '' && defined("SITE_SERVER_NAME"))
 	{
-		$b = "sort";
-		$o = "asc";
-		$rsSite = CSite::GetList($b, $o, array("LID" => $arResult["LID"]));
+		$rsSite = CSite::GetList('', '', array("LID" => $arResult["LID"]));
 		if($arSite = $rsSite->Fetch())
 			$arResult["SERVER_NAME"] = $arSite["SERVER_NAME"];
 	}
-	if(strlen($arResult["SERVER_NAME"])<=0)
+	if($arResult["SERVER_NAME"] == '')
 	{
 		$arResult["SERVER_NAME"] = COption::GetOptionString("main", "server_name", "www.bitrixsoft.com");
 	}
@@ -224,7 +246,7 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 	}
 
 	if($arParams["NUM_DAYS"] > 0)
-		$arFilter["ACTIVE_FROM"] = date($DB->DateFormatToPHP(CLang::GetDateFormat("FULL")), mktime(date("H"), date("i"), date("s"), date("m"), date("d")-IntVal($arParams["NUM_DAYS"]), date("Y")));
+		$arFilter["ACTIVE_FROM"] = date($DB->DateFormatToPHP(CLang::GetDateFormat("FULL")), mktime(date("H"), date("i"), date("s"), date("m"), date("d")-intval($arParams["NUM_DAYS"]), date("Y")));
 
 	$arSort = array(
 		$arParams["SORT_BY1"] => $arParams["SORT_ORDER1"],
@@ -267,25 +289,25 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 		if(is_array($arElement["arr_DETAIL_PICTURE"]))
 			$arElement["DETAIL_PICTURE"] = CHTTP::URN2URI($arElement["arr_DETAIL_PICTURE"]["SRC"], $arResult["SERVER_NAME"]);
 
-		if(strlen($arResult["NODES"]["title"])>0)
+		if($arResult["NODES"]["title"] <> '')
 			$arItem["title"] = str_replace($arNodesSearch, $arNodesReplace, $arResult["NODES"]["title"]);
 		else
 			$arItem["title"] = $arElement["NAME"];
 		$arItem["title"] = htmlspecialcharsbx(htmlspecialcharsback($arItem["title"]));
 
-		if(strlen($arResult["NODES"]["link"])>0)
+		if($arResult["NODES"]["link"] <> '')
 			$arItem["link"] = str_replace($arNodesSearch, $arNodesReplace, $arResult["NODES"]["link"]);
 		elseif($arProperties["DOC_LINK"]["VALUE"])
 			$arItem["link"] = CHTTP::URN2URI($arProperties["DOC_LINK"]["VALUE"], $arResult["SERVER_NAME"]);
 		else
 			$arItem["link"] = CHTTP::URN2URI($arElement["DETAIL_PAGE_URL"], $arResult["SERVER_NAME"]);
 
-		if(strlen($arResult["NODES"]["description"])>0)
+		if($arResult["NODES"]["description"] <> '')
 			$arItem["description"] = str_replace($arNodesSearch, $arNodesReplace, $arResult["NODES"]["description"]);
 		else
 			$arItem["description"]=htmlspecialcharsbx(($arElement["PREVIEW_TEXT"] || $arParams["YANDEX"]) ? $arElement["PREVIEW_TEXT"] : $arElement["DETAIL_TEXT"]);
 
-		if(strlen($arResult["NODES"]["enclosure"])>0)
+		if($arResult["NODES"]["enclosure"] <> '')
 		{
 			$arItem["enclosure"] = array(
 				"url" => str_replace($arNodesSearch, $arNodesReplace, $arResult["NODES"]["enclosure"]),
@@ -306,7 +328,7 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 			$arItem["enclosure"]=false;
 		}
 
-		if(strlen($arResult["NODES"]["category"])>0)
+		if($arResult["NODES"]["category"] <> '')
 		{
 			$arItem["category"] = str_replace($arNodesSearch, $arNodesReplace, $arResult["NODES"]["category"]);
 		}
@@ -316,7 +338,9 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 			$rsNavChain = CIBlockSection::GetNavChain($arResult["ID"], $arElement["IBLOCK_SECTION_ID"]);
 			while($arNavChain = $rsNavChain->Fetch())
 			{
-				$arItem["category"] .= htmlspecialcharsbx($arNavChain["NAME"])."/";
+				if ($arItem["category"])
+					$arItem["category"] .= "/";
+				$arItem["category"] .= htmlspecialcharsbx($arNavChain["NAME"]);
 			}
 		}
 
@@ -325,15 +349,15 @@ if($this->StartResultCache(false, array($arParams["CACHE_GROUPS"]==="N"? false: 
 			$arItem["full-text"] = htmlspecialcharsbx(htmlspecialcharsback($arElement["DETAIL_TEXT"]));
 		}
 
-		if(strlen($arResult["NODES"]["pubDate"])>0)
+		if($arResult["NODES"]["pubDate"] <> '')
 		{
 			$arItem["pubDate"] = str_replace($arNodesSearch, $arNodesReplace, $arResult["NODES"]["pubDate"]);
 		}
-		elseif(strlen($arElement["ACTIVE_FROM"])>0)
+		elseif($arElement["ACTIVE_FROM"] <> '')
 		{
 			$arItem["pubDate"] = date("r", MkDateTime($DB->FormatDate($arElement["ACTIVE_FROM"], Clang::GetDateFormat("FULL"), "DD.MM.YYYY H:I:S"), "d.m.Y H:i:s"));
 		}
-		elseif(strlen($arElement["DATE_CREATE"])>0)
+		elseif($arElement["DATE_CREATE"] <> '')
 		{
 			$arItem["pubDate"] = date("r", MkDateTime($DB->FormatDate($arElement["DATE_CREATE"], Clang::GetDateFormat("FULL"), "DD.MM.YYYY H:I:S"), "d.m.Y H:i:s"));
 		}

@@ -1,19 +1,13 @@
-<?
+<?php
+
 namespace Bitrix\Main\UI\Uploader;
-use Bitrix\Main\AccessDeniedException;
+
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\ArgumentNullException;
-use Bitrix\Main\ArgumentOutOfRangeException;
-use Bitrix\Main\DB\Exception;
 use Bitrix\Main\Error;
-use Bitrix\Main\ErrorCollection;
-use Bitrix\Main\HttpRequest;
 use Bitrix\Main\NotImplementedException;
-use Bitrix\Main\Result;
-use \Bitrix\Main\UI\FileInputUtility;
-use \Bitrix\Main\Web\HttpClient;
-use \Bitrix\Main\Web\Uri;
-use \Bitrix\Main\Context;
+use Bitrix\Main\Web\Uri;
+use Bitrix\Main\Context;
 
 class Package
 {
@@ -62,16 +56,9 @@ class Package
 		if (!is_string($path))
 			throw new ArgumentNullException("path");
 		$this->path = $path;
-		if (!is_string($CID))
-			throw new ArgumentNullException("CID");
-		else if (strpos($CID, "/") !== false)
-			throw new ArgumentException("CID contains forbidden symbol /");
-		$this->CID = $CID;
+		$this->setCid($CID);
 		$this->cidLog = new Log($this->path.$this->getCid().".log");
-
-		if (!is_string($index))
-			throw new ArgumentNullException("packageIndex");
-		$this->index = $index;
+		$this->setIndex($index);
 
 		$this->request = Context::getCurrent()->getRequest();
 		if (!$this->request->isPost())
@@ -79,12 +66,16 @@ class Package
 
 		$post = Context::getCurrent()->getRequest()->getPostList()->toArray();
 		$post = $post[Uploader::INFO_NAME];
+		if (!preg_match("/^([0-9]+)$/", $post["filesCount"]))
+		{
+			throw new ArgumentException("The value filesCount must be an integer", "packageIndex");
+		}
 		$this->log = new Log($this->path.$this->getIndex().".package");
 		if (!isset($this->log["CID"]))
 		{
-			$this->log["CID"] = $this->CID;
+			$this->log["CID"] = $this->getCid();
 			$this->log["pIndex"] = $this->getIndex();
-			$this->log["filesCount"] = $post["filesCount"];
+			$this->log["filesCount"] = intval($post["filesCount"]);
 			$this->log["files"] = array();
 		}
 
@@ -96,6 +87,15 @@ class Package
 		return $this;
 	}
 
+	protected function setIndex($index)
+	{
+		if (!is_string($index))
+			throw new ArgumentNullException("packageIndex");
+		if (!preg_match("/^pIndex([0-9]+)$/", $index))
+			throw new ArgumentException("Index must be a string like '^pIndex([0-9]+)$'", "packageIndex");
+
+		$this->index = $index;
+	}
 	/**
 	 * Returns package Index.
 	 * @return string
@@ -136,6 +136,14 @@ class Package
 		return $this->files[$id];
 	}
 
+	protected function setCid($CID)
+	{
+		if (!is_string($CID))
+			throw new ArgumentNullException("CID");
+		else if (mb_strpos($CID, "/") !== false)
+			throw new ArgumentException("CID contains a forbidden symbol /");
+		$this->CID = preg_replace("/[^a-z0-9_\\-.]/i", "_", $CID);
+	}
 	/**
 	 * @return string
 	 */
@@ -209,20 +217,18 @@ class Package
 	 */
 	protected static function unescape($data)
 	{
-		global $APPLICATION;
-
 		if(is_array($data))
 		{
 			$res = array();
 			foreach($data as $k => $v)
 			{
-				$k = $APPLICATION->ConvertCharset(\CHTTP::urnDecode($k), "UTF-8", LANG_CHARSET);
+				$k = Uri::urnDecode($k, "UTF-8");
 				$res[$k] = self::unescape($v);
 			}
 		}
 		else
 		{
-			$res = $APPLICATION->ConvertCharset(\CHTTP::urnDecode($data), "UTF-8", LANG_CHARSET);
+			$res = Uri::urnDecode($data, "UTF-8");
 		}
 
 		return $res;
@@ -235,7 +241,10 @@ class Package
 	 */
 	public function checkPost($fileLimits)
 	{
-		$unescapedPost = self::unescape(Context::getCurrent()->getRequest()->getPostList()->toArray());
+		$unescapedPost = self::unescape(
+		Context::getCurrent()->getRequest()->getPostList()->toArrayRaw()
+			?? Context::getCurrent()->getRequest()->getPostList()->toArray()
+		);
 		$postFiles = $unescapedPost[Uploader::FILE_NAME];
 		$post = $unescapedPost[Uploader::INFO_NAME];
 		if (!(is_array($post) &&
@@ -246,8 +255,11 @@ class Package
 		)
 			return array();
 
-		$files = Context::getCurrent()->getRequest()->getFileList()->toArray();
-		$files = self::unescape($files[Uploader::FILE_NAME]);
+		$files =  self::unescape(
+			Context::getCurrent()->getRequest()->getFileList()->toArrayRaw()
+			?? Context::getCurrent()->getRequest()->getFileList()->toArray()
+		);
+		$files = $files[Uploader::FILE_NAME];
 
 		if ($post["type"] != "brief") // If it is IE8
 		{
@@ -283,7 +295,16 @@ class Package
 		{
 			if (is_array($file))
 			{
-				if (isset($file["restored"]))
+				if (isset($file["removed"]))
+				{
+					$f = array_merge($file, array("id" => $fileID));
+					File::deleteCache($this, $f);
+					$filesRaw[] = [
+						'id' => $fileID,
+						'removed' => 'Y'
+					];
+				}
+				else if (isset($file["restored"]))
 				{
 					$f = array_merge($file, array("id" => $fileID));
 					if ($f["restored"] === "Y")
@@ -365,26 +386,38 @@ class Package
 					break;
 				if (!array_key_exists($fileRaw["id"], $filesOnThisPack))
 				{
-					$file = new File($this, array(
-						"id" => $fileRaw["id"],
-						"name" => $postFiles[$fileRaw["id"]]["name"],
-						"type" => $postFiles[$fileRaw["id"]]["type"],
-						"size" => $postFiles[$fileRaw["id"]]["size"]
-					));
-					if (isset($fileRaw["restored"]))
+					if ($fileRaw["removed"])
 					{
-						if ($file->isExecuted())
-							$file->setExecuteStatus("none");
-						$fileRaw = $file->getFile("default");
-						if (empty($fileRaw) || !is_array($fileRaw))
-							$file->addError(new Error(\Bitrix\Main\Localization\Loc::getMessage("BXU_FileIsNotRestored"), "BXU350.0"));
+						$file = new FileRemoved($this, [
+							'id' => $fileRaw['id'],
+							'name' => $postFiles[$fileRaw["id"]]["name"]
+						]);
+					}
+					else
+					{
+						$file = new File($this, array(
+								"id" => $fileRaw["id"],
+								"name" => $postFiles[$fileRaw["id"]]["name"],
+								"type" => $postFiles[$fileRaw["id"]]["type"],
+								"size" => $postFiles[$fileRaw["id"]]["size"]
+							) + (is_array($postFiles[$fileRaw["id"]]) ? $postFiles[$fileRaw["id"]] : []));
+						if (isset($fileRaw["restored"]))
+						{
+							if ($file->isExecuted())
+								$file->setExecuteStatus("none");
+							$fileRaw = $file->getFile("default");
+							if (empty($fileRaw) || !is_array($fileRaw))
+								$file->addError(new Error(\Bitrix\Main\Localization\Loc::getMessage("BXU_FileIsNotRestored"), "BXU350.0"));
+						}
 					}
 					$filesOnThisPack[$fileRaw["id"]] = $file;
 				}
 				/* @var File $file */
 				$file = $filesOnThisPack[$fileRaw["id"]];
-				if ($file->hasError())
+				if ($file->hasError() || $file instanceof FileRemoved)
+				{
 					continue;
+				}
 				$result = File::checkFile($fileRaw, $file, $fileLimits + array("path" => $this->getPath()));
 				if ($result->isSuccess() && ($result = $file->saveFile($fileRaw, $this->getStorage(), $this->getCopies())) && $result->isSuccess() &&
 					$post["type"] != "brief" &&
@@ -434,7 +467,7 @@ class Package
 		foreach ($filesFromLog as $status)
 			$cnt += ($status == "uploaded" || $status == "error" ? 1 : 0);
 
-		if ($declaredFiles > 0 && $declaredFiles == $cnt)
+		if ($declaredFiles > 0 && $declaredFiles <= $cnt)
 		{
 			if ($post["type"] != "brief") // If it is IE8
 			{

@@ -6,6 +6,11 @@
  */
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
 	die();
+
+if($arResult["SHOW_SMS_FIELD"] == true)
+{
+	CJSCore::Init('phone_auth');
+}
 ?>
 
 <div class="bx-auth-profile">
@@ -15,12 +20,63 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
 if ($arResult['DATA_SAVED'] == 'Y')
 	ShowNote(GetMessage('PROFILE_DATA_SAVED'));
 ?>
+
+<?if($arResult["SHOW_SMS_FIELD"] == true):?>
+
+<form method="post" action="<?=$arResult["FORM_TARGET"]?>">
+<?=$arResult["BX_SESSION_CHECK"]?>
+<input type="hidden" name="lang" value="<?=LANG?>" />
+<input type="hidden" name="ID" value=<?=$arResult["ID"]?> />
+<input type="hidden" name="SIGNED_DATA" value="<?=htmlspecialcharsbx($arResult["SIGNED_DATA"])?>" />
+<table class="profile-table data-table">
+	<tbody>
+		<tr>
+			<td><?echo GetMessage("main_profile_code")?><span class="starrequired">*</span></td>
+			<td><input size="30" type="text" name="SMS_CODE" value="<?=htmlspecialcharsbx($arResult["SMS_CODE"])?>" autocomplete="off" /></td>
+		</tr>
+	</tbody>
+</table>
+
+<p><input type="submit" name="code_submit_button" value="<?echo GetMessage("main_profile_send")?>" /></p>
+
+</form>
+
+<script>
+new BX.PhoneAuth({
+	containerId: 'bx_profile_resend',
+	errorContainerId: 'bx_profile_error',
+	interval: <?=$arResult["PHONE_CODE_RESEND_INTERVAL"]?>,
+	data:
+		<?=CUtil::PhpToJSObject([
+			'signedData' => $arResult["SIGNED_DATA"],
+		])?>,
+	onError:
+		function(response)
+		{
+			var errorDiv = BX('bx_profile_error');
+			var errorNode = BX.findChildByClassName(errorDiv, 'errortext');
+			errorNode.innerHTML = '';
+			for(var i = 0; i < response.errors.length; i++)
+			{
+				errorNode.innerHTML = errorNode.innerHTML + BX.util.htmlspecialchars(response.errors[i].message) + '<br>';
+			}
+			errorDiv.style.display = '';
+		}
+});
+</script>
+
+<div id="bx_profile_error" style="display:none"><?ShowError("error")?></div>
+
+<div id="bx_profile_resend"></div>
+
+<?else:?>
+
 <script type="text/javascript">
 <!--
 var opened_sections = [<?
 $arResult["opened"] = $_COOKIE[$arResult["COOKIE_PREFIX"]."_user_profile_open"];
 $arResult["opened"] = preg_replace("/[^a-z0-9_,]/i", "", $arResult["opened"]);
-if (strlen($arResult["opened"]) > 0)
+if ($arResult["opened"] <> '')
 {
 	echo "'".implode("', '", explode(",", $arResult["opened"]))."'";
 }
@@ -40,7 +96,7 @@ var cookie_prefix = '<?=$arResult["COOKIE_PREFIX"]?>';
 <input type="hidden" name="ID" value=<?=$arResult["ID"]?> />
 
 <div class="profile-link profile-user-div-link"><a title="<?=GetMessage("REG_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('reg')"><?=GetMessage("REG_SHOW_HIDE")?></a></div>
-<div class="profile-block-<?=strpos($arResult["opened"], "reg") === false ? "hidden" : "shown"?>" id="user_div_reg">
+<div class="profile-block-<?= mb_strpos($arResult["opened"], "reg") === false ? "hidden" : "shown"?>" id="user_div_reg">
 <table class="profile-table data-table">
 	<thead>
 		<tr>
@@ -53,7 +109,7 @@ var cookie_prefix = '<?=$arResult["COOKIE_PREFIX"]?>';
 	{
 	?>
 		<?
-		if (strlen($arResult["arUser"]["TIMESTAMP_X"])>0)
+		if ($arResult["arUser"]["TIMESTAMP_X"] <> '')
 		{
 		?>
 		<tr>
@@ -64,7 +120,7 @@ var cookie_prefix = '<?=$arResult["COOKIE_PREFIX"]?>';
 		}
 		?>
 		<?
-		if (strlen($arResult["arUser"]["LAST_LOGIN"])>0)
+		if ($arResult["arUser"]["LAST_LOGIN"] <> '')
 		{
 		?>
 		<tr>
@@ -94,14 +150,20 @@ var cookie_prefix = '<?=$arResult["COOKIE_PREFIX"]?>';
 		<td><input type="text" name="SECOND_NAME" maxlength="50" value="<?=$arResult["arUser"]["SECOND_NAME"]?>" /></td>
 	</tr>
 	<tr>
-		<td><?=GetMessage('EMAIL')?><?if($arResult["EMAIL_REQUIRED"]):?><span class="starrequired">*</span><?endif?></td>
-		<td><input type="text" name="EMAIL" maxlength="50" value="<? echo $arResult["arUser"]["EMAIL"]?>" /></td>
-	</tr>
-	<tr>
 		<td><?=GetMessage('LOGIN')?><span class="starrequired">*</span></td>
 		<td><input type="text" name="LOGIN" maxlength="50" value="<? echo $arResult["arUser"]["LOGIN"]?>" /></td>
 	</tr>
-<?if($arResult["arUser"]["EXTERNAL_AUTH_ID"] == ''):?>
+	<tr>
+		<td><?=GetMessage('EMAIL')?><?if($arResult["EMAIL_REQUIRED"]):?><span class="starrequired">*</span><?endif?></td>
+		<td><input type="text" name="EMAIL" maxlength="50" value="<? echo $arResult["arUser"]["EMAIL"]?>" /></td>
+	</tr>
+<?if($arResult["PHONE_REGISTRATION"]):?>
+	<tr>
+		<td><?echo GetMessage("main_profile_phone_number")?><?if($arResult["PHONE_REQUIRED"]):?><span class="starrequired">*</span><?endif?></td>
+		<td><input type="text" name="PHONE_NUMBER" maxlength="50" value="<? echo $arResult["arUser"]["PHONE_NUMBER"]?>" /></td>
+	</tr>
+<?endif?>
+<?if($arResult['CAN_EDIT_PASSWORD']):?>
 	<tr>
 		<td><?=GetMessage('NEW_PASSWORD_REQ')?></td>
 		<td><input type="password" name="NEW_PASSWORD" maxlength="50" value="" autocomplete="off" class="bx-auth-input" />
@@ -154,7 +216,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 </table>
 </div>
 <div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('personal')"><?=GetMessage("USER_PERSONAL_INFO")?></a></div>
-<div id="user_div_personal" class="profile-block-<?=strpos($arResult["opened"], "personal") === false ? "hidden" : "shown"?>">
+<div id="user_div_personal" class="profile-block-<?= mb_strpos($arResult["opened"], "personal") === false ? "hidden" : "shown"?>">
 <table class="data-table profile-table">
 	<thead>
 		<tr>
@@ -207,7 +269,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 			<td>
 			<?=$arResult["arUser"]["PERSONAL_PHOTO_INPUT"]?>
 			<?
-			if (strlen($arResult["arUser"]["PERSONAL_PHOTO"])>0)
+			if ($arResult["arUser"]["PERSONAL_PHOTO"] <> '')
 			{
 			?>
 			<br />
@@ -270,7 +332,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 </div>
 
 <div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('work')"><?=GetMessage("USER_WORK_INFO")?></a></div>
-<div id="user_div_work" class="profile-block-<?=strpos($arResult["opened"], "work") === false ? "hidden" : "shown"?>">
+<div id="user_div_work" class="profile-block-<?= mb_strpos($arResult["opened"], "work") === false ? "hidden" : "shown"?>">
 <table class="data-table profile-table">
 	<thead>
 		<tr>
@@ -303,7 +365,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 			<td>
 			<?=$arResult["arUser"]["WORK_LOGO_INPUT"]?>
 			<?
-			if (strlen($arResult["arUser"]["WORK_LOGO"])>0)
+			if ($arResult["arUser"]["WORK_LOGO"] <> '')
 			{
 			?>
 				<br /><?=$arResult["arUser"]["WORK_LOGO_HTML"]?>
@@ -366,7 +428,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 	?>
 
 <div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('forum')"><?=GetMessage("forum_INFO")?></a></div>
-<div id="user_div_forum" class="profile-block-<?=strpos($arResult["opened"], "forum") === false ? "hidden" : "shown"?>">
+<div id="user_div_forum" class="profile-block-<?= mb_strpos($arResult["opened"], "forum") === false ? "hidden" : "shown"?>">
 <table class="data-table profile-table">
 	<thead>
 		<tr>
@@ -394,7 +456,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 			<td><?=GetMessage("forum_AVATAR")?></td>
 			<td><?=$arResult["arForumUser"]["AVATAR_INPUT"]?>
 			<?
-			if (strlen($arResult["arForumUser"]["AVATAR"])>0)
+			if ($arResult["arForumUser"]["AVATAR"] <> '')
 			{
 			?>
 				<br /><?=$arResult["arForumUser"]["AVATAR_HTML"]?>
@@ -414,7 +476,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 	{
 	?>
 <div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('blog')"><?=GetMessage("blog_INFO")?></a></div>
-<div id="user_div_blog" class="profile-block-<?=strpos($arResult["opened"], "blog") === false ? "hidden" : "shown"?>">
+<div id="user_div_blog" class="profile-block-<?= mb_strpos($arResult["opened"], "blog") === false ? "hidden" : "shown"?>">
 <table class="data-table profile-table">
 	<thead>
 		<tr>
@@ -438,7 +500,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 			<td><?=GetMessage("blog_AVATAR")?></td>
 			<td><?=$arResult["arBlogUser"]["AVATAR_INPUT"]?>
 			<?
-			if (strlen($arResult["arBlogUser"]["AVATAR"])>0)
+			if ($arResult["arBlogUser"]["AVATAR"] <> '')
 			{
 			?>
 				<br /><?=$arResult["arBlogUser"]["AVATAR_HTML"]?>
@@ -454,7 +516,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 	?>
 	<?if ($arResult["INCLUDE_LEARNING"] == "Y"):?>
 	<div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('learning')"><?=GetMessage("learning_INFO")?></a></div>
-	<div id="user_div_learning" class="profile-block-<?=strpos($arResult["opened"], "learning") === false ? "hidden" : "shown"?>">
+	<div id="user_div_learning" class="profile-block-<?= mb_strpos($arResult["opened"], "learning") === false ? "hidden" : "shown"?>">
 	<table class="data-table profile-table">
 		<thead>
 			<tr>
@@ -481,7 +543,7 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 	<?endif;?>
 	<?if($arResult["IS_ADMIN"]):?>
 	<div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('admin')"><?=GetMessage("USER_ADMIN_NOTES")?></a></div>
-	<div id="user_div_admin" class="profile-block-<?=strpos($arResult["opened"], "admin") === false ? "hidden" : "shown"?>">
+	<div id="user_div_admin" class="profile-block-<?= mb_strpos($arResult["opened"], "admin") === false ? "hidden" : "shown"?>">
 	<table class="data-table profile-table">
 		<thead>
 			<tr>
@@ -499,8 +561,8 @@ document.getElementById('bx_auth_secure').style.display = 'inline-block';
 	<?endif;?>
 	<?// ********************* User properties ***************************************************?>
 	<?if($arResult["USER_PROPERTIES"]["SHOW"] == "Y"):?>
-	<div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('user_properties')"><?=strlen(trim($arParams["USER_PROPERTY_NAME"])) > 0 ? $arParams["USER_PROPERTY_NAME"] : GetMessage("USER_TYPE_EDIT_TAB")?></a></div>
-	<div id="user_div_user_properties" class="profile-block-<?=strpos($arResult["opened"], "user_properties") === false ? "hidden" : "shown"?>">
+	<div class="profile-link profile-user-div-link"><a title="<?=GetMessage("USER_SHOW_HIDE")?>" href="javascript:void(0)" onclick="SectionClick('user_properties')"><?=trim($arParams["USER_PROPERTY_NAME"]) <> '' ? $arParams["USER_PROPERTY_NAME"] : GetMessage("USER_TYPE_EDIT_TAB")?></a></div>
+	<div id="user_div_user_properties" class="profile-block-<?= mb_strpos($arResult["opened"], "user_properties") === false ? "hidden" : "shown"?>">
 	<table class="data-table profile-table">
 		<thead>
 			<tr>
@@ -539,4 +601,7 @@ if($arResult["SOCSERV_ENABLED"])
 	);
 }
 ?>
+
+<?endif?>
+
 </div>

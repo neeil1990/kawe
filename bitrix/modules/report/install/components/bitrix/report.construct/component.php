@@ -3,6 +3,8 @@
 
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
+$arParams['REPORT_ID'] = isset($arParams['REPORT_ID']) ? (int)$arParams['REPORT_ID'] : 0;
+
 $requiredModules = array('report');
 
 foreach ($requiredModules as $requiredModule)
@@ -14,10 +16,27 @@ foreach ($requiredModules as $requiredModule)
 	}
 }
 
-if (!isset($arParams['REPORT_HELPER_CLASS']) || strlen($arParams['REPORT_HELPER_CLASS']) < 1)
+$helperClassName = $arResult['HELPER_CLASS'] = ($arParams['REPORT_HELPER_CLASS'] ?? '');
+if (
+	!is_string($helperClassName)
+	|| mb_strlen($helperClassName) < 1
+	|| !class_exists($helperClassName)
+	|| !is_subclass_of($helperClassName, 'CReportHelper')
+)
 {
 	ShowError(GetMessage("REPORT_HELPER_NOT_DEFINED"));
 	return 0;
+}
+
+$arResult['IS_RESTRICTED'] = false;
+if (
+	\Bitrix\Main\Loader::includeModule('bitrix24')
+	&& !\Bitrix\Bitrix24\Feature::isFeatureEnabled('report')
+)
+{
+	$arResult['IS_RESTRICTED'] = true;
+	$this->IncludeComponentTemplate('restrict');
+	return 1;
 }
 
 use Bitrix\Main\Entity;
@@ -54,17 +73,17 @@ if ($arParams['USE_CHART'])
 		array('id' => 'line', 'name' => GetMessage('REPORT_CHART_TYPE_LINE1'), 'value_types' => array(
 			/*'boolean', 'date', 'datetime', */
 			'float', 'integer'/*, 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-			'iblock_element', 'iblock_section'*/
+			'iblock_element', 'iblock_section', 'money'*/
 		)),
 		array('id' => 'bar', 'name' => GetMessage('REPORT_CHART_TYPE_BAR1'), 'value_types' => array(
 			/*'boolean', 'date', 'datetime', */
 			'float', 'integer'/*, 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-			'iblock_element', 'iblock_section'*/
+			'iblock_element', 'iblock_section', 'money'*/
 		)),
 		array('id' => 'pie', 'name' => GetMessage('REPORT_CHART_TYPE_PIE'), 'value_types' => array(
 			/*'boolean', 'date', 'datetime', */
 			'float', 'integer'/*, 'string', 'text', 'enum', 'file', 'disk_file', 'employee', 'crm', 'crm_status',
-			'iblock_element', 'iblock_section'*/
+			'iblock_element', 'iblock_section', 'money'*/
 		))
 	);
 }
@@ -80,8 +99,6 @@ try
 	$ownerId = call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'getOwnerId'));
 	$entityName = call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'getEntityName'));
 	$entityFields = call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'getColumnList'));
-	$arResult['ufEnumerations'] = call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'getUFEnumerations'));
-
 	// customize entity
 	$initEntity = clone Entity\Base::getInstance($entityName);
 	call_user_func(array($arParams['REPORT_HELPER_CLASS'], 'setRuntimeFields'), $initEntity, '');
@@ -248,6 +265,7 @@ try
 		// </editor-fold>
 
 		// <editor-fold defaultstate="collapsed" desc="preapre period">
+		$period = [];
 		if (!empty($_POST['F_DATE_TYPE']) && in_array($_POST['F_DATE_TYPE'], $periodTypes, true))
 		{
 			$period = array('type' => $_POST['F_DATE_TYPE']);
@@ -290,6 +308,10 @@ try
 		else
 		{
 			$period = array('type' => 'month', 'value' => null);
+		}
+		if (isset($_POST['period_hidden']))
+		{
+			$period['hidden'] = ($_POST['period_hidden'] === 'Y' ? 'Y' : 'N');
 		}
 		// </editor-fold>
 
@@ -340,9 +362,9 @@ try
 				}
 
 				// save prcnt
-				if (strlen($v['prcnt']))
+				if($v['prcnt'] <> '')
 				{
-					if ($v['prcnt'] == 'self_column' || array_key_exists($v['prcnt'], $_POST['report_select_columns']))
+					if($v['prcnt'] == 'self_column' || array_key_exists($v['prcnt'], $_POST['report_select_columns']))
 					{
 						$row['prcnt'] = $v['prcnt'];
 					}
@@ -584,7 +606,24 @@ try
 		// <editor-fold defaultstate="collapsed" desc="initialize default values">
 		if ($arParams['ACTION'] == 'edit' || $arParams['ACTION'] == 'copy')
 		{
-			$settings = unserialize($arResult['report']['SETTINGS']);
+			$settings = unserialize($arResult['report']['SETTINGS'], ['allowed_classes' => false]);
+
+			if (!is_array($settings))
+			{
+				$settings = [];
+			}
+			if (!is_array($settings['select']))
+			{
+				$settings['select'] = [];
+			}
+			if (!is_array($settings['filter']))
+			{
+				$settings['filter'] = [];
+			}
+			if (!is_array($settings['period']))
+			{
+				$settings['period'] = ['type' => 'days', 'value' => 1, 'hidden' => 'N'];
+			}
 
 			call_user_func_array(
 				array($arParams['REPORT_HELPER_CLASS'], 'fillFilterUFColumns'),

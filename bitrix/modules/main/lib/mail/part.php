@@ -19,6 +19,39 @@ class Part
 	/** @var string $body Body. */
 	protected $body = '';
 
+	/** @var string $eol Symbol of end-of-line. */
+	protected $eol;
+
+	/**
+	 * Multipart constructor.
+	 */
+	public function __construct()
+	{
+		$this->eol = Mail::getMailEol();
+	}
+
+	/**
+	 * Get EOL.
+	 *
+	 * @return string
+	 */
+	public function getEol()
+	{
+		return $this->eol;
+	}
+
+	/**
+	 * Set EOL.
+	 *
+	 * @param string $eol
+	 * @return $this
+	 */
+	public function setEol($eol)
+	{
+		$this->eol = $eol;
+		return $this;
+	}
+
 	/**
 	 * Add header.
 	 *
@@ -98,8 +131,7 @@ class Part
 	 */
 	public function toStringBody()
 	{
-		$eol = Mail::getMailEol();
-		return $this->splitBody($this->body) . $eol . $eol;
+		return $this->splitBody($this->body) . $this->eol . $this->eol;
 	}
 
 	/**
@@ -110,10 +142,9 @@ class Part
 	public function toStringHeaders()
 	{
 		$result = '';
-		$eol = Mail::getMailEol();
 		foreach ($this->headers as $name => $value)
 		{
-			$result .= $name . ': '. $value . $eol;
+			$result .= $name . ': '. $value . $this->eol;
 		}
 
 		return $result ? $result  : '';
@@ -126,8 +157,7 @@ class Part
 	 */
 	public function toString()
 	{
-		$eol = Mail::getMailEol();
-		return $this->toStringHeaders() . $eol . $this->toStringBody();
+		return $this->toStringHeaders() . $this->eol . $this->toStringBody();
 	}
 
 	/**
@@ -140,21 +170,26 @@ class Part
 		return $this->toString();
 	}
 
-	protected function splitBody($body)
+	protected function splitBody(&$body)
 	{
-		if($this->getHeader('Content-Transfer-Encoding') === 'base64')
+		if ($this->getHeader('Content-Transfer-Encoding') === 'base64')
 		{
-			// Line length is 70 chars. As a recommended in mail() php documentation.
-			return rtrim(chunk_split(base64_encode($body), 70));
+			return rtrim(chunk_split(base64_encode($body), 76, $this->eol));
+		}
+		elseif ($this->getHeader('Content-Transfer-Encoding') === 'quoted-printable')
+		{
+			return str_replace(
+				$this->eol !== "\r\n" ? "=\r\n" : '',
+				'=' . $this->eol,
+				quoted_printable_encode($body)
+			);
 		}
 		else
 		{
-			//Some MTA has 4K limit for fgets function. So we have to split the message body.
-			return implode(
-				"\n",
-				array_filter(
-					preg_split("/(.{512}[^ ]*[ ])/", $body . " ", -1, PREG_SPLIT_DELIM_CAPTURE)
-				)
+			return preg_replace(
+				'/(.{1,990})(?:\s|$)|(.{990})/S',
+				'$1$2' . $this->eol,
+				$body
 			);
 		}
 	}

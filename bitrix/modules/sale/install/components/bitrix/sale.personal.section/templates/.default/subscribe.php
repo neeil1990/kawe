@@ -8,7 +8,7 @@ if ($arParams['SHOW_SUBSCRIBE_PAGE'] !== 'Y')
 	LocalRedirect($arParams['SEF_FOLDER']);
 }
 
-if (strlen($arParams["MAIN_CHAIN_NAME"]) > 0)
+if ($arParams["MAIN_CHAIN_NAME"] <> '')
 {
 	$APPLICATION->AddChainItem(htmlspecialcharsbx($arParams["MAIN_CHAIN_NAME"]), $arResult['SEF_FOLDER']);
 }
@@ -16,8 +16,10 @@ $APPLICATION->AddChainItem(Loc::getMessage("SPS_CHAIN_SUBSCRIBE_NEW"));
 $APPLICATION->IncludeComponent(
 	'bitrix:catalog.product.subscribe.list',
 	'',
-	array('SET_TITLE' => $arParams['SET_TITLE'])
-	,
+	array(
+		'SET_TITLE' => $arParams['SET_TITLE'],
+		'DETAIL_URL' => $arParams['SUBSCRIBE_DETAIL_URL']
+	),
 	$component
 );
 

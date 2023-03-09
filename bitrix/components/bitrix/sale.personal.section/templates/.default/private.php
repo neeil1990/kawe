@@ -8,7 +8,7 @@ if ($arParams['SHOW_PRIVATE_PAGE'] !== 'Y')
 	LocalRedirect($arParams['SEF_FOLDER']);
 }
 
-if (strlen($arParams["MAIN_CHAIN_NAME"]) > 0)
+if ($arParams["MAIN_CHAIN_NAME"] <> '')
 {
 	$APPLICATION->AddChainItem(htmlspecialcharsbx($arParams["MAIN_CHAIN_NAME"]), $arResult['SEF_FOLDER']);
 }
@@ -25,7 +25,8 @@ if ($arParams['SET_TITLE'] == 'Y')
 		"SET_TITLE" =>$arParams["SET_TITLE"],
 		"AJAX_MODE" => $arParams['AJAX_MODE_PRIVATE'],
 		"SEND_INFO" => $arParams["SEND_INFO_PRIVATE"],
-		"CHECK_RIGHTS" => $arParams['CHECK_RIGHTS_PRIVATE']
+		"CHECK_RIGHTS" => $arParams['CHECK_RIGHTS_PRIVATE'],
+		"EDITABLE_EXTERNAL_AUTH_ID" => $arParams['EDITABLE_EXTERNAL_AUTH_ID'],
 	),
 	$component
 );?>

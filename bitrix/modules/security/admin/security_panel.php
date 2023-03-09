@@ -1,4 +1,8 @@
-<?
+<?php
+
+use Bitrix\Main\Config\Configuration;
+use Bitrix\Main\Session\SessionConfigurationResolver;
+
 define("ADMIN_MODULE_NAME", "security");
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
@@ -233,9 +237,10 @@ $cntLog = 0;
 $rsLog = CEventLog::GetList(array(), array(
 	"TIMESTAMP_X_1" => ConvertTimeStamp(time()-$days*24*3600+CTimeZone::GetOffset(), "FULL"),
 	"AUDIT_TYPE_ID" => "SECURITY_FILTER_SQL|SECURITY_FILTER_XSS|SECURITY_FILTER_XSS2|SECURITY_FILTER_PHP|SECURITY_REDIRECT",
-));
-while($rsLog->Fetch())
-	$cntLog++;
+	),
+	array("nPageSize" => 1)
+);
+$cntLog = $rsLog->NavRecordCount;
 
 $data['std']['ITEMS'][] = array(
 	"IS_OK" => true,
@@ -272,156 +277,7 @@ if($bStatistic)
 	);
 }
 
-$arGroupPolicy = array(
-	"parent" => Array(
-		"SESSION_TIMEOUT" => "",
-		"SESSION_IP_MASK" => "",
-		"MAX_STORE_NUM" => "",
-		"STORE_IP_MASK" => "",
-		"STORE_TIMEOUT" => "",
-		"CHECKWORD_TIMEOUT" => "",
-		"PASSWORD_LENGTH" => "",
-		"PASSWORD_UPPERCASE" => "N",
-		"PASSWORD_LOWERCASE" => "N",
-		"PASSWORD_DIGITS" => "N",
-		"PASSWORD_PUNCTUATION" => "N",
-		"LOGIN_ATTEMPTS" => "",
-	),
-	"low" => Array(
-		"SESSION_TIMEOUT" => 30, //minutes
-		"SESSION_IP_MASK" => "0.0.0.0",
-		"MAX_STORE_NUM" => 20,
-		"STORE_IP_MASK" => "255.0.0.0",
-		"STORE_TIMEOUT" => 60*24*93, //minutes
-		"CHECKWORD_TIMEOUT" => 60*24*185,  //minutes
-		"PASSWORD_LENGTH" => 6,
-		"PASSWORD_UPPERCASE" => "N",
-		"PASSWORD_LOWERCASE" => "N",
-		"PASSWORD_DIGITS" => "N",
-		"PASSWORD_PUNCTUATION" => "N",
-		"LOGIN_ATTEMPTS" => 0,
-	),
-	"middle" => Array(
-		"SESSION_TIMEOUT" => 20, //minutes
-		"SESSION_IP_MASK" => "255.255.0.0",
-		"MAX_STORE_NUM" => 10,
-		"STORE_IP_MASK" => "255.255.0.0",
-		"STORE_TIMEOUT" => 60*24*30, //minutes
-		"CHECKWORD_TIMEOUT" => 60*24*1,  //minutes
-		"PASSWORD_LENGTH" => 8,
-		"PASSWORD_UPPERCASE" => "Y",
-		"PASSWORD_LOWERCASE" => "Y",
-		"PASSWORD_DIGITS" => "Y",
-		"PASSWORD_PUNCTUATION" => "N",
-		"LOGIN_ATTEMPTS" => 0,
-	),
-	"high" => Array(
-		"SESSION_TIMEOUT" => 15, //minutes
-		"SESSION_IP_MASK" => "255.255.255.255",
-		"MAX_STORE_NUM" => 1,
-		"STORE_IP_MASK" => "255.255.255.255",
-		"STORE_TIMEOUT" => 60*24*3, //minutes
-		"CHECKWORD_TIMEOUT" => 60,  //minutes
-		"PASSWORD_LENGTH" => 10,
-		"PASSWORD_UPPERCASE" => "Y",
-		"PASSWORD_LOWERCASE" => "Y",
-		"PASSWORD_DIGITS" => "Y",
-		"PASSWORD_PUNCTUATION" => "Y",
-		"LOGIN_ATTEMPTS" => 3,
-	),
-);
-$arAdminPolicy = CUser::GetGroupPolicy(1);
-$level = 'high';
-foreach($arGroupPolicy['parent'] as $key => $value)
-{
-	$el2_value = $arAdminPolicy[$key];
-	$el2_checked = $arAdminPolicy[$key] === "Y";
-
-	switch($key)
-	{
-	case "SESSION_TIMEOUT":
-	case "MAX_STORE_NUM":
-	case "STORE_TIMEOUT":
-	case "CHECKWORD_TIMEOUT":
-		if(intval($el2_value) <= intval($arGroupPolicy['high'][$key]))
-			$clevel = 'high';
-		elseif(intval($el2_value) <= intval($arGroupPolicy['middle'][$key]))
-			$clevel = 'middle';
-		else
-			$clevel = 'low';
-		break;
-	case "PASSWORD_LENGTH":
-		if(intval($el2_value) >= intval($arGroupPolicy['high'][$key]))
-			$clevel = 'high';
-		elseif(intval($el2_value) >= intval($arGroupPolicy['middle'][$key]))
-			$clevel = 'middle';
-		else
-			$clevel = 'low';
-		break;
-	case "LOGIN_ATTEMPTS":
-		if(intval($el2_value) > 0)
-		{
-			if(intval($el2_value) <= intval($arGroupPolicy['high'][$key]))
-				$clevel = 'high';
-			elseif(intval($el2_value) <= intval($arGroupPolicy['middle'][$key]))
-				$clevel = 'middle';
-			else
-				$clevel = 'low';
-		}
-		else
-		{
-			if(intval($arGroupPolicy['high'][$key]) <= 0)
-				$clevel = 'high';
-			elseif(intval($arGroupPolicy['middle'][$key]) <= 0)
-				$clevel = 'middle';
-			else
-				$clevel = 'low';
-		}
-		break;
-	case "PASSWORD_UPPERCASE":
-	case "PASSWORD_LOWERCASE":
-	case "PASSWORD_DIGITS":
-	case "PASSWORD_PUNCTUATION":
-		if($el2_checked)
-		{
-			if($arGroupPolicy['high'][$key] == 'Y')
-				$clevel = 'high';
-			elseif($arGroupPolicy['middle'][$key] == 'Y')
-				$clevel = 'middle';
-			else
-				$clevel = 'low';
-		}
-		else
-		{
-			if($arGroupPolicy['high'][$key] == 'N')
-				$clevel = 'high';
-			elseif($arGroupPolicy['middle'][$key] == 'N')
-				$clevel = 'middle';
-			else
-				$clevel = 'low';
-		}
-		break;
-		case "SESSION_IP_MASK":
-		case "STORE_IP_MASK":
-			$gp_ip = ip2long($el2_value);
-			$high_ip = ip2long($arGroupPolicy['high'][$key]);
-			$middle_ip = ip2long($arGroupPolicy['middle'][$key]);
-			if(($gp_ip & $high_ip) == (0xFFFFFFFF & $high_ip))
-				$clevel = 'high';
-			elseif(($gp_ip & $middle_ip) == (0xFFFFFFFF & $middle_ip))
-				$clevel = 'middle';
-			else
-				$clevel = 'low';
-		break;
-		default:
-		break;
-	}
-
-	if($clevel == 'low')
-		$level = $clevel;
-	elseif($clevel == 'middle' && $level == 'high')
-		$level = $clevel;
-}
+$level = \CCheckListTools::AdminPolicyLevel();
 
 $data['std']['ITEMS'][] = array(
 	"IS_OK" => $level == "high",
@@ -575,14 +431,19 @@ $data['high']['ITEMS'][] = array(
 	),
 );
 
+$resolver = new SessionConfigurationResolver(Configuration::getInstance());
+$sessionConfig = $resolver->getSessionConfig();
+$generalHandlerType = $sessionConfig['handlers']['general']['type'] ?? null;
+$sessionInFiles = $generalHandlerType === SessionConfigurationResolver::TYPE_FILE;
+
 $bSessionsDB = COption::GetOptionString("security", "session") == "Y";
 
 $data['high']['ITEMS'][] = array(
-	"IS_OK" => $bSessionsDB,
-	"KPI_NAME" => GetMessage("SEC_PANEL_SESSDB_NAME"),
-	"KPI_VALUE" => ($bSessionsDB? GetMessage("SEC_PANEL_SESSDB_VALUE_ON"): GetMessage("SEC_PANEL_SESSDB_VALUE_OFF")),
+	"IS_OK" => !$sessionInFiles,
+	"KPI_NAME" => GetMessage("SEC_PANEL_SESS_STORAGE_NAME"),
+	"KPI_VALUE" => (!$sessionInFiles? GetMessage("SEC_PANEL_SESSDB_VALUE_ON"): GetMessage("SEC_PANEL_SESSDB_VALUE_OFF")),
 	"KPI_RECOMMENDATION" => (
-		$bSessionsDB?
+		!$sessionInFiles?
 		'&nbsp;':
 		(
 			$USER->CanDoOperation('security_session_settings_write')?
@@ -789,7 +650,7 @@ $APPLICATION->SetTitle(GetMessage("SEC_PANEL_TITLE"));
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php");
 
-CAdminMessage::ShowMessage($strError);		
+CAdminMessage::ShowMessage($strError);
 
 CAdminMessage::ShowMessage(array(
 			"MESSAGE"=>GetMessage("SEC_PANEL_CURRENT_LEVEL", array("#LEVEL_NAME#" => $SECURITY_LEVEL)),

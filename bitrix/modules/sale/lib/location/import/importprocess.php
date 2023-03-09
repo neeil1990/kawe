@@ -163,7 +163,7 @@ final class ImportProcess extends Location\Util\Process
 		{
 			if((string) $this->data['LOCAL_PATH'] == '')
 			{
-				list($this->data['LOCAL_PATH'], $created) = $this->getTemporalDirectory();
+				list($this->data['LOCAL_PATH'], $this->data['LOCAL_PATH_CREATED']) = $this->getTemporalDirectory();
 			}
 
 			$opts = $this->options['REQUEST']['OPTIONS'];
@@ -202,8 +202,32 @@ final class ImportProcess extends Location\Util\Process
 			$this->data['inited'] = true;
 		}
 
+		if ($this->data['inited'] && $this->data['LOCAL_PATH_CREATED'])
+		{
+			$this->touchImportTmpFiles((string)$this->data['LOCAL_PATH']);
+		}
+
 		if($timeLimit = intval($this->data['settings']['options']['TIME_LIMIT']))
 			$this->setTimeLimit($timeLimit);
+	}
+
+	/**
+	 * @param string $localPath
+	 */
+	private function touchImportTmpFiles(string $localPath): void
+	{
+		$iterator = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator($localPath)
+		);
+		foreach ($iterator as $file) {
+
+			if ($file->isDir())
+			{
+				continue;
+			}
+
+			touch($file->getPathname());
+		}
 	}
 
 	/////////////////////////////////////
@@ -486,7 +510,7 @@ final class ImportProcess extends Location\Util\Process
 
 	protected static function checkLocationCodeExists($code)
 	{
-		if(!strlen($code))
+		if($code == '')
 			return false;
 
 		$dbConnection = Main\HttpApplication::getConnection();
@@ -505,7 +529,14 @@ final class ImportProcess extends Location\Util\Process
 		$gid = $this->getCurrentGid();
 
 		// here must decide, which languages to import
-		$langs = array_flip($this->getRequiredLanguages());
+		$langs = array_flip(
+			array_map(
+				function ($value)
+				{
+					return mb_strtoupper($value);
+				},
+				array_keys(Location\Admin\NameHelper::getLanguageList()))
+		);
 
 		foreach($block as $i => $data)
 		{
@@ -577,7 +608,7 @@ final class ImportProcess extends Location\Util\Process
 
 			///////////////////////////////////////////
 			// transform parent
-			if(strlen($data['PARENT_CODE']))
+			if($data['PARENT_CODE'] <> '')
 			{
 				if(isset($this->data['existedlocs']['static'][$data['PARENT_CODE']]))
 				{
@@ -588,10 +619,14 @@ final class ImportProcess extends Location\Util\Process
 					$data['PARENT_ID'] = $this->data['existedlocs'][$gid][$data['PARENT_CODE']];
 				}
 				else
+				{
 					$data['PARENT_ID'] = 0;
+				}
 			}
 			else
+			{
 				$data['PARENT_ID'] = 0;
+			}
 
 			unset($data['PARENT_CODE']);
 
@@ -658,7 +693,7 @@ final class ImportProcess extends Location\Util\Process
 
 						if($sCode == 'ZIP_LOWER')
 						{
-							if(strlen($values) <= 0)
+							if($values == '')
 								continue;
 
 							$values = explode(',', $values);
@@ -673,7 +708,7 @@ final class ImportProcess extends Location\Util\Process
 						{
 							foreach($values as $val)
 							{
-								if(strlen($val) <= 0)
+								if($val == '')
 									continue;
 
 								$this->hitData['HANDLES']['EXTERNAL']->insert(array(
@@ -1156,15 +1191,19 @@ final class ImportProcess extends Location\Util\Process
 				if(isset($lay[$currentBundle]))
 				{
 					$chain[] = $currentBundle;
-					if(strlen($lay[$currentBundle]['PARENT_CODE']))
+					if($lay[$currentBundle]['PARENT_CODE'] <> '')
 					{
 						$currentBundle = $lay[$currentBundle]['PARENT_CODE'];
 
 						if(!isset($lay[$currentBundle]))
+						{
 							throw new Main\SystemException('Unknown parent bundle found ('.$currentBundle.'). Layout file is broken');
+						}
 					}
 					else
+					{
 						$currentBundle = false;
+					}
 				}
 			}
 
@@ -1270,7 +1309,7 @@ final class ImportProcess extends Location\Util\Process
 	// download layout from server
 	public function getRemoteLayout($getFlat = false)
 	{
-		list($localPath, $tmpDirCreated) = $this->getTemporalDirectory();
+		[$localPath, $tmpDirCreated] = $this->getTemporalDirectory();
 
 		static::downloadFile(self::REMOTE_LAYOUT_FILE, self::LOCAL_LAYOUT_FILE, false, $localPath);
 
@@ -1309,7 +1348,7 @@ final class ImportProcess extends Location\Util\Process
 	{
 		if(!$this->useCache || !isset($this->data['settings']['remote']['types']))
 		{
-			list($localPath, $tmpDirCreated) = $this->getTemporalDirectory();
+			[$localPath, $tmpDirCreated] = $this->getTemporalDirectory();
 
 			static::downloadFile(self::REMOTE_TYPE_FILE, self::LOCAL_TYPE_FILE, false, $localPath);
 
@@ -1337,7 +1376,7 @@ final class ImportProcess extends Location\Util\Process
 	{
 		if(!$this->useCache || !isset($this->data['settings']['remote']['external_services']))
 		{
-			list($localPath, $tmpDirCreated) = $this->getTemporalDirectory();
+			[$localPath, $tmpDirCreated] = $this->getTemporalDirectory();
 
 			static::downloadFile(self::REMOTE_EXTERNAL_SERVICE_FILE, self::LOCAL_EXTERNAL_SERVICE_FILE, false, $localPath);
 
@@ -1364,7 +1403,7 @@ final class ImportProcess extends Location\Util\Process
 	{
 		if(!$this->useCache || !isset($this->data['settings']['remote']['typeGroups']))
 		{
-			list($localPath, $tmpDirCreated) = $this->getTemporalDirectory();
+			[$localPath, $tmpDirCreated] = $this->getTemporalDirectory();
 
 			static::downloadFile(self::REMOTE_TYPE_GROUP_FILE, self::LOCAL_TYPE_GROUP_FILE, false, $localPath);
 
@@ -1585,8 +1624,10 @@ final class ImportProcess extends Location\Util\Process
 				$i = -1;
 			}
 
-			if(strlen($code))
+			if($code <> '')
+			{
 				$buffer[] = $code;
+			}
 		}
 
 		// last iteration
@@ -1628,7 +1669,7 @@ final class ImportProcess extends Location\Util\Process
 		$indexName = $this->dbHelper->forSql(trim($indexName));
 		$tableName = $this->dbHelper->forSql(trim($tableName));
 
-		if(!strlen($indexName) || !strlen($tableName))
+		if(!mb_strlen($indexName) || !mb_strlen($tableName))
 			return false;
 
 		if($this->dbConnType == self::DB_TYPE_MYSQL)
@@ -1659,7 +1700,7 @@ final class ImportProcess extends Location\Util\Process
 		$indexName = $this->dbHelper->forSql(trim($indexName));
 		$tableName = $this->dbHelper->forSql(trim($tableName));
 
-		if(!strlen($indexName) || !strlen($tableName))
+		if(!mb_strlen($indexName) || !mb_strlen($tableName))
 			return false;
 
 		if(!$this->checkIndexExistsByName($indexName, $tableName))
@@ -1690,6 +1731,7 @@ final class ImportProcess extends Location\Util\Process
 			'IX_B_SALE_LOC_NAME_NAME_U' => array('TABLE' => $locationNameTable, 'COLUMNS' => array('NAME_UPPER')),
 			'IX_B_SALE_LOC_NAME_LI_LI' => array('TABLE' => $locationNameTable, 'COLUMNS' => array('LOCATION_ID', 'LANGUAGE_ID')),
 			'IX_B_SALE_LOC_EXT_LID_SID' => array('TABLE' => $locationExternalTable, 'COLUMNS' => array('LOCATION_ID', 'SERVICE_ID')),
+			'IX_SALE_LOCATION_TYPE_MARGIN' => array('TABLE' => $locationTable, 'COLUMNS' => array('TYPE_ID', 'LEFT_MARGIN', 'RIGHT_MARGIN')),
 
 			// legacy
 			'IXS_LOCATION_COUNTRY_ID' => array('TABLE' => $locationTable, 'COLUMNS' => array('COUNTRY_ID')),
@@ -1934,7 +1976,7 @@ final class ImportProcess extends Location\Util\Process
 
 			self::cleanWorkDirectory();
 
-			list($localPath, $tmpDirCreated) = $this->getTemporalDirectory();
+			[$localPath, $tmpDirCreated] = $this->getTemporalDirectory();
 			$fileName = $localPath.'/'.static::USER_FILE_TEMP_NAME;
 
 			if(!@copy($_FILES[$inputName]['tmp_name'], $fileName))
@@ -2024,8 +2066,10 @@ final class ImportProcess extends Location\Util\Process
 		{
 			foreach($value as $v)
 			{
-				if(strlen($v))
+				if($v <> '')
+				{
 					$result[] = $this->parseQueryCode($v);
+				}
 			}
 		}
 
@@ -2256,10 +2300,12 @@ final class ImportProcess extends Location\Util\Process
 					unset($item['TYPE_CODE']);
 
 					// parent id
-					if(strlen($item['PARENT_CODE']))
+					if($item['PARENT_CODE'] <> '')
 					{
 						if(!isset($descriptior['CODES'][$item['PARENT_CODE']]))
+						{
 							$descriptior['CODES'][$item['PARENT_CODE']] = static::checkLocationCodeExists($item['PARENT_CODE']);
+						}
 
 						$item['PARENT_ID'] = $descriptior['CODES'][$item['PARENT_CODE']];
 					}
@@ -2281,7 +2327,7 @@ final class ImportProcess extends Location\Util\Process
 
 								if($code == 'ZIP_LOWER')
 								{
-									if(strlen($values[0]) <= 0)
+									if($values[0] == '')
 										continue;
 
 									$values = explode(',', $values[0]);
@@ -2296,7 +2342,7 @@ final class ImportProcess extends Location\Util\Process
 								{
 									foreach($values as $value)
 									{
-										if(strlen($value) <= 0)
+										if($value == '')
 											continue;
 
 										$item['EXTERNAL'][] = array(

@@ -11,6 +11,25 @@ if (!function_exists("__mpl_get_avatar"))
 			if ($USER->IsAuthorized())
 			{
 				$u = CUser::GetByID($USER->GetID())->Fetch();
+				if (
+					intval($u["PERSONAL_PHOTO"]) <= 0
+					&& \Bitrix\Main\ModuleManager::isModuleInstalled('socialnetwork')
+				)
+				{
+					switch ($u["PERSONAL_GENDER"])
+					{
+						case "M":
+							$suffix = "male";
+							break;
+						case "F":
+							$suffix = "female";
+							break;
+						default:
+							$suffix = "unknown";
+					}
+					$u["PERSONAL_PHOTO"] = COption::GetOptionInt("socialnetwork", "default_user_picture_".$suffix, false, SITE_ID);
+				}
+
 				if ($u["PERSONAL_PHOTO"])
 				{
 					$res = CFile::ResizeImageGet(
@@ -22,7 +41,9 @@ if (!function_exists("__mpl_get_avatar"))
 						true
 					);
 					if ($res["src"])
+					{
 						$avatar = $res["src"];
+					}
 				}
 			}
 		}
@@ -31,8 +52,6 @@ if (!function_exists("__mpl_get_avatar"))
 }
 ?>
 <script type="text/javascript">
-if (window.FCForm)
-	FCForm.onUCUsersAreWriting();
 <? if (IsModuleInstalled("im")): ?>
 if (window.SPC)
 {
@@ -46,7 +65,9 @@ if (BX.CommentAux)
 	BX.CommentAux.init({
 		currentUserSonetGroupIdList: <?=CUtil::PhpToJSObject(\Bitrix\Socialnetwork\ComponentHelper::getUserSonetGroupIdList($USER->GetID(), SITE_ID))?>,
 		mobile: false,
-		publicSection: <?=(isset($arParams["bPublicPage"]) && $arParams["bPublicPage"] ? 'true' : 'false')?>
+		publicSection: <?=(isset($arParams["bPublicPage"]) && $arParams["bPublicPage"] ? 'true' : 'false')?>,
+		currentExtranetUser: <?=($arResult["currentExtranetUser"] ? 'true' : 'false')?>,
+		availableUsersList: <?=CUtil::PhpToJSObject($arResult["availableUsersList"])?>,
 	});
 }
 <? endif ?>
@@ -62,9 +83,11 @@ BX.message({
 	BPC_MES_SHOW : '<?=GetMessageJS("BPC_MES_SHOW")?>',
 	BPC_MES_DELETE : '<?=GetMessageJS("BPC_MES_DELETE")?>',
 	BPC_MES_DELETE_POST_CONFIRM : '<?=GetMessageJS("BPC_MES_DELETE_POST_CONFIRM")?>',
+	BPC_MES_CREATE_TASK_RESULT : '<?=GetMessageJS("BPC_MES_CREATE_TASK_RESULT")?>',
+	BPC_MES_DELETE_TASK_RESULT : '<?=GetMessageJS("BPC_MES_DELETE_TASK_RESULT")?>',
 	BPC_MES_CREATE_TASK : '<?=GetMessageJS("BPC_MES_CREATE_TASK")?>',
-	BPC_MES_CREATE_TASK_CONFIRM : '<?=GetMessageJS("BPC_MES_CREATE_TASK_CONFIRM")?>',
-	MPL_RECORD_TEMPLATE : '<?=CUtil::JSEscape($template)?>',
+	BPC_MES_CREATE_SUBTASK : '<?=GetMessageJS("BPC_MES_CREATE_SUBTASK")?>',
+<?/* deprecated ?>	MPL_RECORD_TEMPLATE : '<?=CUtil::JSEscape($template)?>',<?*/?>
 	JERROR_NO_MESSAGE : '<?=GetMessageJS("JERROR_NO_MESSAGE")?>',
 	BLOG_C_HIDE : '<?=GetMessageJS("BLOG_C_HIDE")?>',
 	MPL_IS_EXTRANET_SITE: '<?=(CModule::IncludeModule("extranet") && CExtranet::IsExtranetSite() ? 'Y' : 'N')?>',

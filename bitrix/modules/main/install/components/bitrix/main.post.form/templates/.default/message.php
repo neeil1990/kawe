@@ -1,4 +1,10 @@
-<?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+<?php
+
+if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
+{
+    die();
+}
+
 /**
  * @var string $templateFolder
  *
@@ -15,7 +21,8 @@
 		MPF_SMILE_SET : '<?=GetMessageJS("MPF_SMILE_SET")?>',
 		MPF_TEMPLATE_FOLDER: '<?=CUtil::JSEscape($templateFolder)?>',
 		MPF_NAME_TEMPLATE : '<?=$arParams['NAME_TEMPLATE']?>',
-		spoilerText: '<?=GetMessageJS("MPF_SPOILER")?>',
-		MPF_PIN_EDITOR_PANNEL: '<?=GetMessageJS("MPF_PIN_EDITOR_PANNEL")?>'
+		MPF_SPOILER: '<?=GetMessageJS("MPF_SPOILER")?>',
+		MPF_PIN_EDITOR_PANNEL: '<?=GetMessageJS("MPF_PIN_EDITOR_PANNEL")?>',
+		MPF_MENTION_TASKS_LIMIT: '<?= GetMessageJS("MPF_MENTION_TASKS_LIMIT") ?>',
 	});
 </script>

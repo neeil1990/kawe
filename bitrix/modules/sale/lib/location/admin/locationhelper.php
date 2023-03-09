@@ -9,6 +9,7 @@
 namespace Bitrix\Sale\Location\Admin;
 
 use Bitrix\Main;
+use Bitrix\Main\Grid\Context;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Sale\Location;
 
@@ -25,7 +26,7 @@ final class LocationHelper extends NameHelper
 	const MENU_ITEMS_QUERY_STRING_TAG = 'menu_sale_location_tree';
 	const MENU_ITEMS_QUERY_STRING_DELIMITER = ':';
 
-	const URL_PARAM_PARENT_ID = 'find_PARENT_ID';
+	const URL_PARAM_PARENT_ID = 'PARENT_ID';
 	const URL_PARAM_ID = 'id';
 
 	#####################################
@@ -36,7 +37,7 @@ final class LocationHelper extends NameHelper
 	* Function returns instructions from where and which columns we take to show in UI
 	* @return string Entity class name
 	*/
-	public function getEntityRoadMap()
+	public static function getEntityRoadMap()
 	{
 		return array(
 			'main' => array(
@@ -160,13 +161,20 @@ final class LocationHelper extends NameHelper
 
 		if(is_array($data['NAME']) && !empty($data['NAME']))
 		{
+			$hasValidName = false;
+
 			foreach($data['NAME'] as $lang => $fields)
 			{
-				if(isset($fields['NAME']) && strlen($fields['NAME']) <= 0)
+				if(!empty($fields['NAME']))
 				{
-					$errors[] = Loc::getMessage('SALE_LOCATION_ADMIN_LOCATION_HELPER_ENTITY_NAME_EMPTY_ERROR');
+					$hasValidName = true;
 					break;
 				}
+			}
+
+			if(!$hasValidName)
+			{
+				$errors[] = Loc::getMessage('SALE_LOCATION_ADMIN_LOCATION_HELPER_ENTITY_NAME_EMPTY_ERROR');
 			}
 		}
 
@@ -182,7 +190,7 @@ final class LocationHelper extends NameHelper
 		{
 			foreach($externals as $eId => $external)
 			{
-				if(!strlen($external['XML_ID']))
+				if($external['XML_ID'] == '')
 					unset($externals[$eId]);
 			}
 		}
@@ -203,10 +211,10 @@ final class LocationHelper extends NameHelper
 		{
 			if(!isset($parameters['filter']['=PARENT_ID'])) // value has not came from filter
 			{
-				if(isset($_REQUEST['find_PARENT_ID']))
-					$parameters['filter']['=PARENT_ID'] = intval($_REQUEST['find_PARENT_ID']);
-				//else
-				//	$parameters['filter']['=PARENT_ID'] = 0;
+				if (isset($_REQUEST['PARENT_ID']) && !Context::isInternalRequest())
+					$parameters['filter']['=PARENT_ID'] = intval($_REQUEST['PARENT_ID']);
+				else
+					$parameters['filter']['=PARENT_ID'] = 0;
 			}
 		}
 
@@ -316,6 +324,30 @@ final class LocationHelper extends NameHelper
 	}
 
 	/**
+	 * @return int
+	 */
+	public static function getYandexMarketExternalServiceId(): int
+	{
+		static $result;
+
+		if ($result === null)
+		{
+			$result = 0;
+
+			$yandexMarketEs = Location\ExternalServiceTable::getList([
+				'filter' => ['=CODE' => \CSaleYMLocation::EXTERNAL_SERVICE_CODE]
+			])->fetch();
+
+			if ($yandexMarketEs)
+			{
+				$result = (int)$yandexMarketEs['ID'];
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * @deprecated
 	 * 
 	 * Use TypeHelper::getTypes() instead
@@ -344,7 +376,7 @@ final class LocationHelper extends NameHelper
 
 	public static function checkRequestIsMenuRequest()
 	{
-		return strpos($_REQUEST['admin_mnu_menu_id'], self::MENU_ITEMS_QUERY_STRING_TAG) !== false;
+		return mb_strpos(($_REQUEST['admin_mnu_menu_id'] ?? ''), self::MENU_ITEMS_QUERY_STRING_TAG) !== false;
 	}
 
 	public static function getLocationSubMenu()
@@ -375,8 +407,8 @@ final class LocationHelper extends NameHelper
 				if(intval($_REQUEST['id']))
 					$id = intval($_REQUEST['id']);
 				*/
-				if(intval($_REQUEST['find_PARENT_ID']))
-					$id = intval($_REQUEST['find_PARENT_ID']);
+				if(intval($_REQUEST['PARENT_ID']))
+					$id = intval($_REQUEST['PARENT_ID']);
 				elseif(intval($_REQUEST['parent_id']))
 					$id = intval($_REQUEST['parent_id']);
 			}
@@ -468,12 +500,12 @@ final class LocationHelper extends NameHelper
 
 	public static function unPackItemsQueryString()
 	{
-		$path = explode(self::MENU_ITEMS_QUERY_STRING_DELIMITER, $_REQUEST['admin_mnu_menu_id']);
+		$path = explode(self::MENU_ITEMS_QUERY_STRING_DELIMITER, ($_REQUEST['admin_mnu_menu_id'] ?? ''));
 
 		return array(
-			'ID' => intval($path[1]) ? intval($path[1]) : false,
-			'LIMIT' => intval($path[2]),
-			'SHOW_CHECKBOX' => !!$path[3]
+			'ID' => (isset($path[1]) && intval($path[1])) ? intval($path[1]) : false,
+			'LIMIT' => isset($path[2]) ? intval($path[2]) : 0,
+			'SHOW_CHECKBOX' => isset($path[3]) ? (!!$path[3]) : false,
 		);
 	}
 
@@ -537,7 +569,7 @@ final class LocationHelper extends NameHelper
 					$node = array(
 						"text" => ($queryParams['SHOW_CHECKBOX'] ? '<input type="checkbox" value="'.intval($id).'" />&nbsp;' : '').$item['NAME'],
 						"fav_id" => intval($id), // allows javascript to know what item it is
-						"url" => static::getListUrl(intval($id)),
+						"url" => \CHTTP::urlAddParams(static::getListUrl(intval($id)), ["apply_filter" => "y"]),
 						"module_id" => "sale",
 						"items_id" => self::packItemsQueryString(array('ID' => $id, 'LIMIT' => $limit, 'SHOW_CHECKBOX' => $queryParams['SHOW_CHECKBOX'])),
 						//"skip_chain" => true, // uncomment, if you dont want this menu item figure in breadcrumbs
@@ -610,9 +642,6 @@ final class LocationHelper extends NameHelper
 	{
 		$zip = trim($zip);
 
-		if(!strlen($zip) || !preg_match('#^\d+$#', $zip))
-			throw new Main\SystemException('Empty or incorrect zip code passed');
-
 		if(!is_array($parameters))
 			$parameters = array();
 
@@ -632,7 +661,7 @@ final class LocationHelper extends NameHelper
 
 	public static function getZipByLocation($locationCode, $parameters = array())
 	{
-		if(strlen($locationCode) <= 0)
+		if($locationCode == '')
 			return new \Bitrix\Main\DB\ArrayResult(array());
 
 		if(!is_array($parameters))
@@ -696,7 +725,7 @@ final class LocationHelper extends NameHelper
 	 */
 	public static function getLocationPathDisplay($primary)
 	{
-		if(!strlen($primary))
+		if($primary == '')
 			return '';
 
 		if((string) $primary === (string) intval($primary))

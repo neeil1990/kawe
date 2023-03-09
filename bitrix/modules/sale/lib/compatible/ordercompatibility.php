@@ -10,10 +10,12 @@ use Bitrix\Sale\Delivery\Services;
 
 Main\Localization\Loc::loadMessages(__FILE__);
 
-class OrderCompatibility
-	extends Internals\EntityCompatibility
+/**
+ * Class OrderCompatibility
+ * @package Bitrix\Sale\Compatible
+ */
+class OrderCompatibility extends Internals\EntityCompatibility
 {
-
 	/** @var null|Sale\Order */
 	protected $order = null;
 
@@ -32,13 +34,43 @@ class OrderCompatibility
 
 	protected $runtimeFields = array();
 	protected $propertyRuntimeList = array();
+
 	/**
+	 * @return string
+	 */
+	protected static function getRegistryType()
+	{
+		return Sale\Registry::REGISTRY_TYPE_ORDER;
+	}
+
+	/**
+	 * @return Main\Entity\Base
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
+	protected static function getEntity()
+	{
+		return OrderTable::getEntity();
+	}
+
+	/**
+	 * @return string
+	 */
+	protected static function getBasketCompatibilityClassName()
+	{
+		return BasketCompatibility::class;
+	}
+
+	/**
+	 * OrderCompatibility constructor.
 	 * @param array $fields
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
 	 */
 	protected function __construct(array $fields = array())
 	{
 		/** @var OrderQuery query */
-		$this->query = new OrderQuery(OrderTable::getEntity(), true);
+		$this->query = new OrderQuery(static::getEntity());
 		$this->fields = new Sale\Internals\Fields($fields);
 	}
 
@@ -51,7 +83,7 @@ class OrderCompatibility
 	}
 
 	/**
-	 * @return Sale\Order|null
+	 * @return array
 	 */
 	public function getRequestFields()
 	{
@@ -66,16 +98,9 @@ class OrderCompatibility
 		$this->basket = $basketCompatibility;
 	}
 
-
 	/**
 	 * @param array $fields
-	 * @return Sale\Order
-	 * @throws Main\ObjectNotFoundException
-	 * @throws Sale\UserMessageException
-	 * @throws \Bitrix\Main\ArgumentNullException
-	 * @throws \Bitrix\Main\ArgumentOutOfRangeException
-	 * @throws \Bitrix\Main\NotSupportedException
-	 * @throws \Bitrix\Main\SystemException
+	 * @return static
 	 */
 	public static function create(array $fields)
 	{
@@ -87,18 +112,20 @@ class OrderCompatibility
 		$userId = $fields['USER_ID'];
 		$currency = $fields['CURRENCY'];
 
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+
 		if (isset($fields['ID']) && intval($fields['ID']) > 0)
 		{
-			/** @var Sale\Order $order */
-			if (!$order = Sale\Order::load($fields['ID']))
+			if (!$order = $orderClassName::load($fields['ID']))
 			{
 				throw new Sale\UserMessageException('Order not found');
 			}
 		}
 		else
 		{
-			/** @var Sale\Order $order */
-			if (!$order = Sale\Order::create($lid, $userId, $currency))
+			if (!$order = $orderClassName::create($lid, $userId, $currency))
 			{
 				throw new Sale\UserMessageException('Order not create');
 			}
@@ -236,7 +263,12 @@ class OrderCompatibility
 
 					$r = new Sale\Result();
 					$r->addError(new Sale\ResultWarning($reasonMarked, 'SALE_ORDER_MARKER_ERROR'));
-					Sale\EntityMarker::addMarker($order, $order, $r);
+
+					$registry = Sale\Registry::getInstance(static::getRegistryType());
+
+					/** @var Sale\EntityMarker $entityMarkerClassName */
+					$entityMarkerClassName = $registry->getEntityMarkerClassName();
+					$entityMarkerClassName::addMarker($order, $order, $r);
 				}
 
 				if ($order->getField('MARKED') != $fields['MARKED'])
@@ -255,12 +287,17 @@ class OrderCompatibility
 		{
 			$filter = array(
 				'filter' => array(
-					'ACCOUNT_NUMBER' => $fields['ACCOUNT_NUMBER'],
+					'=ACCOUNT_NUMBER' => $fields['ACCOUNT_NUMBER'],
 					'!ID' => $order->getId()
 				),
 				'select' => array('ID')
 			);
-			if (($res = OrderTable::getList($filter)) && ($res->fetch()))
+
+			$registry = Sale\Registry::getInstance(static::getRegistryType());
+
+			/** @var Sale\Order $orderClassName */
+			$orderClassName = $registry->getOrderClassName();
+			if (($res = $orderClassName::getList($filter)) && ($res->fetch()))
 			{
 				$result->addError(new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_COMPATIBLE_ORDER_ACCOUNT_NUMBER_ALREADY_EXISTS'), 'SALE_COMPATIBLE_ORDER_ACCOUNT_NUMBER_ALREADY_EXISTS'));
 			}
@@ -326,10 +363,16 @@ class OrderCompatibility
 						{
 							/** @var Services\Base $deliveryService */
 							$deliveryService = Sale\Delivery\Services\Manager::getObjectById($deliveryId);
-							if ($deliveryService->isProfile())
-								$fields['DELIVERY_NAME'] = $deliveryService->getNameWithParent();
+							if ($deliveryService)
+							{
+								$fields['DELIVERY_NAME'] = $deliveryService->isProfile()
+									? $deliveryService->getNameWithParent()
+									: $deliveryService->getName();
+							}
 							else
-								$fields['DELIVERY_NAME'] = $deliveryService->getName();
+							{
+								$fields['DELIVERY_NAME'] = 'Not found [' . $deliveryId . ']';
+							}
 						}
 						else
 						{
@@ -419,8 +462,11 @@ class OrderCompatibility
 
 		if ($basket = $order->getBasket())
 		{
+			/** @var BasketCompatibility $basketCompatibilityClassName */
+			$basketCompatibilityClassName = static::getBasketCompatibilityClassName();
+
 			/** @var Sale\Result $r */
-			$r = BasketCompatibility::syncShipmentCollectionAndBasket($shipmentCollection, $basket);
+			$r = $basketCompatibilityClassName::syncShipmentCollectionAndBasket($shipmentCollection, $basket);
 			if (!$r->isSuccess())
 			{
 				$result->addErrors($r->getErrors());
@@ -710,7 +756,6 @@ class OrderCompatibility
 
 		$paySystemId = null;
 		$paySystemName = null;
-		$paidFull = false;
 
 		$userId = $order->getUserId();
 		$currency = $order->getCurrency();
@@ -894,10 +939,6 @@ class OrderCompatibility
 							$userBudget = Sale\Internals\UserBudgetPool::getUserBudget($userId, $currency);
 
 							$setSum = $userBudget;
-							if ($userBudget >= $sum)
-							{
-								$paidFull = true;
-							}
 
 							/** @var Sale\Result $r */
 							$r = static::payFromBudget($order, false);
@@ -991,7 +1032,6 @@ class OrderCompatibility
 
 					if ($result->isSuccess() && intval($paySystemId) > 0)
 					{
-						$order = $paymentCollection->getOrder();
 						$order->setFieldNoDemand('PAY_SYSTEM_ID', $paySystemId);
 					}
 				}
@@ -1096,7 +1136,6 @@ class OrderCompatibility
 
 		if (array_key_exists('SUM_PAID', $fields))
 		{
-
 			if ($orderPaid)
 			{
 				if ($fields['SUM_PAID'] == 0)
@@ -1113,7 +1152,6 @@ class OrderCompatibility
 
 				if ($deltaSumPaid > 0)
 				{
-
 					$paidPayment = false;
 
 					/** @var Sale\Payment $payment */
@@ -1178,16 +1216,9 @@ class OrderCompatibility
 						}
 					}
 				}
-				elseif ($deltaSumPaid < 0)
-				{
-					throw new Main\NotSupportedException('Sum paid of reduction is not supported');
-				}
-			}
-			else
-			{
-				throw new Main\NotSupportedException('Sum paid of reduction is not supported');
 			}
 		}
+
 		return $result;
 	}
 
@@ -1209,8 +1240,9 @@ class OrderCompatibility
 				array(
 					'select' => array("ID"),
 					'filter' => array(
-						'ACTIVE' => 'Y',
-						'PERSON_TYPE_ID' => $personTypeId
+						'=ACTIVE' => 'Y',
+						'=PERSON_TYPE_ID' => $personTypeId,
+						'=ENTITY_REGISTRY_TYPE' => static::getRegistryType()
 					),
 					'order' => array('SORT'),
 					'limit' => 1
@@ -1226,7 +1258,10 @@ class OrderCompatibility
 		$dbPaySystem = Sale\PaySystem\Manager::getList(
 			array(
 				'select' => array("ID"),
-				'filter' => array('ACTIVE' => 'Y'),
+				'filter' => array(
+					'=ACTIVE' => 'Y',
+					'=ENTITY_REGISTRY_TYPE' => static::getRegistryType()
+				),
 				'order' => array('SORT'),
 				'limit' => 1
 			)
@@ -1255,7 +1290,7 @@ class OrderCompatibility
 		{
 			$tax->initTaxList($fields['TAX_LIST']);
 		}
-		elseif (count($tax->getTaxList()) > 0)
+		elseif (!empty($tax->getTaxList()))
 		{
 			/** @var Sale\Order $order */
 			if ($order = $this->getOrder())
@@ -1292,8 +1327,11 @@ class OrderCompatibility
 
 		$result = new Sale\Result();
 
-		/** @var Sale\Order $order */
-		if ($order = Sale\Order::load($id))
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		if ($order = $orderClassName::load($id))
 		{
 			/** @var Sale\Basket $basket */
 			if (!$basket = $order->getBasket())
@@ -1401,7 +1439,11 @@ class OrderCompatibility
 				continue;
 			}
 			/** @var Sale\ShipmentItemStoreCollection $shipmentItemStoreCollection */
-			if (!$shipmentItemStoreCollection = $shipmentItem->getShipmentItemStoreCollection())
+			$shipmentItemStoreCollection = $shipmentItem->getShipmentItemStoreCollection();
+			if (
+				!$shipmentItemStoreCollection
+				&& $basketItem->isReservableItem()
+			)
 			{
 				throw new Main\ObjectNotFoundException('Entity "ShipmentItemStoreCollection" not found');
 			}
@@ -1502,7 +1544,7 @@ class OrderCompatibility
 						);
 
 						/** @var Sale\ShipmentItemStore $shipmentItemStore */
-						$shipmentItemStore = $shipmentItemStoreCollection->getItemByBarcode($saveBarcodeData['BARCODE'],$basketItem->getBasketCode(), $barcodeData['STORE_ID']);
+						$shipmentItemStore = $shipmentItemStoreCollection->getItemByBarcode($saveBarcodeData['BARCODE']);
 
 						if (!$shipmentItemStore)
 						{
@@ -1536,8 +1578,11 @@ class OrderCompatibility
 	{
 		$result = new Sale\Result();
 
-		/** @var Sale\Order $order */
-		if ($order = Sale\Order::load($id))
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		if ($order = $orderClassName::load($id))
 		{
 			/** @var Sale\ShipmentCollection $shipmentCollection */
 			if(!$shipmentCollection = $order->getShipmentCollection())
@@ -1579,36 +1624,6 @@ class OrderCompatibility
 	 */
 	public static function add(array $fields)
 	{
-		if (!empty($fields['ORDER_PROP']) && is_array($fields['ORDER_PROP']))
-		{
-			$fields['PROPERTIES'] = $fields['ORDER_PROP'];
-			unset($fields['ORDER_PROP']);
-		}
-
-		if (!isset($fields['PROPERTIES']) || !is_array($fields['PROPERTIES']))
-		{
-			$fields['PROPERTIES'] = array();
-		}
-
-		/** @var Sale\Compatible\OrderCompatibility $orderCompatibility */
-		$orderCompatibility = Sale\Compatible\OrderCompatibility::create($fields);
-
-		/** @var Sale\PropertyValueCollection $propCollection */
-		$propCollection = $orderCompatibility->getOrder()->getPropertyCollection();
-
-		// compatibility to prevent setting default values for empty properties
-		/** @var Sale\PropertyValue $property */
-		foreach ($propCollection as $property)
-		{
-			$propertyFields = $property->getProperty();
-			$key = isset($propertyFields['ID']) ? $propertyFields['ID'] : 'n'.$property->getId();
-
-			if (!array_key_exists($key, $fields['PROPERTIES']))
-			{
-				$fields['PROPERTIES'][$key] = null;
-			}
-		}
-
 		return static::modifyOrder(static::ORDER_COMPAT_ACTION_ADD, $fields);
 	}
 
@@ -1660,7 +1675,7 @@ class OrderCompatibility
 			$adminSection = (defined('ADMIN_SECTION') && ADMIN_SECTION === true);
 
 			/** @var Sale\Compatible\OrderCompatibility $orderCompatibility */
-			$orderCompatibility = Sale\Compatible\OrderCompatibility::create($fields);
+			$orderCompatibility = static::create($fields);
 
 			/** @var Sale\Order $order */
 			$order = $orderCompatibility->getOrder();
@@ -1676,6 +1691,21 @@ class OrderCompatibility
 			if (!isset($fields['PROPERTIES']) || !is_array($fields['PROPERTIES']))
 			{
 				$fields['PROPERTIES'] = array();
+			}
+
+			// compatibility to prevent setting default values for empty properties
+			/** @var Sale\PropertyValue $propertyValue */
+			foreach ($propCollection as $propertyValue)
+			{
+				$propertyFields = $propertyValue->getProperty();
+				$key = isset($propertyFields['ID']) ? $propertyFields['ID'] : 'n'.$propertyValue->getId();
+
+				if ($propertyValue->getId() <=0
+					&& !array_key_exists($key, $fields['PROPERTIES'])
+				)
+				{
+					$propertyValue->delete();
+				}
 			}
 
 			/** @var Sale\Result $r */
@@ -1715,7 +1745,7 @@ class OrderCompatibility
 
 				if (intval($fUserId) <= 0 && !$adminSection)
 				{
-					$fUserId = Sale\Fuser::getId();
+					$fUserId = static::getDefaultFuserId();
 				}
 
 				$userId = $order->getUserId();
@@ -1725,6 +1755,7 @@ class OrderCompatibility
 					if (intval($fUserId) > 0 && intval($fUserIdByUserId) > 0
 						&& intval($fUserId) != intval($fUserIdByUserId))
 					{
+						// TODO: ... [SALE_BASKET_001] - the call of old method of the basket
 						\CSaleBasket::TransferBasket($fUserId, $fUserIdByUserId);
 					}
 
@@ -1738,11 +1769,14 @@ class OrderCompatibility
 				}
 
 
+				$registry = Sale\Registry::getInstance(static::getRegistryType());
+				/** @var Sale\Basket $basketClassName */
+				$basketClassName = $registry->getBasketClassName();
+
 				if (!$adminSection)
 				{
 					$siteId = !empty($fields["SITE_ID"]) ? $fields["SITE_ID"] : (!empty($fields["LID"]) ? $fields['LID']: null);
-					/** @var Sale\Basket $allBasket */
-					$allBasket = Sale\Basket::loadItemsForFUser($fUserId, $siteId);
+					$allBasket = $basketClassName::loadItemsForFUser($fUserId, $siteId);
 
 					if ($allBasket)
 					{
@@ -1753,7 +1787,7 @@ class OrderCompatibility
 
 				if (!$basket)
 				{
-					$basket = Sale\Basket::create($order->getSiteId());
+					$basket = $basketClassName::create($order->getSiteId());
 					$basket->setFUserId($fUserId);
 				}
 			}
@@ -1763,7 +1797,9 @@ class OrderCompatibility
 
 			if ($basket)
 			{
-				$basketCompatibility = BasketCompatibility::create($orderCompatibility);
+				/** @var BasketCompatibility $basketCompatibilityClassName */
+				$basketCompatibilityClassName = static::getBasketCompatibilityClassName();
+				$basketCompatibility = $basketCompatibilityClassName::create($orderCompatibility);
 
 				/** @var Sale\Result $r */
 				$r = $basketCompatibility->fillBasket($basket, $fields);
@@ -1827,7 +1863,7 @@ class OrderCompatibility
 			}
 
 			/** @var Sale\Result $r */
-			$r = Sale\Compatible\OrderCompatibility::fillOrderFromRequest($order, $fields);
+			$r = static::fillOrderFromRequest($order, $fields);
 			if (!$r->isSuccess())
 			{
 				$result->addErrors($r->getErrors());
@@ -1872,6 +1908,11 @@ class OrderCompatibility
 				/** @var Sale\Payment $payment */
 				foreach ($paymentCollection as $payment)
 				{
+					if ($payment->getId() <= 0)
+					{
+						continue;
+					}
+
 					/** @var Sale\Result $r */
 					$r = $orderCompatibility->saveRawFields($payment, static::ENTITY_PAYMENT);
 					if (!$r->isSuccess())
@@ -1890,20 +1931,6 @@ class OrderCompatibility
 	}
 
 	/**
-	 * @param $id
-	 * @param $value
-	 * @return \Bitrix\Main\Entity\UpdateResult
-	 * @throws \Exception
-	 */
-	public static function setAccountNumber($id, $value)
-	{
-		return OrderTable::update($id, array(
-			'ACCOUNT_NUMBER' => $value
-		));
-	}
-
-
-	/**
 	 * @param $orderId
 	 * @param $value
 	 * @return Sale\Result
@@ -1914,8 +1941,11 @@ class OrderCompatibility
 	{
 		$result = new Sale\Result();
 
-		/** @var Sale\Order $order */
-		if (!$order = Sale\Order::load($orderId))
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		if (!$order = $orderClassName::load($orderId))
 		{
 			$result->addError( new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_COMPATIBLE_ORDER_NOT_FOUND'), 'SALE_COMPATIBLE_ORDER_NOT_FOUND') );
 			return $result;
@@ -1939,7 +1969,11 @@ class OrderCompatibility
 				$r = $shipment->tryReserve();
 				if (!$r->isSuccess())
 				{
-					Sale\EntityMarker::addMarker($order, $shipment, $r);
+					$registry = Sale\Registry::getInstance(static::getRegistryType());
+
+					/** @var Sale\EntityMarker $entityMarkerClassName */
+					$entityMarkerClassName = $registry->getEntityMarkerClassName();
+					$entityMarkerClassName::addMarker($order, $shipment, $r);
 					if (!$shipment->isSystem())
 					{
 						$shipment->setField('MARKED', 'Y');
@@ -1956,7 +1990,11 @@ class OrderCompatibility
 					$r = $shipment->tryUnreserve();
 					if (!$r->isSuccess())
 					{
-						Sale\EntityMarker::addMarker($order, $shipment, $r);
+						$registry = Sale\Registry::getInstance(static::getRegistryType());
+
+						/** @var Sale\EntityMarker $entityMarkerClassName */
+						$entityMarkerClassName = $registry->getEntityMarkerClassName();
+						$entityMarkerClassName::addMarker($order, $shipment, $r);
 						if (!$shipment->isSystem())
 						{
 							$shipment->setField('MARKED', 'Y');
@@ -2002,8 +2040,10 @@ class OrderCompatibility
 			return $result;
 		}
 
-		/** @var Sale\Order $order */
-		if (!$order = Sale\Order::load($orderId))
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		if (!$order = $orderClassName::load($orderId))
 		{
 			$result->addError( new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_COMPATIBLE_ORDER_NOT_FOUND'), 'SALE_COMPATIBLE_ORDER_NOT_FOUND') );
 			return $result;
@@ -2158,7 +2198,7 @@ class OrderCompatibility
 
 		$needSum = $order->getPrice() - $order->getSumPaid();
 
-		if ($needSum >= 0)
+		if ($needSum > 0)
 		{
 
 			/** @var Sale\Payment $payment */
@@ -2174,7 +2214,13 @@ class OrderCompatibility
 			if (!$pay || ($pay && $paidFormUserBudget === false))
 			{
 				/** @var Sale\Payment $paymentInner */
-				if (!$paymentInner = $paymentCollection->getInnerPayment())
+				$paymentInner = $paymentCollection->getInnerPayment();
+				if (!$paymentInner)
+				{
+					$paymentInner = $paymentCollection->createInnerPayment();
+				}
+
+				if (!$paymentInner)
 				{
 					throw new Main\ObjectNotFoundException('Entity inner "Payment" not found');
 				}
@@ -2232,7 +2278,11 @@ class OrderCompatibility
 					/** @var Sale\PaySystem\Service $paySystem */
 					if ($paySystem = Sale\PaySystem\Manager::getObjectById($paySystemId))
 					{
-						$payment = Sale\Payment::create($paymentCollection, $paySystem);
+						$registry = Sale\Registry::getInstance(static::getRegistryType());
+						/** @var Sale\Payment $paymentClassName */
+						$paymentClassName = $registry->getPaymentClassName();
+
+						$payment = $paymentClassName::create($paymentCollection, $paySystem);
 						$payment->setField('SUM', $needSum);
 						$payment->setField('DATE_BILL', new Main\Type\DateTime());
 						$paymentCollection->addItem($payment);
@@ -2261,8 +2311,7 @@ class OrderCompatibility
 
 			if ($payment->isReturn() && $payment->isInner())
 			{
-				/** @var Sale\Result $r */
-				$r = $payment->setReturn('N');
+				$r = $payment->setPaid('Y');
 			}
 			else
 			{
@@ -2314,9 +2363,7 @@ class OrderCompatibility
 
 		}
 
-		$result->setData(array(
-							'PAID_FROM_BUDGET' => $paidFormUserBudget
-						));
+		$result->setData(array('PAID_FROM_BUDGET' => $paidFormUserBudget));
 
 		return $result;
 	}
@@ -2340,11 +2387,37 @@ class OrderCompatibility
 			return $result;
 		}
 
-
-		/** @var Sale\Order $order */
-		if (!$order = Sale\Order::load($orderId))
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		if (!$order = $orderClassName::load($orderId))
 		{
 			$result->addError( new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_COMPATIBLE_ORDER_NOT_FOUND'), 'SALE_COMPATIBLE_ORDER_NOT_FOUND') );
+			return $result;
+		}
+
+		if ($value === 'N')
+		{
+			if ($order->isCanceled())
+			{
+				$r = $order->setField('CANCELED', 'N');
+				if (!$r->isSuccess())
+				{
+					return $result->addErrors($r->getErrors());
+				}
+
+				$r = $order->save();
+				if (!$r->isSuccess())
+				{
+					return $result->addErrors($r->getErrors());
+				}
+			}
+
+			return $result;
+		}
+
+		if ($order->isCanceled())
+		{
 			return $result;
 		}
 
@@ -2370,34 +2443,24 @@ class OrderCompatibility
 				$shipment->disallowDelivery();
 		}
 
-		/** @var Sale\Result $r */
-		$r = $order->setField('CANCELED', $value);
+		$r = $order->setField('CANCELED', 'Y');
 		if (!$r->isSuccess())
 		{
-			$result->addErrors($r->getErrors());
-			return $result;
+			return $result->addErrors($r->getErrors());
 		}
 
 		if (!empty($comment) && strval($comment) != '')
 		{
-			/** @var Sale\Result $r */
 			$r = $order->setField('REASON_CANCELED', $comment);
 			if (!$r->isSuccess())
 			{
-				$result->addErrors($r->getErrors());
-				return $result;
+				return $result->addErrors($r->getErrors());
 			}
 		}
 
-		$r = $order->save();
-		if (!$r->isSuccess())
-		{
-			$result->addErrors($r->getErrors());
-			return $result;
-		}
-
-		return $result;
+		return $order->save();
 	}
+
 	/**
 	 * Delete the order
 	 * @param int $id		Order ID.
@@ -2414,35 +2477,49 @@ class OrderCompatibility
 			return $result;
 		}
 
-		/** @var Sale\Order $order */
-		if (!$order = Sale\Order::load($id))
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		if (!$order = $orderClassName::load($id))
 		{
-			$result->addError(new Sale\ResultError(Loc::getMessage('SALE_ORDER_ENTITY_NOT_FOUND'), 'SALE_ORDER_ENTITY_NOT_FOUND'));
+			$result->addError(new Sale\ResultError(Main\Localization\Loc::getMessage('SALE_ORDER_ENTITY_NOT_FOUND'), 'SALE_ORDER_ENTITY_NOT_FOUND'));
 			return $result;
 		}
 
-		/** @var Sale\PaymentCollection $paymentCollection */
-		if ($paymentCollection = $order->getPaymentCollection())
+		/** @var Sale\Payment $payment */
+		foreach ($order->getPaymentCollection() as $payment)
 		{
-			/** @var Sale\Payment $payment */
-			foreach ($paymentCollection as $payment)
+			if ($payment->isPaid())
 			{
-				if ($payment->isPaid())
-				{
-					$payment->setPaid('N');
-				}
-			}
-			/** @var Sale\Result $r */
-			$r = $order->save();
-			if (!$r->isSuccess())
-			{
-				$result->addErrors($r->getErrors());
-				return $result;
+				$payment->setPaid('N');
 			}
 		}
 
-		/** @var Sale\Result $r */
-		$r = Sale\Order::delete($id);
+		/** @var Sale\Shipment $shipment */
+		foreach ($order->getShipmentCollection() as $shipment)
+		{
+			if ($shipment->isShipped())
+			{
+				$shipment->setField('DEDUCTED', 'N');
+			}
+		}
+
+		$r = $order->save();
+		if (!$r->isSuccess())
+		{
+			$result->addErrors($r->getErrors());
+			return $result;
+		}
+
+		try
+		{
+			$r = $orderClassName::delete($id);
+		}
+		catch (\Exception $exception)
+		{
+			$r = $orderClassName::deleteNoDemand($id);
+		}
+
 		if (!$r->isSuccess())
 		{
 			$result->addErrors($r->getErrors());
@@ -2543,20 +2620,11 @@ class OrderCompatibility
 				if ($valueItem->getValue() != '')
 				{
 					$setValue = $valueItem->getValue();
-					if ($valueItem->getValueId() == 0)
+
+					$prop = $valueItem->getPropertyObject();
+					if ($prop->getType() == 'LOCATION')
 					{
-						$setValue = \CSaleOrderPropsValue::translateLocationIDToCode($setValue, $valueItem->getField('ORDER_PROPS_ID'));
-					}
-					else
-					{
-						if(strval($valueItem->getField('ORDER_PROPS_ID')) != '')
-							$propId = intval($valueItem->getField('ORDER_PROPS_ID'));
-						else
-						{
-							$propValue = \CSaleOrderPropsValue::GetByID($valueItem->getValueId());
-							$propId = $propValue['ORDER_PROPS_ID'];
-						}
-						$setValue = \CSaleOrderPropsValue::translateLocationIDToCode($setValue, $propId);
+						$setValue = \CSaleLocation::tryTranslateIDToCode($setValue);
 					}
 
 					$valueItem->setField('VALUE', $setValue);
@@ -2578,8 +2646,12 @@ class OrderCompatibility
 		$compatibility = new static();
 
 		$select = array('*');
-		/** @var Sale\Order $order */
-		if ($order = Sale\Order::load($id))
+
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+
+		if ($order = $orderClassName::load($id))
 		{
 			/** @var Sale\PaymentCollection $paymentCollection */
 			if ($paymentCollection = $order->getPaymentCollection())
@@ -2721,7 +2793,7 @@ class OrderCompatibility
 	 */
 	protected static function getSelectFields()
 	{
-		$fields = array_keys(OrderTable::getEntity()->getScalarFields());
+		$fields = array_keys(static::getEntity()->getScalarFields());
 
 		return array_merge($fields, array(
 			'DATE_INSERT_FORMAT',
@@ -2781,7 +2853,11 @@ class OrderCompatibility
 	 */
 	public static function getAvailableFields()
 	{
-		return array_merge(Sale\Order::getAvailableFields(),
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+
+		return array_merge($orderClassName::getAvailableFields(),
 							array('PRICE_DELIVERY', "PAY_VOUCHER_DATE", "PAY_VOUCHER_NUM", "DATE_ALLOW_DELIVERY", "DATE_PAYED")
 		);
 	}
@@ -2825,7 +2901,11 @@ class OrderCompatibility
 	 */
 	protected static function getPaymentAvailableFields()
 	{
-		return static::clearAvailableFields(Sale\Payment::getAvailableFields(), static::getPaymentClearFields());
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Payment $paymentClassName */
+		$paymentClassName = $registry->getPaymentClassName();
+
+		return static::clearAvailableFields($paymentClassName::getAvailableFields(), static::getPaymentClearFields());
 	}
 
 	/**
@@ -2833,7 +2913,11 @@ class OrderCompatibility
 	 */
 	protected static function getShipmentAvailableFields()
 	{
-		return static::clearAvailableFields(Sale\Shipment::getAvailableFields(), static::getShipmentClearFields());
+		$registry = Sale\Registry::getInstance(static::getRegistryType());
+		/** @var Sale\Shipment $shipmentClassName */
+		$shipmentClassName = $registry->getShipmentClassName();
+
+		return static::clearAvailableFields($shipmentClassName::getAvailableFields(), static::getShipmentClearFields());
 	}
 
 
@@ -3073,33 +3157,6 @@ class OrderCompatibility
 	{
 		$result = new Sale\Result();
 
-		$paymentSystemId = false;
-		$deliveryId = false;
-
-		/** @var Sale\PaymentCollection $paymentCollection */
-		if ($paymentCollection = $order->getPaymentCollection())
-		{
-			/** @var Sale\Payment $payment */
-			if ($payment = $paymentCollection->rewind())
-			{
-				$paymentSystemId = $payment->getPaymentSystemId();
-			}
-		}
-
-		/** @var Sale\ShipmentCollection $shipe */
-		if ($shipmentCollection = $order->getShipmentCollection())
-		{
-			/** @var Sale\Shipment $shipment */
-			foreach ($shipmentCollection as $shipment)
-			{
-				if ($shipment->getDeliveryId() > 0)
-				{
-					$deliveryId = $shipment->getDeliveryId();
-					break;
-				}
-			}
-		}
-
 		$fields = array(
 			"SITE_ID" => $order->getSiteId(),
 			"LID" => $order->getSiteId(),
@@ -3107,9 +3164,9 @@ class OrderCompatibility
 			"PRICE" => $order->getPrice(),
 			"CURRENCY" => $order->getCurrency(),
 			"USER_ID" => $order->getUserId(),
-			"PAY_SYSTEM_ID" => $paymentSystemId,
+			"PAY_SYSTEM_ID" => (int)$order->getField('PAY_SYSTEM_ID'),
 			"PRICE_DELIVERY" => $order->getDeliveryPrice(),
-			"DELIVERY_ID" => $deliveryId,
+			"DELIVERY_ID" => (int)$order->getField('DELIVERY_ID'),
 			"DISCOUNT_VALUE" => $order->getDiscountPrice(),
 			"TAX_VALUE" => $order->getTaxValue(),
 			"TRACKING_NUMBER" => $order->getField('TRACKING_NUMBER'),
@@ -3161,8 +3218,13 @@ class OrderCompatibility
 			/** @var Sale\BasketItem $basketItem */
 			foreach ($basket as $basketItem)
 			{
-				$fields['BASKET_ITEMS'][] = BasketCompatibility::convertBasketItemToArray($basketItem);
+				/** @var BasketCompatibility $basketCompatibilityClassName */
+				$basketCompatibilityClassName = static::getBasketCompatibilityClassName();
+
+				$fields['BASKET_ITEMS'][] = $basketCompatibilityClassName::convertBasketItemToArray($basketItem);
 			}
+
+			$fields['ORDER_WEIGHT'] = $basket->getWeight();
 		}
 
 		/** @var Sale\PropertyValueCollection $basket */
@@ -3195,12 +3257,6 @@ class OrderCompatibility
 		if ($propTaxLocation = $propertyCollection->getTaxLocation())
 			$fields['TAX_LOCATION'] = $propTaxLocation->getValue();
 
-		/** @var Sale\ShipmentCollection $shipmentCollection */
-		if ($shipmentCollection = $order->getShipmentCollection())
-		{
-			$fields['ORDER_WEIGHT'] = $shipmentCollection->getWeight();
-		}
-
 		$fields['DISCOUNT_LIST'] = DiscountCompatibility::getOldDiscountResult();
 
 		/** @var Sale\Tax $tax */
@@ -3230,7 +3286,7 @@ class OrderCompatibility
 		static $propIndex = 0;
 
 		$propIDTmp = false;
-		if (strpos($key, "PROPERTY_ID_") === 0)
+		if (mb_strpos($key, "PROPERTY_ID_") === 0)
 		{
 			$propIndex++;
 			$this->addPropertyRuntime($propIndex);
@@ -3239,7 +3295,7 @@ class OrderCompatibility
 				return null;
 			}
 
-			$propIDTmp = intval(substr($key, strlen("PROPERTY_ID_")));
+			$propIDTmp = intval(mb_substr($key, mb_strlen("PROPERTY_ID_")));
 
 			$this->query->addFilter('='.$propRuntimeName.'.ORDER_PROPS_ID', $propIDTmp);
 			if(isset($locationPropInfo['ID'][$propIDTmp]))
@@ -3254,7 +3310,7 @@ class OrderCompatibility
 			$output = 'PROPERTY_ID_'.$propIDTmp;
 
 		}
-		elseif (strpos($key, "PROPERTY_ORDER_PROPS_ID_") === 0)
+		elseif (mb_strpos($key, "PROPERTY_ORDER_PROPS_ID_") === 0)
 		{
 			$propIndex++;
 			$this->addPropertyRuntime($propIndex);
@@ -3263,7 +3319,7 @@ class OrderCompatibility
 				return null;
 			}
 
-			$propIDTmp = intval(substr($key, strlen("PROPERTY_ORDER_PROPS_ID_")));
+			$propIDTmp = intval(mb_substr($key, mb_strlen("PROPERTY_ORDER_PROPS_ID_")));
 
 			$this->query->addFilter('='.$propRuntimeName.'.ORDER_PROPS_ID', $propIDTmp);
 			if(isset($locationPropInfo['ID'][$propIDTmp]))
@@ -3277,7 +3333,7 @@ class OrderCompatibility
 
 			$output = 'PROPERTY_ORDER_PROPS_ID_'.$propIDTmp;
 		}
-		elseif (strpos($key, "PROPERTY_NAME_") === 0)
+		elseif (mb_strpos($key, "PROPERTY_NAME_") === 0)
 		{
 			$propIndex++;
 			$this->addPropertyRuntime($propIndex);
@@ -3286,14 +3342,14 @@ class OrderCompatibility
 				return null;
 			}
 
-			$propIDTmp = intval(substr($key, strlen("PROPERTY_NAME_")));
+			$propIDTmp = intval(mb_substr($key, mb_strlen("PROPERTY_NAME_")));
 
 			$this->addQueryAlias('PROPERTY_NAME_'.$propIDTmp, $propRuntimeName.'.NAME');
 			$this->query->addFilter('='.$propRuntimeName.'.ORDER_PROPS_ID', $propIDTmp);
 
 			$output = 'PROPERTY_NAME_'.$propIDTmp;
 		}
-		elseif (strpos($key, "PROPERTY_VALUE_") === 0)
+		elseif (mb_strpos($key, "PROPERTY_VALUE_") === 0)
 		{
 			$propIndex++;
 			$this->addPropertyRuntime($propIndex);
@@ -3302,7 +3358,7 @@ class OrderCompatibility
 				return null;
 			}
 
-			$propIDTmp = intval(substr($key, strlen("PROPERTY_VALUE_")));
+			$propIDTmp = intval(mb_substr($key, mb_strlen("PROPERTY_VALUE_")));
 
 			if(isset($locationPropInfo['ID'][$propIDTmp]))
 			{
@@ -3315,7 +3371,7 @@ class OrderCompatibility
 
 			$output = 'PROPERTY_ID_'.$propIDTmp;
 		}
-		elseif (strpos($key, "PROPERTY_CODE_") === 0)
+		elseif (mb_strpos($key, "PROPERTY_CODE_") === 0)
 		{
 			$propIndex++;
 			$this->addPropertyRuntime($propIndex);
@@ -3324,13 +3380,13 @@ class OrderCompatibility
 				return null;
 			}
 
-			$propIDTmp = intval(substr($key, strlen("PROPERTY_CODE_")));
+			$propIDTmp = intval(mb_substr($key, mb_strlen("PROPERTY_CODE_")));
 			$this->addQueryAlias('PROPERTY_CODE_'.$propIDTmp, $propRuntimeName.'.CODE');
 			$this->query->addFilter('='.$propRuntimeName.'.ORDER_PROPS_ID', $propIDTmp);
 
 			$output = 'PROPERTY_CODE_'.$propIDTmp;
 		}
-		elseif (strpos($key, "PROPERTY_VAL_BY_CODE_") === 0)
+		elseif (mb_strpos($key, "PROPERTY_VAL_BY_CODE_") === 0)
 		{
 			$propIndex++;
 			$this->addPropertyRuntime($propIndex);
@@ -3339,7 +3395,7 @@ class OrderCompatibility
 				return null;
 			}
 
-			$propIDTmp = preg_replace("/[^a-zA-Z0-9_-]/is", "", trim(substr($key, strlen("PROPERTY_VAL_BY_CODE_"))));
+			$propIDTmp = preg_replace("/[^a-zA-Z0-9_-]/is", "", trim(mb_substr($key, mb_strlen("PROPERTY_VAL_BY_CODE_"))));
 
 			$this->addQueryAlias('PROPERTY_VAL_BY_CODE_'.$propIDTmp, $propRuntimeName.'.VALUE');
 			if(isset($locationPropInfo['CODE'][$propIDTmp]))
@@ -3355,63 +3411,9 @@ class OrderCompatibility
 
 			$output = 'PROPERTY_VAL_BY_CODE_'.$propIDTmp;
 		}
-		elseif (strpos($key, "BASKET_") === 0)
+		elseif (mb_strpos($key, "BASKET_") === 0)
 		{
-			if ($key == "BASKET_DISCOUNT_COUPON")
-			{
-				if (!in_array('COUPONS', $this->runtimeFields))
-				{
-					$this->query->registerRuntimeField(
-						'COUPONS',
-						array(
-							'data_type' => '\Bitrix\Sale\Internals\OrderCouponsTable',
-							'reference' => array(
-								'=ref.ORDER_ID' => 'this.ID'
-							),
-						)
-					);
-					$this->runtimeFields[] = "COUPONS";
-				}
-
-				$this->addQueryAlias('BASKET_DISCOUNT_COUPON', 'COUPONS.COUPON');
-				$output = 'BASKET_DISCOUNT_COUPON';
-
-			}
-			elseif ($key == "BASKET_DISCOUNT_NAME")
-			{
-				if (!in_array('DISCOUNT_ORDER_RULES', $this->runtimeFields))
-				{
-					$this->query->registerRuntimeField(
-						'DISCOUNT_ORDER_RULES',
-						array(
-							'data_type' => '\Bitrix\Sale\Internals\OrderRulesTable',
-							'reference' => array(
-								'=ref.ORDER_ID' => 'this.ID',
-							),
-						)
-					);
-					$this->runtimeFields[] = "DISCOUNT_ORDER_RULES";
-				}
-
-				if (!in_array('DISCOUNT', $this->runtimeFields))
-				{
-					$this->query->registerRuntimeField(
-						'DISCOUNT',
-						array(
-							'data_type' => '\Bitrix\Sale\Internals\OrderDiscountTable',
-							'reference' => array(
-								'=ref.ID' => 'this.DISCOUNT_ORDER_RULES.ORDER_DISCOUNT_ID'
-							),
-						)
-					);
-
-					$this->runtimeFields[] = "DISCOUNT";
-				}
-
-				$this->addQueryAlias('BASKET_DISCOUNT_NAME', 'DISCOUNT.NAME');
-				$output = 'BASKET_DISCOUNT_NAME';
-			}
-
+			$output = static::addBasketRuntime($key);
 		}
 
 		if(isset($locationPropInfo['ID'][$propIDTmp]))
@@ -3460,12 +3462,87 @@ class OrderCompatibility
 	{
 		return (!empty($this->propertyRuntimeList[$index]) ? $this->propertyRuntimeList[$index] : null);
 	}
+
+
+	/**
+	 * @param $key
+	 *
+	 * @return null|string
+	 * @throws Main\ArgumentException
+	 * @throws Main\SystemException
+	 */
+	protected function addBasketRuntime($key)
+	{
+		$output = null;
+
+		if ($key == "BASKET_DISCOUNT_COUPON")
+		{
+			if (!in_array('COUPONS', $this->runtimeFields))
+			{
+				$this->query->registerRuntimeField(
+					'COUPONS',
+					array(
+						'data_type' => '\Bitrix\Sale\Internals\OrderCouponsTable',
+						'reference' => array(
+							'=ref.ORDER_ID' => 'this.ID'
+						),
+					)
+				);
+				$this->runtimeFields[] = "COUPONS";
+			}
+
+			$this->addQueryAlias('BASKET_DISCOUNT_COUPON', 'COUPONS.COUPON');
+			$output = 'BASKET_DISCOUNT_COUPON';
+
+		}
+		elseif ($key == "BASKET_DISCOUNT_NAME")
+		{
+			if (!in_array('DISCOUNT_ORDER_RULES', $this->runtimeFields))
+			{
+				$this->query->registerRuntimeField(
+					'DISCOUNT_ORDER_RULES',
+					array(
+						'data_type' => '\Bitrix\Sale\Internals\OrderRulesTable',
+						'reference' => array(
+							'=ref.ORDER_ID' => 'this.ID',
+						),
+					)
+				);
+				$this->runtimeFields[] = "DISCOUNT_ORDER_RULES";
+			}
+
+			if (!in_array('DISCOUNT', $this->runtimeFields))
+			{
+				$this->query->registerRuntimeField(
+					'DISCOUNT',
+					array(
+						'data_type' => '\Bitrix\Sale\Internals\OrderDiscountTable',
+						'reference' => array(
+							'=ref.ID' => 'this.DISCOUNT_ORDER_RULES.ORDER_DISCOUNT_ID'
+						),
+					)
+				);
+
+				$this->runtimeFields[] = "DISCOUNT";
+			}
+
+			$this->addQueryAlias('BASKET_DISCOUNT_NAME', 'DISCOUNT.NAME');
+			$output = 'BASKET_DISCOUNT_NAME';
+		}
+
+		return $output;
+	}
+
+	protected static function getDefaultFuserId()
+	{
+		return Sale\Fuser::getId();
+	}
 }
 
 class OrderFetchAdapter implements FetchAdapter
 {
 
-	protected function getMoneyFields()
+	protected static function getMoneyFields()
 	{
 		return array(
 			"PRICE_DELIVERY",
@@ -3484,7 +3561,7 @@ class OrderFetchAdapter implements FetchAdapter
 	 */
 	public function adapt(array $row)
 	{
-		$data = OrderCompatibility::convertDateFieldsToOldFormat($row);
+		$data = Internals\EntityCompatibility::convertDateFieldsToOldFormat($row);
 		return static::convertRowData($data);
 	}
 

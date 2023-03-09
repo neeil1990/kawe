@@ -2,12 +2,17 @@
 
 namespace Bitrix\Seo\LeadAds;
 
-use Bitrix\Seo\Retargeting\BaseApiObject;
-use Bitrix\Seo\Retargeting\Response;
-
-abstract class Account extends BaseApiObject
+use Bitrix\Seo\Retargeting;
+use Bitrix\Seo\Retargeting\IRequestDirectly;
+/**
+ * Class Account
+ *
+ * @package Bitrix\Seo\LeadAds
+ */
+abstract class Account extends Retargeting\Account
 {
-	const URL_ACCOUNT_LIST = '';
+	public const URL_ACCOUNT_LIST = '';
+	public const URL_INFO = '';
 
 	protected static $listRowMap = array(
 		'ID' => 'ID',
@@ -17,35 +22,45 @@ abstract class Account extends BaseApiObject
 	protected $accountId;
 	protected $pageId;
 
+	/**
+	 * Account constructor.
+	 *
+	 * @param null|string $accountId Account ID.
+	 */
 	public function __construct($accountId = null)
 	{
 		$this->accountId = $accountId;
 		parent::__construct();
 	}
 
+	/**
+	 * Get profile cached.
+	 *
+	 * @return Retargeting\Response|array
+	 */
 	public function getProfileCached()
 	{
-		$profile = $this->getProfile();
-		if($profile)
-		{
-
-		}
-
-		return $profile;
+		return $this->getProfile();
 	}
 
+	/**
+	 * Get url account list.
+	 *
+	 * @return string
+	 */
 	public static function getUrlAccountList()
 	{
 		return static::URL_ACCOUNT_LIST;
 	}
 
 	/**
-	 * @return Response
+	 * Get url info.
+	 *
+	 * @return string
 	 */
-	abstract public function getList();
+	public static function getUrlInfo()
+	{
+		return static::URL_INFO;
+	}
 
-	/**
-	 * @return Response
-	 */
-	abstract public function getProfile();
 }

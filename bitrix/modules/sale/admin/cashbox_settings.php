@@ -24,17 +24,34 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Settings
 	if (isset($cashbox))
 	{
 		/** @var Cashbox\Cashbox $handler */
-		$handler = $cashbox['HANDLER'];
-		$cashboxSettings = $cashbox['SETTINGS'];
+		$handler = $cashbox['HANDLER'] ?? '';
+		$cashboxSettings = $cashbox['SETTINGS'] ?? [];
 		if (class_exists($handler))
 		{
-			$settings = $handler::getSettings($cashbox['KKM_ID']);
+			$settings = [];
+			$isRestHandler = $handler === '\Bitrix\Sale\Cashbox\CashboxRest';
+			if ($isRestHandler)
+			{
+				$restCode = $cashboxSettings['REST']['REST_CODE'];
+				$settings = Cashbox\CashboxRest::getConfigStructure($restCode);
+			}
+			else
+			{
+				$settings = $handler::getSettings($cashbox['KKM_ID']);
+			}
 
 			if ($settings)
 			{
 				foreach ($settings as $group => $block)
 				{
 					$result .= '<tr class="heading"><td colspan="2">'.$block['LABEL'].'</td></tr>';
+
+					if ($group === 'VAT')
+					{
+						$result .= '<tr><td colspan="2" style="text-align: center">';
+						$result .= BeginNote().Loc::getMessage('SALE_CASHBOX_VAT_ATTENTION').EndNote();
+						$result .= '</td></tr>';
+					}
 
 					$className = 'adm-detail-content-cell-l';
 					if (isset($block['REQUIRED']) && $block['REQUIRED'] === 'Y')
@@ -43,8 +60,13 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Settings
 					foreach ($block['ITEMS'] as $code => $item)
 					{
 						$itemClassName = $className;
-						if ($item['REQUIRED'] === 'Y'
-							&& $block['REQUIRED'] !== 'Y'
+						if (
+							isset($item['REQUIRED'])
+							&& $item['REQUIRED'] === 'Y'
+							&& (
+								empty($block['REQUIRED'])
+								|| $block['REQUIRED'] !== 'Y'
+							)
 						)
 						{
 							$itemClassName .= ' adm-required-field';
@@ -63,7 +85,7 @@ namespace Bitrix\Sale\Cashbox\AdminPage\Settings
 							$value++;
 						}
 
-						$result .= '<td width="45%" class="'.$itemClassName.'">'.$item['LABEL'].':</td><td width="55%" valign="top" class="adm-detail-content-cell-r">'.Input\Manager::getEditHtml('SETTINGS['.$group.']['.$code.']', $item, $value).'</td></tr>';
+						$result .= '<td width="45%" class="'.$itemClassName.'">'.htmlspecialcharsbx($item['LABEL']).':</td><td width="55%" valign="top" class="adm-detail-content-cell-r">'.Input\Manager::getEditHtml('SETTINGS['.$group.']['.$code.']', $item, $value).'</td></tr>';
 					}
 				}
 			}

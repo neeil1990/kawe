@@ -1,226 +1,108 @@
 <?php
+
 /**
  * Bitrix Framework
  * @package bitrix
  * @subpackage main
- * @copyright 2001-2013 Bitrix
+ * @copyright 2001-2022 Bitrix
  */
 
-require_once(substr(__FILE__, 0, strlen(__FILE__) - strlen("/include.php"))."/bx_root.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/start.php");
+use Bitrix\Main;
+use Bitrix\Main\Session\Legacy\HealerEarlySessionStart;
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/virtual_io.php");
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/classes/general/virtual_file.php");
+require_once(__DIR__."/bx_root.php");
+require_once(__DIR__."/start.php");
 
-
-$application = \Bitrix\Main\Application::getInstance();
-$application->initializeExtendedKernel(array(
+$application = Main\HttpApplication::getInstance();
+$application->initializeExtendedKernel([
 	"get" => $_GET,
 	"post" => $_POST,
 	"files" => $_FILES,
 	"cookie" => $_COOKIE,
 	"server" => $_SERVER,
 	"env" => $_ENV
-));
+]);
+
+if (defined('SITE_ID'))
+{
+	define('LANG', SITE_ID);
+}
+
+$context = $application->getContext();
+$context->initializeCulture(defined('LANG') ? LANG : null, defined('LANGUAGE_ID') ? LANGUAGE_ID : null);
+
+// needs to be after culture initialization
+$application->start();
+
+// constants for compatibility
+$culture = $context->getCulture();
+define('SITE_CHARSET', $culture->getCharset());
+define('FORMAT_DATE', $culture->getFormatDate());
+define('FORMAT_DATETIME', $culture->getFormatDatetime());
+define('LANG_CHARSET', SITE_CHARSET);
+
+$site = $context->getSiteObject();
+if (!defined('LANG'))
+{
+	define('LANG', ($site ? $site->getLid() : $context->getLanguage()));
+}
+define('SITE_DIR', ($site ? $site->getDir() : ''));
+define('SITE_SERVER_NAME', ($site ? $site->getServerName() : ''));
+define('LANG_DIR', SITE_DIR);
+
+if (!defined('LANGUAGE_ID'))
+{
+	define('LANGUAGE_ID', $context->getLanguage());
+}
+define('LANG_ADMIN_LID', LANGUAGE_ID);
+
+if (!defined('SITE_ID'))
+{
+	define('SITE_ID', LANG);
+}
+
+/** @global $lang */
+$lang = $context->getLanguage();
 
 //define global application object
 $GLOBALS["APPLICATION"] = new CMain;
-
-if(defined("SITE_ID"))
-	define("LANG", SITE_ID);
-
-if(defined("LANG"))
-{
-	if(defined("ADMIN_SECTION") && ADMIN_SECTION===true)
-		$db_lang = CLangAdmin::GetByID(LANG);
-	else
-		$db_lang = CLang::GetByID(LANG);
-
-	$arLang = $db_lang->Fetch();
-
-	if(!$arLang)
-	{
-		throw new \Bitrix\Main\SystemException("Incorrect site: ".LANG.".");
-	}
-}
-else
-{
-	$arLang = $GLOBALS["APPLICATION"]->GetLang();
-	define("LANG", $arLang["LID"]);
-}
-
-$lang = $arLang["LID"];
-if (!defined("SITE_ID"))
-	define("SITE_ID", $arLang["LID"]);
-define("SITE_DIR", $arLang["DIR"]);
-define("SITE_SERVER_NAME", $arLang["SERVER_NAME"]);
-define("SITE_CHARSET", $arLang["CHARSET"]);
-define("FORMAT_DATE", $arLang["FORMAT_DATE"]);
-define("FORMAT_DATETIME", $arLang["FORMAT_DATETIME"]);
-define("LANG_DIR", $arLang["DIR"]);
-define("LANG_CHARSET", $arLang["CHARSET"]);
-define("LANG_ADMIN_LID", $arLang["LANGUAGE_ID"]);
-define("LANGUAGE_ID", $arLang["LANGUAGE_ID"]);
-
-$context = $application->getContext();
-$context->setLanguage(LANGUAGE_ID);
-$context->setCulture(new \Bitrix\Main\Context\Culture($arLang));
-
-$request = $context->getRequest();
-if (!$request->isAdminSection())
-{
-	$context->setSite(SITE_ID);
-}
-
-$application->start();
-
-$GLOBALS["APPLICATION"]->reinitPath();
 
 if (!defined("POST_FORM_ACTION_URI"))
 {
 	define("POST_FORM_ACTION_URI", htmlspecialcharsbx(GetRequestUri()));
 }
 
-$GLOBALS["MESS"] = array();
-$GLOBALS["ALL_LANG_FILES"] = array();
-IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/tools.php");
-IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/database.php");
-IncludeModuleLangFile($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/main.php");
+$GLOBALS["MESS"] = [];
+$GLOBALS["ALL_LANG_FILES"] = [];
+IncludeModuleLangFile(__DIR__."/tools.php");
 IncludeModuleLangFile(__FILE__);
 
-error_reporting(COption::GetOptionInt("main", "error_reporting", E_COMPILE_ERROR|E_ERROR|E_CORE_ERROR|E_PARSE) & ~E_STRICT & ~E_DEPRECATED);
+error_reporting(COption::GetOptionInt("main", "error_reporting", E_COMPILE_ERROR | E_ERROR | E_CORE_ERROR | E_PARSE) & ~E_STRICT & ~E_DEPRECATED & ~E_WARNING & ~E_NOTICE);
 
 if(!defined("BX_COMP_MANAGED_CACHE") && COption::GetOptionString("main", "component_managed_cache_on", "Y") <> "N")
 {
 	define("BX_COMP_MANAGED_CACHE", true);
 }
 
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/filter_tools.php");
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/ajax_tools.php");
+// global functions
+require_once(__DIR__."/filter_tools.php");
 
-/*ZDUyZmZMjVkYTA0MThjN2M0MWQyNTdlZDA5NGQ4YjVjYWQ3ODQ=*/$GLOBALS['_____1175258012']= array(base64_decode(''.'R2V0'.'TW9kdWxlRXZlbnRz'),base64_decode('R'.'X'.'hl'.'Y3'.'V0ZU1vZHVsZ'.'UV'.'2ZW'.'50R'.'Xg='));$GLOBALS['____598931302']= array(base64_decode('ZGV'.'maW5l'),base64_decode('c3'.'RybGVu'),base64_decode(''.'Ym'.'F'.'zZ'.'TY0X2R'.'lY29kZQ'.'=='),base64_decode('dW5zZXJpY'.'Wxpe'.'mU='),base64_decode('aX'.'NfY'.'XJyYXk'.'='),base64_decode(''.'Y'.'291'.'bnQ='),base64_decode('aW5'.'fYXJyYXk='),base64_decode('c'.'2V'.'yaWFsaXpl'),base64_decode('YmFzZTY0'.'X2VuY2'.'9kZQ='.'='),base64_decode('c3RybGV'.'u'),base64_decode('YXJyYX'.'lf'.'a2V5X2V4aX'.'N0c'.'w=='),base64_decode('a'.'W5'.'fYXJyYXk='),base64_decode('c3R'.'ybG'.'V'.'u'),base64_decode('YXJyYXlfa2V'.'5X2V'.'4aX'.'N0c'.'w'.'=='),base64_decode('bWV0aG9kX'.'2'.'V4'.'aXN0cw=='),base64_decode('Y2FsbF91c2'.'Vy'.'X2Z1bmNf'.'Y'.'XJy'.'Y'.'Xk='),base64_decode('aW5fYXJyYXk='),base64_decode('ZGVmaW5l'));if(!function_exists(__NAMESPACE__.'\\___1015358822')){function ___1015358822($_752663525){static $_882981040= false; if($_882981040 == false) $_882981040=array('QlVTSU'.'5FU'.'1Nf'.'RURJVE'.'lP'.'Tg==','WQ='.'=',''.'bWF'.'pbg='.'=',''.'fmN'.'wZ'.'l9tYXBfdmFsd'.'WU=','',''.'U'.'21hbGw'.'=','U'.'21h'.'bGw=','bWFpbg='.'=',''.'fmNwZl9t'.'Y'.'XB'.'fdmFsdWU=','bWFpbg==','T24=','U2V0dGluZ3NDaGFuZ2'.'U=','VF'.'lQR'.'Q==','R'.'g==','WA'.'==','RE'.'FUR'.'Q'.'==','',''.'RkVBVFV'.'S'.'RVM=',''.'RVhQS'.'V'.'J'.'F'.'RA==','RkV'.'BVFV'.'SR'.'VM=','Rg==','RU5D'.'T0RF',''.'WQ='.'=');return base64_decode($_882981040[$_752663525]);}};$GLOBALS['____598931302'][0](___1015358822(0), ___1015358822(1));class CBXFeatures{ private static $_308402334= array( "Small" => array(), "Big" => array( "CatMultiPrice", "CatMultiStore", "CatDiscountSave", "SaleAffiliate", "SaleAccounts", "SaleCCards", "SaleReports", "SaleRecurring", "CatCompleteSet", "CatMultiFactor",),); private static $_499248210= false; private static $_741989842= false; private static function __1183434001(){ if(self::$_499248210 == false){ self::$_499248210= array(); foreach(self::$_308402334 as $_155930019 => $_245233603){ foreach($_245233603 as $_942224881) self::$_499248210[$_942224881]= $_155930019;}} if(self::$_741989842 == false){ self::$_741989842= array(); $_1924245324= COption::GetOptionString(___1015358822(2), ___1015358822(3), ___1015358822(4)); if($GLOBALS['____598931302'][1]($_1924245324)>(998-2*499)){ $_1924245324= $GLOBALS['____598931302'][2]($_1924245324); self::$_741989842= $GLOBALS['____598931302'][3]($_1924245324); if(!$GLOBALS['____598931302'][4](self::$_741989842)) self::$_741989842= array(___1015358822(5));} if($GLOBALS['____598931302'][5](self::$_741989842) <=(932-2*466)) self::$_741989842= array(___1015358822(6));}} public static function InitiateEditionsSettings($_935124880){ self::__1183434001(); $_1847998527= array(); foreach(self::$_308402334 as $_155930019 => $_245233603){ if($GLOBALS['____598931302'][6]($_155930019, $_935124880)){ self::$_741989842[]= $_155930019;} else{ foreach($_245233603 as $_942224881) $_1847998527[]= $_942224881;}} $_118478240= $GLOBALS['____598931302'][7](self::$_741989842); $_118478240= $GLOBALS['____598931302'][8]($_118478240); COption::SetOptionString(___1015358822(7), ___1015358822(8), $_118478240); foreach($_1847998527 as $_1462829109) self::__891320436($_1462829109, false);} public static function IsFeatureEnabled($_942224881){ if($GLOBALS['____598931302'][9]($_942224881) <= 0) return true; self::__1183434001(); if(!$GLOBALS['____598931302'][10]($_942224881, self::$_499248210)) return true; return $GLOBALS['____598931302'][11](self::$_499248210[$_942224881], self::$_741989842);} public static function IsFeatureInstalled($_942224881){ return self::IsFeatureEnabled($_942224881);} public static function IsFeatureEditable($_942224881){ if($GLOBALS['____598931302'][12]($_942224881) <= 0) return true; self::__1183434001(); if(!$GLOBALS['____598931302'][13]($_942224881, self::$_499248210)) return true; return false;} private static function __891320436($_942224881, $_753410599){ if($GLOBALS['____598931302'][14]("CBXFeatures", "On".$_942224881."SettingsChange")) $GLOBALS['____598931302'][15](array("CBXFeatures", "On".$_942224881."SettingsChange"), array($_942224881, $_753410599)); $_1667643778= $GLOBALS['_____1175258012'][0](___1015358822(9), ___1015358822(10).$_942224881.___1015358822(11)); while($_2029102963= $_1667643778->Fetch()) $GLOBALS['_____1175258012'][1]($_2029102963, array($_942224881, $_753410599));} public static function SetFeatureEnabled($_942224881, $_753410599= true, $_1776661552= true){} public static function SaveFeaturesSettings($_735907087, $_742037512){} public static function GetFeaturesList(){ self::__1183434001(); $_1754591765= array(); foreach(self::$_308402334 as $_155930019 => $_245233603){ $_1754591765[$_155930019]= array( ___1015358822(12) => $GLOBALS['____598931302'][16]($_155930019, self::$_741989842)? ___1015358822(13): ___1015358822(14), ___1015358822(15) => ___1015358822(16), ___1015358822(17) => array(), ___1015358822(18) => false,); foreach($_245233603 as $_942224881) $_1754591765[$_155930019][___1015358822(19)][$_942224881]=($_1754591765[$_155930019] == ___1015358822(20));} return $_1754591765;}} $GLOBALS['____598931302'][17](___1015358822(21), ___1015358822(22));/**/			//Do not remove this
+define('BX_AJAX_PARAM_ID', 'bxajaxid');
 
-//component 2.0 template engines
-$GLOBALS["arCustomTemplateEngines"] = array();
+/*ZDUyZmZMGIzNGE0MzM0ZDI1OGQxMTJkZWE3OGI4MGFkZWNjNGQ=*/$GLOBALS['_____571298147']= array(base64_decode('R2V'.'0TW9'.'kdWxlRXZlbnRz'),base64_decode('RXhlY3V0Z'.'U1vZHVs'.'ZUV'.'2'.'Z'.'W5'.'0RX'.'g'.'='));$GLOBALS['____276837594']= array(base64_decode('Z'.'GVmaW'.'5l'),base64_decode(''.'Y'.'mFzZTY0X2RlY'.'29kZQ=='),base64_decode('d'.'W5zZX'.'J'.'p'.'YWxpemU='),base64_decode(''.'aXNfYXJyYX'.'k='),base64_decode('aW5fYXJy'.'YXk='),base64_decode(''.'c'.'2Vy'.'aWFsaXpl'),base64_decode('YmF'.'zZTY0X2VuY2'.'9kZQ='.'='),base64_decode('aW5fYXJyY'.'Xk='),base64_decode('bWV0aG9kX2V4aXN'.'0'.'cw'.'=='),base64_decode('Y2FsbF91c2VyX2Z1bmNf'.'YXJyYXk='),base64_decode('aW5'.'fYX'.'Jy'.'YXk'.'='),base64_decode('ZGVmaW5'.'l'));if(!function_exists(__NAMESPACE__.'\\___1881873101')){function ___1881873101($_338658487){static $_552008911= false; if($_552008911 == false) $_552008911=array('QlVTSU'.'5F'.'U1Nf'.'R'.'UR'.'JVElPTg==','WQ'.'==',''.'bW'.'Fpbg==','f'.'mNwZl9'.'tYXBfd'.'mFsdWU'.'=','','','YW'.'xsb3dl'.'ZF9j'.'bGFzc2Vz','U2'.'1hbGw=','bWFp'.'bg='.'=','fm'.'N'.'wZl9tYXB'.'fdmFsd'.'WU=','bWF'.'pbg==','T24=','U2'.'V0d'.'GluZ3NDaGFu'.'Z2'.'U=','VFlQRQ==','Rg==',''.'WA==','R'.'EFURQ='.'=','','Rk'.'V'.'BVFVSRVM=',''.'RVhQSV'.'J'.'FR'.'A='.'=','R'.'kVBVFVSRV'.'M'.'=',''.'Rg'.'='.'=','RU'.'5D'.'T0'.'RF','WQ==');return base64_decode($_552008911[$_338658487]);}};$GLOBALS['____276837594'][0](___1881873101(0), ___1881873101(1));class CBXFeatures{ private static $_1821237192= array( "Small" => array(), "Big" => array( "CatMultiPrice", "CatMultiStore", "CatDiscountSave", "SaleAffiliate", "SaleAccounts", "SaleCCards", "SaleReports", "SaleRecurring", "CatCompleteSet", "CatMultiFactor",),); private static $_1395939722= null; private static $_1265323325= null; private static function __353478529(){ if(self::$_1395939722 === null){ self::$_1395939722= array(); foreach(self::$_1821237192 as $_977928059 => $_858966351){ foreach($_858966351 as $_260369316) self::$_1395939722[$_260369316]= $_977928059;}} if(self::$_1265323325 === null){ self::$_1265323325= array(); $_2106273419= COption::GetOptionString(___1881873101(2), ___1881873101(3), ___1881873101(4)); if($_2106273419 != ___1881873101(5)){ $_2106273419= $GLOBALS['____276837594'][1]($_2106273419); $_2106273419= $GLOBALS['____276837594'][2]($_2106273419,[___1881873101(6) => false]); if($GLOBALS['____276837594'][3]($_2106273419)){ self::$_1265323325= $_2106273419;}} if(empty(self::$_1265323325)){ self::$_1265323325= array(___1881873101(7));}}} public static function InitiateEditionsSettings($_873090947){ self::__353478529(); $_1377340347= array(); foreach(self::$_1821237192 as $_977928059 => $_858966351){ if($GLOBALS['____276837594'][4]($_977928059, $_873090947)){ self::$_1265323325[]= $_977928059;} else{ foreach($_858966351 as $_260369316) $_1377340347[]= $_260369316;}} $_1192687404= $GLOBALS['____276837594'][5](self::$_1265323325); $_1192687404= $GLOBALS['____276837594'][6]($_1192687404); COption::SetOptionString(___1881873101(8), ___1881873101(9), $_1192687404); foreach($_1377340347 as $_1125153937) self::__1910177982($_1125153937, false);} public static function IsFeatureEnabled($_260369316){ if($_260369316 == '') return true; self::__353478529(); if(!isset(self::$_1395939722[$_260369316])) return true; return $GLOBALS['____276837594'][7](self::$_1395939722[$_260369316], (array)self::$_1265323325);} public static function IsFeatureInstalled($_260369316){ return self::IsFeatureEnabled($_260369316);} public static function IsFeatureEditable($_260369316){ if($_260369316 == '') return true; self::__353478529(); if(!isset(self::$_1395939722[$_260369316])) return true; return false;} private static function __1910177982($_260369316, $_1118950165){ if($GLOBALS['____276837594'][8]("CBXFeatures", "On".$_260369316."SettingsChange")) $GLOBALS['____276837594'][9](array("CBXFeatures", "On".$_260369316."SettingsChange"), array($_260369316, $_1118950165)); $_1800767038= $GLOBALS['_____571298147'][0](___1881873101(10), ___1881873101(11).$_260369316.___1881873101(12)); while($_1141297417= $_1800767038->Fetch()) $GLOBALS['_____571298147'][1]($_1141297417, array($_260369316, $_1118950165));} public static function SetFeatureEnabled($_260369316, $_1118950165= true, $_1956333036= true){} public static function SaveFeaturesSettings($_1979075069, $_1846982808){} public static function GetFeaturesList(){ self::__353478529(); $_2132223790= array(); foreach(self::$_1821237192 as $_977928059 => $_858966351){ $_2132223790[$_977928059]= array( ___1881873101(13) => $GLOBALS['____276837594'][10]($_977928059, (array)self::$_1265323325)? ___1881873101(14): ___1881873101(15), ___1881873101(16) => ___1881873101(17), ___1881873101(18) => array(), ___1881873101(19) => false,); foreach($_858966351 as $_260369316) $_2132223790[$_977928059][___1881873101(20)][$_260369316]=($_2132223790[$_977928059] == ___1881873101(21));} return $_2132223790;}} $GLOBALS['____276837594'][11](___1881873101(22), ___1881873101(23));/**/			//Do not remove this
 
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/urlrewriter.php");
+require_once(__DIR__."/autoload.php");
 
-/**
- * Defined in dbconn.php
- * @param string $DBType
- */
+// Component 2.0 template engines
+$GLOBALS['arCustomTemplateEngines'] = [];
 
-\Bitrix\Main\Loader::registerAutoLoadClasses(
-	"main",
-	array(
-		"CSiteTemplate" => "classes/general/site_template.php",
-		"CBitrixComponent" => "classes/general/component.php",
-		"CComponentEngine" => "classes/general/component_engine.php",
-		"CComponentAjax" => "classes/general/component_ajax.php",
-		"CBitrixComponentTemplate" => "classes/general/component_template.php",
-		"CComponentUtil" => "classes/general/component_util.php",
-		"CControllerClient" => "classes/general/controller_member.php",
-		"PHPParser" => "classes/general/php_parser.php",
-		"CDiskQuota" => "classes/".$DBType."/quota.php",
-		"CEventLog" => "classes/general/event_log.php",
-		"CEventMain" => "classes/general/event_log.php",
-		"CAdminFileDialog" => "classes/general/file_dialog.php",
-		"WLL_User" => "classes/general/liveid.php",
-		"WLL_ConsentToken" => "classes/general/liveid.php",
-		"WindowsLiveLogin" => "classes/general/liveid.php",
-		"CAllFile" => "classes/general/file.php",
-		"CFile" => "classes/".$DBType."/file.php",
-		"CTempFile" => "classes/general/file_temp.php",
-		"CFavorites" => "classes/".$DBType."/favorites.php",
-		"CUserOptions" => "classes/general/user_options.php",
-		"CGridOptions" => "classes/general/grids.php",
-		"CUndo" => "/classes/general/undo.php",
-		"CAutoSave" => "/classes/general/undo.php",
-		"CRatings" => "classes/".$DBType."/ratings.php",
-		"CRatingsComponentsMain" => "classes/".$DBType."/ratings_components.php",
-		"CRatingRule" => "classes/general/rating_rule.php",
-		"CRatingRulesMain" => "classes/".$DBType."/rating_rules.php",
-		"CTopPanel" => "public/top_panel.php",
-		"CEditArea" => "public/edit_area.php",
-		"CComponentPanel" => "public/edit_area.php",
-		"CTextParser" => "classes/general/textparser.php",
-		"CPHPCacheFiles" => "classes/general/cache_files.php",
-		"CDataXML" => "classes/general/xml.php",
-		"CXMLFileStream" => "classes/general/xml.php",
-		"CRsaProvider" => "classes/general/rsasecurity.php",
-		"CRsaSecurity" => "classes/general/rsasecurity.php",
-		"CRsaBcmathProvider" => "classes/general/rsabcmath.php",
-		"CRsaOpensslProvider" => "classes/general/rsaopenssl.php",
-		"CASNReader" => "classes/general/asn.php",
-		"CBXShortUri" => "classes/".$DBType."/short_uri.php",
-		"CFinder" => "classes/general/finder.php",
-		"CAccess" => "classes/general/access.php",
-		"CAuthProvider" => "classes/general/authproviders.php",
-		"IProviderInterface" => "classes/general/authproviders.php",
-		"CGroupAuthProvider" => "classes/general/authproviders.php",
-		"CUserAuthProvider" => "classes/general/authproviders.php",
-		"CTableSchema" => "classes/general/table_schema.php",
-		"CCSVData" => "classes/general/csv_data.php",
-		"CSmile" => "classes/general/smile.php",
-		"CSmileGallery" => "classes/general/smile.php",
-		"CSmileSet" => "classes/general/smile.php",
-		"CGlobalCounter" => "classes/general/global_counter.php",
-		"CUserCounter" => "classes/".$DBType."/user_counter.php",
-		"CUserCounterPage" => "classes/".$DBType."/user_counter.php",
-		"CHotKeys" => "classes/general/hot_keys.php",
-		"CHotKeysCode" => "classes/general/hot_keys.php",
-		"CBXSanitizer" => "classes/general/sanitizer.php",
-		"CBXArchive" => "classes/general/archive.php",
-		"CAdminNotify" => "classes/general/admin_notify.php",
-		"CBXFavAdmMenu" => "classes/general/favorites.php",
-		"CAdminInformer" => "classes/general/admin_informer.php",
-		"CSiteCheckerTest" => "classes/general/site_checker.php",
-		"CSqlUtil" => "classes/general/sql_util.php",
-		"CFileUploader" => "classes/general/uploader.php",
-		"LPA" => "classes/general/lpa.php",
-		"CAdminFilter" => "interface/admin_filter.php",
-		"CAdminList" => "interface/admin_list.php",
-		"CAdminUiList" => "interface/admin_ui_list.php",
-		"CAdminUiResult" => "interface/admin_ui_list.php",
-		"CAdminUiContextMenu" => "interface/admin_ui_list.php",
-		"CAdminListRow" => "interface/admin_list.php",
-		"CAdminTabControl" => "interface/admin_tabcontrol.php",
-		"CAdminForm" => "interface/admin_form.php",
-		"CAdminFormSettings" => "interface/admin_form.php",
-		"CAdminTabControlDrag" => "interface/admin_tabcontrol_drag.php",
-		"CAdminDraggableBlockEngine" => "interface/admin_tabcontrol_drag.php",
-		"CJSPopup" => "interface/jspopup.php",
-		"CJSPopupOnPage" => "interface/jspopup.php",
-		"CAdminCalendar" => "interface/admin_calendar.php",
-		"CAdminViewTabControl" => "interface/admin_viewtabcontrol.php",
-		"CAdminTabEngine" => "interface/admin_tabengine.php",
-		"CCaptcha" => "classes/general/captcha.php",
+// User fields manager
+$GLOBALS['USER_FIELD_MANAGER'] = new CUserTypeManager;
 
-		//deprecated
-		"CHTMLPagesCache" => "lib/composite/helper.php",
-		"StaticHtmlMemcachedResponse" => "lib/composite/responder.php",
-		"StaticHtmlFileResponse" => "lib/composite/responder.php",
-		"Bitrix\\Main\\Page\\Frame" => "lib/composite/engine.php",
-		"Bitrix\\Main\\Page\\FrameStatic" => "lib/composite/staticarea.php",
-		"Bitrix\\Main\\Page\\FrameBuffered" => "lib/composite/bufferarea.php",
-		"Bitrix\\Main\\Page\\FrameHelper" => "lib/composite/bufferarea.php",
-		"Bitrix\\Main\\Data\\StaticHtmlCache" => "lib/composite/page.php",
-		"Bitrix\\Main\\Data\\StaticHtmlStorage" => "lib/composite/data/abstractstorage.php",
-		"Bitrix\\Main\\Data\\StaticHtmlFileStorage" => "lib/composite/data/filestorage.php",
-		"Bitrix\\Main\\Data\\StaticHtmlMemcachedStorage" => "lib/composite/data/memcachedstorage.php",
-		"Bitrix\\Main\\Data\\StaticCacheProvider" => "lib/composite/data/cacheprovider.php",
-		"Bitrix\\Main\\Data\\AppCacheManifest" => "lib/composite/appcache.php",
-	)
-);
+// todo: remove global
+$GLOBALS['BX_MENU_CUSTOM'] = CMenuCustom::getInstance();
 
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/".$DBType."/agent.php");
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/".$DBType."/user.php");
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/".$DBType."/event.php");
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/menu.php");
-AddEventHandler("main", "OnAfterEpilog", array("\\Bitrix\\Main\\Data\\ManagedCache", "finalize"));
-require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/".$DBType."/usertype.php");
-
-if(file_exists(($_fname = $_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/update_db_updater.php")))
+if(file_exists(($_fname = __DIR__."/classes/general/update_db_updater.php")))
 {
 	$US_HOST_PROCESS_MAIN = False;
 	include($_fname);
@@ -243,7 +125,7 @@ if(!defined("BX_DIR_PERMISSIONS"))
 //global var, is used somewhere
 $GLOBALS["sDocPath"] = $GLOBALS["APPLICATION"]->GetCurPage();
 
-if((!(defined("STATISTIC_ONLY") && STATISTIC_ONLY && substr($GLOBALS["APPLICATION"]->GetCurPage(), 0, strlen(BX_ROOT."/admin/"))!=BX_ROOT."/admin/")) && COption::GetOptionString("main", "include_charset", "Y")=="Y" && strlen(LANG_CHARSET)>0)
+if((!(defined("STATISTIC_ONLY") && STATISTIC_ONLY && mb_substr($GLOBALS["APPLICATION"]->GetCurPage(), 0, mb_strlen(BX_ROOT."/admin/")) != BX_ROOT."/admin/")) && COption::GetOptionString("main", "include_charset", "Y")=="Y" && LANG_CHARSET <> '')
 	header("Content-Type: text/html; charset=".LANG_CHARSET);
 
 if(COption::GetOptionString("main", "set_p3p_header", "Y")=="Y")
@@ -253,29 +135,29 @@ header("X-Powered-CMS: Bitrix Site Manager (".(LICENSE_KEY == "DEMO"? "DEMO" : m
 if (COption::GetOptionString("main", "update_devsrv", "") == "Y")
 	header("X-DevSrv-CMS: Bitrix");
 
-define("BX_CRONTAB_SUPPORT", defined("BX_CRONTAB"));
-
-if(COption::GetOptionString("main", "check_agents", "Y")=="Y")
+if (!defined("BX_CRONTAB_SUPPORT"))
 {
-	define("START_EXEC_AGENTS_1", microtime());
-	$GLOBALS["BX_STATE"] = "AG";
-	$GLOBALS["DB"]->StartUsingMasterOnly();
-	CAgent::CheckAgents();
-	$GLOBALS["DB"]->StopUsingMasterOnly();
-	define("START_EXEC_AGENTS_2", microtime());
-	$GLOBALS["BX_STATE"] = "PB";
+	define("BX_CRONTAB_SUPPORT", defined("BX_CRONTAB"));
 }
 
-//session initialization
-ini_set("session.cookie_httponly", "1");
+//agents
+if(COption::GetOptionString("main", "check_agents", "Y") == "Y")
+{
+	$application->addBackgroundJob(["CAgent", "CheckAgents"], [], \Bitrix\Main\Application::JOB_PRIORITY_LOW);
+}
 
-if($domain = $GLOBALS["APPLICATION"]->GetCookieDomain())
-	ini_set("session.cookie_domain", $domain);
+//send email events
+if(COption::GetOptionString("main", "check_events", "Y") !== "N")
+{
+	$application->addBackgroundJob(['\Bitrix\Main\Mail\EventManager', 'checkEvents'], [], \Bitrix\Main\Application::JOB_PRIORITY_LOW-1);
+}
 
-if(COption::GetOptionString("security", "session", "N") === "Y"	&& CModule::IncludeModule("security"))
-	CSecuritySession::Init();
+$healerOfEarlySessionStart = new HealerEarlySessionStart();
+$healerOfEarlySessionStart->process($application->getKernelSession());
 
-session_start();
+$kernelSession = $application->getKernelSession();
+$kernelSession->start();
+$application->getSessionLocalStorageManager()->setUniqueId($kernelSession->getId());
 
 foreach (GetModuleEvents("main", "OnPageStart", true) as $arEvent)
 	ExecuteModuleEventEx($arEvent);
@@ -289,10 +171,10 @@ $currTime = time();
 if(
 	(
 		//IP address changed
-		$_SESSION['SESS_IP']
-		&& strlen($arPolicy["SESSION_IP_MASK"])>0
+		$kernelSession['SESS_IP']
+		&& $arPolicy["SESSION_IP_MASK"] <> ''
 		&& (
-			(ip2long($arPolicy["SESSION_IP_MASK"]) & ip2long($_SESSION['SESS_IP']))
+			(ip2long($arPolicy["SESSION_IP_MASK"]) & ip2long($kernelSession['SESS_IP']))
 			!=
 			(ip2long($arPolicy["SESSION_IP_MASK"]) & ip2long($_SERVER['REMOTE_ADDR']))
 		)
@@ -301,21 +183,14 @@ if(
 	(
 		//session timeout
 		$arPolicy["SESSION_TIMEOUT"]>0
-		&& $_SESSION['SESS_TIME']>0
-		&& $currTime-$arPolicy["SESSION_TIMEOUT"]*60 > $_SESSION['SESS_TIME']
-	)
-	||
-	(
-		//session expander control
-		isset($_SESSION["BX_SESSION_TERMINATE_TIME"])
-		&& $_SESSION["BX_SESSION_TERMINATE_TIME"] > 0
-		&& $currTime > $_SESSION["BX_SESSION_TERMINATE_TIME"]
+		&& $kernelSession['SESS_TIME']>0
+		&& $currTime-$arPolicy["SESSION_TIMEOUT"]*60 > $kernelSession['SESS_TIME']
 	)
 	||
 	(
 		//signed session
-		isset($_SESSION["BX_SESSION_SIGN"])
-		&& $_SESSION["BX_SESSION_SIGN"] <> bitrix_sess_sign()
+		isset($kernelSession["BX_SESSION_SIGN"])
+		&& $kernelSession["BX_SESSION_SIGN"] <> bitrix_sess_sign()
 	)
 	||
 	(
@@ -324,22 +199,27 @@ if(
 	)
 )
 {
-	$_SESSION = array();
-	@session_destroy();
+	$compositeSessionManager = $application->getCompositeSessionManager();
+	$compositeSessionManager->destroy();
 
-	//session_destroy cleans user sesssion handles in some PHP versions
-	//see http://bugs.php.net/bug.php?id=32330 discussion
-	if(COption::GetOptionString("security", "session", "N") === "Y"	&& CModule::IncludeModule("security"))
-		CSecuritySession::Init();
+	$application->getSession()->setId(Main\Security\Random::getString(32));
+	$compositeSessionManager->start();
 
-	session_id(md5(uniqid(rand(), true)));
-	session_start();
 	$GLOBALS["USER"] = new CUser;
 }
-$_SESSION['SESS_IP'] = $_SERVER['REMOTE_ADDR'];
-$_SESSION['SESS_TIME'] = time();
-if(!isset($_SESSION["BX_SESSION_SIGN"]))
-	$_SESSION["BX_SESSION_SIGN"] = bitrix_sess_sign();
+$kernelSession['SESS_IP'] = $_SERVER['REMOTE_ADDR'];
+if (empty($kernelSession['SESS_TIME']))
+{
+	$kernelSession['SESS_TIME'] = $currTime;
+}
+elseif (($currTime - $kernelSession['SESS_TIME']) > 60)
+{
+	$kernelSession['SESS_TIME'] = $currTime;
+}
+if(!isset($kernelSession["BX_SESSION_SIGN"]))
+{
+	$kernelSession["BX_SESSION_SIGN"] = bitrix_sess_sign();
+}
 
 //session control from security module
 if(
@@ -348,40 +228,43 @@ if(
 	&& !defined("BX_SESSION_ID_CHANGE")
 )
 {
-	if(!array_key_exists('SESS_ID_TIME', $_SESSION))
+	if(!isset($kernelSession['SESS_ID_TIME']))
 	{
-		$_SESSION['SESS_ID_TIME'] = $_SESSION['SESS_TIME'];
+		$kernelSession['SESS_ID_TIME'] = $currTime;
 	}
-	elseif(($_SESSION['SESS_ID_TIME'] + COption::GetOptionInt("main", "session_id_ttl")) < $_SESSION['SESS_TIME'])
+	elseif(($kernelSession['SESS_ID_TIME'] + COption::GetOptionInt("main", "session_id_ttl")) < $kernelSession['SESS_TIME'])
 	{
-		if(COption::GetOptionString("security", "session", "N") === "Y" && CModule::IncludeModule("security"))
-		{
-			CSecuritySession::UpdateSessID();
-		}
-		else
-		{
-			session_regenerate_id();
-		}
-		$_SESSION['SESS_ID_TIME'] = $_SESSION['SESS_TIME'];
+		$compositeSessionManager = $application->getCompositeSessionManager();
+		$compositeSessionManager->regenerateId();
+
+		$kernelSession['SESS_ID_TIME'] = $currTime;
 	}
 }
 
 define("BX_STARTED", true);
 
-if (isset($_SESSION['BX_ADMIN_LOAD_AUTH']))
+if (isset($kernelSession['BX_ADMIN_LOAD_AUTH']))
 {
 	define('ADMIN_SECTION_LOAD_AUTH', 1);
-	unset($_SESSION['BX_ADMIN_LOAD_AUTH']);
+	unset($kernelSession['BX_ADMIN_LOAD_AUTH']);
 }
+
+$bRsaError = false;
+$USER_LID = false;
 
 if(!defined("NOT_CHECK_PERMISSIONS") || NOT_CHECK_PERMISSIONS!==true)
 {
-	$bLogout = isset($_REQUEST["logout"]) && (strtolower($_REQUEST["logout"]) == "yes");
+	$doLogout = isset($_REQUEST["logout"]) && (strtolower($_REQUEST["logout"]) == "yes");
 
-	if($bLogout && $GLOBALS["USER"]->IsAuthorized())
+	if($doLogout && $GLOBALS["USER"]->IsAuthorized())
 	{
-		$GLOBALS["USER"]->Logout();
-		LocalRedirect($GLOBALS["APPLICATION"]->GetCurPageParam('', array('logout')));
+		$secureLogout = (\Bitrix\Main\Config\Option::get("main", "secure_logout", "N") == "Y");
+
+		if(!$secureLogout || check_bitrix_sessid())
+		{
+			$GLOBALS["USER"]->Logout();
+			LocalRedirect($GLOBALS["APPLICATION"]->GetCurPageParam('', array('logout', 'sessid')));
+		}
 	}
 
 	// authorize by cookies
@@ -400,9 +283,9 @@ if(!defined("NOT_CHECK_PERMISSIONS") || NOT_CHECK_PERMISSIONS!==true)
 	}
 
 	//Authorize user from authorization html form
-	if(isset($_REQUEST["AUTH_FORM"]) && $_REQUEST["AUTH_FORM"] <> '')
+	//Only POST is accepted
+	if(isset($_POST["AUTH_FORM"]) && $_POST["AUTH_FORM"] <> '')
 	{
-		$bRsaError = false;
 		if(COption::GetOptionString('main', 'use_encrypted_auth', 'N') == 'Y')
 		{
 			//possible encrypted user password
@@ -410,7 +293,7 @@ if(!defined("NOT_CHECK_PERMISSIONS") || NOT_CHECK_PERMISSIONS!==true)
 			if(($arKeys = $sec->LoadKeys()))
 			{
 				$sec->SetKeys($arKeys);
-				$errno = $sec->AcceptFromForm(array('USER_PASSWORD', 'USER_CONFIRM_PASSWORD'));
+				$errno = $sec->AcceptFromForm(['USER_PASSWORD', 'USER_CONFIRM_PASSWORD', 'USER_CURRENT_PASSWORD']);
 				if($errno == CRsaSecurity::ERROR_SESS_CHECK)
 					$arAuthResult = array("MESSAGE"=>GetMessage("main_include_decode_pass_sess"), "TYPE"=>"ERROR");
 				elseif($errno < 0)
@@ -421,70 +304,74 @@ if(!defined("NOT_CHECK_PERMISSIONS") || NOT_CHECK_PERMISSIONS!==true)
 			}
 		}
 
-		if($bRsaError == false)
+		if (!$bRsaError)
 		{
 			if(!defined("ADMIN_SECTION") || ADMIN_SECTION !== true)
-				$USER_LID = LANG;
-			else
-				$USER_LID = false;
-
-			if($_REQUEST["TYPE"] == "AUTH")
 			{
-				$arAuthResult = $GLOBALS["USER"]->Login($_REQUEST["USER_LOGIN"], $_REQUEST["USER_PASSWORD"], $_REQUEST["USER_REMEMBER"]);
-			}
-			elseif($_REQUEST["TYPE"] == "OTP")
-			{
-				$arAuthResult = $GLOBALS["USER"]->LoginByOtp($_REQUEST["USER_OTP"], $_REQUEST["OTP_REMEMBER"], $_REQUEST["captcha_word"], $_REQUEST["captcha_sid"]);
-			}
-			elseif($_REQUEST["TYPE"] == "SEND_PWD")
-			{
-				$arAuthResult = CUser::SendPassword($_REQUEST["USER_LOGIN"], $_REQUEST["USER_EMAIL"], $USER_LID, $_REQUEST["captcha_word"], $_REQUEST["captcha_sid"]);
-			}
-			elseif($_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST["TYPE"] == "CHANGE_PWD")
-			{
-				$arAuthResult = $GLOBALS["USER"]->ChangePassword($_REQUEST["USER_LOGIN"], $_REQUEST["USER_CHECKWORD"], $_REQUEST["USER_PASSWORD"], $_REQUEST["USER_CONFIRM_PASSWORD"], $USER_LID, $_REQUEST["captcha_word"], $_REQUEST["captcha_sid"]);
-			}
-			elseif(COption::GetOptionString("main", "new_user_registration", "N") == "Y" && $_SERVER['REQUEST_METHOD'] == 'POST' && $_REQUEST["TYPE"] == "REGISTRATION" && (!defined("ADMIN_SECTION") || ADMIN_SECTION!==true))
-			{
-				$arAuthResult = $GLOBALS["USER"]->Register($_REQUEST["USER_LOGIN"], $_REQUEST["USER_NAME"], $_REQUEST["USER_LAST_NAME"], $_REQUEST["USER_PASSWORD"], $_REQUEST["USER_CONFIRM_PASSWORD"], $_REQUEST["USER_EMAIL"], $USER_LID, $_REQUEST["captcha_word"], $_REQUEST["captcha_sid"]);
+				$USER_LID = SITE_ID;
 			}
 
-			if($_REQUEST["TYPE"] == "AUTH" || $_REQUEST["TYPE"] == "OTP")
+			if($_POST["TYPE"] == "AUTH")
+			{
+				$arAuthResult = $GLOBALS["USER"]->Login($_POST["USER_LOGIN"], $_POST["USER_PASSWORD"], $_POST["USER_REMEMBER"]);
+			}
+			elseif($_POST["TYPE"] == "OTP")
+			{
+				$arAuthResult = $GLOBALS["USER"]->LoginByOtp($_POST["USER_OTP"], $_POST["OTP_REMEMBER"], $_POST["captcha_word"], $_POST["captcha_sid"]);
+			}
+			elseif($_POST["TYPE"] == "SEND_PWD")
+			{
+				$arAuthResult = CUser::SendPassword($_POST["USER_LOGIN"], $_POST["USER_EMAIL"], $USER_LID, $_POST["captcha_word"], $_POST["captcha_sid"], $_POST["USER_PHONE_NUMBER"]);
+			}
+			elseif($_POST["TYPE"] == "CHANGE_PWD")
+			{
+				$arAuthResult = $GLOBALS["USER"]->ChangePassword($_POST["USER_LOGIN"], $_POST["USER_CHECKWORD"], $_POST["USER_PASSWORD"], $_POST["USER_CONFIRM_PASSWORD"], $USER_LID, $_POST["captcha_word"], $_POST["captcha_sid"], true, $_POST["USER_PHONE_NUMBER"], $_POST["USER_CURRENT_PASSWORD"]);
+			}
+
+			if($_POST["TYPE"] == "AUTH" || $_POST["TYPE"] == "OTP")
 			{
 				//special login form in the control panel
 				if($arAuthResult === true && defined('ADMIN_SECTION') && ADMIN_SECTION === true)
 				{
 					//store cookies for next hit (see CMain::GetSpreadCookieHTML())
 					$GLOBALS["APPLICATION"]->StoreCookies();
-					$_SESSION['BX_ADMIN_LOAD_AUTH'] = true;
-					echo '<script type="text/javascript">window.onload=function(){top.BX.AUTHAGENT.setAuthResult(false);};</script>';
-					die();
+					$kernelSession['BX_ADMIN_LOAD_AUTH'] = true;
+
+					// die() follows
+					CMain::FinalActions('<script type="text/javascript">window.onload=function(){(window.BX || window.parent.BX).AUTHAGENT.setAuthResult(false);};</script>');
 				}
 			}
 		}
 		$GLOBALS["APPLICATION"]->SetAuthResult($arAuthResult);
 	}
-	elseif(!$GLOBALS["USER"]->IsAuthorized())
+	elseif(!$GLOBALS["USER"]->IsAuthorized() && isset($_REQUEST['bx_hit_hash']))
 	{
 		//Authorize by unique URL
-		$GLOBALS["USER"]->LoginHitByHash();
+		$GLOBALS["USER"]->LoginHitByHash($_REQUEST['bx_hit_hash']);
 	}
 }
 
 //logout or re-authorize the user if something importand has changed
 $GLOBALS["USER"]->CheckAuthActions();
 
-//application password scope control
-if(($applicationID = $GLOBALS["USER"]->GetParam("APPLICATION_ID")) !== null)
+//magic short URI
+if(defined("BX_CHECK_SHORT_URI") && BX_CHECK_SHORT_URI && CBXShortUri::CheckUri())
 {
-	$appManager = \Bitrix\Main\Authentication\ApplicationManager::getInstance();
+	//local redirect inside
+	die();
+}
+
+//application password scope control
+if(($applicationID = $GLOBALS["USER"]->getContext()->getApplicationId()) !== null)
+{
+	$appManager = Main\Authentication\ApplicationManager::getInstance();
 	if($appManager->checkScope($applicationID) !== true)
 	{
-		$event = new \Bitrix\Main\Event("main", "onApplicationScopeError", Array('APPLICATION_ID' => $applicationID));
+		$event = new Main\Event("main", "onApplicationScopeError", Array('APPLICATION_ID' => $applicationID));
 		$event->send();
 
-		CHTTP::SetStatus("403 Forbidden");
-		die();
+		$context->getResponse()->setStatus("403 Forbidden");
+		$application->end();
 	}
 }
 
@@ -492,7 +379,7 @@ if(($applicationID = $GLOBALS["USER"]->GetParam("APPLICATION_ID")) !== null)
 if(!defined("ADMIN_SECTION") || ADMIN_SECTION !== true)
 {
 	$siteTemplate = "";
-	if(is_string($_REQUEST["bitrix_preview_site_template"]) && $_REQUEST["bitrix_preview_site_template"] <> "" && $GLOBALS["USER"]->CanDoOperation('view_other_settings'))
+	if(isset($_REQUEST["bitrix_preview_site_template"]) && is_string($_REQUEST["bitrix_preview_site_template"]) && $_REQUEST["bitrix_preview_site_template"] <> "" && $GLOBALS["USER"]->CanDoOperation('view_other_settings'))
 	{
 		//preview of site template
 		$signer = new Bitrix\Main\Security\Sign\Signer();
@@ -524,19 +411,25 @@ if(!defined("ADMIN_SECTION") || ADMIN_SECTION !== true)
 	define("SITE_TEMPLATE_ID", $siteTemplate);
 	define("SITE_TEMPLATE_PATH", getLocalPath('templates/'.SITE_TEMPLATE_ID, BX_PERSONAL_ROOT));
 }
+else
+{
+	// prevents undefined constants
+	define('SITE_TEMPLATE_ID', '.default');
+	define('SITE_TEMPLATE_PATH', '/bitrix/templates/.default');
+}
 
 //magic parameters: show page creation time
 if(isset($_GET["show_page_exec_time"]))
 {
 	if($_GET["show_page_exec_time"]=="Y" || $_GET["show_page_exec_time"]=="N")
-		$_SESSION["SESS_SHOW_TIME_EXEC"] = $_GET["show_page_exec_time"];
+		$kernelSession["SESS_SHOW_TIME_EXEC"] = $_GET["show_page_exec_time"];
 }
 
 //magic parameters: show included file processing time
 if(isset($_GET["show_include_exec_time"]))
 {
 	if($_GET["show_include_exec_time"]=="Y" || $_GET["show_include_exec_time"]=="N")
-		$_SESSION["SESS_SHOW_INCLUDE_TIME_EXEC"] = $_GET["show_include_exec_time"];
+		$kernelSession["SESS_SHOW_INCLUDE_TIME_EXEC"] = $_GET["show_include_exec_time"];
 }
 
 //magic parameters: show include areas
@@ -554,25 +447,48 @@ if($GLOBALS["USER"]->IsAuthorized())
 //magic cache
 \Bitrix\Main\Composite\Engine::shouldBeEnabled();
 
-//magic short URI
-if(defined("BX_CHECK_SHORT_URI") && BX_CHECK_SHORT_URI && CBXShortUri::CheckUri())
-{
-	//local redirect inside
-	die();
-}
+// should be before proactive filter on OnBeforeProlog
+$userPassword = $_POST["USER_PASSWORD"] ?? null;
+$userConfirmPassword = $_POST["USER_CONFIRM_PASSWORD"] ?? null;
 
 foreach(GetModuleEvents("main", "OnBeforeProlog", true) as $arEvent)
+{
 	ExecuteModuleEventEx($arEvent);
+}
+
+if (!defined("NOT_CHECK_PERMISSIONS") || NOT_CHECK_PERMISSIONS !== true)
+{
+	//Register user from authorization html form
+	//Only POST is accepted
+	if (isset($_POST["AUTH_FORM"]) && $_POST["AUTH_FORM"] != '' && $_POST["TYPE"] == "REGISTRATION")
+	{
+		if (!$bRsaError)
+		{
+			if(COption::GetOptionString("main", "new_user_registration", "N") == "Y" && (!defined("ADMIN_SECTION") || ADMIN_SECTION !== true))
+			{
+				$arAuthResult = $GLOBALS["USER"]->Register($_POST["USER_LOGIN"], $_POST["USER_NAME"], $_POST["USER_LAST_NAME"], $userPassword, $userConfirmPassword, $_POST["USER_EMAIL"], $USER_LID, $_POST["captcha_word"], $_POST["captcha_sid"], false, $_POST["USER_PHONE_NUMBER"]);
+				$GLOBALS["APPLICATION"]->SetAuthResult($arAuthResult);
+			}
+		}
+	}
+}
 
 if((!defined("NOT_CHECK_PERMISSIONS") || NOT_CHECK_PERMISSIONS!==true) && (!defined("NOT_CHECK_FILE_PERMISSIONS") || NOT_CHECK_FILE_PERMISSIONS!==true))
 {
-	$real_path = $request->getScriptFile();
+	$real_path = $context->getRequest()->getScriptFile();
 
 	if(!$GLOBALS["USER"]->CanDoFileOperation('fm_view_file', array(SITE_ID, $real_path)) || (defined("NEED_AUTH") && NEED_AUTH && !$GLOBALS["USER"]->IsAuthorized()))
 	{
 		/** @noinspection PhpUndefinedVariableInspection */
 		if($GLOBALS["USER"]->IsAuthorized() && $arAuthResult["MESSAGE"] == '')
+		{
 			$arAuthResult = array("MESSAGE"=>GetMessage("ACCESS_DENIED").' '.GetMessage("ACCESS_DENIED_FILE", array("#FILE#"=>$real_path)), "TYPE"=>"ERROR");
+
+			if(COption::GetOptionString("main", "event_log_permissions_fail", "N") === "Y")
+			{
+				CEventLog::Log("SECURITY", "USER_PERMISSIONS_FAIL", "main", $GLOBALS["USER"]->GetID(), $real_path);
+			}
+		}
 
 		if(defined("ADMIN_SECTION") && ADMIN_SECTION==true)
 		{
@@ -603,8 +519,3 @@ if((!defined("NOT_CHECK_PERMISSIONS") || NOT_CHECK_PERMISSIONS!==true) && (!defi
 
        //Do not remove this
 
-if(isset($REDIRECT_STATUS) && $REDIRECT_STATUS==404)
-{
-	if(COption::GetOptionString("main", "header_200", "N")=="Y")
-		CHTTP::SetStatus("200 OK");
-}

@@ -77,8 +77,12 @@ $aOptions = $grid_options->GetOptions();
 if(!isset($aOptions["views"]["default"]["name"]))
 	$aOptions["views"]["default"]["name"] = GetMessage("interface_grid_default_view");
 
-$func = create_function('$a, $b', 'return strcmp($a["name"], $b["name"]);');
-uasort($aOptions["views"], $func);
+uasort(
+	$aOptions["views"],
+	function ($a, $b) {
+		return strcmp($a["name"], $b["name"]);
+	}
+);
 
 $arResult["OPTIONS"] = $aOptions;
 $arResult["GLOBAL_OPTIONS"] = CUserOptions::GetOption("main.interface", "global", array(), 0);
@@ -191,7 +195,17 @@ if(!$bEmptyCols)
 {
 	foreach($aCols as $i=>$col)
 		$arResult["HEADERS"][$col]["__sort"] = $i;
-	uasort($arResult["HEADERS"], create_function('$a, $b', 'if($a["__sort"] == $b["__sort"]) return 0; return ($a["__sort"] < $b["__sort"])? -1 : 1;'));
+
+	uasort(
+		$arResult["HEADERS"],
+		function ($a, $b) {
+			if ($a["__sort"] == $b["__sort"])
+			{
+				return 0;
+			}
+			return ($a["__sort"] < $b["__sort"] ? -1 : 1);
+		}
+	);
 }
 
 //*********************
@@ -209,19 +223,19 @@ if($arParams["FORM_ID"] <> '' && $arParams["TAB_ID"] <> '')
 
 $arResult["CURRENT_URL"] = $uri->getUri();
 
-$sep = (strpos($arResult["CURRENT_URL"], "?") !== false? "&":"?");
+$sep = (mb_strpos($arResult["CURRENT_URL"], "?") !== false? "&":"?");
 
-reset($arParams["SORT"]);
-$aSort = each($arParams["SORT"]);
+$sortBy = key($arParams["SORT"]);
+$sortOrder = current($arParams["SORT"]);
 
 foreach($arResult["HEADERS"] as $id=>$header)
 {
 	if($header["sort"] <> '')
 	{
 		$arResult["HEADERS"][$id]["sort_state"] = "";
-		if(strtolower($header["sort"]) == strtolower($aSort["key"]))
+		if(mb_strtolower($header["sort"]) == mb_strtolower($sortBy))
 		{
-			if(strtolower($aSort["value"]) == "desc")
+			if(mb_strtolower($sortOrder) == "desc")
 				$arResult["HEADERS"][$id]["sort_state"] = "desc";
 			else
 				$arResult["HEADERS"][$id]["sort_state"] = "asc";

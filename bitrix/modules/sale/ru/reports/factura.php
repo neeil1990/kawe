@@ -472,13 +472,13 @@ width:86pt'>
 		$arVal = CSaleLocation::GetByID($arOrderProps["F_LOCATION"], "ru");
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"]." - ".$arVal["CITY_NAME"]);
 		?>
-		<?if (strlen($arOrderProps["F_CITY"])>0) echo ", г. ".$arOrderProps["F_CITY"];?>
-		<?if (strlen($arOrderProps["F_ADDRESS"])>0) echo ", ".$arOrderProps["F_ADDRESS"];?>
+		<?if ($arOrderProps["F_CITY"] <> '') echo ", г. ".$arOrderProps["F_CITY"];?>
+		<?if ($arOrderProps["F_ADDRESS"] <> '') echo ", ".$arOrderProps["F_ADDRESS"];?>
 		<?
 	}
 	else
 	{
-		if(strlen($arParams["BUYER_COMPANY_NAME"]) > 0)
+		if($arParams["BUYER_COMPANY_NAME"] <> '')
 			$buyerName = $arParams["BUYER_COMPANY_NAME"];
 	    else
 			$buyerName = $arParams["BUYER_LAST_NAME"]." ".$arParams["BUYER_FIRST_NAME"]." ".$arParams["BUYER_SECOND_NAME"];
@@ -519,8 +519,8 @@ width:86pt'>
 		echo $arOrderProps["F_INDEX"];
 		$arVal = CSaleLocation::GetByID($arOrderProps["F_LOCATION"], "ru");
 		echo htmlspecialcharsbx($arVal["COUNTRY_NAME"]." - ".$arVal["CITY_NAME"]);
-		if (strlen($arOrderProps["F_CITY"])>0) echo ", г. ".$arOrderProps["F_CITY"];
-		if (strlen($arOrderProps["F_ADDRESS"])>0) echo ", ".$arOrderProps["F_ADDRESS"];
+		if ($arOrderProps["F_CITY"] <> '') echo ", г. ".$arOrderProps["F_CITY"];
+		if ($arOrderProps["F_ADDRESS"] <> '') echo ", ".$arOrderProps["F_ADDRESS"];
 
 	}
 	else
@@ -620,6 +620,11 @@ for ($i = 0, $max = count($arBasketIDs); $i < $max; $i++)
 	$arBasketOrder[] = $arBasketTmp;
 }
 
+if ($arOrder['DELIVERY_VAT_RATE'] > 0)
+{
+	$bUseVat = true;
+}
+
 if (is_array($arBasketOrder) && !empty($arBasketOrder))
 {
 	$arBasketOrder = getMeasures($arBasketOrder);
@@ -699,7 +704,7 @@ foreach ($arBasketOrder as $arBasket):
 		{
 			foreach($arBasket["PROPS"] as $vv)
 			{
-				if(strlen($vv["VALUE"]) > 0 && $vv["CODE"] != "CATALOG.XML_ID" && $vv["CODE"] != "PRODUCT.XML_ID")
+				if($vv["VALUE"] <> '' && $vv["CODE"] != "CATALOG.XML_ID" && $vv["CODE"] != "PRODUCT.XML_ID")
 					echo "<div style=\"font-size:8pt\">".$vv["NAME"].": ".$vv["VALUE"]."</div>";
 			}
 		}
@@ -709,16 +714,39 @@ foreach ($arBasketOrder as $arBasket):
 	<td class=xl40 width=40 style='border-top:none;border-left:none;width:30pt'><?=$arBasket['MEASURE_TEXT']?></td>
 	<td class=xl41 style='border-top:none;border-left:none'><?echo Bitrix\Sale\BasketItem::formatQuantity($arQuantities[$mi]);?></td>
 	<td align="right" class=xl42 style='border-top:none;border-left:none'><?=CCurrencyLang::CurrencyFormat($item_price, $arOrder["CURRENCY"], false);?></td>
-	<td class=xl42 align=right style='border-top:none;border-left:none' x:num><?=CCurrencyLang::CurrencyFormat($item_price * $arQuantities[$mi], $arOrder["CURRENCY"], false); $total_price += ($item_price*$arQuantities[$mi]);?></td>
+	<td class=xl42 align=right style='border-top:none;border-left:none' x:num>
+		<?
+			echo CCurrencyLang::CurrencyFormat($item_price * $arQuantities[$mi], $arOrder["CURRENCY"], false);
+			if (empty($arBasket['SET_PARENT_ID']))
+			{
+				$total_price += ($item_price*$arQuantities[$mi]);
+			}
+		?>
+	</td>
 	<td class=xl43 style='border-top:none;border-left:none'>&nbsp;</td>
 	<td class=xl44 align=right width=43 style='border-top:none;border-left:none;
 	width:32pt'><?=($taxRate > 0 || count($arTaxList) > 0) ? $taxRate."%" : "Без НДС";?></td>
 	<td class=xl45 align=right width=78 style='border-top:none;border-left:none;
-	width:59pt' x:num><?=CCurrencyLang::CurrencyFormat($nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false); $total_nds += $nds_val*$arQuantities[$mi];?></td>
+	width:59pt' x:num>
+		<?
+			echo CCurrencyLang::CurrencyFormat($nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false);
+			if (empty($arBasket['SET_PARENT_ID']))
+			{
+				$total_nds += $nds_val*$arQuantities[$mi];
+			}
+		?>
+	</td>
 
 	<td class=xl45 align=right width=83 style='border-top:none;border-left:none;
-	width:62pt' x:num><?=CCurrencyLang::CurrencyFormat($item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false);	$total_sum += $item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi]?></td>
-
+	width:62pt' x:num>
+		<?
+			echo CCurrencyLang::CurrencyFormat($item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi], $arOrder["CURRENCY"], false);
+			if (empty($arBasket['SET_PARENT_ID']))
+			{
+				$total_sum += $item_price*$arQuantities[$mi]+$nds_val*$arQuantities[$mi];
+			}
+		?>
+	</td>
 	<td class=xl46 ><input size="5" style="border:0px solid #000000;font-size:14px;font-style:bold;text-align:center;" type="text" value="---"></td>
 	<td class=xl46 ><input size="5" style="border:0px solid #000000;font-size:14px;font-style:bold;text-align:center;" type="text" value="---"></td>
 	<td class=xl53 width=114 style='border-top:none;border-left:none;width:86pt'>---</td>
@@ -776,9 +804,9 @@ if ($arOrder["DELIVERY_ID"]):
 </tr>
 <tr valign="top">
 	<td colspan=4 class=xl36>Руководитель организации<br> или иное уполномоченное лицо
-		_______________ <input size="16" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo ((strlen($arParams["DIRECTOR"]) > 0) ? $arParams["DIRECTOR"] : "_______________")?> /"></td>
+		_______________ <input size="16" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo (($arParams["DIRECTOR"] <> '') ? $arParams["DIRECTOR"] : "_______________")?> /"></td>
 	<td class=xl36 colspan=2 style='mso-ignore:colspan'></td>
-	<td colspan=6 class=xl32 style='mso-ignore:colspan'>Главный бухгалтер<br> или иное уполномоченное лицо _______________ <input size="16" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo ((strlen($arParams["BUHG"]) > 0) ? $arParams["BUHG"] : "_______________")?> /"></td>
+	<td colspan=6 class=xl32 style='mso-ignore:colspan'>Главный бухгалтер<br> или иное уполномоченное лицо _______________ <input size="16" style="border:0px solid #000000;font-size:14px;font-style:bold;" type="text" value="/ <?echo (($arParams["BUHG"] <> '') ? $arParams["BUHG"] : "_______________")?> /"></td>
 </tr>
 <tr height=0 style='display:none'>
 	<td height=0 colspan=11 class=xl32 style='mso-ignore:colspan'></td>

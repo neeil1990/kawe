@@ -7,7 +7,7 @@ $salePermissions = $APPLICATION->GetGroupRight('sale');
 if ($salePermissions < 'R')
 	return;
 
-include_once($GLOBALS["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+\Bitrix\Main\Loader::includeModule('sale');
 
 use	Bitrix\Sale\Helpers\Admin\BusinessValueControl;
 use Bitrix\Main\Localization\Loc;
@@ -20,7 +20,7 @@ $errors = array();
 
 $businessValueControl = new BusinessValueControl('bizval');
 
-if($REQUEST_METHOD == 'POST' && strlen($Update) > 0 && $salePermissions >= 'W' && check_bitrix_sessid())
+if($REQUEST_METHOD == 'POST' && $Update <> '' && $salePermissions >= 'W' && check_bitrix_sessid())
 {
 	if ($isSuccess = $businessValueControl->setMapFromPost())
 		$businessValueControl->saveMap();
@@ -29,7 +29,7 @@ if($REQUEST_METHOD == 'POST' && strlen($Update) > 0 && $salePermissions >= 'W' &
 ?>
 	<tr>
 		<td colspan="2">
-			<a href="sale_business_value_ptypes.php?lang=<?=LANGUAGE_ID?>"><?=Loc::getMessage('BIZVAL_PAGE_LINK_PTYPES')?></a>
+			<?=Loc::getMessage('BIZVAL_PAGE_LINK_PTYPES_V2')?>
 			<br>&nbsp;
 		</td>
 	</tr>

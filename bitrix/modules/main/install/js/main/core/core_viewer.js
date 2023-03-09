@@ -7,11 +7,12 @@ BX.viewElementBind = function(div, params, isTarget, groupBy)
 {
 	var obElementViewer = new BX.CViewer(params);
 
-	if(!isTarget)
-		isTarget = function(node){
+	if (!isTarget)
+	{
+		isTarget = function (node) {
 			return BX.type.isElementNode(node) && (node.getAttribute('data-bx-viewer') || node.tagName.toUpperCase() == 'IMG');
 		}
-;
+	}
 
 	BX.ready(function(){
 		_viewerElementBind(div, isTarget, groupBy, obElementViewer);
@@ -26,6 +27,27 @@ function _viewerElementBind(div, isTarget, groupBy, obElementViewer)
 	var div = BX(div);
 	if (!!div)
 	{
+		if (BX.getClass('BX.UI.Viewer') && BX(div))
+		{
+			BX.findChildren(div, isTarget, true).forEach(function(node){
+				if (node.dataset.bxSrc)
+				{
+					node.dataset.src = node.dataset.bxSrc;
+				}
+				if (node.dataset.bxImage)
+				{
+					node.dataset.src = node.dataset.bxImage;
+				}
+				if (node.dataset.bxViewer === 'image')
+				{
+					node.dataset.viewerType = 'image';
+				}
+			});
+
+			BX.UI.Viewer.bind(BX(div), isTarget);
+			return;
+		}
+
 		BX.bindDelegate(div, 'click', isTarget, function(e)
 		{
 			if(BX.findParent(this, {tagName: 'a', attribute: {target: '_blank'}}, 5))
@@ -1430,7 +1452,7 @@ BX.CViewEditableElement.prototype.setDataForCommit = function(data)
 	{
 		this.dataForCommit = data;
 	}
-	else if((BX.browser.IsIE() || BX.browser.IsIE11() || /Edge\/12./i.test(navigator.userAgent)))
+	else if((BX.browser.IsIE() || BX.browser.IsIE11() || /Edge\/./i.test(navigator.userAgent)))
 	{
 		//IE and garbage collector delete all objects (from modal window). This is half-hack.
 		for(var key in arguments)
@@ -1572,7 +1594,7 @@ BX.CViewBlankElement.prototype.discardFile = function(parameters)
 	var uriToDoc = parameters.editUrl ;
 	if(this.editUrl)
 	{
-		uriToDoc = CViewerUrlHelper.getUrlDiscardFile(this.editUrl);
+		uriToDoc = CViewerUrlHelper.getUrlDiscardBlankFile(this.editUrl);
 	}
 	else
 	{
@@ -3846,10 +3868,13 @@ BX.CViewer.prototype.adjustPos = function()
 	}
 	else
 	{
-		if (!this.CONTENT_WRAP.style.height)
-			this.CONTENT_WRAP.style.height = "100px";
-		if (!this.CONTENT_WRAP.style.width)
-			this.CONTENT_WRAP.style.width = "100px";
+		if (this.CONTENT_WRAP)
+		{
+			if (!this.CONTENT_WRAP.style.height){}
+				this.CONTENT_WRAP.style.height = "100px";
+			if (!this.CONTENT_WRAP.style.width)
+				this.CONTENT_WRAP.style.width = "100px";
+		}
 
 		//this._adjustPosByElement();
 		this.getCurrent().addTimeoutId(
@@ -3951,7 +3976,7 @@ BX.CViewer.prototype.adjustSizeTitle = function()
 	}
 	return false;
 }
-	
+
 BX.CViewer.prototype.adjustSize = function()
 {
 	var wndSize = BX.GetWindowSize(), currentElement = this.getCurrent();
@@ -5222,7 +5247,7 @@ BX.CViewer.prototype.createWithoutPreviewEditableElement = function(element, par
 	nonPreviewEditableElement.buttons.push(nonPreviewEditableElement.getComplexSaveButton(this, {
 		downloadUrl: nonPreviewEditableElement.downloadUrl
 	}));
-	
+
 	return nonPreviewEditableElement;
 }
 
@@ -5434,6 +5459,13 @@ var CViewerUrlHelper = {
 	{
 		url = this.addToLinkParam(url, 'service', this.lastService);
 		url = this.addToLinkParam(url, 'document_action', 'discard');
+		return url;
+	},
+
+	getUrlDiscardBlankFile: function(url)
+	{
+		url = this.addToLinkParam(url, 'service', this.lastService);
+		url = this.addToLinkParam(url, 'document_action', 'discardBlank');
 		return url;
 	},
 

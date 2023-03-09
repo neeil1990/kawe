@@ -1,4 +1,5 @@
 ;(function(window){
+	window.BX = window['BX'] || {};
 	if (window.BX["UploaderQueue"])
 		return false;
 	var
@@ -22,8 +23,10 @@
 			uploadFileHeight : (limits["uploadFileHeight"] > 0 ? limits["uploadFileHeight"] : 0)};
 
 		this.placeHolder = BX(params["placeHolder"]);
-		this.showImage = (params["showImage"] !== false);
-		this.sortItems = (params["sortItems"] !== false);
+		this.showImage = (params["showImage"] !== false && params["showImage"] !== 'N');
+		this.sortItems = (params["sortItems"] !== false && params["sortItems"] !== 'N');
+		this.fileCopies = params["copies"];
+		this.fileFields = params["fields"];
 
 		this.uploader = caller;
 		this.itForUpload = new BX.UploaderUtils.Hash();
@@ -43,8 +46,6 @@
 		}
 
 		BX.addCustomEvent(caller, "onItemIsAdded", BX.delegate(this.addItem, this));
-		BX.addCustomEvent(caller, "onItemsAreAdded", BX.delegate(this.finishQueue, this));
-
 		BX.addCustomEvent(caller, "onFileIsDeleted", BX.delegate(this.deleteItem, this));
 		BX.addCustomEvent(caller, "onFileIsReinited", BX.delegate(this.reinitItem, this));
 
@@ -69,7 +70,7 @@
 
 			BX.onCustomEvent(this.uploader, "onFileIsBeforeCreated", [file, being, isImage, this.uploader]);
 
-			var params = {copies : this.uploader.fileCopies, fields : this.uploader.fileFields},
+			var params = {copies : this.fileCopies, fields : this.fileFields},
 				res = (isImage ?
 					new BX.UploaderImage(file, params, this.limits, this.uploader) :
 					new BX.UploaderFile(file, params, this.limits, this.uploader)),
@@ -186,6 +187,11 @@
 					node.onbxdestdraghout = this._onbxdestdraghout;
 					node.onbxdestdragfinish = this._onbxdestdragfinish;
 					window.jsDD.registerDest(node);
+					var inputs = BX.findChild(node, {tagName : "INPUT", props : {"type" : "text"}}, true, true);
+					for (var ii = 0; ii <= inputs.length; ii++)
+					{
+						BX.bind(inputs[ii], "mousedown", BX.eventCancelBubble);
+					}
 				}
 				node.setAttribute("bx-item-id", res.id);
 				if (BX(being))
@@ -504,38 +510,64 @@
 				BX.onCustomEvent(item, "onFileIsAppended", [item.id, item, this.caller]);
 			}
 		},
-		finishQueue : function()
-		{
-		},
 		clear : function()
 		{
 			var item;
 			while ((item = this.items.getFirst()) && !!item)
 				this.deleteItem(item.id, item);
 		},
-		restoreFiles : function(data, restoreError, restoreUpload)
+		restoreFiles : function(data, restoreErrored, startAgain)
 		{
-			restoreError = (restoreError === true);
-			var item = data.getFirst();
-			while(item)
+			data.reset();
+			var item, copy, erroredFile;
+			while((item = data.getNext()) && item)
 			{
-				if (this.items.hasItem(item.id) &&
-					(restoreUpload === true || !this.itUploaded.hasItem(item.id)) &&
-					(restoreError || !this.itFailed.hasItem(item.id)))
+				erroredFile = this.itFailed.hasItem(item.id);
+				if (restoreErrored === true)
 				{
-					if (this.itFailed.hasItem(item.id) || restoreUpload === true)
+					this.itFailed.removeItem(item.id);
+				}
+
+				if (!this.items.hasItem(item.id) || this.itFailed.hasItem(item.id))
+				{
+					continue;
+				}
+
+				if (startAgain === true || startAgain !== false && erroredFile) // for compatibility
+				{
+					delete item["uploadStatus"];
+
+					delete item.file["uploadStatus"];
+					delete item.file["firstChunk"];
+					delete item.file["package"];
+					delete item.file["packages"];
+
+					if (item.file["copies"])
 					{
-						delete item["uploadStatus"];
-
-						delete item.file["uploadStatus"];
-						delete item.file["firstChunk"];
-						delete item.file["package"];
-						delete item.file["packages"];
-
+						item.file["copies"].reset();
+						while((copy = item.file["copies"].getNext()) && copy)
+						{
+							delete copy["uploadStatus"];
+							delete copy["firstChunk"];
+							delete copy["package"];
+							delete copy["packages"];
+						}
+						item.file["copies"].reset();
+					}
+					item["restored"] = (startAgain === true ? "Y" : "C"); // Start again or continue
+				}
+				else
+				{
+					if (erroredFile) // If a error was occurred on the last step we should send this piece again
+					{
+						if (item.file["package"])
+						{
+							item.file["package"]--;
+						}
 						if (item.file["copies"])
 						{
 							item.file["copies"].reset();
-							var copy;
+
 							while((copy = item.file["copies"].getNext()) && copy)
 							{
 								delete copy["uploadStatus"];
@@ -545,18 +577,13 @@
 							}
 							item.file["copies"].reset();
 						}
-						item["restored"] = "Y"; // Start again
 					}
-					else
-					{
-						item["restored"] = "C"; // Continue
-					}
-					this.itFailed.removeItem(item.id);
-					this.itUploaded.removeItem(item.id);
-					this.itForUpload.setItem(item.id, item);
-					BX.onCustomEvent(item, "onUploadRestore", [item]);
+
+					item["restored"] = "C"; // Continue
 				}
-				item = data.getNext();
+				this.itUploaded.removeItem(item.id);
+				this.itForUpload.setItem(item.id, item);
+				BX.onCustomEvent(item, "onUploadRestore", [item]);
 			}
 		}
 	};

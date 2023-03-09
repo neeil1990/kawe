@@ -23,7 +23,7 @@ if (empty($arResult))
 		<?foreach($arResult as $itemIdex => $arItem):?>
 			<?if ($arItem["DEPTH_LEVEL"] == "1"):?>
 				<li class="bx-inclinkspersonal-item bx-theme-<?=$theme?> <?=($arItem["SELECTED"]) ? "bx-inclinkspersonal-selected" : "" ;?>">
-					<a class="bx-inclinkspersonal-item-element" href="<?=$arItem["LINK"]?>"><?=htmlspecialcharsbx($arItem["TEXT"])?></a>
+					<a class="bx-inclinkspersonal-item-element" href="<?=htmlspecialcharsbx($arItem["LINK"])?>"><?=htmlspecialcharsbx($arItem["TEXT"])?></a>
 				</li>
 			<?endif?>
 		<?endforeach;?>

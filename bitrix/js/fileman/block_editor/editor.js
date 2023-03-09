@@ -177,7 +177,7 @@ BXBlockEditor.prototype.initPhpSlices = function()
 		var phpSlice = node.getAttribute(this.phpParser.getAttrName());
 		var phpDesc = this.phpParser.getPhpSliceDescription(phpSlice);
 		node.innerHTML = phpDesc.name;
-		node.setAttribute('title', phpDesc.title);
+		node.setAttribute('title', BX.util.htmlspecialchars(phpDesc.title));
 
 		this.phpParser.addItem(node.id, phpSlice, node.outerHTML);
 	}
@@ -205,12 +205,15 @@ BXBlockEditor.prototype.initControls = function()
 	this.panelList['preview'].panel = BX.findChildByClassName(this.context, 'preview' + '-panel', true);
 	BX.bind(this.panelList['preview'].button, 'click', function(){_this.showPreview('preview');});
 
-	return;
+	var getHtmlBtn = this.context.querySelector('[data-role="block-editor-tab-btn-get-html"]');
+	BX.clipboard.bindCopyClick(getHtmlBtn, {'text': this.getContent.bind(this)});
 
+	/*
 	this.panelList['get-html'] = {};
 	this.panelList['get-html'].button = BX.findChildByClassName(this.context, 'bx-editor-block-btn-' + 'get-html', true);
 	this.panelList['get-html'].panel = BX.findChildByClassName(this.context, 'get-html' + '-panel', true);
 	BX.bind(this.panelList['get-html'].button, 'click', function(){_this.showHtml('get-html');});
+	*/
 
 };
 
@@ -434,7 +437,14 @@ BXBlockEditor.prototype.initBlockPlaces = function()
 			{
 				html = this.phpParser.replacePhpByLayout(item.value);
 			}
+			
+			var emptyTextLayout = '<div ' + this.CONST_ATTR_BLOCK + '="text">';
+			if (html.indexOf(emptyTextLayout) === 0 && html.length < emptyTextLayout.length + 10)
+			{
+				html = ' ';
+			}
 			placeInfo.html += html;
+
 		}, this);
 
 
@@ -648,11 +658,11 @@ BXBlockEditor.prototype.showPanel = function(code)
 
 BXBlockEditor.prototype.showPreview = function(panelCode, executePhp)
 {
-	if(executePhp == undefined)
+	if(typeof executePhp === 'undefined')
 	{
 		executePhp = false;
 	}
-	this.preview.show({'content': this.getContent(executePhp)});
+	this.preview.show({'content': this.getContent(executePhp, true)});
 	this.showPanel(panelCode);
 };
 
@@ -695,16 +705,28 @@ BXBlockEditor.prototype.initEditDialog = function()
 		BX.delegate(this.editDialog.save, this.editDialog)
 	);
 
+	var formNode = BX.findParent(this.resultNode, {'tag': 'form'});
+	var self = this;
 	BX.bind(
-		BX.findParent(this.resultNode, {'tag': 'form'}),
+		formNode,
 		'submit',
-		BX.delegate(function(){
-			this.editDialog.save(
-				BX.delegate(function(){
-					this.isFinalSave = true;
-					this.save();
-				}, this));
-		}, this)
+		function(e)
+		{
+			if (self.isFinalSave)
+			{
+				self.isFinalSave = false;
+				return;
+			}
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			self.editDialog.save(function(){
+				self.isFinalSave = true;
+				self.save();
+				BX.submit(formNode);
+			});
+		}
 	);
 };
 
@@ -803,15 +825,16 @@ BXBlockEditor.prototype.load = function(url, callback)
 };
 
 
-BXBlockEditor.prototype.getSortedBlockListWithReplacedEmptyPlaces = function()
+BXBlockEditor.prototype.createBlockListWithReplacedEmptyPlaces = function()
 {
+	var tempBlocks = [];
 	this.helper.each(this.findBlockPlaces(), function (placeNode, placeCode) {
 		var blockNodes = placeNode.querySelectorAll('[' + this.CONST_ATTR_BLOCK + ']');
 		if (blockNodes.length > 0 )
 		{
 			return;
 		}
-		if (placeNode.children.length != 1)
+		if (placeNode.children.length !== 1)
 		{
 			return;
 		}
@@ -821,11 +844,18 @@ BXBlockEditor.prototype.getSortedBlockListWithReplacedEmptyPlaces = function()
 		{
 			var block = this.addBlockByNode(blockNode, placeNode.children[0], true);
 			block.setContentHtml('');
+			tempBlocks.push(block);
 		}
 
 	}, this);
 
-	return this.getSortedBlockList();
+	return tempBlocks;
+};
+BXBlockEditor.prototype.removeBlockListWithReplacedEmptyPlaces = function(tempBlocks)
+{
+	tempBlocks.forEach(function (block) {
+		this.removeBlock(block, true);
+	}, this);
 };
 
 BXBlockEditor.prototype.getSortedBlockList = function()
@@ -897,9 +927,13 @@ BXBlockEditor.prototype.getContentForSave = function()
 		}
 
 		// save blocks
-		var blockList = this.isFinalSave
+		var tempBlocks = this.createBlockListWithReplacedEmptyPlaces();
+		var blockList = this.getSortedBlockList();
+			/*
+			this.isFinalSave
 			? this.getSortedBlockListWithReplacedEmptyPlaces()
 			: this.getSortedBlockList();
+			*/
 
 		list = list.concat(blockList.map(function(block) {
 			return {
@@ -913,11 +947,13 @@ BXBlockEditor.prototype.getContentForSave = function()
 			};
 		}, this));
 
+		this.removeBlockListWithReplacedEmptyPlaces(tempBlocks);
+
 		return this.content.getString(list);
 	}
 };
 
-BXBlockEditor.prototype.getContent = function(withoutPHP)
+BXBlockEditor.prototype.getContent = function(withoutPHP, fillBlockPlacesByEmptyBlocks)
 {
 	withoutPHP = !!(withoutPHP || null);
 
@@ -925,7 +961,7 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 
 	// clean resources from editor resources
 	if(doc.head)
-	for(var i = 0;  i < doc.head.childNodes.length; i++)
+	for(var i = doc.head.childNodes.length - 1;  i >= 0; i--)
 	{
 		var node = doc.head.childNodes.item(i);
 		var nodeName = node.nodeName;
@@ -944,6 +980,11 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 					//node.removeAttribute(this.CONST_ATTR_STYLIST_TAG);
 				}
 			}
+			
+			if (node.href && node.href.indexOf('/bitrix/js/fileman/block_editor/editor.css') > -1)
+			{
+				BX.remove(node);
+			}
 		}
 	}
 
@@ -953,9 +994,22 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 	{
 		var blockPlace = blockPlaceList[j];
 		var blockPlaceBlocks = BX.findChildren(blockPlace, {'attribute': this.CONST_ATTR_BLOCK}, true);
-		if(blockPlaceBlocks.length == 0)
+		if(blockPlaceBlocks.length === 0)
 		{
 			BX.cleanNode(blockPlace);
+			if (fillBlockPlacesByEmptyBlocks)
+			{
+				var blockNode = this.getBlockNodeByType('text');
+				if (blockNode)
+				{
+
+					var blockAnchorNode = doc.createTextNode('');
+					blockPlace.appendChild(blockAnchorNode);
+					var block = this.addBlockByNode(blockNode, blockAnchorNode, true);
+					block.setContentHtml('');
+
+				}
+			}
 		}
 	}
 
@@ -971,7 +1025,7 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 
 		// get block content
 		var blockContent = BX.findChild(block, {'className': 'bx-content'}, true);
-		var blockContentChildren = blockContent.childNodes;
+		var blockContentChildren = BX.convert.nodeListToArray(blockContent.childNodes);
 
 		if(withoutPHP && block && block.getAttribute && block.getAttribute(this.CONST_ATTR_BLOCK) == 'component')
 		{
@@ -1000,7 +1054,7 @@ BXBlockEditor.prototype.getContent = function(withoutPHP)
 
 
 	// get html
-	result = doc.documentElement.outerHTML;
+	var result = doc.documentElement.outerHTML;
 
 	// replace placeholder #bx_....# by PHP-chunk
 	if (!withoutPHP)
@@ -1188,8 +1242,9 @@ BXBlockEditor.prototype.addBlock = function(blockNode)
 	return block;
 };
 
-BXBlockEditor.prototype.removeBlock = function(block)
+BXBlockEditor.prototype.removeBlock = function(block, disableSaving)
 {
+
 	BX.onCustomEvent(this, 'onBlockRemove', [block]);
 
 	for(var i in this.blockList)
@@ -1205,7 +1260,12 @@ BXBlockEditor.prototype.removeBlock = function(block)
 	BX.remove(block.node);
 	this.actualizeBlockPlace(parentRemovedNode);
 
-	this.save();
+	BX.onCustomEvent(this, 'onBlockRemoveAfter', [parentRemovedNode]);
+
+	if (!disableSaving)
+	{
+		this.save();
+	}
 	this.editDialog.hide();
 };
 
@@ -1667,6 +1727,7 @@ function BXBlockEditorBlockComponent()
 
 		var _this = this;
 		this.caller.editDialog.save();
+		this.caller.currentEditingBlock = this;
 		this.caller.phpParser.showComponentPropertiesDialog(
 			this.getContentClearPhp(),
 			function(html){
@@ -2117,9 +2178,8 @@ BXBlockEditorPHPParser.prototype.getAttrName = function()
 BXBlockEditorPHPParser.prototype.getPhpSliceDescription = function(phpSlice)
 {
 	var result = {'name': 'PHP', 'title': 'PHP'};
-
 	var component = this.htmlEditor.components.IsComponent(phpSlice);
-	if(component)
+	if(component && this.htmlEditor.components.components)
 	{
 		var cData = this.htmlEditor.components.GetComponentData(component.name);
 		var name = cData.title || component.name;

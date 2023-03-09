@@ -1,5 +1,5 @@
 <?
-require_once(dirname(__FILE__)."/../include/prolog_admin_before.php");
+require_once(__DIR__."/../include/prolog_admin_before.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/prolog.php");
 define("HELP_FILE", "settings/wizard_list.php");
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/classes/general/wizard.php");
@@ -27,7 +27,7 @@ if(($arID = $lAdmin->GroupAction()) && $isAdmin)
 
 	foreach($arID as $ID)
 	{
-		if(strlen($ID)<=0)
+		if($ID == '')
 			continue;
 
 		switch($_REQUEST['action'])
@@ -81,7 +81,7 @@ while($arRes = $rsData->NavNext(true, "f_"))
 	if ($isAdmin)
 	{
 		$startType = (array_key_exists("START_TYPE",$arRes) ? $arRes["START_TYPE"] : "POPUP");
-		$startType = strtoupper($startType);
+		$startType = mb_strtoupper($startType);
 
 		if ($startType == "POPUP")
 			$arActions[] = array("DEFAULT" => "Y", "ICON"=>"install", "TEXT" => GetMessage("MAIN_WIZARD_ADMIN_INSTALL"), "ACTION"=>"WizardWindow.Open('".$f_ID."','".bitrix_sessid()."')");

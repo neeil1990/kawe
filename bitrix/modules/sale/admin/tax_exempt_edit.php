@@ -1,6 +1,10 @@
 <?
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
 
+$selfFolderUrl = $adminPage->getSelfFolderUrl();
+$listUrl = $selfFolderUrl."sale_tax_exempt.php?lang=".LANGUAGE_ID;
+$listUrl = $adminSidePanelHelper->editUrlToPublicPage($listUrl);
+
 $saleModulePermissions = $APPLICATION->GetGroupRight("sale");
 if ($saleModulePermissions < "W")
 	$APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
@@ -8,39 +12,54 @@ if ($saleModulePermissions < "W")
 ClearVars("f_");
 
 IncludeModuleLangFile(__FILE__);
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/include.php");
+
+\Bitrix\Main\Loader::includeModule('sale');
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/sale/prolog.php");
 
-$ID = IntVal($ID);
+$ID = intval($ID);
 $z = CGroup::GetByID($ID);
 if (!$z->ExtractFields("f_"))
 {
-	LocalRedirect("sale_tax_exempt.php?lang=".LANG.GetFilterParams("filter_", false));
+	$adminSidePanelHelper->localRedirect($listUrl);
+	LocalRedirect($listUrl);
 }
 
 $strError = "";
 $bInitVars = false;
-if ((strlen($save)>0 || strlen($apply)>0) && $REQUEST_METHOD=="POST" && $saleModulePermissions=="W" && check_bitrix_sessid())
+if (($save <> '' || $apply <> '') && $_SERVER['REQUEST_METHOD']=="POST" && $saleModulePermissions=="W" && check_bitrix_sessid())
 {
+	$adminSidePanelHelper->decodeUriComponent();
+
 	$arTAX = array();
 
 	CSaleTax::DeleteExempt(array("GROUP_ID" => $ID));
 
-	if (isset($TAX_ID) && is_array($TAX_ID) && count($TAX_ID)>0)
+	if (isset($TAX_ID) && is_array($TAX_ID))
 	{
-		for ($i = 0; $i<count($TAX_ID); $i++)
+		$cnt = count($TAX_ID);
+		for ($i = 0; $i<$cnt; $i++)
 		{
-			if (IntVal($TAX_ID[$i])>0)
+			if (intval($TAX_ID[$i])>0)
 			{
-				CSaleTax::AddExempt(array("GROUP_ID" => $ID, "TAX_ID" => IntVal($TAX_ID[$i])));
+				CSaleTax::AddExempt(array("GROUP_ID" => $ID, "TAX_ID" => intval($TAX_ID[$i])));
 			}
 		}
 	}
 
-	if (strlen($strError)>0) $bInitVars = True;
+	if ($strError <> '')
+	{
+		$adminSidePanelHelper->sendJsonErrorResponse($strError);
+		$bInitVars = true;
+	}
 
-	if (strlen($save)>0 && strlen($strError)<=0)
-		LocalRedirect("sale_tax_exempt.php?lang=".LANG.GetFilterParams("filter_", false));
+	$adminSidePanelHelper->sendSuccessResponse("base");
+
+	if ($save <> '' && $strError == '')
+	{
+		$adminSidePanelHelper->localRedirect($listUrl);
+		LocalRedirect($listUrl);
+	}
 }
 
 $sDocTitle = GetMessage("EXEMPT_EDIT_RECORD", array("#ID#" => $ID));
@@ -51,23 +70,24 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 /*********************************************************************/
 /********************  BODY  *****************************************/
 /*********************************************************************/
-?>
 
-<?
 $aMenu = array(
-		array(
-				"TEXT" => GetMessage("STEEN_2FLIST"),
-				"ICON" => "btn_list",
-				"LINK" => "/bitrix/admin/sale_tax_exempt.php?lang=".LANG.GetFilterParams("filter_")
-			)
-	);
+	array(
+		"TEXT" => GetMessage("STEEN_2FLIST"),
+		"ICON" => "btn_list",
+		"LINK" => $listUrl
+	)
+);
 $context = new CAdminContextMenu($aMenu);
 $context->Show();
 ?>
 
 <?CAdminMessage::ShowMessage($strError);?>
-
-<form method="POST" action="<?echo $APPLICATION->GetCurPage()?>?" name="fform">
+<?
+$actionUrl = $APPLICATION->GetCurPage();
+$actionUrl = $adminSidePanelHelper->setDefaultQueryParams($actionUrl);
+?>
+<form method="POST" action="<?=$actionUrl?>" name="fform">
 <?echo GetFilterHiddens("filter_");?>
 <input type="hidden" name="Update" value="Y">
 <input type="hidden" name="lang" value="<?echo LANG ?>">
@@ -135,7 +155,7 @@ $tabControl->BeginNextTab();
 				}
 				?>
 				<?while ($vars = $db_vars->Fetch()):?>
-					<option value="<?echo $vars["ID"]?>"<?if (in_array(IntVal($vars["ID"]), $arTAX_ID)) echo " selected"?>><?echo htmlspecialcharsbx($vars["NAME"]." (".$vars["LID"].")")?></option>
+					<option value="<?echo $vars["ID"]?>"<?if (in_array(intval($vars["ID"]), $arTAX_ID)) echo " selected"?>><?echo htmlspecialcharsbx($vars["NAME"]." (".$vars["LID"].")")?></option>
 				<?endwhile;?>
 			</select>
 		</td>
@@ -143,18 +163,7 @@ $tabControl->BeginNextTab();
 
 <?
 $tabControl->EndTab();
-?>
-
-<?
-$tabControl->Buttons(
-		array(
-				"disabled" => ($saleModulePermissions < "W"),
-				"back_url" => "/bitrix/admin/sale_tax_exempt.php?lang=".LANG.GetFilterParams("filter_")
-			)
-	);
-?>
-
-<?
+$tabControl->Buttons(array("disabled" => ($saleModulePermissions < "W"), "back_url" => $listUrl));
 $tabControl->End();
 ?>
 

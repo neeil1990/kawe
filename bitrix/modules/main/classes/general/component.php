@@ -6,6 +6,8 @@
  * @copyright 2001-2013 Bitrix
  */
 
+use Bitrix\Main\IO;
+
 class CBitrixComponent
 {
 	public $__name = "";
@@ -54,6 +56,7 @@ class CBitrixComponent
 
 	private $__editButtons = array();
 	private static $__classes_map = array();
+	private static $classes = array();
 	private $classOfComponent = "";
 	private $randomSequence = null;
 	private $frameMode = null;
@@ -401,7 +404,7 @@ class CBitrixComponent
 	 * @return string
 	 *
 	 */
-	final private function __getClassForPath($componentPath)
+	private function __getClassForPath($componentPath)
 	{
 		if (!isset(self::$__classes_map[$componentPath]))
 		{
@@ -413,14 +416,24 @@ class CBitrixComponent
 				include_once($fname);
 				$afterClasses = get_declared_classes();
 				$afterClassesCount = count($afterClasses);
+
 				for ($i = $beforeClassesCount; $i < $afterClassesCount; $i++)
 				{
-					if (is_subclass_of($afterClasses[$i], "cbitrixcomponent"))
-						self::$__classes_map[$componentPath] = $afterClasses[$i];
+					if (!isset(self::$classes[$afterClasses[$i]]) && is_subclass_of($afterClasses[$i], "cbitrixcomponent"))
+					{
+						if (!isset(self::$__classes_map[$componentPath]) || is_subclass_of($afterClasses[$i], self::$__classes_map[$componentPath]))
+						{
+							self::$__classes_map[$componentPath] = $afterClasses[$i];
+
+							//recursion control
+							self::$classes[$afterClasses[$i]] = true;
+						}
+					}
 				}
 			}
 			else
 			{
+				//no need to try for several times
 				self::$__classes_map[$componentPath] = "";
 			}
 		}
@@ -603,7 +616,7 @@ class CBitrixComponent
 	 * @return mixed
 	 *
 	 */
-	final public function includeComponent($componentTemplate, $arParams, $parentComponent)
+	final public function includeComponent($componentTemplate, $arParams, $parentComponent, $returnResult = false)
 	{
 		if (!$this->__bInited)
 			return null;
@@ -614,8 +627,10 @@ class CBitrixComponent
 		if ($parentComponent instanceof cbitrixcomponent)
 			$this->__parent = $parentComponent;
 
-		if ($arParams["CACHE_TYPE"] != "Y" && $arParams["CACHE_TYPE"] != "N")
+		if (!isset($arParams["CACHE_TYPE"]) || ($arParams["CACHE_TYPE"] != "Y" && $arParams["CACHE_TYPE"] != "N"))
+		{
 			$arParams["CACHE_TYPE"] = "A";
+		}
 
 		if($this->classOfComponent)
 		{
@@ -635,7 +650,16 @@ class CBitrixComponent
 			$componentFrame = new \Bitrix\Main\Composite\Internals\AutomaticArea($component);
 			$componentFrame->start();
 
-			$result = $component->executeComponent();
+			if($returnResult)
+			{
+				$component->executeComponent();
+				$result = $component->arResult;
+			}
+			else
+			{
+				$result = $component->executeComponent();
+			}
+
 			$this->__arIncludeAreaIcons = $component->__arIncludeAreaIcons;
 			$frameMode = $component->getFrameMode();
 
@@ -650,7 +674,16 @@ class CBitrixComponent
 			$componentFrame = new \Bitrix\Main\Composite\Internals\AutomaticArea($this);
 			$componentFrame->start();
 
-			$result = $this->__IncludeComponent();
+			if($returnResult)
+			{
+				$this->__IncludeComponent();
+				$result = $this->arResult;
+			}
+			else
+			{
+				$result = $this->__IncludeComponent();
+			}
+
 			$frameMode = $this->getFrameMode();
 
 			$componentFrame->end();
@@ -693,6 +726,7 @@ class CBitrixComponent
 				"Cannot find '#NAME#' template with page '#PAGE#'"
 			));
 		}
+		$this->__template->__component = null;
 	}
 	/**
 	 * Function initializes the template of the component. Returns true on success.
@@ -710,7 +744,14 @@ class CBitrixComponent
 		if (!$this->__bInited)
 			return null;
 
-		$this->__templatePage = $templatePage;
+		try
+		{
+			$this->__templatePage = IO\Path::normalize($templatePage);
+		}
+		catch (IO\InvalidPathException $e)
+		{
+			$this->__templatePage = '';
+		}
 
 		$this->__template = new CBitrixComponentTemplate();
 		$this->__template->setLanguageId($this->getLanguageId());
@@ -864,7 +905,7 @@ class CBitrixComponent
 		if ($this->__cachePath === false)
 			$this->__cachePath = $CACHE_MANAGER->getCompCachePath($this->__relativePath);
 
-		$this->__cache = \Bitrix\Main\Data\Cache::createInstance();
+		$this->__cache = \Bitrix\Main\Data\Cache::createInstance(['actual_data' => false]);
 		if ($this->__cache->startDataCache($cacheTime, $this->__cacheID, $this->__cachePath))
 		{
 			$this->__NavNum = $GLOBALS["NavNum"];
@@ -885,14 +926,14 @@ class CBitrixComponent
 
 				if ($templateCachedData && is_array($templateCachedData))
 				{
-					if (array_key_exists("additionalCSS", $templateCachedData) && strlen($templateCachedData["additionalCSS"]) > 0)
+					if (array_key_exists("additionalCSS", $templateCachedData) && $templateCachedData["additionalCSS"] <> '')
 					{
 						$APPLICATION->SetAdditionalCSS($templateCachedData["additionalCSS"]);
 						if($this->__parent)
 							$this->__parent->addChildCSS($templateCachedData["additionalCSS"]);
 					}
 
-					if (array_key_exists("additionalJS", $templateCachedData) && strlen($templateCachedData["additionalJS"]) > 0)
+					if (array_key_exists("additionalJS", $templateCachedData) && $templateCachedData["additionalJS"] <> '')
 					{
 						$APPLICATION->AddHeadScript($templateCachedData["additionalJS"]);
 						if($this->__parent)
@@ -965,7 +1006,7 @@ class CBitrixComponent
 					}
 				}
 
-				if ($templateCachedData["__editButtons"])
+				if (isset($templateCachedData["__editButtons"]))
 				{
 					foreach ($templateCachedData["__editButtons"] as $button)
 					{
@@ -976,13 +1017,17 @@ class CBitrixComponent
 					}
 				}
 
-				if ($templateCachedData["__view"])
+				if (isset($templateCachedData["__view"]))
+				{
 					foreach ($templateCachedData["__view"] as $view_id => $target)
 						foreach ($target as $view_content)
 							$APPLICATION->addViewContent($view_id, $view_content[0], $view_content[1]);
+				}
 
 				if (array_key_exists("__NavNum", $templateCachedData))
+				{
 					$GLOBALS["NavNum"]+= $templateCachedData["__NavNum"];
+				}
 
 				if (array_key_exists("__currentCounters", $templateCachedData))
 				{
@@ -1320,13 +1365,13 @@ class CBitrixComponent
 		if (!is_array($arParams))
 			$arParams = array();
 
-		if (!$arParams['WINDOW'])
+		if (!($arParams['WINDOW'] ?? null))
 			$arParams['WINDOW'] = array(
 				"width" => 780,
 				"height" => 500,
 			);
 
-		if (!$arParams['ICON'] && !$arParams['SRC'] && !$arParams['IMAGE'])
+		if (!($arParams['ICON'] ?? '') && !($arParams['SRC'] ?? '') && !($arParams['IMAGE'] ?? ''))
 			$arParams['ICON'] = 'bx-context-toolbar-edit-icon';
 
 		$arBtn = array(
@@ -1378,12 +1423,12 @@ class CBitrixComponent
 		if (!is_array($arParams))
 			$arParams = array();
 
-		if (!$arParams['ICON'] && !$arParams['SRC'] && !$arParams['IMAGE'])
+		if (!($arParams['ICON'] ?? '') && !($arParams['SRC'] ?? '') && !($arParams['IMAGE'] ?? ''))
 			$arParams['ICON'] = 'bx-context-toolbar-delete-icon';
 
-		if (substr($deleteLink, 0, 11) != 'javascript:')
+		if (mb_substr($deleteLink, 0, 11) != 'javascript:')
 		{
-			if (false === strpos($deleteLink, 'return_url='))
+			if (false === mb_strpos($deleteLink, 'return_url='))
 				$deleteLink.= '&return_url='.urlencode($APPLICATION->getCurPageParam());
 
 			$deleteLink.= '&'.bitrix_sessid_get();
@@ -1603,7 +1648,7 @@ class CBitrixComponent
 
 		$compositeOptions = \Bitrix\Main\Composite\Helper::getOptions();
 		$componentParams = $this->arParams;
-		
+
 		if (
 			isset($componentParams["COMPOSITE_FRAME_MODE"]) &&
 			in_array($componentParams["COMPOSITE_FRAME_MODE"], array("Y", "N"))
@@ -1615,7 +1660,7 @@ class CBitrixComponent
 		{
 			$frameMode = $compositeOptions["FRAME_MODE"] === "Y";
 		}
-		
+
 		return $frameMode;
 	}
 }

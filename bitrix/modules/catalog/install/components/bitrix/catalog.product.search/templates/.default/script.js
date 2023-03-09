@@ -5,6 +5,8 @@ BX.Catalog.ProductSearchDialog = (function () {
 		this.callback = null;
 		this.event = null;
 		this.tableId = parameters.tableId;
+		this.multiple = parameters.multiple;
+		this.itemDataNamePrefix = parameters.itemDataNamePrefix;
 		if (typeof(parameters.event) !== 'undefined')
 		{
 			this.event = parameters.event;
@@ -15,7 +17,7 @@ BX.Catalog.ProductSearchDialog = (function () {
 		}
 		this.callerName = parameters.callerName;
 		this.currentUri = parameters.currentUri;
-		this.popup = parameters.popup;
+		this.popup = BX.WindowManager.Get();
 		this.iblockName = parameters.iblockName;
 		this.searchTimer = null;
 		this.ignoreFilter = true;
@@ -24,9 +26,9 @@ BX.Catalog.ProductSearchDialog = (function () {
 			var dialogExists = !!BX(me.tableId+'_reload_container');
 			if (dialogExists)
 			{
-				if (!e.altKey && !e.ctrlKey && !e.metaKey && document.activeElement.tagName != 'INPUT'
-					&& document.activeElement.tagName != 'SELECT'
-					&& document.activeElement.tagName != 'TEXTAREA')
+				if (!e.altKey && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT'
+					&& document.activeElement.tagName !== 'SELECT'
+					&& document.activeElement.tagName !== 'TEXTAREA')
 				{
 					//alpha and digits
 					if (e.keyCode >= 48 && e.keyCode <= 90
@@ -52,32 +54,149 @@ BX.Catalog.ProductSearchDialog = (function () {
 		return BX(this.tableId + '_iblock').value;
 	};
 
-	ProductSearchDialog.prototype.getForm = function () {
+	ProductSearchDialog.prototype.getForm = function ()
+	{
 		return BX(this.tableId + '_form');
 	};
 
-	ProductSearchDialog.prototype.SelEl = function (arParams, scope) {
-		BX.removeClass(scope, 'row-sku-selected');
-		if (typeof arParams['quantity'] === 'undefined')
-			arParams['quantity'] = 1;
-		var qtyElement = BX(this.tableId+'_qty_'+arParams['id']);
-		if (!!qtyElement)
-			arParams['quantity'] = qtyElement.value;
+	ProductSearchDialog.prototype.getGridForm = function ()
+	{
+		return BX('form_' + this.tableId);
+	};
 
-		if (!!this.event)
+	ProductSearchDialog.prototype.sendItems = function(items)
+	{
+		if (BX.type.isNotEmptyString(this.event))
 		{
-			if (typeof(arParams.IBLOCK_ID) === 'undefined')
-				arParams.IBLOCK_ID = this.getIblockId();
-			BX.onCustomEvent(this.event, [arParams]);
+			BX.onCustomEvent(
+				this.event,
+				[items]
+			);
 		}
-		else if (!!this.callback)
+		else if (BX.type.isNotEmptyString(this.callback))
 		{
-			window[this.callback](arParams, this.getIblockId());
+			window[this.callback](
+				items,
+				this.getIblockId()
+			);
+		}
+	};
+
+	ProductSearchDialog.prototype.getItemData = function(id)
+	{
+		let selectData = BX(this.itemDataNamePrefix + id);
+		const fieldList = [
+			'id',
+			'type',
+			'name',
+			'full_quantity',
+			'measureRatio',
+			'measure',
+			'quantity',
+			'IBLOCK_ID'
+		];
+
+		if (!BX.type.isElementNode(selectData))
+		{
+			return null;
+		}
+
+		let result = {};
+
+		fieldList.forEach(function(item){
+			let index = 'product' + item;
+			if (index in selectData.dataset)
+			{
+				result[item] = selectData.dataset[index];
+			}
+		});
+
+		if (BX.type.isNotEmptyObject(result))
+		{
+			if (typeof(result.IBLOCK_ID) === 'undefined')
+			{
+				result.IBLOCK_ID = this.getIblockId();
+			}
+
+			let quantity = this.getItemCurrentQuantity(id);
+			if (quantity !== null)
+			{
+				result.quantity = quantity;
+			}
+
+			return result;
+		}
+
+		return null;
+	};
+
+	ProductSearchDialog.prototype.getItemCurrentQuantity = function(id)
+	{
+		let quantity = BX(this.tableId + '_qty_' + id);
+		if (BX.type.isElementNode(quantity))
+		{
+			return quantity.value;
+		}
+
+		return null;
+	};
+
+	ProductSearchDialog.prototype.selectItem = function (id) {
+
+		let product = this.getItemData(id);
+
+		if (product === null)
+		{
+			return;
+		}
+
+		if (this.multiple)
+		{
+			this.sendItems([product]);
+		}
+		else
+		{
+			this.sendItems(product);
+		}
+	};
+
+	ProductSearchDialog.prototype.selectItemList = function()
+	{
+		if (!this.multiple)
+		{
+			return;
+		}
+
+		let items = [],
+			frm = this.getGridForm();
+
+		if (BX.type.isElementNode(frm))
+		{
+			let elementList = frm.querySelectorAll('input[name="ID[]"]');
+			elementList.forEach(
+				function(element)
+				{
+					if (element.checked)
+					{
+						let product = this.getItemData(element.value);
+						if (product !== null)
+						{
+							items.push(product);
+						}
+					}
+				},
+				this
+			);
+		}
+
+		if (items.length > 0)
+		{
+			this.sendItems(items);
 		}
 	};
 
 	ProductSearchDialog.prototype.fShowSku = function (sku, scope) {
-		var i,
+		let i,
 			item,
 			expanded = BX.hasClass(scope, 'is-expand');
 
@@ -101,25 +220,25 @@ BX.Catalog.ProductSearchDialog = (function () {
 	};
 
 	ProductSearchDialog.prototype.onSubmitForm = function () {
-		var url = this.buildUrl();
-		window[this.tableId].GetAdminList(url);
+		window[this.tableId].GetAdminList(this.buildUrl());
 		return false;
 	};
 
 	ProductSearchDialog.prototype.onSearch = function (s, time) {
-		var queryInput = BX(this.tableId+'_query_value'), oldValue = queryInput.value;
-		if (oldValue == s)
+		var queryInput = BX(this.tableId+'_query_value'),
+			oldValue = queryInput.value;
+		if (oldValue === s)
 			return false;
 		queryInput.value = s;
 
 		var me = this;
 		if (this.searchTimer != null) clearTimeout(this.searchTimer);
 		this.searchTimer = setTimeout(function () {
-			if (s.length == 0 || s.length > 2) {
+			if (s.length === 0 || s.length > 2) {
 				me.onSubmitForm();
 			}
-			BX(me.tableId + '_query_clear').style.display = s.length == 0 ? 'none' : 'inline';
-			BX(me.tableId + '_query_clear_separator').style.display = s.length == 0 ? 'none' : 'inline-block';
+			BX(me.tableId + '_query_clear').style.display = s.length === 0 ? 'none' : 'inline';
+			BX(me.tableId + '_query_clear_separator').style.display = s.length === 0 ? 'none' : 'inline-block';
 
 			me.searchTimer = null;
 		}, time || 300);
@@ -134,8 +253,32 @@ BX.Catalog.ProductSearchDialog = (function () {
 		return false;
 	};
 
+	ProductSearchDialog.prototype.checkSubstring = function()
+	{
+		var el = BX(this.tableId + '_query_substring'),
+			input = BX(this.tableId + '_query_substring_value');
+		if (BX.type.isElementNode(el) && BX.type.isElementNode(input))
+		{
+			input.value = (el.checked ? 'Y' : 'N');
+			return true;
+		}
+		return false;
+	};
+
+	ProductSearchDialog.prototype.search = function()
+	{
+		var queryInput = BX(this.tableId + '_query_value'),
+			query = BX(this.tableId + '_query');
+		if (BX.type.isElementNode(queryInput) && BX.type.isElementNode(query))
+		{
+			queryInput.value = query.value;
+			this.onSubmitForm();
+		}
+	};
+
 	ProductSearchDialog.prototype.onIblockChange = function (id, iblockName) {
-		var me = this, url = this.buildUrl({action: 'change_iblock', IBLOCK_ID: id, SECTION_ID: 0});
+		var me = this,
+			url = this.buildUrl({action: 'change_iblock', IBLOCK_ID: id, SECTION_ID: 0});
 		if (iblockName)
 			me.iblockName = iblockName;
 		BX.ajax.get(
@@ -274,7 +417,8 @@ BX.Catalog.ProductSearchDialog = (function () {
 	ProductSearchDialog.prototype.setBreadcrumbs = function (data) {
 		var title = this.iblockName,
 			arHtml = ['<a class="adm-navchain-item adm-navchain-item-desktop" href="#" onclick="return '+this.tableId+'_helper.onSectionClick(0)">'+BX.util.htmlspecialchars(title)+'</a>'],
-			arPath = [];
+			arPath = [],
+			breadcrumbs = BX(this.tableId+'_breadcrumbs');
 		for(var i in data)
 		{
 			if (data.hasOwnProperty(i))
@@ -284,8 +428,14 @@ BX.Catalog.ProductSearchDialog = (function () {
 				title = data[i].NAME;
 			}
 		}
-		this.popup.SetTitle(BX.util.htmlspecialcharsback(title));
-		BX(this.tableId+'_breadcrumbs').innerHTML = arHtml.join('<span class="adm-navchain-delimiter"></span>');
+		if (this.popup !== null)
+		{
+			this.popup.SetTitle(BX.util.htmlspecialcharsback(title));
+		}
+		if (BX.type.isDomNode(breadcrumbs))
+		{
+			breadcrumbs.innerHTML = arHtml.join('<span class="adm-navchain-delimiter"></span>');
+		}
 		this.openBranchByPath(arPath);
 	};
 
@@ -294,14 +444,26 @@ BX.Catalog.ProductSearchDialog = (function () {
 	};
 
 	ProductSearchDialog.prototype.buildUrl = function (appendParameters) {
-		var params = BX.ajax.prepareForm(this.getForm()),
+		let params = BX.ajax.prepareForm(this.getForm()),
 			url = [],
-			k;
+			k,
+			changeIblock = false;
+		if (BX.type.isPlainObject(appendParameters))
+		{
+			changeIblock = (
+				BX.type.isNotEmptyString(appendParameters.action)
+				&& appendParameters.action === 'change_iblock'
+			);
+		}
 		for (k in params.data) {
 			if (params.data.hasOwnProperty(k) && params.data[k])
 			{
 				if (this.ignoreFilter && k.indexOf('filter_') === 0)
 					continue;
+				if (changeIblock && k === 'mode')
+				{
+					continue;
+				}
 				url.push(encodeURIComponent(k) + '=' + encodeURIComponent(params.data[k]));
 			}
 		}

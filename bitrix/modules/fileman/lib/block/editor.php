@@ -8,6 +8,7 @@
 namespace Bitrix\Fileman\Block;
 
 use Bitrix\Main\Application;
+use Bitrix\Main\Loader;
 use Bitrix\Main\Web\DOM\Document;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Web\DOM\CssParser;
@@ -19,6 +20,7 @@ class Editor
 {
 	CONST SLICE_SECTION_ID = 'BX_BLOCK_EDITOR_EDITABLE_SECTION';
 	CONST BLOCK_PLACE_ATTR = 'data-bx-block-editor-place';
+	CONST BLOCK_PHP_ATTR = 'data-bx-editor-php-slice';
 	CONST STYLIST_TAG_ATTR = 'data-bx-stylist-container';
 	CONST BLOCK_PLACE_ATTR_DEF_VALUE = 'body';
 	CONST BLOCK_COUNT_PER_PAGE = 14;
@@ -63,6 +65,7 @@ class Editor
 
 				<span class="bx-editor-block-btn-close" title="#MESS_BTN_MIN#">#MESS_BTN_MIN#</span>
 				<span class="bx-editor-block-btn-full" title="#MESS_BTN_MAX#">#MESS_BTN_MAX#</span>
+				<span data-role="block-editor-tab-btn-get-html" class="bx-editor-block-btn-full bx-editor-block-btn-html-copy" title="#MESS_BTN_HTML_COPY#"></span>
 			</div>
 			#panels#
 		</div>
@@ -140,8 +143,8 @@ HTML
 
 								<div style="clear: both;"></div>
 								<div class="block-pager adm-nav-pages-block">
-									<span class="adm-nav-page adm-nav-page-prev"></span>
-									<span class="adm-nav-page adm-nav-page-next"></span>
+									<span class="adm-nav-page adm-nav-page-prev #nav-display#"></span>
+									<span class="adm-nav-page adm-nav-page-next #nav-display#"></span>
 								</div>
 
 							</div>
@@ -345,6 +348,21 @@ HTML
 	}
 
 	/**
+	 * Return true if can use Russian services.
+	 *
+	 * @return bool
+	 */
+	public static function isAvailableRussian()
+	{
+		if (!Loader::includeModule('bitrix24'))
+		{
+			return true;
+		}
+
+		return in_array(\CBitrix24::getPortalZone(), array('ru', 'kz', 'by'));
+	}
+
+	/**
 	 * Return list of default tools, uses for block changing
 	 *
 	 * @return array
@@ -397,10 +415,12 @@ HTML
 		ob_start();
 		?>
 		<div class="column" data-bx-editor-column="item">
-			<span data-bx-editor-column-number="1"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_COLUMN')?> 1</span>
-			<span data-bx-editor-column-number="2"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_COLUMN')?> 2</span>
-			<span data-bx-editor-column-number="3"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_COLUMN')?> 3</span>
-			<span data-bx-editor-column-number="4"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_COLUMN')?> 4</span>
+			<?for ($columnNumber = 1; $columnNumber < 5; $columnNumber++):?>
+			<span data-bx-editor-column-number="<?=$columnNumber?>"
+				style="display: none;">
+				<?=Loc::getMessage('BLOCK_EDITOR_TOOL_COLUMN')?> <?=$columnNumber?>
+			</span>
+			<?endfor;?>
 		</div>
 		<?
 		if ($useLightTextEditor)
@@ -418,6 +438,7 @@ HTML
 					'showTaskbars' => false,
 					'showNodeNavi' => false,
 					'askBeforeUnloadPage' => true,
+					'useFileDialogs' => !IsModuleInstalled('intranet'),
 					'bbCode' => false,
 					'siteId' => SITE_ID,
 					'autoResize' => false,
@@ -460,8 +481,9 @@ HTML
 					'arSmilesSet' => array(),
 					'arSmiles' => array(),
 					'content' => '',
-					'iframeCss' => 'body{font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 13px;}'.
-						'.bx-spoiler {border:1px solid #C0C0C0;background-color:#fff4ca;padding: 4px 4px 4px 24px;color:#373737;border-radius:2px;min-height:1em;margin: 0;}',
+					'fontSize' => '14px',
+					'iframeCss' =>
+						'.bx-spoiler {border:1px solid #cecece;background-color:#f6f6f6;padding: 8px 8px 8px 24px;color:#373737;border-radius:var(--ui-border-radius-sm, 2px);min-height:1em;margin: 0;}',
 				)
 			);
 			$editor->Show($res);
@@ -515,9 +537,12 @@ HTML
 						<select class="preset">
 							<option value=""><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_SELECT')?></option>
 							<option value="http://#SERVER_NAME#/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_OURSITE')?></option>
-							<option value="http://vk.com/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_VK')?></option>
-							<option value="http://ok.ru/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_OK')?></option>
+							<?if (self::isAvailableRussian()):?>
+								<option value="http://vk.com/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_VK')?></option>
+								<option value="http://ok.ru/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_OK')?></option>
+							<?endif;?>
 							<option value="http://facebook.com/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_FACEBOOK')?></option>
+							<option value="http://instagram.com/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_INSTAGRAM')?></option>
 							<option value="http://twitter.com/"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_TWITTER')?></option>
 							<option value="http://"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_SITE')?></option>
 							<option value="mailto:"><?=Loc::getMessage('BLOCK_EDITOR_TOOL_SOCIAL_CONTENT_EMAIL')?></option>
@@ -866,7 +891,7 @@ HTML
 	 */
 	public function getUI($id, array $values)
 	{
-		if(!array_key_exists($id, $this->uiPatterns) || strlen(trim($this->uiPatterns[$id])) === 0)
+		if(!array_key_exists($id, $this->uiPatterns) || trim($this->uiPatterns[$id]) == '')
 		{
 			return '';
 		}
@@ -924,7 +949,7 @@ HTML
 		foreach($this->previewModes as $mode)
 		{
 			$devices .= $this->getUI('device', array(
-				'MESS_NAME' => strtoupper(htmlspecialcharsbx($mode['NAME'])),
+				'MESS_NAME' => mb_strtoupper(htmlspecialcharsbx($mode['NAME'])),
 				'class' => htmlspecialcharsbx($mode['CLASS']),
 				'width' => htmlspecialcharsbx($mode['WIDTH']),
 				'height' => htmlspecialcharsbx($mode['HEIGHT']),
@@ -957,6 +982,7 @@ HTML
 				'blocks' => $blocks,
 				'tools' => $tools,
 				'devices' => $devices,
+				'nav-display' => count($this->blocks) <= static::BLOCK_COUNT_PER_PAGE ? 'bx-block-hide' : '',
 				'MESS_ACCESS_DENIED' => Loc::getMessage('ACCESS_DENIED'),
 				'MESS_STYLES' => Loc::getMessage('BLOCK_EDITOR_UI_STYLES'),
 				'MESS_BLOCKS' => Loc::getMessage('BLOCK_EDITOR_UI_BLOCKS'),
@@ -984,6 +1010,7 @@ HTML
 			'panels' => $panels,
 			'MESS_BTN_MAX' => Loc::getMessage('BLOCK_EDITOR_UI_BTN_MAX'),
 			'MESS_BTN_MIN' => Loc::getMessage('BLOCK_EDITOR_UI_BTN_MIN'),
+			'MESS_BTN_HTML_COPY' => Loc::getMessage('BLOCK_EDITOR_UI_BTN_HTML_COPY'),
 		));
 	}
 
@@ -1002,9 +1029,10 @@ HTML
 				'/bitrix/js/fileman/block_editor/editor.js',
 			),
 			'css' => '/bitrix/js/fileman/block_editor/dialog.css',
+			'rel' => ['ui.design-tokens', 'ui.fonts.opensans'],
 			'lang' => '/bitrix/modules/fileman/lang/' . LANGUAGE_ID . '/js_block_editor.php',
 		));
-		\CJSCore::Init(array("block_editor", "color_picker"));
+		\CJSCore::Init(array("block_editor", "color_picker", "clipboard"));
 
 		static $isBlockEditorManagerInited = false;
 		$editorBlockTypeListByCode = array();
@@ -1062,8 +1090,9 @@ HTML
 		$phpList = \PHPParser::ParseFile($html);
 		foreach($phpList as $php)
 		{
+			$phpFormatted = htmlspecialcharsbx(str_replace(["\r", "\n"], "", $php[2]));
 			$id = 'bx_block_php_' . mt_rand();
-			$surrogate = '<span id="' . $id . '" data-bx-editor-php-slice="' . htmlspecialcharsbx($php[2]) . '" class="bxhtmled-surrogate" title=""></span>';
+			$surrogate = '<span id="' . $id . '" ' . self::BLOCK_PHP_ATTR . '="' . ($phpFormatted) . '" class="bxhtmled-surrogate" title=""></span>';
 			$html = str_replace($php[2], $surrogate, $html);
 		}
 
@@ -1152,7 +1181,7 @@ HTML
 	 */
 	public static function isContentSupported($content)
 	{
-		if(!$content || strpos($content, Content\Engine::BLOCK_PLACE_ATTR) === false)
+		if(!$content || mb_strpos($content, Content\Engine::BLOCK_PLACE_ATTR) === false)
 		{
 			return false;
 		}
@@ -1171,16 +1200,16 @@ HTML
 	public static function isHtmlDocument($content)
 	{
 		$result = true;
-		$content = strtoupper($content);
-		if(strpos($content, '<HTML') === false)
+		$content = mb_strtoupper($content);
+		if(mb_strpos($content, '<HTML') === false)
 		{
 			$result = false;
 		}
-		if(strpos($content, '</HTML') === false)
+		if(mb_strpos($content, '</HTML') === false)
 		{
 			$result = false;
 		}
-		if(strpos($content, '<BODY') === false)
+		if(mb_strpos($content, '<BODY') === false)
 		{
 			$result = false;
 		}

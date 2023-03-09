@@ -7,7 +7,8 @@
 	clear: both;
 	background: #fff;
 	padding: 0 20px;
-	font: 13px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font: 13px var(--ui-font-family-primary, var(--ui-font-family-helvetica));
+	border-radius: var(--main-mail-form-border-radius, var(--ui-border-radius-md));
 }
 
 .main-mail-form-fields-wrapper {
@@ -15,7 +16,7 @@
 }
 
 .main-mail-form-docs-wrapper {
-	margin: 0 -20px;
+	margin: -20px 0 15px 0;
 	border-top: 1px solid rgba(198,205,211,0.35);
 	background: rgba(235, 241, 244, 0.23);
 	padding: 10px 20px;
@@ -53,11 +54,11 @@
 }
 
 .main-mail-form-field-title-required .main-mail-form-field-title {
-	font-weight: bold;
+	font-weight: var(--ui-font-weight-bold);
 }
 
 .main-mail-form-field-spacer {
-	height: 38px;
+	height: 39px;
 }
 
 .main-mail-form-field-spacer-25 {
@@ -78,10 +79,10 @@
 	flex-wrap: wrap;
 	box-sizing: border-box;
 	background: #fff;
-	border: 1px solid rgba(83,92,105,.2);
-	border-radius: 2px;
+	border: 1px solid #c6cdd3;
+	border-radius: var(--main-mail-form-field-border-radius, var(--ui-border-radius-2xs, 2px));
 	padding: 3px;
-	min-height: 38px;
+	min-height: 39px;
 }
 
 .main-mail-form-field-value-short .main-mail-form-field-value-wrapper {
@@ -147,9 +148,9 @@
 	outline: none;
 	border: none;
 	padding: 0 5px;
-	height: 30px;
+	height: 31px;
 	width: 100%;
-	font: 15px/30px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font: 15px/31px var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	vertical-align: middle;
 }
 
@@ -172,6 +173,19 @@
 	background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0Ny4xODgiIGhlaWdodD0iNTQuMDYzIiB2aWV3Qm94PSIwIDAgNDcuMTg4IDU0LjA2MyI+PGRlZnM+PHN0eWxlPi5jbHMtMSB7IGZpbGw6ICNmZmY7IGZpbGwtcnVsZTogZXZlbm9kZDsgfTwvc3R5bGU+PC9kZWZzPjxwYXRoIGlkPSJTaGFwZV8yX2NvcHlfNCIgZGF0YS1uYW1lPSJTaGFwZSAyIGNvcHkgNCIgY2xhc3M9ImNscy0xIiBkPSJNNDcuMTggNTQuMDYyYzAtMy4yMTctMy42MS0xNi44MjYtMy42MS0xNi44MjYgMC0xLjk5LTIuNi00LjI2LTcuNzItNS41ODVhMTcuMzk0IDE3LjM5NCAwIDAgMS00Ljg4Ny0yLjIyM2MtLjMzLS4xODgtLjI4LTEuOTI1LS4yOC0xLjkyNWwtMS42NDgtLjI1YzAtLjE0Mi0uMTQtMi4yMjUtLjE0LTIuMjI1IDEuOTcyLS42NjMgMS43Ny00LjU3NCAxLjc3LTQuNTc0IDEuMjUyLjY5NSAyLjA2OC0yLjQgMi4wNjgtMi40IDEuNDgyLTQuMy0uNzM4LTQuMDQtLjczOC00LjA0YTI3LjA1IDI3LjA1IDAgMCAwIDAtNy45MThjLS45ODctOC43MDgtMTUuODQ3LTYuMzQ0LTE0LjA4NS0zLjUtNC4zNDMtLjgtMy4zNTIgOS4wODItMy4zNTIgOS4wODJsLjk0MiAyLjU2Yy0xLjg1IDEuMi0uNTY0IDIuNjUtLjUgNC4zMi4wOSAyLjQ2NiAxLjYgMS45NTUgMS42IDEuOTU1LjA5MyA0LjA3IDIuMSA0LjYgMi4xIDQuNi4zNzcgMi41NTYuMTQyIDIuMTIuMTQyIDIuMTJsLTEuNzg2LjIxN2E3LjEgNy4xIDAgMCAxLS4xNCAxLjczMmMtMi4xLjkzNi0yLjU1MyAxLjQ4NS00LjY0IDIuNC00LjAzMiAxLjc2Ny04LjQxNCA0LjA2NS05LjE5MyA3LjE2Uy0uMDEyIDU0LjA2LS4wMTIgNTQuMDZoNDcuMTl6Ii8+PC9zdmc+);
 	background-size: 50%;
 	vertical-align: middle;
+}
+
+.main-mail-form-field-from-copy {
+	float: right;
+}
+
+.main-mail-form-field-from-copy-checkbox {
+	vertical-align: middle;
+	margin: 0px 5px;
+}
+
+.main-mail-form-field-from-copy-text {
+	color: #80868e;
 }
 
 .main-mail-form-field-value-menu {
@@ -220,8 +234,6 @@
 
 .main-mail-form-quote-button-wrapper {
 	display: block;
-	margin: 0 0 10px -10px;
-	border-bottom: 1px solid rgba(198,205,211,0.25);
 }
 
 .main-mail-form-quote-button {
@@ -267,14 +279,6 @@
 
 .main-mail-form-footer-fixed-hidden {
 	transform: translateY(200%) !important;
-}
-
-.main-mail-form-error {
-	margin: 20px 0 0 0;
-	padding: 10px 18px;
-	background: rgb(253,225,229);
-	color: rgb(219,0,22);
-	font-size: 13px;
 }
 
 .main-mail-form-editor-wrapper {
@@ -391,11 +395,6 @@
 	padding: 0;
 	border: none;
 }
-
-.main-mail-form-wrapper .main-mail-form-editor-wrapper .feed-add-post-form-but-more-open {
-	display: none;
-}
-
 .main-mail-form-wrapper .main-mail-form-editor-wrapper .diskuf-selectdialog {
 	margin: 5px 0 0 0;
 	padding: 15px 0;
@@ -405,20 +404,6 @@
 
 .main-mail-form-wrapper .main-mail-form-editor-wrapper .diskuf-files-block {
 	padding: 5px 0 0 5px;
-}
-
-.main-mail-form-editor .bxhtmled-button-bbcode {
-	min-width: 24px;
-	width: auto;
-	text-align: center;
-}
-.main-mail-form-editor .bxhtmled-button-bbcode i {
-	background: none;
-}
-.main-mail-form-editor .bxhtmled-button-bbcode:before {
-	content: 'html';
-	font-size: 10px;
-	color: rgb(51, 66, 75);
 }
 
 .main-mail-form-wrapper .main-mail-form-editor-wrapper .feed-add-post-form {
@@ -452,4 +437,42 @@
     color: #808080;
 	padding: 0 10px;
 	cursor: pointer;
+}
+
+.menu-popup-right-icon {
+	padding-right: 16px;
+}
+.menu-popup-item .main-mail-form-field-from-menu-delete-icon {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 100%;
+	width: 32px;
+}
+
+/* version = 1 patch begin */
+.feed-add-post-destination.feed-add-post-destination-mailcontacts {
+	background-color: #ffec91;
+	color: #a26b00;
+	padding-left: 32px;
+}
+.feed-add-post-destination.feed-add-post-destination-mailcontacts:before {
+	background: url("/bitrix/components/bitrix/main.post.form/templates/.default/images/sprite_mpf_5.png?1") no-repeat 0 -92px;
+	content: "";
+	height: 13px;
+	position: absolute;
+	width: 13px;
+	left: 9px;
+	top: 8px
+}
+.feed-add-post-destination.feed-add-post-destination-mailcontacts::before {
+	background-position: -33px -92px
+}
+.feed-add-post-destination.feed-add-post-destination-mailcontacts .feed-add-post-del-but {
+	background-position: -113px -61px;
+}
+/* version = 1 patch end */
+
+.main-mail-form-field-value-rcpt .ui-tile-selector-selector-wrap {
+	padding: 2px 2px;
 }

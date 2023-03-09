@@ -228,11 +228,11 @@ class BasketComponentHelper
 		$basketList = array();
 		$res = $basketClassName::getList(array(
 			'filter' => array(
-				'FUSER_ID' => $fuserId,
-				'ORDER_ID' => null,
-				'LID' => $siteId,
-				'CAN_BUY' => 'Y',
-				'DELAY' => 'N'
+				'=FUSER_ID' => $fuserId,
+				'=ORDER_ID' => null,
+				'=LID' => $siteId,
+				'=CAN_BUY' => 'Y',
+				'=DELAY' => 'N'
 			)
 		));
 		while ($data = $res->fetch())
@@ -275,7 +275,11 @@ class BasketComponentHelper
 			'BASKET_ITEMS' => $basketList
 		);
 
-		$basket = Basket::create(SITE_ID);
+		$registry = Registry::getInstance(Registry::REGISTRY_TYPE_ORDER);
+		/** @var Sale\Basket $basketClassName */
+		$basketClassName = $registry->getBasketClassName();
+
+		$basket = $basketClassName::create(SITE_ID);
 		$basket->setFUserId($fuserId);
 		foreach ($basketList as $oldItem)
 		{
@@ -496,7 +500,7 @@ class BasketComponentHelper
 							}
 						}
 					}
-					
+
 					if (!isset($ratioList[$basketItemCode]))
 					{
 						$result->addError(new ResultError(Main\Localization\Loc::getMessage('SALE_BASKET_COMPONENT_HELPER_PRODUCT_RATIO_NOT_FOUND', array(

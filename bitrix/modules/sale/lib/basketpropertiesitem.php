@@ -14,14 +14,11 @@ Loc::loadMessages(__FILE__);
 class BasketPropertyItem extends BasketPropertyItemBase
 {
 	/**
-	 * @return BasketPropertyItem
+	 * @return string
 	 */
-	protected static function createBasketPropertyItemObject()
+	public static function getRegistryType()
 	{
-		$registry = Registry::getInstance(Registry::REGISTRY_TYPE_ORDER);
-		$basketPropertyItemClassName = $registry->getBasketPropertyItemClassName();
-
-		return new $basketPropertyItemClassName();
+		return Registry::REGISTRY_TYPE_ORDER;
 	}
 
 	/**
@@ -46,8 +43,20 @@ class BasketPropertyItem extends BasketPropertyItemBase
 	/**
 	 * @return array
 	 */
-	protected static function getFieldMap()
+	protected static function getFieldsMap()
 	{
 		return Internals\BasketPropertyTable::getMap();
+	}
+
+	/**
+	 * @param array $parameters
+	 * @return \Bitrix\Main\ORM\Query\Result|Internals\EO_BasketProperty_Result|mixed
+	 * @throws \Bitrix\Main\ArgumentException
+	 * @throws \Bitrix\Main\ObjectPropertyException
+	 * @throws \Bitrix\Main\SystemException
+	 */
+	public static function getList(array $parameters = [])
+	{
+		return Internals\BasketPropertyTable::getList($parameters);
 	}
 }

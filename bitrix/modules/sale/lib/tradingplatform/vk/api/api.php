@@ -20,7 +20,7 @@ class Api
 {
 	private $accessToken = NULL;
 	public static $apiUrl = 'https://api.vk.com/method/';
-	public static $apiVersion = "5.52";
+	public static $apiVersion = "5.131";
 	private $exportId;
 	private $response;
 	
@@ -38,9 +38,13 @@ class Api
 		$this->response = array();
 		
 		if ($accessToken)
+		{
 			$this->accessToken = $accessToken;
+		}
 		else
+		{
 			throw new ArgumentNullException('accessToken');
+		}
 	}
 	
 	/**
@@ -60,7 +64,9 @@ class Api
 		$responseStr = $http->post($url, $params);
 		
 		if (!is_string($responseStr))
+		{
 			return NULL;
+		}
 		
 		$this->response = Json::decode($responseStr);
 		$this->checkError($method, $params);
@@ -87,14 +93,10 @@ class Api
 		if (isset($this->response["error"]))
 		{
 			$logger = new Vk\Logger($this->exportId);
-			
-			$vk = Vk\Vk::getInstance();
-			if ($vk->getRichLog($this->exportId))
-				$logger->addLog(
-					'Catch error in method ' . $method,
-					array('ERROR' => $this->response["error"] . ' - ' . $this->response["error_msg"], "PARAMS" => $params)
-				);
-			
+			$logger->addLog(
+				'Catch error in method ' . $method,
+				array('ERROR' => $this->response["error"] . ' - ' . $this->response["error_msg"], "PARAMS" => $params)
+			);
 			$logger->addError($this->response["error"]["error_code"], $method);
 			
 			throw new Vk\ExecuteException("VK_critical_execution_error " . $this->response["error"]["error_code"] . " in method " . $method);
@@ -106,12 +108,11 @@ class Api
 			$logger = new Vk\Logger($this->exportId);
 			foreach ($this->response["execute_errors"] as $er)
 			{
-				$vk = Vk\Vk::getInstance();
-				if ($vk->getRichLog($this->exportId))
-					$logger->addLog(
+				$logger->addLog(
 						'Execute error in method ' . $method,
 						array('ERROR' => $er["error_code"] . ' (' . $er["method"] . ') - ' . $er["error_msg"], "PARAMS" => $params,
-							"RESPONSE" => $this->response));
+							"RESPONSE" => $this->response)
+				);
 				$logger->addError($er["error_code"]);
 			}
 		}

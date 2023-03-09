@@ -3,7 +3,6 @@ namespace Bitrix\Sale\Exchange\Entity;
 
 use Bitrix\Main;
 use Bitrix\Sale;
-use Bitrix\Sale\Order;
 use Bitrix\Sale\Shipment;
 use Bitrix\Sale\Payment;
 use Bitrix\Sale\Exchange;
@@ -44,15 +43,15 @@ abstract class EntityImport extends Exchange\ImportBase
 
     /**
      * @internal
-     * @param Order $parentEntity
+     * @param Sale\Order $parentEntity
      */
-    public function setParentEntity(Order $parentEntity)
+    public function setParentEntity(Sale\Order $parentEntity)
     {
         $this->parentEntity = $parentEntity;
     }
 
     /**
-     * @return null|Order
+     * @return null|Sale\Order
      */
     public function getParentEntity()
     {
@@ -65,8 +64,29 @@ abstract class EntityImport extends Exchange\ImportBase
     public function isLoadedParentEntity()
     {
         $order = $this->getParentEntity();
-        return $order instanceof Order;
+        return $order instanceof Sale\Order;
     }
+
+	/**
+	 * @param array $fields
+	 * @return Sale\Order
+	 */
+	protected function loadParentEntity(array $fields)
+	{
+		$entity = null;
+
+		if(!empty($fields['ID']))
+		{
+
+			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+			/** @var Sale\Order $orderClass */
+			$orderClass = $registry->getOrderClassName();
+
+			/** @var Sale\Order $entity */
+			$entity = $orderClass::load($fields['ID']);
+		}
+		return $entity;
+	}
 
     /**
      * @param Sale\Internals\Entity $entity
@@ -122,7 +142,7 @@ abstract class EntityImport extends Exchange\ImportBase
     }
 
     /**
-     * @return Exchange\ICollisionOrder[]|Exchange\ICollisionShipment[]|Exchange\ICollisionPayment[]|Exchange\ICollisionProfile[]
+     * @return Exchange\ICollision[]
      */
     public function getCollisions()
     {
@@ -145,7 +165,7 @@ abstract class EntityImport extends Exchange\ImportBase
         /** @var Shipment|Payment $entity */
         $entity = $this->getEntity();
 
-        /** @var Order $parentEntity */
+        /** @var Sale\Order $parentEntity */
         $parentEntity = $this->getParentEntity();
 
         /** @var Exchange\ICollision $collision*/
@@ -160,14 +180,24 @@ abstract class EntityImport extends Exchange\ImportBase
             $collisionEntity = $collision->getEntity();
             if(!empty($collisionEntity))
             {
-                EntityMarker::addMarker($parentEntity, $collisionEntity, $result);
+                $this->addMarker($parentEntity, $collisionEntity, $result);
             }
             else
             {
-                EntityMarker::addMarker($parentEntity, $entity, $result);
+				$this->addMarker($parentEntity, $entity, $result);
             }
         }
     }
+
+	/**
+	 * @param $order
+	 * @param $entity
+	 * @param $result
+	 */
+	protected function addMarker($order, $entity, $result)
+	{
+		EntityMarker::addMarker($order, $entity, $result);
+	}
 
 	/**
 	 * @return bool
@@ -237,9 +267,9 @@ abstract class EntityImport extends Exchange\ImportBase
 
         $entity->setField('ID_1C', $fields['ID_1C']);
 
-        if(!($entity instanceof Order))
+        if(!($entity instanceof Sale\Order))
         {
-            /** @var Order $parentEntity */
+            /** @var Sale\Order $parentEntity */
             $parentEntity = $this->getParentEntity();
 
             $parentEntity->setField('UPDATED_1C','Y');

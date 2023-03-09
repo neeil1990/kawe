@@ -121,8 +121,13 @@
 
 			do
 			{
-				index = BX.type.stringToInt(BX.style(element, "z-index"));
-				element = element.offsetParent;
+				var propertyValue = BX.style(element, "z-index");
+				if (propertyValue !== "auto")
+				{
+					index = BX.type.stringToInt(propertyValue);
+				}
+
+				element = element.parentNode;
 			}
 			while (
 				element && element.tagName !== "BODY"
@@ -270,8 +275,8 @@
 						this.fireEvent("onPopupShow");
 					}.bind(this),
 					onPopupClose: function() {
-						this.close();
 						this.fireEvent("onPopupClose");
+						this.close();
 					}.bind(this)
 				},
 				buttons: [
@@ -280,10 +285,9 @@
 						className: "webform-small-button webform-small-button-blue",
 						events: {
 							click: function() {
-								this.close();
 								this.fireEvent("onPopupAccept");
-
 								BX.onCustomEvent(this, "spotLightOk", [this.getTargetElement(), this]); //compatibility
+								this.close();
 							}.bind(this)
 						}
 					})
@@ -309,6 +313,11 @@
 					mouseleave: this.handleTargetMouseLeave.bind(this)
 				}
 			});
+
+			if ("ontouchstart" in window)
+			{
+				BX.bind(this.container, "touchstart", this.handleTargetMouseEnter.bind(this));
+			}
 
 			return this.container;
 		},

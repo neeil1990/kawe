@@ -1,11 +1,12 @@
-<?
+<?php
+
 /***************************************
 	Form validator class
 ***************************************/
 
 class CAllFormValidator
 {
-	function err_mess()
+	public static function err_mess()
 	{
 		$module_id = "form";
 		@include($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".$module_id."/install/version.php");
@@ -19,12 +20,12 @@ class CAllFormValidator
 	 * @param array $arFilter
 	 * @return CDBResult
 	 */
-	function GetList($FIELD_ID, $arFilter = array(), &$by, &$order)
+	public static function GetList($FIELD_ID, $arFilter = [], $by = 'C_SORT', $order = 'ASC')
 	{
 		$arFilter["FIELD_ID"] = $FIELD_ID;
 		return CFormValidator::__getList($arFilter, $by, $order);
 	}
-	
+
 	/**
 	 * Get filtered list of validators assigned to current form
 	 *
@@ -32,25 +33,25 @@ class CAllFormValidator
 	 * @param array $arFilter
 	 * @return CDBResult
 	 */
-	function GetListForm($WEB_FORM_ID, $arFilter = array(), &$by, &$order)
+	public static function GetListForm($WEB_FORM_ID, $arFilter = [], $by = 'C_SORT', $order = 'ASC')
 	{
 		$arFilter["WEB_FORM_ID"] = $WEB_FORM_ID;
 		return CFormValidator::__getList($arFilter, $by, $order);
 	}
 
-	function __getList($arFilter = array(), &$by, &$order)
+	public static function __getList($arFilter = array(), $by = 'C_SORT', $order = 'ASC')
 	{
 		global $DB;
-		
+
 		$arBy = array("ACTIVE", "C_SORT", "VALIDATOR_SID", "FIELD_ID");
 		$by = strtoupper($by);
-		if (!in_array($by, $arBy)) 
+		if (!in_array($by, $arBy))
 			$by = "C_SORT";
-		
+
 		$order = strtoupper($order);
 		if ($order != "ASC" && $order != "DESC")
 			$order = "ASC";
-		
+
 		$arWhere = array();
 		foreach ($arFilter as $key => $value)
 		{
@@ -59,29 +60,29 @@ class CAllFormValidator
 				case "WEB_FORM_ID":
 					$arWhere[] = "FORM_ID='".intval($value)."'";
 				break;
-				
+
 				case "FIELD_ID":
 					$arWhere[] = "FIELD_ID='".intval($value)."'";
 				break;
-			
+
 				case "ACTIVE":
 					$arWhere[] = "ACTIVE='".($value == "N" ? "N" : "Y")."'";
 				break;
-				
+
 				case "NAME":
 					$arWhere[] = "VALIDATOR_SID='".$DB->ForSql($value)."'";
 				break;
 			}
 		}
-		
+
 		if (count($arWhere) > 0)
 			$strWhere = "WHERE ".implode(" AND ", $arWhere);
 		else
 			$strWhere = "";
-		
+
 		$query = "SELECT * FROM b_form_field_validator ".$strWhere." ORDER BY ".$by." ".$order;
 		$rsList = $DB->Query($query, false, __LINE__);
-		
+
 		$arCurrentValidators = array();
 		$rsFullList = CFormValidator::GetAllList();
 		$arFullList = $rsFullList->arResult;
@@ -93,7 +94,7 @@ class CAllFormValidator
 				{
 					$arCurVal["NAME"] = $arVal["NAME"];
 					unset($arCurVal["VALIDATOR_SID"]);
-					if (strlen($arCurVal["PARAMS"]) > 0)
+					if ($arCurVal["PARAMS"] <> '')
 					{
 						$arCurVal["PARAMS"] = CFormValidator::GetSettingsArray($arVal, $arCurVal["PARAMS"]);
 						$arCurVal["PARAMS_FULL"] = CFormValidator::GetSettings($arVal);
@@ -103,41 +104,41 @@ class CAllFormValidator
 				}
 			}
 		}
-		
+
 		unset($rsList);
 		$rsList = new CDBResult();
 		$rsList->InitFromArray($arCurrentValidators);
 
 		return $rsList;
 	}
-	
+
 	/**
 	 * Get filtered list of all registered validators. Filter params: TYPE = array|string;
 	 *
 	 * @param array $arFilter
-	 * @return array
+	 * @return false|CDBResult
 	 */
-	function GetAllList($arFilter = array())
+	public static function GetAllList($arFilter = array())
 	{
-		if (is_array($arFilter) && count($arFilter) > 0)
+		if (is_array($arFilter) && !empty($arFilter))
 		{
 			$arType = $arFilter["TYPE"];
-			
+
 			$is_filtered = true;
 		}
 		else
 		{
 			$is_filtered = false;
 		}
-		
-		$rsValList = GetModuleEvents("form", "onFormValidatorBuildList");
-		if ($rsValList->SelectedRowsCount() > 0)
+
+		$ValList = GetModuleEvents("form", "onFormValidatorBuildList", true);
+		if (!empty($ValList))
 		{
 			$arResult = array();
-			while ($arValidator = $rsValList->Fetch())
+			foreach ($ValList as $arValidator)
 			{
 				$arValidatorInfo = ExecuteModuleEventEx($arValidator, $arParams = array());
-				
+
 				if ($is_filtered)
 				{
 					if (is_array($arValidatorInfo["TYPES"]))
@@ -147,7 +148,7 @@ class CAllFormValidator
 							||
 							(!is_array($arType) && in_array($arType, $arValidatorInfo["TYPES"]))
 						)
-						
+
 						$arResult[] = $arValidatorInfo;
 					}
 				}
@@ -161,14 +162,14 @@ class CAllFormValidator
 		{
 			return false;
 		}
-		
+
 		unset($rsValList);
 		$rsValList = new CDBResult;
 		$rsValList->InitFromArray($arResult);
-		
+
 		return $rsValList;
 	}
-	
+
 	/**
 	 * Apply validator to value
 	 *
@@ -177,7 +178,7 @@ class CAllFormValidator
 	 * @param mixed $arValue
 	 * @return bool
 	 */
-	function Execute($arValidator, $arQuestion, $arAnswers, $arAnswerValues)
+	public static function Execute($arValidator, $arQuestion, $arAnswers, $arAnswerValues)
 	{
 		$rsValidators = CFormValidator::GetAllList();
 		while ($arValidatorInfo = $rsValidators->Fetch())
@@ -185,7 +186,7 @@ class CAllFormValidator
 			if ($arValidatorInfo["NAME"] == $arValidator["NAME"])
 				break;
 		}
-		
+
 		if ($arValidatorInfo)
 		{
 			if ($arValidatorInfo["HANDLER"])
@@ -193,10 +194,10 @@ class CAllFormValidator
 				return call_user_func($arValidatorInfo["HANDLER"], $arValidator["PARAMS"], $arQuestion, $arAnswers, $arAnswerValues);
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Assign validator to the field
 	 *
@@ -206,10 +207,10 @@ class CAllFormValidator
 	 * @param array $arParams
 	 * @return int|bool
 	 */
-	function Set($WEB_FORM_ID, $FIELD_ID, $sValSID, $arParams = array(), $C_SORT = 100)
+	public static function Set($WEB_FORM_ID, $FIELD_ID, $sValSID, $arParams = array(), $C_SORT = 100)
 	{
 		global $DB;
-		
+
 		$rsValList = CFormValidator::GetAllList();
 		while ($arVal = $rsValList->Fetch())
 		{
@@ -223,20 +224,20 @@ class CAllFormValidator
 					"C_SORT" => intval($C_SORT),
 					"VALIDATOR_SID" => $DB->ForSql($sValSID),
 				);
-				
-				if (count($arParams) > 0)
+
+				if (!empty($arParams))
 				{
 					$strParams = CFormValidator::GetSettingsString($arVal, $arParams);
 					$arQueryFields["PARAMS"] = $strParams;
 				}
-				
+
 				return $DB->Add("b_form_field_validator", $arQueryFields);
 			}
 		}
-	
+
 		return false;
-	}	
-	
+	}
+
 	/**
 	 * Assign multiple validators to the field
 	 *
@@ -244,7 +245,7 @@ class CAllFormValidator
 	 * @param int $FIELD_ID
 	 * @param array $arValidators
 	 */
-	function SetBatch($WEB_FORM_ID, $FIELD_ID, $arValidators)
+	public static function SetBatch($WEB_FORM_ID, $FIELD_ID, $arValidators)
 	{
 		global $DB;
 
@@ -273,42 +274,42 @@ class CAllFormValidator
 				if (is_array($arFieldVal["PARAMS"]) && is_set($arVal, "CONVERT_TO_DB"))
 				{
 					$arParams = array();
-					foreach ($arFieldVal["PARAMS"] as $key => $arParam)
+					foreach ($arFieldVal["PARAMS"] as $arParam)
 					{
 						$arParams[$arParam["NAME"]] = $arParam["VALUE"];
 					}
-				
-					if (count($arParams) > 0)
+
+					if (!empty($arParams))
 					{
 						$strParams = CFormValidator::GetSettingsString($arVal, $arParams);
 						$arQueryFields["PARAMS"] = $strParams;
 					}
 				}
-				
+
 				$DB->Add("b_form_field_validator", $arQueryFields);
 			}
 		}
 	}
 
-	function GetSettingsString($arValidator, $arParams)
+	public static function GetSettingsString($arValidator, $arParams)
 	{
-		if (count($arParams) > 0 && is_set($arValidator, "CONVERT_TO_DB"))
+		if (!empty($arParams) && is_set($arValidator, "CONVERT_TO_DB"))
 		{
 			$strParams = call_user_func($arValidator["CONVERT_TO_DB"], $arParams);
 			return $strParams;
 		}
 	}
-	
-	function GetSettingsArray($arValidator, $strParams)
+
+	public static function GetSettingsArray($arValidator, $strParams)
 	{
-		if (strlen($strParams) > 0 && is_set($arValidator, "CONVERT_FROM_DB"))
+		if ($strParams <> '' && is_set($arValidator, "CONVERT_FROM_DB"))
 		{
 			$arParams = call_user_func($arValidator["CONVERT_FROM_DB"], $strParams);
 			return $arParams;
 		}
 	}
-	
-	function GetSettings($arValidator)
+
+	public static function GetSettings($arValidator)
 	{
 		if (is_set($arValidator, "SETTINGS"))
 		{
@@ -316,17 +317,16 @@ class CAllFormValidator
 			return $arSettings;
 		}
 	}
-	
+
 	/**
 	 * Clear all field validators
 	 *
 	 * @param int $FIELD_ID
 	 */
-	function Clear($FIELD_ID)
+	public static function Clear($FIELD_ID)
 	{
 		global $DB;
 		$query = "DELETE FROM b_form_field_validator WHERE FIELD_ID='".$DB->ForSql($FIELD_ID)."'";
 		$DB->Query($query, false, __LINE__);
 	}
 }
-?>

@@ -1,597 +1,501 @@
 BX.namespace('BX.Report');
-BX.Report = (function ()
-{
-    var firstButtonInModalWindow = null;
-    var windowsWithoutManager = {};
-    var entityToNewShared = {};
+BX.mergeEx(BX.Report, {
+	firstButtonInModalWindow: null,
+	windowsWithoutManager: {},
+	entityToNewShared: {},
 
-    return {
-        ajax: function (config)
-        {
-            config.data = config.data || {};
-            config.data['SITE_ID'] = BX.message('SITE_ID');
-            config.data['sessid'] = BX.bitrix_sessid();
+	ajax: function (config)
+	{
+		config.data = config.data || {};
+		config.data['SITE_ID'] = BX.message('SITE_ID');
+		config.data['sessid'] = BX.bitrix_sessid();
 
-            return BX.ajax(config);
-        },
-        modalWindow: function (params)
-        {
-            params = params || {};
-            params.title = params.title || false;
-            params.bindElement = params.bindElement || null;
-            params.overlay = typeof params.overlay == 'undefined' ? true : params.overlay;
-            params.autoHide = params.autoHide || false;
-            params.closeIcon = typeof params.closeIcon == 'undefined'?
-                {right: '20px', top: '10px'} : params.closeIcon;
-            params.modalId = params.modalId || 'report_modal_window_' + (Math.random() * (200000 - 100) + 100);
-            params.withoutContentWrap = typeof params.withoutContentWrap == 'undefined' ?
-                false : params.withoutContentWrap;
-            params.contentClassName = params.contentClassName || '';
-            params.contentStyle = params.contentStyle || {};
-            params.content = params.content || [];
-            params.buttons = params.buttons || false;
-            params.events = params.events || {};
-            params.withoutWindowManager = !!params.withoutWindowManager || false;
+		return BX.ajax(config);
+	},
+	modalWindow: function (params)
+	{
+		params = params || {};
+		params.title = params.title || false;
+		params.bindElement = params.bindElement || null;
+		params.overlay = typeof params.overlay == 'undefined' ? true : params.overlay;
+		params.autoHide = params.autoHide || false;
+		params.closeIcon = typeof params.closeIcon == 'undefined'?
+			{right: '20px', top: '10px'} : params.closeIcon;
+		params.modalId = params.modalId || 'report_modal_window_' + (Math.random() * (200000 - 100) + 100);
+		params.withoutContentWrap = typeof params.withoutContentWrap == 'undefined' ?
+			false : params.withoutContentWrap;
+		params.contentClassName = params.contentClassName || '';
+		params.contentStyle = params.contentStyle || {};
+		params.content = params.content || [];
+		params.buttons = params.buttons || false;
+		params.events = params.events || {};
+		params.withoutWindowManager = !!params.withoutWindowManager || false;
 
-            var contentDialogChildren = [];
-            if (params.title) {
-                contentDialogChildren.push(BX.create('div', {
-                    props: {
-                        className: 'bx-report-popup-title'
-                    },
-                    text: params.title
-                }));
-            }
-            if (params.withoutContentWrap) {
-                contentDialogChildren = contentDialogChildren.concat(params.content);
-            }
-            else {
-                contentDialogChildren.push(BX.create('div', {
-                    props: {
-                        className: 'bx-report-popup-content ' + params.contentClassName
-                    },
-                    style: params.contentStyle,
-                    children: params.content
-                }));
-            }
-            var buttons = [];
-            if (params.buttons) {
-                for (var i in params.buttons) {
-                    if (!params.buttons.hasOwnProperty(i)) {
-                        continue;
-                    }
-                    if (i > 0) {
-                        buttons.push(BX.create('SPAN', {html: '&nbsp;'}));
-                    }
-                    buttons.push(params.buttons[i]);
-                }
+		var contentDialogChildren = [];
+		if (params.title) {
+			contentDialogChildren.push(BX.create('div', {
+				props: {
+					className: 'bx-report-popup-title'
+				},
+				text: params.title
+			}));
+		}
+		if (params.withoutContentWrap) {
+			contentDialogChildren = contentDialogChildren.concat(params.content);
+		}
+		else {
+			contentDialogChildren.push(BX.create('div', {
+				props: {
+					className: 'bx-report-popup-content ' + params.contentClassName
+				},
+				style: params.contentStyle,
+				children: params.content
+			}));
+		}
+		var buttons = [];
+		if (params.buttons) {
+			for (var i in params.buttons) {
+				if (!params.buttons.hasOwnProperty(i)) {
+					continue;
+				}
+				if (i > 0) {
+					buttons.push(BX.create('SPAN', {html: '&nbsp;'}));
+				}
+				buttons.push(params.buttons[i]);
+			}
 
-                contentDialogChildren.push(BX.create('div', {
-                    props: {
-                        className: 'bx-report-popup-buttons'
-                    },
-                    children: buttons
-                }));
-            }
+			contentDialogChildren.push(BX.create('div', {
+				props: {
+					className: 'bx-report-popup-buttons'
+				},
+				children: buttons
+			}));
+		}
 
-            var contentDialog = BX.create('div', {
-                props: {
-                    className: 'bx-report-popup-container'
-                },
-                children: contentDialogChildren
-            });
+		var contentDialog = BX.create('div', {
+			props: {
+				className: 'bx-report-popup-container'
+			},
+			children: contentDialogChildren
+		});
 
-            params.events.onPopupShow = BX.delegate(function () {
-                if (buttons.length) {
-                    firstButtonInModalWindow = buttons[0];
-                    BX.bind(document, 'keydown', BX.proxy(this._keyPress, this));
-                }
+		params.events.onPopupShow = BX.delegate(function () {
+			if (buttons.length) {
+				this.firstButtonInModalWindow = buttons[0];
+				BX.bind(document, 'keydown', BX.proxy(this._keyPress, this));
+			}
 
-                if(params.events.onPopupShow)
-                    BX.delegate(params.events.onPopupShow, BX.proxy_context);
-            }, this);
-            var closePopup = params.events.onPopupClose;
-            params.events.onPopupClose = BX.delegate(function () {
+			if(params.events.onPopupShow)
+				BX.delegate(params.events.onPopupShow, BX.proxy_context);
+		}, this);
+		var closePopup = params.events.onPopupClose;
+		params.events.onPopupClose = BX.delegate(function () {
 
-                firstButtonInModalWindow = null;
-                try
-                {
-                    BX.unbind(document, 'keydown', BX.proxy(this._keypress, this));
-                }
-                catch (e) { }
+			this.firstButtonInModalWindow = null;
+			try
+			{
+				BX.unbind(document, 'keydown', BX.proxy(this._keypress, this));
+			}
+			catch (e) { }
 
-                if(closePopup)
-                {
-                    BX.delegate(closePopup, BX.proxy_context)();
-                }
+			if(closePopup)
+			{
+				BX.delegate(closePopup, BX.proxy_context)();
+			}
 
-                if(params.withoutWindowManager)
-                {
-                    delete windowsWithoutManager[params.modalId];
-                }
+			if(params.withoutWindowManager)
+			{
+				delete this.windowsWithoutManager[params.modalId];
+			}
 
-                BX.proxy_context.destroy();
-            }, this);
+			BX.proxy_context.destroy();
+		}, this);
 
-            var modalWindow;
-            if(params.withoutWindowManager)
-            {
-                if(!!windowsWithoutManager[params.modalId])
-                {
-                    return windowsWithoutManager[params.modalId]
-                }
-                modalWindow = new BX.PopupWindow(params.modalId, params.bindElement, {
-                    content: contentDialog,
-                    closeByEsc: true,
-                    closeIcon: params.closeIcon,
-                    autoHide: params.autoHide,
-                    overlay: params.overlay,
-                    events: params.events,
-                    buttons: [],
-                    zIndex : isNaN(params['zIndex']) ? 0 : params.zIndex
-                });
-                windowsWithoutManager[params.modalId] = modalWindow;
-            }
-            else
-            {
-                modalWindow = BX.PopupWindowManager.create(params.modalId, params.bindElement, {
-                    content: contentDialog,
-                    closeByEsc: true,
-                    closeIcon: params.closeIcon,
-                    autoHide: params.autoHide,
-                    overlay: params.overlay,
-                    events: params.events,
-                    buttons: [],
-                    zIndex : isNaN(params['zIndex']) ? 0 : params.zIndex
-                });
+		var modalWindow;
+		if(params.withoutWindowManager)
+		{
+			if(!!this.windowsWithoutManager[params.modalId])
+			{
+				return this.windowsWithoutManager[params.modalId]
+			}
+			modalWindow = new BX.PopupWindow(params.modalId, params.bindElement, {
+				content: contentDialog,
+				closeByEsc: true,
+				closeIcon: params.closeIcon,
+				autoHide: params.autoHide,
+				overlay: params.overlay,
+				events: params.events,
+				buttons: [],
+				zIndex : isNaN(params['zIndex']) ? 0 : params.zIndex
+			});
+			this.windowsWithoutManager[params.modalId] = modalWindow;
+		}
+		else
+		{
+			modalWindow = BX.PopupWindowManager.create(params.modalId, params.bindElement, {
+				content: contentDialog,
+				closeByEsc: true,
+				closeIcon: params.closeIcon,
+				autoHide: params.autoHide,
+				overlay: params.overlay,
+				events: params.events,
+				buttons: [],
+				zIndex : isNaN(params['zIndex']) ? 0 : params.zIndex
+			});
 
-            }
+		}
 
-            modalWindow.show();
+		modalWindow.show();
 
-            return modalWindow;
-        },
-        modalWindowLoader: function (queryUrl, params, bindElement)
-        {
-            bindElement = bindElement || null;
-            params = params || {};
-            var modalId = params.id;
-            var expectResponseType = params.responseType || 'html';
-            var afterSuccessLoad = params.afterSuccessLoad || null;
-            var onPopupClose = params.onPopupClose || null;
-            var postData = params.postData || {};
+		return modalWindow;
+	},
+	modalWindowLoader: function (queryUrl, params, bindElement)
+	{
+		bindElement = bindElement || null;
+		params = params || {};
+		var modalId = params.id;
+		var expectResponseType = params.responseType || 'html';
+		var afterSuccessLoad = params.afterSuccessLoad || null;
+		var onPopupClose = params.onPopupClose || null;
+		var postData = params.postData || {};
 
-            var popup = BX.PopupWindowManager.create(
-                'bx-report-' + modalId,
-                bindElement,
-                {
-                    closeIcon: true,
-                    offsetTop: 5,
-                    autoHide: true,
-                    lightShadow: false,
-                    overlay: true,
-                    content: BX.create('div', {
-                        children: [
-                            BX.create('div', {
-                                    style: {
-                                        display: 'table',
-                                        width: '30px',
-                                        height: '30px'
-                                    },
-                                    children: [
-                                        BX.create('div', {
-                                            style: {
-                                                display: 'table-cell',
-                                                verticalAlign: 'middle',
-                                                textAlign: 'center'
-                                            },
-                                            children: [
-                                                BX.create('div', {
-                                                    props: {
-                                                        className: 'bx-report-wrap-loading-modal'
-                                                    }
-                                                }),
-                                                BX.create('span', {
-                                                    text: ''
-                                                })
-                                            ]
-                                        })
-                                    ]
-                                }
-                            )
-                        ]
-                    }),
-                    closeByEsc: true,
-                    events: {
-                        onPopupClose: function ()
-                        {
-                            if (onPopupClose) {
-                                BX.delegate(onPopupClose, this)();
-                            }
+		var popup = BX.PopupWindowManager.create(
+			'bx-report-' + modalId,
+			bindElement,
+			{
+				closeIcon: true,
+				offsetTop: 5,
+				autoHide: true,
+				lightShadow: false,
+				overlay: true,
+				content: BX.create('div', {
+					children: [
+						BX.create('div', {
+								style: {
+									display: 'table',
+									width: '30px',
+									height: '30px'
+								},
+								children: [
+									BX.create('div', {
+										style: {
+											display: 'table-cell',
+											verticalAlign: 'middle',
+											textAlign: 'center'
+										},
+										children: [
+											BX.create('div', {
+												props: {
+													className: 'bx-report-wrap-loading-modal'
+												}
+											}),
+											BX.create('span', {
+												text: ''
+											})
+										]
+									})
+								]
+							}
+						)
+					]
+				}),
+				closeByEsc: true,
+				events: {
+					onPopupClose: function ()
+					{
+						if (onPopupClose) {
+							BX.delegate(onPopupClose, this)();
+						}
 
-                            this.destroy();
-                        }
-                    }
-                }
-            );
-            popup.show();
+						this.destroy();
+					}
+				}
+			}
+		);
+		popup.show();
 
-            postData['sessid'] = BX.bitrix_sessid();
-            postData['SITE_ID'] = BX.message('SITE_ID');
+		postData['sessid'] = BX.bitrix_sessid();
+		postData['SITE_ID'] = BX.message('SITE_ID');
 
-            BX.ajax({
-                url: queryUrl,
-                method: 'POST',
-                dataType: expectResponseType,
-                data: postData,
-                onsuccess: BX.delegate(function (data)
-                {
+		BX.ajax({
+			url: queryUrl,
+			method: 'POST',
+			dataType: expectResponseType,
+			data: postData,
+			onsuccess: BX.delegate(function (data)
+			{
 
-                    if (expectResponseType == 'html') {
-                        popup.setContent(BX.create('DIV', {html: data}));
-                        popup.adjustPosition();
-                    }
-                    else if(expectResponseType == 'json')
-                    {
-                        data = data || {};
-                    }
+				if (expectResponseType == 'html') {
+					popup.setContent(BX.create('DIV', {html: data}));
+					popup.adjustPosition();
+				}
+				else if(expectResponseType == 'json')
+				{
+					data = data || {};
+				}
 
-                    afterSuccessLoad && afterSuccessLoad(data, popup);
-                }, this),
-                onfailure: function (data)
-                {
-                }
-            });
-        },
-        getRightLabelByName: function(name){
-            switch(name.toLowerCase())
-            {
-                case 'access_read':
-                    return BX.message('REPORT_JS_SHARING_RIGHT_READ');
-                case 'access_edit':
-                    return BX.message('REPORT_JS_SHARING_RIGHT_EDIT');
-                default:
-                    return 'error';
-            }
-        },
-        appendNewShared: function (params) {
+				afterSuccessLoad && afterSuccessLoad(data, popup);
+			}, this),
+			onfailure: function (data)
+			{
+			}
+		});
+	},
+	getRightLabelByName: function(name){
+		switch(name.toLowerCase())
+		{
+			case 'access_read':
+				return BX.message('REPORT_JS_SHARING_RIGHT_READ');
+			case 'access_edit':
+				return BX.message('REPORT_JS_SHARING_RIGHT_EDIT');
+			default:
+				return 'error';
+		}
+	},
+	appendNewShared: function (params) {
 
-            var readOnly = params.readOnly;
-            var maxAccessName = params.maxAccessName || 'access_edit';
-            var destFormName = params.destFormName;
+		var readOnly = params.readOnly;
+		var destFormName = params.destFormName;
 
-            var entityId = params.item.id;
-            var entityName = params.item.name;
-            var entityAvatar = params.item.avatar;
-            var type = params.type;
-            var right = params.right || 'access_read';
+		var entityId = params.item.id;
+		var entityName = params.item.name;
+		var entityAvatar = params.item.avatar;
+		var type = params.type;
+		var right = params.right || 'access_read';
 
-            entityToNewShared[entityId] = {
-                item: params.item,
-                type: params.type,
-                right: right
-            };
+		this.entityToNewShared[entityId] = {
+			item: params.item,
+			type: params.type,
+			right: right
+		};
 
-            function pseudoCompareTaskName(taskName1, taskName2)
-            {
-                var taskName1Pos;
-                var taskName2Pos;
-                switch(taskName1)
-                {
-                    case 'access_read':
-                        taskName1Pos = 2;
-                        break;
-                    case 'access_edit':
-                        taskName1Pos = 3;
-                        break;
-                    default:
-                        //unknown task names
-                        return 0;
-                }
-                switch(taskName2)
-                {
-                    case 'access_read':
-                        taskName2Pos = 2;
-                        break;
-                    case 'access_edit':
-                        taskName2Pos = 3;
-                        break;
-                    default:
-                        //unknown task names
-                        return 0;
-                }
-                if(taskName1Pos == taskName2Pos)
-                {
-                    return 0;
-                }
+		BX('bx-report-popup-shared-people-list').appendChild(
+			BX.create('tr', {
+				attrs: {
+					'data-dest-id': entityId
+				},
+				children: [
+					BX.create('td', {
+						props: {
+							className: 'bx-report-popup-shared-people-list-col1'
+						},
+						children: [
+							BX.create('a', {
+								props: {
+									className: 'bx-report-filepage-used-people-link'
+								},
+								children: [
+									BX.create('span', {
+										props: {
+											className: 'bx-report-filepage-used-people-avatar '+
+											(type != 'users'? ' group' : '')
+										},
+										style: {
+											backgroundImage: entityAvatar?'url('+entityAvatar+')':null
+										}
+									}),
+									entityName
+								]
+							})
+						]
+					}),
+					BX.create('td', {
+						props: {
+							className: 'bx-report-popup-shared-people-list-col2'
+						},
+						children: [
+							BX.create('a', {
+								props: {
+									className: 'bx-report-filepage-used-people-permission'
+								},
+								text: this.getRightLabelByName(right),
+								events: {}
+							})
+						]
+					}),
+					BX.create('td', {
+						props: {
+							className: 'bx-report-popup-shared-people-list-col3 tar'
+						},
+						children: [
+							(!readOnly? BX.create('span', {
+								props: {
+									className: 'bx-report-filepage-used-people-del'
+								},
+								events: {
+									click: BX.delegate(function(e){
+										BX.SocNetLogDestination.deleteItem(entityId, type, destFormName);
+										var src = e.target || e.srcElement;
+										BX.remove(src.parentNode.parentNode);
+									}, this)
+								}
+							}) : null)
+						]
+					})
+				]
+			})
+		);
+	},
+	removeElement: function (elem)
+	{
+		return elem.parentNode ? elem.parentNode.removeChild(elem) : elem;
+	},
+	addToLinkParam: function (link, name, value)
+	{
+		if (!link.length) {
+			return '?' + name + '=' + value;
+		}
+		link = BX.util.remove_url_param(link, name);
+		if (link.indexOf('?') != -1) {
+			return link + '&' + name + '=' + value;
+		}
+		return link + '?' + name + '=' + value;
+	},
+	getFirstErrorFromResponse: function(reponse)
+	{
+		reponse = reponse || {};
+		if(!reponse.errors)
+			return '';
 
-                return taskName1Pos > taskName2Pos? 1 : -1;
-            }
+		return reponse.errors.shift().message;
+	},
+	showModalWithStatusAction: function (response, action)
+	{
+		response = response || {};
+		if (!response.message) {
+			if (response.status == 'success') {
+				response.message = BX.message('REPORT_JS_STATUS_ACTION_SUCCESS');
+			}
+			else {
+				response.message = BX.message('REPORT_JS_STATUS_ACTION_ERROR') + '. ' +
+					this.getFirstErrorFromResponse(response);
+			}
+		}
+		var messageBox = BX.create('div', {
+			props: {
+				className: 'bx-report-alert'
+			},
+			children: [
+				BX.create('span', {
+					props: {
+						className: 'bx-report-aligner'
+					}
+				}),
+				BX.create('span', {
+					props: {
+						className: 'bx-report-alert-text'
+					},
+					text: response.message
+				}),
+				BX.create('div', {
+					props: {
+						className: 'bx-report-alert-footer'
+					}
+				})
+			]
+		});
 
-            BX('bx-report-popup-shared-people-list').appendChild(
-                BX.create('tr', {
-                    attrs: {
-                        'data-dest-id': entityId
-                    },
-                    children: [
-                        BX.create('td', {
-                            props: {
-                                className: 'bx-report-popup-shared-people-list-col1'
-                            },
-                            children: [
-                                BX.create('a', {
-                                    props: {
-                                        className: 'bx-report-filepage-used-people-link'
-                                    },
-                                    children: [
-                                        BX.create('span', {
-                                            props: {
-                                                className: 'bx-report-filepage-used-people-avatar '+
-                                                    (type != 'users'? ' group' : '')
-                                            },
-                                            style: {
-                                                backgroundImage: entityAvatar?'url('+entityAvatar+')':null
-                                            }
-                                        }),
-                                        entityName
-                                    ]
-                                })
-                            ]
-                        }),
-                        BX.create('td', {
-                            props: {
-                                className: 'bx-report-popup-shared-people-list-col2'
-                            },
-                            children: [
-                                BX.create('a', {
-                                    props: {
-                                        className: 'bx-report-filepage-used-people-permission'
-                                    },
-                                    //style: {
-                                    //    cursor: 'pointer'
-                                    //},
-                                    text: this.getRightLabelByName(right),
-                                    events: {
-                                        //click: BX.delegate(function(e){
-                                        //    if(readOnly)
-                                        //    {
-                                        //        return BX.PreventDefault(e);
-                                        //    }
-                                        //    var targetElement = e.target || e.srcElement;
-                                        //    BX.PopupMenu.show('report_open_menu_with_rights', BX(targetElement), [
-                                        //            (pseudoCompareTaskName(maxAccessName, 'access_read') >= 0? {
-                                        //                text: BX.message('REPORT_JS_SHARING_RIGHT_READ'),
-                                        //                href: "#",
-                                        //                onclick: BX.delegate(function (e) {
-                                        //                    BX.PopupMenu.destroy('report_open_menu_with_rights');
-                                        //                    BX.adjust(targetElement, {text: this.getRightLabelByName('access_read')});
-                                        //
-                                        //                    BX.onCustomEvent('onChangeRightOfSharing', [entityId, 'access_read']);
-                                        //
-                                        //                    entityToNewShared[entityId]['right'] = 'access_read';
-                                        //
-                                        //                    return BX.PreventDefault(e);
-                                        //                }, this)
-                                        //            } : null),
-                                        //            (pseudoCompareTaskName(maxAccessName, 'access_edit') >= 0? {
-                                        //                text: BX.message('REPORT_JS_SHARING_RIGHT_EDIT'),
-                                        //                href: "#",
-                                        //                onclick: BX.delegate(function (e) {
-                                        //                    BX.PopupMenu.destroy('report_open_menu_with_rights');
-                                        //                    BX.adjust(targetElement, {text: this.getRightLabelByName('access_edit')});
-                                        //
-                                        //                    BX.onCustomEvent('onChangeRightOfSharing', [entityId, 'access_edit']);
-                                        //
-                                        //                    entityToNewShared[entityId]['right'] = 'access_edit';
-                                        //
-                                        //                    return BX.PreventDefault(e);
-                                        //                }, this)
-                                        //            } : null)
-                                        //        ],
-                                        //        {
-                                        //            angle: {
-                                        //                position: 'top',
-                                        //                offset: 45
-                                        //            },
-                                        //            autoHide: true,
-                                        //            overlay: {
-                                        //                opacity: 0.01
-                                        //            },
-                                        //            events: {
-                                        //                onPopupClose: function() {BX.PopupMenu.destroy('report_open_menu_with_rights');}
-                                        //            }
-                                        //        }
-                                        //    );
-                                        //
-                                        //}, this)
-                                    }
-                                })
-                            ]
-                        }),
-                        BX.create('td', {
-                            props: {
-                                className: 'bx-report-popup-shared-people-list-col3 tar'
-                            },
-                            children: [
-                                (!readOnly? BX.create('span', {
-                                    props: {
-                                        className: 'bx-report-filepage-used-people-del'
-                                    },
-                                    events: {
-                                        click: BX.delegate(function(e){
-                                            BX.SocNetLogDestination.deleteItem(entityId, type, destFormName);
-                                            var src = e.target || e.srcElement;
-                                            BX.remove(src.parentNode.parentNode);
-                                        }, this)
-                                    }
-                                }) : null)
-                            ]
-                        })
-                    ]
-                })
-            );
-        },
-        removeElement: function (elem)
-        {
-            return elem.parentNode ? elem.parentNode.removeChild(elem) : elem;
-        },
-        addToLinkParam: function (link, name, value)
-        {
-            if (!link.length) {
-                return '?' + name + '=' + value;
-            }
-            link = BX.util.remove_url_param(link, name);
-            if (link.indexOf('?') != -1) {
-                return link + '&' + name + '=' + value;
-            }
-            return link + '?' + name + '=' + value;
-        },
-        getFirstErrorFromResponse: function(reponse)
-        {
-            reponse = reponse || {};
-            if(!reponse.errors)
-                return '';
+		var currentPopup = BX.PopupWindowManager.getCurrentPopup();
+		if(currentPopup)
+		{
+			currentPopup.destroy();
+		}
 
-            return reponse.errors.shift().message;
-        },
-        showModalWithStatusAction: function (response, action)
-        {
-            response = response || {};
-            if (!response.message) {
-                if (response.status == 'success') {
-                    response.message = BX.message('REPORT_JS_STATUS_ACTION_SUCCESS');
-                }
-                else {
-                    response.message = BX.message('REPORT_JS_STATUS_ACTION_ERROR') + '. ' +
-                        this.getFirstErrorFromResponse(response);
-                }
-            }
-            var messageBox = BX.create('div', {
-                props: {
-                    className: 'bx-report-alert'
-                },
-                children: [
-                    BX.create('span', {
-                        props: {
-                            className: 'bx-report-aligner'
-                        }
-                    }),
-                    BX.create('span', {
-                        props: {
-                            className: 'bx-report-alert-text'
-                        },
-                        text: response.message
-                    }),
-                    BX.create('div', {
-                        props: {
-                            className: 'bx-report-alert-footer'
-                        }
-                    })
-                ]
-            });
+		var idTimeout = setTimeout(function ()
+		{
+			var w = BX.PopupWindowManager.getCurrentPopup();
+			if (!w || w.uniquePopupId != 'bx-report-status-action') {
+				return;
+			}
+			w.close();
+			w.destroy();
+		}, 2500);
+		var popupConfirm = BX.PopupWindowManager.create('bx-report-status-action', null, {
+			content: messageBox,
+			onPopupClose: function ()
+			{
+				this.destroy();
+				clearTimeout(idTimeout);
+			},
+			autoHide: true,
+			zIndex: 2000,
+			className: 'bx-report-alert-popup'
+		});
+		popupConfirm.show();
 
-            var currentPopup = BX.PopupWindowManager.getCurrentPopup();
-            if(currentPopup)
-            {
-                currentPopup.destroy();
-            }
+		BX('bx-report-status-action').onmouseover = function (e)
+		{
+			clearTimeout(idTimeout);
+		};
 
-            var idTimeout = setTimeout(function ()
-            {
-                var w = BX.PopupWindowManager.getCurrentPopup();
-                if (!w || w.uniquePopupId != 'bx-report-status-action') {
-                    return;
-                }
-                w.close();
-                w.destroy();
-            }, 2500);
-            var popupConfirm = BX.PopupWindowManager.create('bx-report-status-action', null, {
-                content: messageBox,
-                onPopupClose: function ()
-                {
-                    this.destroy();
-                    clearTimeout(idTimeout);
-                },
-                autoHide: true,
-                zIndex: 2000,
-                className: 'bx-report-alert-popup'
-            });
-            popupConfirm.show();
+		BX('bx-report-status-action').onmouseout = function (e)
+		{
+			idTimeout = setTimeout(function ()
+			{
+				var w = BX.PopupWindowManager.getCurrentPopup();
+				if (!w || w.uniquePopupId != 'bx-report-status-action') {
+					return;
+				}
+				w.close();
+				w.destroy();
+			}, 2500);
+		};
+	},
+	show: function(element)
+	{
+		if (this.getRealDisplay(element) != 'none')
+			return;
 
-            BX('bx-report-status-action').onmouseover = function (e)
-            {
-                clearTimeout(idTimeout);
-            };
+		var old = element.getAttribute('displayOld');
+		element.style.display = old || '';
 
-            BX('bx-report-status-action').onmouseout = function (e)
-            {
-                idTimeout = setTimeout(function ()
-                {
-                    var w = BX.PopupWindowManager.getCurrentPopup();
-                    if (!w || w.uniquePopupId != 'bx-report-status-action') {
-                        return;
-                    }
-                    w.close();
-                    w.destroy();
-                }, 2500);
-            };
-        },
-        show: function(element)
-        {
-            if (this.getRealDisplay(element) != 'none')
-                return;
+		if (this.getRealDisplay(element) === 'none' ) {
+			var nodeName = element.nodeName, body = document.body, display;
 
-            var old = element.getAttribute('displayOld');
-            element.style.display = old || '';
+			if (displayCache[nodeName]) {
+				display = displayCache[nodeName];
+			} else {
+				var testElem = document.createElement(nodeName);
+				body.appendChild(testElem);
+				display = this.getRealDisplay(testElem);
 
-            if (this.getRealDisplay(element) === 'none' ) {
-                var nodeName = element.nodeName, body = document.body, display;
+				if (display === 'none' ) {
+					display = 'block';
+				}
 
-                if (displayCache[nodeName]) {
-                    display = displayCache[nodeName];
-                } else {
-                    var testElem = document.createElement(nodeName);
-                    body.appendChild(testElem);
-                    display = this.getRealDisplay(testElem);
+				body.removeChild(testElem);
+				displayCache[nodeName] = display;
+			}
 
-                    if (display === 'none' ) {
-                        display = 'block';
-                    }
-
-                    body.removeChild(testElem);
-                    displayCache[nodeName] = display;
-                }
-
-                element.setAttribute('displayOld', display);
-                element.style.display = display;
-            }
-        },
-        hide: function(element)
-        {
-            if (!element.getAttribute('displayOld'))
-            {
-                element.setAttribute('displayOld', element.style.display);
-            }
-            element.style.display = 'none';
-        },
-        getRealDisplay: function (element)
-        {
-            if (element.currentStyle) {
-                return element.currentStyle.display;
-            } else if (window.getComputedStyle) {
-                var computedStyle = window.getComputedStyle(element, null );
-                return computedStyle.getPropertyValue('display');
-            }
-        },
-        isEmptyObject: function(object)
-        {
-            for(var name in object) {
-                return false;
-            }
-            return true;
-        }
-    }
-})();
+			element.setAttribute('displayOld', display);
+			element.style.display = display;
+		}
+	},
+	hide: function(element)
+	{
+		if (!element.getAttribute('displayOld'))
+		{
+			element.setAttribute('displayOld', element.style.display);
+		}
+		element.style.display = 'none';
+	},
+	getRealDisplay: function (element)
+	{
+		if (element.currentStyle) {
+			return element.currentStyle.display;
+		} else if (window.getComputedStyle) {
+			var computedStyle = window.getComputedStyle(element, null );
+			return computedStyle.getPropertyValue('display');
+		}
+	},
+	isEmptyObject: function(object)
+	{
+		for(var name in object) {
+			return false;
+		}
+		return true;
+	}
+});
 
 if(typeof(BX.ReportUserSearchPopup) === 'undefined')
 {

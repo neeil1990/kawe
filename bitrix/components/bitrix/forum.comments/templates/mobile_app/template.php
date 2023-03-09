@@ -8,7 +8,7 @@
  */
 
 CUtil::InitJSCore(array('content_view'));
-
+$request = \Bitrix\Main\Context::getCurrent()->getRequest();
 $link = $APPLICATION->GetCurPageParam("MID=#ID#", array(
 	"MID",
 	"sessid",
@@ -17,6 +17,7 @@ $link = $APPLICATION->GetCurPageParam("MID=#ID#", array(
 	"ENTITY_TYPE",
 	"ENTITY_ID",
 	"REVIEW_ACTION",
+	"ACTION",
 	"MODE",
 	"FILTER",
 	"result",
@@ -28,27 +29,45 @@ $arResult["OUTPUT_LIST"] = $APPLICATION->IncludeComponent(
 		"TEMPLATE_ID" => $arParams["tplID"],
 		"RATING_TYPE_ID" => ($arParams["SHOW_RATING"] == "Y" ? "FORUM_POST" : ""),
 		"ENTITY_XML_ID" => $arParams["ENTITY_XML_ID"],
+		"POST_CONTENT_TYPE_ID" => (!empty($arParams["POST_CONTENT_TYPE_ID"]) ? $arParams["POST_CONTENT_TYPE_ID"] : false),
+		"COMMENT_CONTENT_TYPE_ID" => "FORUM_POST",
 		"RECORDS" => $arResult["MESSAGES"],
 		"NAV_STRING" => $arResult["NAV_STRING"],
 		"NAV_RESULT" => $arResult["NAV_RESULT"],
 		"PREORDER" => $arParams["PREORDER"],
 		"RIGHTS" => array(
 			"MODERATE" =>  $arResult["PANELS"]["MODERATE"],
-			"EDIT" => ($arResult["PANELS"]["EDIT"] == "N" ? ($arParams["ALLOW_EDIT_OWN_MESSAGE"] === "ALL" ? "OWN" : (
-				$arParams["ALLOW_EDIT_OWN_MESSAGE"] === "LAST" ? "OWNLAST" : "N") ) : "Y"),
-			"DELETE" => ($arResult["PANELS"]["EDIT"] == "N" ? ($arParams["ALLOW_EDIT_OWN_MESSAGE"] === "ALL" ? "OWN" : (
-				$arParams["ALLOW_EDIT_OWN_MESSAGE"] === "LAST" ? "OWNLAST" : "N") ) : "Y")
+			"EDIT" => (
+				$arResult["PANELS"]["EDIT"] == "N"
+					? (
+						$arParams["ALLOW_EDIT_OWN_MESSAGE"] === "ALL"
+							? "OWN"
+							: ($arParams["ALLOW_EDIT_OWN_MESSAGE"] === "LAST" ? "OWNLAST" : "N")
+					)
+					: "Y"
+			),
+			"DELETE" => (
+				$arResult["PANELS"]["EDIT"] == "N"
+					? (
+						$arParams["ALLOW_EDIT_OWN_MESSAGE"] === "ALL"
+							? "OWN"
+							: ($arParams["ALLOW_EDIT_OWN_MESSAGE"] === "LAST" ? "OWNLAST" : "N")
+					)
+				: "Y"
+			),
+			"CREATETASK" => ($arResult["bTasksAvailable"] ? "Y" : "N")
 		),
-		"VISIBLE_RECORDS_COUNT" => 3,
+		"VISIBLE_RECORDS_COUNT" => $arResult["VISIBLE_RECORDS_COUNT"],
 
 		"ERROR_MESSAGE" => $arResult["ERROR_MESSAGE"],
 		"OK_MESSAGE" => $arResult["OK_MESSAGE"],
-		"RESULT" => $arResult["RESULT"],
+		"RESULT" => ($arResult["RESULT"] ?: $request->getQuery("MID")),
 		"PUSH&PULL" => $arResult["PUSH&PULL"],
+		"MODE" => $arResult["MODE"],
 		"VIEW_URL" => ($arParams["SHOW_LINK_TO_MESSAGE"] == "Y" ? $link : ""),
-		"EDIT_URL" => ForumAddPageParams($link, array("REVIEW_ACTION" => "GET"), false, false),
-		"MODERATE_URL" => ForumAddPageParams($link, array("REVIEW_ACTION" => "#ACTION#"), false, false),
-		"DELETE_URL" => ForumAddPageParams($link, array("REVIEW_ACTION" => "DEL"), false, false),
+		"EDIT_URL" => ForumAddPageParams($link, array("ACTION" => "GET"), false, false),
+		"MODERATE_URL" => ForumAddPageParams($link, array("ACTION" => "#ACTION#"), false, false),
+		"DELETE_URL" => ForumAddPageParams($link, array("ACTION" => "DEL"), false, false),
 		"AUTHOR_URL" => $arParams["URL_TEMPLATES_PROFILE_VIEW"],
 
 		"AVATAR_SIZE" => $arParams["AVATAR_SIZE_COMMENT"],
@@ -71,7 +90,7 @@ $arResult["OUTPUT_LIST"] = $APPLICATION->IncludeComponent(
 			"URL" => $APPLICATION->GetCurPageParam("", array(
 					"sessid", "comment_post_id", "act", "post", "comment",
 					"decode", "ENTITY_TYPE_ID", "ENTITY_ID",
-					"empty_get_form", "empty_get_comments")),
+					"empty_get_comments")),
 			"FIELDS" => array(
 			)
 		)
@@ -107,7 +126,8 @@ if ($_REQUEST["empty_get_comments"] == "Y")
 			mobile: true,
 			ajaxUrl: '<?=SITE_DIR?>mobile/ajax.php',
 			commentsContainerId: 'post-comments-wrap',
-			commentsClassName: 'post-comment-wrap'
+			commentsClassName: 'post-comment-wrap',
+			context: 'forum.comments/mobile'
 		}]);
 	});
 

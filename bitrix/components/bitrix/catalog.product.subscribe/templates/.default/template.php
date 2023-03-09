@@ -17,23 +17,33 @@ CJSCore::init(array('popup', 'ajax'));
 
 $this->setFrameMode(true);
 
+$landingId = null;
+if (is_callable(["LandingPubComponent", "getMainInstance"]))
+{
+	$instance = \LandingPubComponent::getMainInstance();
+	$landingId = $instance["SITE_ID"];
+}
+
 $strMainId = $this->getEditAreaId($arResult['PRODUCT_ID']);
 $jsObject = 'ob'.preg_replace("/[^a-zA-Z0-9_]/", "x", $strMainId);
 $paramsForJs = array(
 	'buttonId' => $arResult['BUTTON_ID'],
 	'jsObject' => $jsObject,
 	'alreadySubscribed' => $arResult['ALREADY_SUBSCRIBED'],
+	'listIdAlreadySubscribed' => (!empty($_SESSION['SUBSCRIBE_PRODUCT']['LIST_PRODUCT_ID']) ?
+		$_SESSION['SUBSCRIBE_PRODUCT']['LIST_PRODUCT_ID'] : []),
 	'productId' => $arResult['PRODUCT_ID'],
 	'buttonClass' => htmlspecialcharsbx($arResult['BUTTON_CLASS']),
 	'urlListSubscriptions' => '/',
+	'landingId' => ($landingId ? $landingId : 0)
 );
 
 $showSubscribe = true;
 
 /* Compatibility with the sale subscribe option */
 $saleNotifyOption = Bitrix\Main\Config\Option::get('sale', 'subscribe_prod');
-if(strlen($saleNotifyOption) > 0)
-	$saleNotifyOption = unserialize($saleNotifyOption);
+if($saleNotifyOption <> '')
+	$saleNotifyOption = unserialize($saleNotifyOption, ['allowed_classes' => false]);
 $saleNotifyOption = is_array($saleNotifyOption) ? $saleNotifyOption : array();
 foreach($saleNotifyOption as $siteId => $data)
 {
@@ -59,7 +69,7 @@ if($showSubscribe):?>
 	<script type="text/javascript">
 		BX.message({
 			CPST_SUBSCRIBE_POPUP_TITLE: '<?=GetMessageJS('CPST_SUBSCRIBE_POPUP_TITLE');?>',
-			CPST_SUBSCRIBE_BUTTON_NAME: '<?=$subscribeBtnName?>',
+			CPST_SUBSCRIBE_BUTTON_NAME: '<?=CUtil::JSEscape($subscribeBtnName); ?>',
 			CPST_SUBSCRIBE_BUTTON_CLOSE: '<?=GetMessageJS('CPST_SUBSCRIBE_BUTTON_CLOSE');?>',
 			CPST_SUBSCRIBE_MANY_CONTACT_NOTIFY: '<?=GetMessageJS('CPST_SUBSCRIBE_MANY_CONTACT_NOTIFY');?>',
 			CPST_SUBSCRIBE_LABLE_CONTACT_INPUT: '<?=GetMessageJS('CPST_SUBSCRIBE_LABLE_CONTACT_INPUT');?>',

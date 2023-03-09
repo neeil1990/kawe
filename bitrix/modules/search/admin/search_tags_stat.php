@@ -16,9 +16,7 @@ $oSort = new CAdminSorting($sTableID, "COUNT", "DESC");
 $lAdmin = new CAdminList($sTableID, $oSort);
 
 $ref = $ref_id = array();
-$v1 = "sort";
-$v2 = "asc";
-$rs = CSite::GetList($v1, $v2);
+$rs = CSite::GetList();
 while ($ar = $rs->Fetch())
 {
 	$ref[] = $ar["ID"];
@@ -74,7 +72,7 @@ else
 $arFilter["=URL_TO_404"] = $find_url_to_404;
 
 foreach($arFilter as $key => $value)
-	if(!strlen($value))
+	if($value == '')
 		unset($arFilter[$key]);
 $arFilter["!TAGS"] = false;
 

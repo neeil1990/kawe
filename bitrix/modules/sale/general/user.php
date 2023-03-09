@@ -1,4 +1,5 @@
-<?
+<?php
+
 IncludeModuleLangFile(__FILE__);
 
 define("SALE_TIME_LOCK_USER", 600);
@@ -9,7 +10,7 @@ $GLOBALS["SALE_USER_ACCOUNT"] = array();
 /***********************************************************************/
 class CAllSaleUserAccount
 {
-	static function DoPayOrderFromAccount($userId, $currency, $orderId, $orderSum, $arOptions, &$arErrors)
+	public static function DoPayOrderFromAccount($userId, $currency, $orderId, $orderSum, $arOptions, &$arErrors)
 	{
 		if (!array_key_exists("ONLY_FULL_PAY_FROM_ACCOUNT", $arOptions))
 			$arOptions["ONLY_FULL_PAY_FROM_ACCOUNT"] = COption::GetOptionString("sale", "ONLY_FULL_PAY_FROM_ACCOUNT", "N");
@@ -55,14 +56,14 @@ class CAllSaleUserAccount
 	}
 
 	//********** ADD, UPDATE, DELETE **************//
-	function CheckFields($ACTION, &$arFields, $ID = 0)
+	public static function CheckFields($ACTION, &$arFields, $ID = 0)
 	{
 		if ((is_set($arFields, "USER_ID") || $ACTION=="ADD") && intval($arFields["USER_ID"]) <= 0)
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SKGU_EMPTY_USER_ID"), "EMPTY_USER_ID");
 			return false;
 		}
-		if ((is_set($arFields, "CURRENCY") || $ACTION=="ADD") && strlen($arFields["CURRENCY"]) <= 0)
+		if ((is_set($arFields, "CURRENCY") || $ACTION=="ADD") && $arFields["CURRENCY"] == '')
 		{
 			$GLOBALS["APPLICATION"]->ThrowException(GetMessage("SKGU_EMPTY_CURRENCY"), "EMPTY_CURRENCY");
 			return false;
@@ -90,7 +91,7 @@ class CAllSaleUserAccount
 		return true;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
 
@@ -133,9 +134,8 @@ class CAllSaleUserAccount
 		return $res;
 	}
 
-
 	//********** LOCK **************//
-	function Lock($userID, $payCurrency)
+	public static function Lock($userID, $payCurrency)
 	{
 		global $DB, $APPLICATION;
 
@@ -195,6 +195,7 @@ class CAllSaleUserAccount
 					"CURRENT_BUDGET" => 0.0,
 					"CURRENCY" => $payCurrency,
 					"LOCKED" => "Y",
+					"=TIMESTAMP_X" => $DB->GetNowFunction(),
 					"=DATE_LOCKED" => $DB->GetNowFunction()
 				);
 			if (CSaleUserAccount::Add($arFields))
@@ -204,7 +205,7 @@ class CAllSaleUserAccount
 		}
 	}
 
-	function UnLock($userID, $payCurrency)
+	public static function UnLock($userID, $payCurrency)
 	{
 		$userID = (int)$userID;
 		if ($userID <= 0)
@@ -261,7 +262,7 @@ class CAllSaleUserAccount
 		}
 	}
 
-	function UnLockByID($ID)
+	public static function UnLockByID($ID)
 	{
 		global $APPLICATION;
 
@@ -303,7 +304,7 @@ class CAllSaleUserAccount
 	// $orderID - ID of order (if known)
 	// $useCC - increase the local user account from credit card if necessary (default - True)
 	// Return True if the necessary sum withdraw from an account or False in other way
-	function Pay($userID, $paySum, $payCurrency, $orderID = 0, $useCC = true, $paymentId = null)
+	public static function Pay($userID, $paySum, $payCurrency, $orderID = 0, $useCC = true, $paymentId = null)
 	{
 		global $DB, $APPLICATION, $USER;
 
@@ -475,7 +476,7 @@ class CAllSaleUserAccount
 	// $payCurrency - currency
 	// $orderID - ID of order (if known)
 	// Return withdrawn sum or False
-	function Withdraw($userID, $paySum, $payCurrency, $orderID = 0)
+	public static function Withdraw($userID, $paySum, $payCurrency, $orderID = 0)
 	{
 		global $DB, $APPLICATION, $USER;
 
@@ -524,8 +525,13 @@ class CAllSaleUserAccount
 
 			if ($orderID > 0)
 			{
+				$registry = \Bitrix\Sale\Registry::getInstance(\Bitrix\Sale\Registry::REGISTRY_TYPE_ORDER);
+
+				/** @var \Bitrix\Sale\Order $orderClass */
+				$orderClass = $registry->getOrderClassName();
+
 				/** @var \Bitrix\Sale\Order $order */
-				if ($order = \Bitrix\Sale\Order::load($orderID))
+				if ($order = $orderClass::load($orderID))
 				{
 					/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
 					if (($paymentCollection = $order->getPaymentCollection()) && $paymentCollection->isExistsInnerPayment())
@@ -579,7 +585,7 @@ class CAllSaleUserAccount
 	// $currency - currency
 	// $description - reason of modification
 	// Return True on success or False in other way
-	function UpdateAccount($userID, $sum, $currency, $description = "", $orderID = 0, $notes = "", $paymentId = null)
+	public static function UpdateAccount($userID, $sum, $currency, $description = "", $orderID = 0, $notes = "", $paymentId = null)
 	{
 		global $DB, $APPLICATION, $USER;
 
@@ -625,6 +631,7 @@ class CAllSaleUserAccount
 		{
 			$currentBudget = floatval($arUserAccount["CURRENT_BUDGET"]);
 			$arFields = array(
+					"=TIMESTAMP_X" => $DB->GetNowFunction(),
 					"CURRENT_BUDGET" => $arUserAccount["CURRENT_BUDGET"] + $sum
 				);
 
@@ -643,6 +650,7 @@ class CAllSaleUserAccount
 					"CURRENT_BUDGET" => $sum,
 					"CURRENCY" => $currency,
 					"LOCKED" => "Y",
+					"=TIMESTAMP_X" => $DB->GetNowFunction(),
 					"=DATE_LOCKED" => $DB->GetNowFunction()
 				);
 
@@ -667,8 +675,8 @@ class CAllSaleUserAccount
 					"DEBIT" => ($sum > 0 ? "Y" : "N"),
 					"ORDER_ID" => ($orderID > 0 ? $orderID : false),
 					"PAYMENT_ID" => ($paymentId > 0 ? $paymentId : false),
-					"DESCRIPTION" => ((strlen($description) > 0) ? $description : null),
-					"NOTES" => ((strlen($notes) > 0) ? $notes : False),
+					"DESCRIPTION" => (($description <> '') ? $description : null),
+					"NOTES" => (($notes <> '') ? $notes : False),
 					"EMPLOYEE_ID" => ($USER->IsAuthorized() ? $USER->GetID() : false)
 				);
 			CTimeZone::Disable();
@@ -683,8 +691,9 @@ class CAllSaleUserAccount
 	//********** EVENTS **************//
 	public static function OnBeforeCurrencyDelete($Currency)
 	{
-		if (strlen($Currency)<=0)
-			return false;
+		$Currency = (string)$Currency;
+		if ($Currency === '')
+			return true;
 
 		$cnt = CSaleUserAccount::GetList(array(), array("CURRENCY" => $Currency), array());
 		if ($cnt > 0)

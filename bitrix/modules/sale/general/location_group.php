@@ -1,4 +1,5 @@
-<?
+<?php
+
 /**
  * The content of this file was marked as deprecated.
  * It will be removed from future releases. Do not rely on this code.
@@ -17,7 +18,7 @@ class CAllSaleLocationGroup
 	const LOCATION_ENTITY_NAME = 	'Bitrix\Sale\Location\Location';
 	const NAME_ENTITY_NAME = 		'Bitrix\Sale\Location\Name\Group';
 
-	function GetLocationList($arFilter=Array())
+	public static function GetLocationList($arFilter=Array())
 	{
 		if(CSaleLocation::isLocationProMigrated())
 		{
@@ -109,12 +110,12 @@ class CAllSaleLocationGroup
 			for($i=0; $i < $countFieldKey; $i++)
 			{
 				$val = $DB->ForSql($arFilter[$filter_keys[$i]]);
-				if (strlen($val)<=0) continue;
+				if ($val == '') continue;
 
 				$key = $filter_keys[$i];
 				if ($key[0]=="!")
 				{
-					$key = substr($key, 1);
+					$key = mb_substr($key, 1);
 					$bInvert = true;
 				}
 				else
@@ -123,10 +124,10 @@ class CAllSaleLocationGroup
 				switch(ToUpper($key))
 				{
 				case "LOCATION_ID":
-					$arSqlSearch[] = "LOCATION_ID ".($bInvert?"<>":"=")." ".IntVal($val)." ";
+					$arSqlSearch[] = "LOCATION_ID ".($bInvert?"<>":"=")." ".intval($val)." ";
 					break;
 				case "LOCATION_GROUP_ID":
-					$arSqlSearch[] = "LOCATION_GROUP_ID ".($bInvert?"<>":"=")." ".IntVal($val)." ";
+					$arSqlSearch[] = "LOCATION_GROUP_ID ".($bInvert?"<>":"=")." ".intval($val)." ";
 					break;
 				}
 			}
@@ -151,11 +152,11 @@ class CAllSaleLocationGroup
 		}
 	}
 
-	function GetGroupLangByID($ID, $strLang = LANGUAGE_ID)
+	public static function GetGroupLangByID($ID, $strLang = LANGUAGE_ID)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		$strSql =
 			"SELECT ID, LOCATION_GROUP_ID, LID, NAME ".
 			"FROM b_sale_location_group_lang ".
@@ -170,11 +171,11 @@ class CAllSaleLocationGroup
 		return False;
 	}
 
-	function CheckFields($ACTION, &$arFields)
+	public static function CheckFields($ACTION, &$arFields)
 	{
 		global $DB;
 
-		if (is_set($arFields, "SORT") && IntVal($arFields["SORT"])<=0)
+		if (is_set($arFields, "SORT") && intval($arFields["SORT"])<=0)
 			$arFields["SORT"] = 100;
 
 		if (is_set($arFields, "LOCATION_ID") && (!is_array($arFields["LOCATION_ID"]) || count($arFields["LOCATION_ID"])<=0))
@@ -182,14 +183,14 @@ class CAllSaleLocationGroup
 
 		if (is_set($arFields, "LANG"))
 		{
-			$db_lang = CLangAdmin::GetList(($b="sort"), ($o="asc"), array("ACTIVE" => "Y"));
+			$db_lang = CLangAdmin::GetList("sort", "asc", array("ACTIVE" => "Y"));
 			while ($arLang = $db_lang->Fetch())
 			{
 				$bFound = False;
 				$coountarFieldLang = count($arFields["LANG"]);
 				for ($i = 0; $i < $coountarFieldLang; $i++)
 				{
-					if ($arFields["LANG"][$i]["LID"]==$arLang["LID"] && strlen($arFields["LANG"][$i]["NAME"])>0)
+					if ($arFields["LANG"][$i]["LID"]==$arLang["LID"] && $arFields["LANG"][$i]["NAME"] <> '')
 					{
 						$bFound = True;
 					}
@@ -202,11 +203,11 @@ class CAllSaleLocationGroup
 		return True;
 	}
 
-	function Update($ID, $arFields)
+	public static function Update($ID, $arFields)
 	{
 		global $DB;
 
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 		if (!CSaleLocationGroup::CheckFields("UPDATE", $arFields))
 			return false;
 
@@ -271,10 +272,10 @@ class CAllSaleLocationGroup
 		return $ID;
 	}
 
-	function Delete($ID)
+	public static function Delete($ID)
 	{
 		global $DB;
-		$ID = IntVal($ID);
+		$ID = intval($ID);
 
 		$db_events = GetModuleEvents("sale", "OnBeforeLocationGroupDelete");
 		while ($arEvent = $db_events->Fetch())
@@ -293,11 +294,10 @@ class CAllSaleLocationGroup
 		return $DB->Query("DELETE FROM b_sale_location_group WHERE ID = ".$ID."", true);
 	}
 
-	function OnLangDelete($strLang)
+	public static function OnLangDelete($strLang)
 	{
 		global $DB;
 		$DB->Query("DELETE FROM b_sale_location_group_lang WHERE LID = '".$DB->ForSql($strLang)."'", true);
 		return True;
 	}
 }
-?>

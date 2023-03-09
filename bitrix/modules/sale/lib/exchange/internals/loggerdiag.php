@@ -3,36 +3,18 @@
 namespace Bitrix\Sale\Exchange\Internals;
 
 
-use Bitrix\Main\Config\Option;
-
-final class LoggerDiag extends Logger
+class LoggerDiag extends LoggerDiagBase
 {
-	const END_TIME_OPTION = "exchange_debug_end_time";
-
-	public static function isOn()
+	static protected function getNameOptionEndTime()
 	{
-		return time() < Option::get("sale", static::END_TIME_OPTION, 0);
+		return "exchange_debug_end_time";
 	}
 
-	public static function enable($endTime = 0)
+	static protected function getNameOptionIntervalDayOption()
 	{
-		Option::set("sale", static::END_TIME_OPTION, intval($endTime));
+		return "SALE_EXCHANGE_DEBUG_INTERVAL_DAY";
 	}
 
-	public static function disable()
-	{
-		Option::delete("sale", array("name" => static::END_TIME_OPTION));
-	}
-
-	public static function getEndTime()
-	{
-		return intval(Option::get("sale", static::END_TIME_OPTION, 0));
-	}
-
-	/**
-	 * @param array $params
-	 * @return \Bitrix\Main\Entity\AddResult|null
-	 */
 	static public function log(array $params)
 	{
 		$params['MESSAGE'] = static::isOn()? $params['MESSAGE']:null;

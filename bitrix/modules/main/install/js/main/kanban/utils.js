@@ -6,6 +6,21 @@ BX.namespace("BX.Kanban");
 
 BX.Kanban.Utils = {
 
+	/**
+	 *
+	 * @param {number} code
+	 */
+	getKeyDownName: function(code)
+	{
+		switch(code)
+		{
+			case 27:
+				return 'Escape';
+			default:
+				return false;
+		}
+	},
+
 	isValidId: function(id)
 	{
 		return BX.type.isNumber(id) || BX.type.isNotEmptyString(id);
@@ -99,6 +114,11 @@ BX.Kanban.Utils = {
 
 	showErrorDialog: function(error, fatal)
 	{
+		if (!BX.type.isNotEmptyString(error))
+		{
+			return;
+		}
+
 		var dialog = BX.PopupWindowManager.create(
 			"main-kanban-error-dialog",
 			null,
@@ -110,7 +130,8 @@ BX.Kanban.Utils = {
 				overlay: true,
 				closeByEsc : true,
 				closeIcon : true,
-				draggable : { restrict : true}
+				draggable : { restrict : true},
+				contentColor: "white"
 			}
 		);
 
@@ -120,10 +141,8 @@ BX.Kanban.Utils = {
 			new BX.PopupWindowButton({
 				text: (fatal === true)
 					? BX.message("MAIN_KANBAN_RELOAD")
-					: BX.message("MAIN_KANBAN_ERROR_OK"),
-				className: (fatal === true)
-					? "popup-window-button-cancel"
-					: "",
+					: BX.message("MAIN_KANBAN_ERROR_CLOSE"),
+				className: "popup-window-button-accept",
 				events: {
 					click: function()
 					{

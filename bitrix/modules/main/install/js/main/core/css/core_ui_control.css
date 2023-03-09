@@ -4,9 +4,9 @@
 	height: 38px;
 	width: 100%;
 	border: 1px solid rgba(83,92,105,.2);
-	border-radius: 2px;
+	border-radius: var(--main-ui-control-border-radius, var(--ui-border-radius-2xs, 2px));
 	background: #fff;
-	font: 15px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font: 15px var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
@@ -21,9 +21,9 @@
 	height: 38px;
 	width: 100%;
 	border: 1px solid rgba(83,92,105,.2);
-	border-radius: 2px;
+	border-radius: var(--main-ui-control-border-radius, var(--ui-border-radius-2xs, 2px));
 	background: #fff;
-	font: 15px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font: 15px var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;

@@ -40,6 +40,9 @@ class CBitrixLocationSelectorStepsComponent extends CBitrixLocationSelectorSearc
 		// about preloading
 		self::tryParseBoolean($arParams['PRECACHE_LAST_LEVEL']);
 
+		$arParams['INITIALIZE_BY_GLOBAL_EVENT'] ??= null;
+		$arParams['GLOBAL_EVENT_SCOPE'] ??= null;
+
 		return $arParams;
 	}
 
@@ -395,7 +398,7 @@ class CBitrixLocationSelectorStepsComponent extends CBitrixLocationSelectorSearc
 	 */
 	public static function processSearchRequest()
 	{
-		static::checkRequiredModules();
+		static::includeRequiredModules();
 
 		$parameters = static::processSearchGetParameters();
 		$parameters['order'] = array('NAME.NAME' => 'asc');
@@ -405,18 +408,20 @@ class CBitrixLocationSelectorStepsComponent extends CBitrixLocationSelectorSearc
 
 		$siteId = $_REQUEST['FILTER']['SITE_ID'];
 
-		if(strlen($siteId))
+		if($siteId <> '')
 		{
 			$points = array();
 			$res = Location\SiteLocationTable::getConnectedLocations($siteId, array('select' => array(
-					'ID' => 'ID',
-					'LEFT_MARGIN' => 'LEFT_MARGIN',
-					'RIGHT_MARGIN' => 'RIGHT_MARGIN'
-				)
+				'ID' => 'ID',
+				'LEFT_MARGIN' => 'LEFT_MARGIN',
+				'RIGHT_MARGIN' => 'RIGHT_MARGIN'
+			)
 			), array('GET_LINKED_THROUGH_GROUPS' => true));
 
 			while($item = $res->fetch())
+			{
 				$points[intval($item['ID'])] = $item;
+			}
 
 			unset($parameters['filter']['SITE_ID']);
 		}
@@ -424,7 +429,7 @@ class CBitrixLocationSelectorStepsComponent extends CBitrixLocationSelectorSearc
 		$result = static::processSearchGetList($parameters);
 		$result = static::processSearchGetAdditional($result);
 
-		if(strlen($siteId) && is_array($result['ITEMS']) && !empty($result['ITEMS']))
+		if(mb_strlen($siteId) && is_array($result['ITEMS']) && !empty($result['ITEMS']))
 		{
 			$res = Location\SiteLocationTable::getLinkStatusForMultipleNodes($result['ITEMS'], $siteId, $points);
 			foreach($result['ITEMS'] as $k => &$item)
@@ -488,11 +493,11 @@ class CBitrixLocationSelectorStepsComponent extends CBitrixLocationSelectorSearc
 	protected static function getPathToNodes($list)
 	{
 		$res = Location\LocationTable::getPathToMultipleNodes(
-			$list, 
+			$list,
 			array(
 				'select' => (
-					!!$_REQUEST['BEHAVIOUR']['PREFORMAT'] ? 
-					array('ID', 'VALUE' => 'ID', 'DISPLAY' => 'NAME.NAME', 'CODE') : 
+					!!$_REQUEST['BEHAVIOUR']['PREFORMAT'] ?
+					array('ID', 'VALUE' => 'ID', 'DISPLAY' => 'NAME.NAME', 'CODE') :
 					array('ID', 'LNAME' => 'NAME.NAME', 'CODE')
 				),
 				'filter' => array('=NAME.LANGUAGE_ID' => LANGUAGE_ID)

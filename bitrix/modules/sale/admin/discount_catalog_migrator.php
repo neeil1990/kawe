@@ -400,8 +400,14 @@ final class DiscountCatalogMigrator
 			{
 				$newData['UNPACK'] = $rawFields['UNPACK'];
 				$newData['APPLICATION'] = $rawFields['APPLICATION'];
-				$newData['ACTIONS'] = $rawFields['ACTIONS'];
-				$newData['CONDITIONS'] = $rawFields['CONDITIONS'];
+				if (!is_array($rawFields['ACTIONS']))
+					$rawFields['ACTIONS'] = unserialize($rawFields['ACTIONS'], ['allowed_classes' => false]);
+				$newData['ACTIONS_LIST'] = $rawFields['ACTIONS'];
+
+				if (!is_array($rawFields['CONDITIONS']))
+					$rawFields['CONDITIONS'] = unserialize($rawFields['CONDITIONS'], ['allowed_classes' => false]);
+				$newData['CONDITIONS_LIST'] = $rawFields['CONDITIONS'];
+
 				if (isset($rawFields['EXECUTE_MODULE']))
 				{
 					$newData['EXECUTE_MODULE'] = $rawFields['EXECUTE_MODULE'];
@@ -537,7 +543,7 @@ final class DiscountCatalogMigrator
 		$state = new \Bitrix\Sale\Discount\Preset\State($catalogRow);
 		$state['discount_ranges'] = $this->getRanges($catalogRow['ID']);
 		$state['discount_type_sum_period'] = $this->getTypeSumPeriod($catalogRow);
-		
+
 		$state['discount_sum_order_start'] = $catalogRow['COUNT_FROM'];
 		$state['discount_sum_order_end'] = $catalogRow['COUNT_TO'];
 		$state['discount_sum_period_value'] = $catalogRow['COUNT_SIZE'];
@@ -933,24 +939,28 @@ final class DiscountCatalogMigrator
 				),
 			);
 		}
-		
+
 		return $structure;
 	}
 
 	protected function createApplicationStructureForGeneralDiscount(array $catalogRow)
 	{
+		$type = '';
 		$unit = '';
 		if($catalogRow['VALUE_TYPE'] === \CCatalogDiscount::TYPE_PERCENT)
 		{
-			$unit = 'Perc';
+			$type = \CSaleActionCtrlBasketGroup::ACTION_TYPE_DISCOUNT;
+			$unit = \CSaleActionCtrlBasketGroup::VALUE_UNIT_PERCENT;
 		}
 		elseif($catalogRow['VALUE_TYPE'] === \CCatalogDiscount::TYPE_FIX)
 		{
-			$unit = 'CurEach';
+			$type = \CSaleActionCtrlBasketGroup::ACTION_TYPE_DISCOUNT;
+			$unit = \CSaleActionCtrlBasketGroup::VALUE_UNIT_CURRENCY;
 		}
 		elseif($catalogRow['VALUE_TYPE'] === \CCatalogDiscount::TYPE_SALE)
 		{
-			//todo ????
+			$type = \CSaleActionCtrlBasketGroup::ACTION_TYPE_CLOSEOUT;
+			$unit = \CSaleActionCtrlBasketGroup::VALUE_UNIT_CURRENCY;
 		}
 
 		$structure = array(
@@ -962,7 +972,7 @@ final class DiscountCatalogMigrator
 				array(
 					'CLASS_ID' => 'ActSaleBsktGrp',
 					'DATA' => array(
-						'Type' => 'Discount',
+						'Type' => $type,
 						'Value' => $catalogRow['VALUE'],
 						'Unit' => $unit,
 						'All' => 'AND',
@@ -1167,20 +1177,6 @@ if (isset($_REQUEST['migrator_process']) && ($_REQUEST['migrator_process'] === '
 else
 {
 	$listNonSupportedFeatures = array();
-	//check discount with DISCOUNT_TYPE = S
-	$discountWithTypeSale = (bool)Catalog\DiscountTable::getList(array(
-		'select' => array('ID'),
-		'filter' => array(
-			'=ACTIVE' => 'Y',
-			'=VALUE_TYPE' => Catalog\DiscountTable::VALUE_TYPE_SALE,
-		),
-		'limit' => 1,
-	))->fetch();
-	
-	if($discountWithTypeSale)
-	{
-		$listNonSupportedFeatures[] = Loc::getMessage('DISCOUNT_CATALOG_MIGRATOR_NON_SUPPORTED_FEATURE_DISC_TYPE_SALE');		
-	}
 
 	$discountWithRelativeActivePeriod = (bool)Catalog\DiscountTable::getList(array(
 		'select' => array('ID'),
@@ -1206,9 +1202,9 @@ else
 
 	if($discountWithOtherCurrency)
 	{
-		$listNonSupportedFeatures[] = Loc::getMessage('DISCOUNT_CATALOG_MIGRATOR_NON_SUPPORTED_FEATURE_DISC_CURRENCY_SALE_SITE');		
+		$listNonSupportedFeatures[] = Loc::getMessage('DISCOUNT_CATALOG_MIGRATOR_NON_SUPPORTED_FEATURE_DISC_CURRENCY_SALE_SITE');
 	}
-	
+
 	foreach($listNonSupportedFeatures as $i => $feature)
 	{
 		$listNonSupportedFeatures[$i] = '<span style="margin-left: 10px;">' . $feature . '</span>';
@@ -1236,6 +1232,8 @@ else
 
 	$APPLICATION->SetTitle(GetMessage('DISCOUNT_CATALOG_MIGRATOR_CONVERT_TITLE'));
 
+	$repeatMigrate = (Option::get('sale', 'process_discount_migrator', '-') !== '-');
+
 	$aTabs = array(
 		array(
 			'DIV'   => 'edit1',
@@ -1243,10 +1241,13 @@ else
 			'ICON'  => 'main_user_edit',
 			'CONTENT' => '
 				<div style="width: 180px; float: left;">
-					<img width="160" height="160" src="/bitrix/images/sale/discount/wizard.png">
+					<img width="160" height="160" src="/bitrix/images/sale/discount/wizard.png" alt="">
 				</div>
 				<div>' .
-				GetMessage('DISCOUNT_CATALOG_MIGRATOR_PAGE_HELLO_TEXT') .
+				($repeatMigrate
+					? GetMessage('DISCOUNT_CATALOG_MIGRATOR_PAGE_REPEAT_HELLO_TEXT')
+					: GetMessage('DISCOUNT_CATALOG_MIGRATOR_PAGE_HELLO_TEXT')
+				).
 				'</div>'
 		)
 	);
@@ -1273,12 +1274,23 @@ else
 			background:url("/bitrix/panel/main/images/bx-admin-sprite.png") no-repeat 4px -88px;
 		}
 	</style>
-	<script language='JavaScript'>
+	<script type="text/javascript">
 	var wd_stop;
 	var wd_dialog;
 
 	function ShowConvert()
 	{
+	<?php
+	if ($repeatMigrate)
+	{
+		?>
+		if (!confirm('<?php echo CUtil::JSEscape(GetMessage('DISCOUNT_CATALOG_MIGRATOR_CONFIRM_MESSAGE')); ?>'))
+		{
+			return;
+		}
+		<?php
+	}
+	?>
 		var dialog = new BX.CDialog({
 			title: '<?= GetMessageJS('DISCOUNT_CATALOG_MIGRATOR_CONVERT_TAB_TITLE') ?>',
 			width: 450,
@@ -1376,7 +1388,7 @@ else
 	function DoNext(processedSummary, options)
 	{
 		options = options || {};
-		var queryString = 'migrator_process=Y&lang=<?php echo htmlspecialcharsbx(LANG); ?>';
+		var queryString = 'migrator_process=Y&lang=<?php echo htmlspecialcharsbx(LANGUAGE_ID); ?>';
 
 		queryString += '&<?php echo bitrix_sessid_get(); ?>';
 		queryString += '&processedSummary=' + parseInt(processedSummary);
@@ -1408,7 +1420,7 @@ else
 
 	<form method='POST' action='<?php
 		echo $APPLICATION->GetCurPage(); ?>?lang=<?php
-		echo htmlspecialcharsbx(LANG);
+		echo htmlspecialcharsbx(LANGUAGE_ID);
 	?>'>
 		<?php
 		$tabControl->Begin();

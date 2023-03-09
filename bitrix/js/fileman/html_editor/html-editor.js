@@ -119,6 +119,11 @@
 			iframe.style.height = '100%';
 
 			// Views:
+			if (this.config.content)
+			{
+				this.dom.textareaCont.style.opacity = 0;
+				this.dom.iframeCont.style.opacity = 0;
+			}
 			// 1. TextareaView
 			this.textareaView = new BXEditorTextareaView(this, this.dom.textarea, this.dom.textareaCont);
 			// 2. IframeView
@@ -193,9 +198,7 @@
 			}
 
 			this.InitImageUploader();
-
 			this.Show();
-
 			BX.onCustomEvent(BXHtmlEditor, 'OnEditorCreated', [this]);
 		},
 
@@ -304,6 +307,7 @@
 				{
 					clearInterval(_this.statusInterval);
 				}
+				_this.iframeView.stopBugusScroll = false;
 			});
 			BX.addCustomEvent(this, "OnTextareaFocus", function()
 			{
@@ -384,6 +388,7 @@
 				BX.addCustomEvent(this, "OnInsertHtml", BX.proxy(this.AutoResizeSceleton, this));
 				BX.addCustomEvent(this, "OnIframeSetValue", BX.proxy(this.AutoResizeSceleton, this));
 				BX.addCustomEvent(this, "OnFocus", BX.proxy(this.AutoResizeSceleton, this));
+				BX.addCustomEvent(this, "OnSetViewAfter", BX.proxy(this.AutoResizeSceleton, this));
 			}
 
 			BX.addCustomEvent(this, "OnIframeKeyup", BX.proxy(this.CheckBodyHeight, this));
@@ -524,20 +529,25 @@
 			if (this.iframeView.IsShown())
 			{
 				var
-					padding = 8,
+					padding = 15,
 					minHeight,
 					doc = this.GetIframeDoc();
 
 				if (doc && doc.body)
 				{
 					minHeight = doc.body.parentNode.offsetHeight - padding * 2;
+
 					if (minHeight <= 20)
 					{
 						setTimeout(BX.proxy(this.CheckBodyHeight, this), 300);
 					}
 					else if (this.config.autoResize || minHeight > doc.body.offsetHeight)
 					{
-						doc.body.style.minHeight = minHeight + 'px';
+						setTimeout(function()
+						{
+							minHeight = doc.body.parentNode.offsetHeight - padding * 2;
+							doc.body.style.minHeight = minHeight + 'px';
+						}, 300);
 					}
 				}
 			}
@@ -946,10 +956,17 @@
 			{
 				var htmlFromBbCode = this.bbParser.Parse(value);
 				this.iframeView.SetValue(htmlFromBbCode, bParse);
+				if (htmlFromBbCode !== value || htmlFromBbCode.indexOf('[') < 0)
+				{
+					this.dom.textareaCont.style.opacity = 1;
+					this.dom.iframeCont.style.opacity = 1;
+				}
 			}
 			else
 			{
 				this.iframeView.SetValue(value, bParse);
+				this.dom.textareaCont.style.opacity = 1;
+				this.dom.iframeCont.style.opacity = 1;
 			}
 
 			this.textareaView.SetValue(value, false);
@@ -1009,22 +1026,19 @@
 
 		Expand: function(bExpand)
 		{
-			if (bExpand == undefined)
+			if (!bExpand)
 			{
 				bExpand = !this.expanded;
 			}
+			this.expanded = bExpand;
 
-			var
-				_this = this,
-				innerSize = BX.GetWindowInnerSize(document),
-				startWidth, startHeight, startTop, startLeft,
-				endWidth, endHeight, endTop, endLeft;
+			const innerSize = BX.GetWindowInnerSize(document);
+			let startWidth, startHeight, startTop, startLeft, endWidth, endHeight, endTop, endLeft;
 
 			if (bExpand)
 			{
-				var
-					scrollPos = BX.GetWindowScrollPos(document),
-					pos = BX.pos(this.dom.cont);
+				const scrollPos = BX.GetWindowScrollPos(document);
+				const pos = this.dom.cont.getBoundingClientRect();
 
 				startWidth = this.dom.cont.offsetWidth;
 				startHeight = this.dom.cont.offsetHeight;
@@ -1032,8 +1046,8 @@
 				startLeft = pos.left;
 				endWidth = innerSize.innerWidth;
 				endHeight = innerSize.innerHeight;
-				endTop = scrollPos.scrollTop;
-				endLeft = scrollPos.scrollLeft;
+				endTop = 0;
+				endLeft = 0;
 
 				this.savedSize = {
 					width: startWidth,
@@ -1045,20 +1059,63 @@
 					configWidth: this.config.width,
 					configHeight: this.config.height
 				};
-
+				this.savedStyle = {
+					position: this.dom.cont.style.position,
+					zIndex: this.dom.cont.style.zIndex
+				};
 				this.config.width = endWidth;
 				this.config.height = endHeight;
 
-				BX.addClass(this.dom.cont, 'bx-html-editor-absolute');
-				this._bodyOverflow = document.body.style.overflow;
-				document.body.style.overflow = "hidden";
-
-				// Create dummie div
+				//dummy element to keep place for the editor
 				this.dummieDiv = BX.create('DIV');
 				this.dummieDiv.style.width = startWidth + 'px';
 				this.dummieDiv.style.height = startHeight + 'px';
 				this.dom.cont.parentNode.insertBefore(this.dummieDiv, this.dom.cont);
-				document.body.appendChild(this.dom.cont);
+
+				//fix parent styles for correct positioning
+				this.savedParentOpacity = [];
+				this.savedParentPosition = [];
+				let parent = this.dom.cont.parentNode;
+				while (parent && parent !== document) {
+					if (parseInt(window.getComputedStyle(parent).getPropertyValue('opacity')) < 1)
+					{
+						let opacity = '';
+						if (parseInt(parent.style.opacity) < 1)
+						{
+							opacity = parent.style.opacity;
+						}
+						this.savedParentOpacity.push({
+							parent: parent,
+							opacity: opacity
+						})
+						parent.style.opacity = '1';
+					}
+					//zIndex of fixed elements cannot be greater than the relative parent element has
+					if (window.getComputedStyle(parent).getPropertyValue('position') === 'relative'
+						&& parseInt(window.getComputedStyle(parent).getPropertyValue('z-index')) > 0)
+					{
+						let position = '';
+						if (parent.style.position === 'relative')
+						{
+							position = parent.style.position;
+						}
+						this.savedParentPosition.push({
+							parent: parent,
+							position: position
+						})
+						parent.style.position = 'static';
+					}
+					//will-change property (it is experimental) breaks positioning, so we also disable this
+					if (window.getComputedStyle(parent).getPropertyValue('will-change').includes('height'))
+					{
+						parent.style.willChange = 'unset';
+					}
+					parent = parent.parentNode;
+				}
+
+				this.dom.cont.style.setProperty('background', 'white', 'important');
+				this.dom.cont.style.position = 'fixed';
+				this.dom.cont.style.zIndex = 999;
 
 				BX.addCustomEvent(this, 'OnIframeKeydown', BX.proxy(this.CheckEscCollapse, this));
 				BX.bind(document.body, "keydown", BX.proxy(this.CheckEscCollapse, this));
@@ -1068,8 +1125,8 @@
 			{
 				startWidth = this.dom.cont.offsetWidth;
 				startHeight = this.dom.cont.offsetHeight;
-				startTop = this.savedSize.scrollTop;
-				startLeft = this.savedSize.scrollLeft;
+				startTop = 0;
+				startLeft = 0;
 				endWidth = this.savedSize.width;
 				endHeight = this.savedSize.height;
 				endTop = this.savedSize.top;
@@ -1085,10 +1142,10 @@
 			this.dom.cont.style.top = startTop + 'px';
 			this.dom.cont.style.left = startLeft + 'px';
 
-			var content = this.GetContent();
+			var _this = this;
 
 			this.expandAnimation = new BX.easing({
-				duration : 300,
+				duration: 300,
 				start : {
 					height: startHeight,
 					width: startWidth,
@@ -1108,31 +1165,49 @@
 					_this.dom.cont.style.height = state.height + 'px';
 					_this.dom.cont.style.top = state.top + 'px';
 					_this.dom.cont.style.left = state.left + 'px';
-					_this.ResizeSceleton(state.width.toString(), state.height.toString());
+					_this.ResizeSceleton(state.width, state.height);
 				},
 				complete : function()
 				{
-					_this.expandAnimation = null;
+					_this.dom.cont.style.width = endWidth + 'px';
+					_this.dom.cont.style.height = endHeight + 'px';
+					_this.dom.cont.style.top = endTop + 'px';
+					_this.dom.cont.style.left = endLeft + 'px';
+
 					if (!bExpand)
 					{
-						_this.util.ReplaceNode(_this.dummieDiv, _this.dom.cont);
-						_this.dummieDiv = null;
+						let parent = _this.dom.cont.parentNode;
+						while (parent && parent !== document) {
+							if (parent.style.willChange === 'unset')
+							{
+								parent.style.willChange = '';
+							}
+							parent = parent.parentNode;
+						}
+						for (const parentOpacity of _this.savedParentOpacity)
+						{
+							parentOpacity.parent.style.opacity = parentOpacity.opacity;
+						}
+						for (const parentPosition of _this.savedParentPosition)
+						{
+							parentPosition.parent.style.position = parentPosition.position;
+						}
+						_this.dummieDiv.remove();
+						_this.dom.cont.style.position = _this.savedStyle.position;
+						_this.dom.cont.style.zIndex = _this.savedStyle.zIndex;
 						_this.dom.cont.style.width = '';
 						_this.dom.cont.style.height = '';
 						_this.dom.cont.style.top = '';
 						_this.dom.cont.style.left = '';
-						BX.removeClass(_this.dom.cont, 'bx-html-editor-absolute');
-						document.body.style.overflow = _this._bodyOverflow;
 						_this.config.width = _this.savedSize.configWidth;
 						_this.config.height = _this.savedSize.configHeight;
-						_this.ResizeSceleton();
 					}
-					setTimeout(function(){_this.CheckAndReInit(content)}, 10);
+					_this.ResizeSceleton();
+					_this.CheckAndReInit();
 				}
 			});
 
 			this.expandAnimation.animate();
-			this.expanded = bExpand;
 		},
 
 		CheckEscCollapse: function(e, keyCode, command, selectedNode)
@@ -1167,20 +1242,29 @@
 					this.overlay.bShown);
 		},
 
-		ReInitIframe: function()
+		ReInitIframe: function(callback)
 		{
-			this.sandbox.InitIframe();
-			this.iframeView.OnCreateIframe();
-			this.synchro.StopSync();
-			this.synchro.lastTextareaValue = '';
-			this.synchro.FromTextareaToIframe(true);
-			this.synchro.StartSync();
-			this.iframeView.ReInit();
-			this.selection.lastCheckedRange = null;
-			if (this.config.setFocusAfterShow !== false)
-			{
-				this.Focus();
-			}
+			this.sandbox.InitIframe(null, () => {
+				this.iframeView.OnCreateIframe();
+
+				this.synchro.StopSync();
+				this.synchro.lastTextareaValue = '';
+				this.synchro.FromTextareaToIframe(true);
+				this.synchro.StartSync();
+				this.iframeView.ReInit();
+				this.selection.lastCheckedRange = null;
+				if (this.config.setFocusAfterShow !== false)
+				{
+					this.Focus();
+				}
+
+				if (typeof callback === 'function')
+				{
+					callback();
+				}
+
+				this.On('OnAfterIframeInit', [this]);
+			});
 		},
 
 		CheckAndReInit: function(content)
@@ -1195,7 +1279,13 @@
 					{
 						this.iframeView.document = doc;
 						this.iframeView.element = doc.body;
-						this.ReInitIframe();
+						this.ReInitIframe(() => {
+							if (content !== undefined)
+							{
+								this.SetContent(content, true);
+								this.CheckBodyHeight();
+							}
+						});
 					}
 					else if(doc.body)
 					{
@@ -1567,7 +1657,7 @@
 			this.util.IsBlockElement = function (node)
 			{
 				var styleDisplay = BX.style(node, 'display');
-				return styleDisplay && styleDisplay.toLowerCase() === "block";
+				return styleDisplay && BX.type.isString(styleDisplay) && styleDisplay.toLowerCase() === "block";
 			};
 
 			this.util.IsBlockNode = function (node)
@@ -1848,6 +1938,16 @@
 					}
 				}
 				return true;
+			};
+
+			this.util.GetNextSibling = function(node)
+			{
+				var res = node.nextSibling;
+				while (res && res.nodeType == 3 && res.nodeValue == '\ufeff' && res.nextSibling)
+				{
+					res = res.nextSibling;
+				}
+				return res || null;
 			};
 		},
 
@@ -2685,7 +2785,7 @@
 				form = this.dom.form;
 
 			try{
-				BX.addCustomEvent(this, 'OnSubmit', function(){form.BXAUTOSAVE.Init();});
+//				BX.addCustomEvent(this, 'OnSubmit', function(){form.BXAUTOSAVE.Init();}); // to prevent save ticker after form submit, OnContentChanged is enough
 				BX.addCustomEvent(this, 'OnContentChanged', function(){form.BXAUTOSAVE.Init();});
 
 				BX.addCustomEvent(form, 'onAutoSave', function (ob, data)
@@ -2791,7 +2891,7 @@
 					}
 				}
 
-				if (_this.pasteCheckItteration == 1)
+				if (_this.pasteCheckItteration === 1)
 					setTimeout(function(){checkImages(images);}, 500);
 				else if (_this.pasteCheckItteration < 15)
 					setTimeout(function(){checkImages(images);}, 1000);
@@ -2800,10 +2900,21 @@
 			BX.bind(this.iframeView.element, 'paste', function (e)
 			{
 				var
+					chromeVerion = 0,
 					imageHandled = false,
 					clipboard = e.clipboardData;
 
-				if (clipboard && clipboard.items)
+					if (BX.browser.IsChrome() || BX.browser.IsSafari())
+					{
+						var ua = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+						chromeVerion = ua ? parseInt(ua[2], 10) : Infinity;
+					}
+
+				// For firefox works wrong (see mantis:88928, mantis:122421)
+				if (clipboard && clipboard.items
+					&& !BX.browser.IsFirefox()
+					&& (!chromeVerion || chromeVerion < 83)
+				)
 				{
 					var item = clipboard.items[0];
 					if (item && item.type.indexOf('image/') > -1)
@@ -2818,7 +2929,6 @@
 								imageHandled = true;
 								var img = new Image();
 								img.src = event.target.result;
-
 								setTimeout(function()
 								{
 									_this.selection.InsertNode(img);
@@ -2831,17 +2941,13 @@
 
 				if (!imageHandled)
 				{
-					var
-						doc = _this.GetIframeDoc(),
-						images = doc.body.getElementsByTagName('IMG');
-
 					_this.pasteCheckItteration = 0;
-					checkImages(images);
+					checkImages(_this.GetIframeDoc().body.getElementsByTagName('IMG'));
 				}
 			});
 
+			BX.removeCustomEvent(this, 'OnImageDataUriCaughtUploaded', BX.proxy(this.HandleImageDataUriCaughtUploadedCallback, this));
 			BX.addCustomEvent(this, 'OnImageDataUriCaughtUploaded', BX.proxy(this.HandleImageDataUriCaughtUploadedCallback, this));
-			//BX.addCustomEvent(this, 'OnImageDataUriCaughtFailed', BX.proxy(this.HandleImageDataUriCaughtFailedCallback, this));
 		},
 
 		GetBase64Image: function(base64source)
@@ -2869,17 +2975,39 @@
 
 		CheckImage: function(image, unbind)
 		{
-			if (image && image.getAttribute)
+			if (image && image.complete && image.naturalHeight !== 0)
 			{
-				var src = image.getAttribute('src');
-				if (src.indexOf('data:image/') !== -1)
+				if (image.src.indexOf('blob:http') !== -1)
+				{
+					image.src = this.GetImageBase64(image);
+					image.title = '';
+				}
+
+				if (image.src.indexOf('data:image/') !== -1)
 				{
 					this.HandleImageDataUri(image);
 				}
 
 				if (unbind !== false)
+				{
 					BX.unbind(image, 'load', BX.proxy(this.CheckImage, this));
+				}
 			}
+		},
+
+		GetImageBase64: function(image) {
+			const canvas = document.createElement("canvas");
+			let width = image.width;
+			let height = image.height;
+			if (width > 1440)
+			{
+				height = height*1440/width;
+				width = 1440;
+			}
+			canvas.width = width;
+			canvas.height = height;
+			canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+			return canvas.toDataURL("image/jpeg", 0.7); //compress image to 70% quality
 		},
 
 		HandleImageDataUri: function(image)
@@ -2888,7 +3016,9 @@
 			{
 				this.skipPasteControl = true;
 				if (this.pasteControl.isOpened)
+				{
 					this.pasteControl.Hide();
+				}
 
 				var base64Image = this.GetBase64Image(image.src);
 
@@ -3067,48 +3197,45 @@
 		{
 			if (BX.isNodeInDom(iframe))
 			{
-				var
-					_this = this,
-					iframeWindow = iframe.contentWindow,
-					iframeDocument = iframeWindow.document;
+				this.InitIframe(iframe, () => {
+					var iframeWindow = iframe.contentWindow;
+					var iframeDocument = iframeWindow.document;
 
-				this.InitIframe(iframe);
+					iframeWindow.onerror = function(errorMessage, fileName, lineNumber) {
+						throw new Error("Sandbox: " + errorMessage, fileName, lineNumber);
+					};
 
-				iframeWindow.onerror = function(errorMessage, fileName, lineNumber) {
-					throw new Error("Sandbox: " + errorMessage, fileName, lineNumber);
-				};
-
-				if (this.bSandbox)
-				{
-					var i, length;
-					for (i = 0, length = this.windowProperties.length; i < length; i++)
+					if (this.bSandbox)
 					{
-						this._unset(iframeWindow, this.windowProperties[i]);
+						var i, length;
+						for (i = 0, length = this.windowProperties.length; i < length; i++)
+						{
+							this._unset(iframeWindow, this.windowProperties[i]);
+						}
+
+						for (i=0, length = this.windowProperties2.length; i < length; i++)
+						{
+							this._unset(iframeWindow, this.windowProperties2[i], BX.DoNothing());
+						}
+
+						for (i = 0, length = this.documentProperties.length; i < length; i++)
+						{
+							this._unset(iframeDocument, this.documentProperties[i]);
+						}
+
+						this._unset(iframeDocument, "cookie", "", true);
 					}
 
-					for (i=0, length = this.windowProperties2.length; i < length; i++)
-					{
-						this._unset(iframeWindow, this.windowProperties2[i], BX.DoNothing());
-					}
+					this.loaded = true;
 
-					for (i = 0, length = this.documentProperties.length; i < length; i++)
-					{
-						this._unset(iframeDocument, this.documentProperties[i]);
-					}
+					this.callback(this);
 
-					this._unset(iframeDocument, "cookie", "", true);
-				}
-
-				this.loaded = true;
-				// Trigger the callback
-				setTimeout(function()
-				{
-					_this.callback(_this);
-				}, 0);
+					this.editor.On('OnAfterIframeInit', [this.editor]);
+				});
 			}
 		},
 
-		InitIframe: function(iframe)
+		InitIframe: function(iframe, callback)
 		{
 			iframe = this.iframe || iframe;
 			var
@@ -3129,19 +3256,31 @@
 				return iframe.contentWindow.document;
 			};
 
-			this.editor.On("OnIframeInit");
+			const triggerCallback = () => {
+				if (iframeDocument.body)
+				{
+					this.editor.On('OnIframeInit');
+
+					if (typeof callback === 'function')
+					{
+						callback();
+					}
+				}
+				else
+				{
+					setTimeout(triggerCallback, 0);
+				}
+			};
+
+			setTimeout(triggerCallback, 0);
 		},
 
 		GetHtml: function(css, cssText)
 		{
-			var
-				bodyParams = '',
-				headHtml = "",
-				i;
-
+			let bodyParams = '';
 			if (this.editor.config.bodyClass || this.editor.IsExpanded())
 			{
-				var bodyClass = this.editor.config.bodyClass || '';
+				let bodyClass = this.editor.config.bodyClass || '';
 				if (this.editor.IsExpanded())
 					bodyClass += ' fullscreen';
 				bodyParams += ' class="' + BX.util.trim(bodyClass) + '"';
@@ -3151,10 +3290,22 @@
 				bodyParams += ' id="' + this.editor.config.bodyId + '"';
 			}
 
-			var templ = this.editor.GetTemplateParams();
+			let headHtml = '';
+			if (BX.Type.isStringFilled(this.editor.config.designTokens))
+			{
+
+				headHtml += this.editor.config.designTokens;
+			}
+
+			if (BX.Type.isStringFilled(this.editor.config.headHtml))
+			{
+				headHtml += this.editor.config.headHtml;
+			}
+
+			const templ = this.editor.GetTemplateParams();
 			if (templ && templ['EDITOR_STYLES'])
 			{
-				for (i = 0; i < templ['EDITOR_STYLES'].length; i++)
+				for (let i = 0; i < templ['EDITOR_STYLES'].length; i++)
 				{
 					headHtml += '<link data-bx-template-style="Y" rel="stylesheet" href="' + templ['EDITOR_STYLES'][i] + '_' + this.editor.cssCounter++ + '">';
 				}
@@ -3163,7 +3314,7 @@
 			css = typeof css === "string" ? [css] : css;
 			if (css)
 			{
-				for (i = 0; i < css.length; i++)
+				for (let i = 0; i < css.length; i++)
 				{
 					headHtml += '<link rel="stylesheet" href="' + css[i] + '">';
 				}
@@ -3174,6 +3325,11 @@
 			if (typeof cssText === "string")
 			{
 				headHtml += '<style type="text/css" data-bx-template-style="Y">' + cssText + '</style>';
+			}
+
+			if (BX.Type.isStringFilled(this.editor.config.fontSize))
+			{
+				headHtml += `<style>body { font-size: ${this.editor.config.fontSize}; }</style>`;
 			}
 
 			if (this.editor.iframeCssText && this.editor.iframeCssText.length > 0)
@@ -5059,6 +5215,7 @@
 			"video": {},
 			"source": {},
 			"audio": {},
+			"nofollow": {},
 
 			// tags to remove
 			"title": {remove: 1},
